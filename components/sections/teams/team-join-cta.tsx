@@ -1,14 +1,14 @@
-import { Plus } from "lucide-react";
-
 import { Reveal } from "@/components/ui/reveal";
-import { Button } from "@/components/ui/button";
-import type { Team } from "@/data/teams";
+import { TeamJoinButton } from "./team-join-button";
 
 interface TeamJoinCtaProps {
-  team: Team;
+  teamId: string;
+  teamSlug: string;
+  isMember: boolean;
+  isOwner: boolean;
 }
 
-export function TeamJoinCta({ team }: TeamJoinCtaProps) {
+export function TeamJoinCta({ teamId, teamSlug, isMember, isOwner }: TeamJoinCtaProps) {
   return (
     <section className="relative overflow-hidden py-28 sm:py-32 lg:py-40" aria-labelledby="team-join-heading">
       <div className="pointer-events-none absolute inset-0">
@@ -24,25 +24,26 @@ export function TeamJoinCta({ team }: TeamJoinCtaProps) {
             id="team-join-heading"
             className="text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
           >
-            Ready to <span className="text-accent-400">build with us?</span>
+            {isMember ? "Part of the team?" : "Ready to build?"}
           </h2>
         </Reveal>
 
         <Reveal delay={100}>
           <p className="mx-auto mt-6 max-w-xl text-balance text-[1.05rem] leading-relaxed text-ink-400">
-            If you share our values and want to contribute to something bigger
-            than yourself — we would love to hear from you.
+            {isMember
+              ? "You're already a member of this team."
+              : "If you share the vision and want to contribute — join the team and start building together."}
           </p>
         </Reveal>
 
         <Reveal delay={200}>
           <div className="mt-10 flex justify-center">
-            <Button size="lg" asChild>
-              <a href={team.joinCtaHref}>
-                {team.joinCtaLabel}
-                <Plus size={16} />
-              </a>
-            </Button>
+            <TeamJoinButton
+              teamId={teamId}
+              teamSlug={teamSlug}
+              isMember={isMember}
+              isOwner={isOwner}
+            />
           </div>
         </Reveal>
       </div>

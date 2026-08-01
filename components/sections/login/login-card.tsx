@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Github } from "lucide-react";
+import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
 
 import { AmbientBg } from "@/components/graphics/ambient-bg";
 import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
+import { signIn } from "@/actions/auth.actions";
 
 const INPUT_CLASS =
   "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
@@ -18,6 +19,25 @@ export function LoginCard() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.set("email", email);
+    formData.set("password", password);
+
+    const result = await signIn(formData);
+
+    if (result?.error) {
+      setError(result.error);
+      setLoading(false);
+    }
+  }
 
   return (
     <section className="relative flex min-h-[90vh] items-center justify-center pt-[88px] sm:pt-[104px] lg:pt-[120px]">
@@ -45,21 +65,20 @@ export function LoginCard() {
               </p>
             </div>
 
-            <form
-              className="relative mt-8 flex flex-col gap-5"
-              onSubmit={(e) => e.preventDefault()}
-            >
+            <form className="relative mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-ink-200">
                   Email
                 </label>
                 <input
                   id="login-email"
+                  name="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={INPUT_CLASS}
+                  required
                 />
               </div>
 
@@ -70,11 +89,13 @@ export function LoginCard() {
                 <div className="relative">
                   <input
                     id="login-password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={INPUT_CLASS + " pr-11"}
+                    required
                   />
                   <button
                     type="button"
@@ -97,16 +118,24 @@ export function LoginCard() {
                   />
                   <span className="text-sm text-ink-400">Remember me</span>
                 </label>
-                <Link
-                  href="#"
-                  className="text-sm font-medium text-accent-400 transition-colors hover:text-accent-300"
-                >
-                  Forgot password?
-                </Link>
+                <span className="text-sm text-ink-600">Forgot password?</span>
               </div>
 
-              <Button type="submit" size="lg" className="w-full">
-                Sign In
+              {error && (
+                <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                  {error}
+                </p>
+              )}
+
+              <Button type="submit" size="lg" className="w-full" disabled={loading}>
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 size={18} className="animate-spin" />
+                    Signing In...
+                  </span>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
 

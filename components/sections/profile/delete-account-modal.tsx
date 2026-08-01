@@ -1,0 +1,104 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { X, TriangleAlert } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+export function DeleteAccountModal() {
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    document.body.style.overflow = "hidden";
+    const frame = requestAnimationFrame(() => setMounted(true));
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKeyDown);
+      setMounted(false);
+    };
+  }, [open]);
+
+  return (
+    <>
+      <Button
+        variant="secondary"
+        size="sm"
+        className="border-red-500/40 text-red-400 hover:border-red-500/60 hover:bg-red-500/10 hover:text-red-300"
+        onClick={() => setOpen(true)}
+      >
+        Delete Account
+      </Button>
+
+      {open ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Delete account"
+        >
+          <button
+            type="button"
+            aria-label="Close"
+            className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-200"
+            style={{ opacity: mounted ? 1 : 0 }}
+            onClick={() => setOpen(false)}
+          />
+
+          <div
+            className="relative z-10 w-full max-w-[480px] overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_30px_80px_-20px_rgba(40,40,255,0.15)] backdrop-blur-2xl transition-all duration-200 ease-premium"
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "scale(1)" : "scale(0.95)",
+            }}
+          >
+            <div className="flex items-center justify-between border-b border-border px-8 py-6">
+              <h2 className="text-lg font-semibold text-ink-50">Delete Account</h2>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+                className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-colors hover:bg-white/5 hover:text-ink-50"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="px-8 py-6">
+              <div className="flex flex-col items-center text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">
+                  <TriangleAlert size={24} className="text-red-400" />
+                </div>
+
+                <h3 className="mt-4 text-base font-semibold text-ink-50">
+                  Are you sure?
+                </h3>
+
+                <p className="mt-2 text-sm leading-relaxed text-ink-400">
+                  This action is not yet available. Account deletion will be
+                  implemented in a future update. Your data is safe for now.
+                </p>
+              </div>
+
+              <div className="mt-6 flex items-center justify-end gap-3 border-t border-border pt-5">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setOpen(false)}
+                >
+                  Got it
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}

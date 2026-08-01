@@ -11,7 +11,7 @@ interface PageHeroProps {
 
 export function PageHero({ variant, slug, children }: PageHeroProps) {
   return (
-    <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
+    <section className="relative overflow-hidden pt-[184px] sm:pt-[216px] lg:pt-[232px]">
       <AmbientBg />
       <BackgroundInfinity variant={variant} />
       <BackgroundAtmosphere />

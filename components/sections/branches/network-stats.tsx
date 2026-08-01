@@ -1,27 +1,31 @@
 import { Building2, CalendarClock, Users } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
-import { activeBranches, totalMemberCount, totalUpcomingEvents } from "@/data/branches";
 
-const stats = [
-  {
-    icon: Building2,
-    value: `${activeBranches.length}`,
-    label: "Active branches",
-  },
-  {
-    icon: Users,
-    value: `${totalMemberCount}+`,
-    label: "Combined members",
-  },
-  {
-    icon: CalendarClock,
-    value: `${totalUpcomingEvents}`,
-    label: "Upcoming events",
-  },
-] as const;
+interface NetworkStatsProps {
+  branchCount: number;
+  memberCount: number;
+  upcomingEvents: number;
+}
 
-export function NetworkStats() {
+export function NetworkStats({ branchCount, memberCount, upcomingEvents }: NetworkStatsProps) {
+  const stats = [
+    {
+      icon: Building2,
+      value: `${branchCount}`,
+      label: "Active branches",
+    },
+    {
+      icon: Users,
+      value: `${memberCount}+`,
+      label: "Combined members",
+    },
+    {
+      icon: CalendarClock,
+      value: `${upcomingEvents}`,
+      label: "Upcoming events",
+    },
+  ] as const;
   return (
     <section aria-label="Network at a glance" className="relative px-6 pb-20 sm:pb-28">
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/8 blur-[130px]" />

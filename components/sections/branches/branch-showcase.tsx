@@ -1,9 +1,14 @@
 import { Reveal } from "@/components/ui/reveal";
-import { activeBranches } from "@/data/branches";
+import type { Branch } from "@/data/branches";
 
 import { BranchSpotlight } from "./branch-spotlight";
 
-export function BranchShowcase() {
+interface BranchShowcaseProps {
+  branches: (Branch & { dbId?: string; memberCount: number })[];
+  membershipBySlug: Record<string, boolean>;
+}
+
+export function BranchShowcase({ branches, membershipBySlug }: BranchShowcaseProps) {
   return (
     <section
       id="branches"
@@ -41,9 +46,15 @@ export function BranchShowcase() {
         </Reveal>
 
         <div className="flex flex-col gap-8 sm:gap-10">
-          {activeBranches.map((branch, index) => (
+          {branches.map((branch, index) => (
             <Reveal key={branch.slug} delay={index * 120}>
-              <BranchSpotlight branch={branch} index={index} reversed={index % 2 === 1} />
+              <BranchSpotlight
+                branch={branch}
+                index={index}
+                reversed={index % 2 === 1}
+                isMember={membershipBySlug[branch.slug] ?? false}
+                branchId={branch.dbId}
+              />
             </Reveal>
           ))}
         </div>

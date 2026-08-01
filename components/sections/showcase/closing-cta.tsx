@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
+import { DashboardButton } from "@/components/shared/dashboard-button";
 
 export function ClosingCta() {
   return (
@@ -41,9 +41,7 @@ export function ClosingCta() {
                 <ArrowUpRight size={16} />
               </Link>
             </Button>
-            <Button variant="secondary" size="lg" asChild>
-              <Link href="/join">Join Azenion</Link>
-            </Button>
+            <DashboardButton variant="secondary" size="lg" label="Join Azenion" showArrow={false} />
           </div>
         </Reveal>
       </div>

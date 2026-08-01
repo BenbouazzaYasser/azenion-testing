@@ -85,11 +85,11 @@ export function WhyTeams() {
           {REASONS.map((reason, i) => {
             const Icon = reason.icon;
             return (
-              <Reveal key={reason.title} delay={i * 60}>
-                <div className="group relative overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]">
+              <Reveal key={reason.title} delay={i * 60} className="flex">
+                <div className="group flex w-full flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]">
                   <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-                  <div className="relative p-6 sm:p-7">
+                  <div className="relative flex flex-1 flex-col p-6 sm:p-7">
                     <div className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-border-strong bg-white/[0.03] text-accent-400 transition-all duration-500 ease-premium group-hover:-translate-y-1 group-hover:scale-[1.05] group-hover:border-accent-400/40 group-hover:bg-accent/[0.08] group-hover:shadow-glow-sm">
                       <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,rgba(40,40,255,0.15),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                       <Icon size={17} strokeWidth={1.75} className="relative" />
@@ -98,7 +98,7 @@ export function WhyTeams() {
                     <h3 className="mt-5 text-[1rem] font-semibold text-ink-50 transition-colors duration-300 group-hover:text-accent-400">
                       {reason.title}
                     </h3>
-                    <p className="mt-2 text-[0.88rem] leading-relaxed text-ink-400">
+                    <p className="mt-2 flex-1 text-[0.88rem] leading-relaxed text-ink-400">
                       {reason.description}
                     </p>
                   </div>

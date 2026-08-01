@@ -1,18 +1,21 @@
+import { Calendar, MapPin, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
-import { ArrowUpRight, Calendar, MapPin, Sparkles, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Branch } from "@/data/branches";
+import { BranchJoinButton } from "./branch-join-button";
 
 interface BranchSpotlightProps {
   branch: Branch;
   index: number;
   /** Flips the identity/detail columns on large screens for visual rhythm. */
   reversed?: boolean;
+  isMember?: boolean;
+  branchId?: string;
 }
 
-export function BranchSpotlight({ branch, index, reversed = false }: BranchSpotlightProps) {
+export function BranchSpotlight({ branch, index, reversed = false, isMember = false, branchId }: BranchSpotlightProps) {
   const order = String(index + 1).padStart(2, "0");
 
   return (
@@ -67,20 +70,40 @@ export function BranchSpotlight({ branch, index, reversed = false }: BranchSpotl
               <span className="text-sm text-white/70">{branch.memberCount} Member{branch.memberCount !== 1 ? 's' : ''}</span>
             </div>
             {branch.founded ? (
-              <div className="text-sm text-white/40">Since {branch.founded}</div>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-[rgb(40,40,255)]" aria-hidden="true" />
+                <span className="text-sm text-white/40">Since {branch.founded}</span>
+              </div>
             ) : null}
           </div>
 
           <div className="mt-8">
-            <Button asChild variant="primary">
-              <Link href={branch.joinCta.href}>
-                {branch.joinCta.label}
-                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </Button>
-            {branch.joinCta.helperText ? (
-              <p className="mt-3 text-xs text-white/35">{branch.joinCta.helperText}</p>
-            ) : null}
+            {branchId ? (
+              <div className="flex flex-wrap items-start gap-4">
+                <BranchJoinButton
+                  branchId={branchId}
+                  isMember={isMember}
+                  label={branch.joinCta.label}
+                  helperText={branch.joinCta.helperText}
+                />
+                <Button
+                  asChild
+                  variant="secondary"
+                  className="border-white/10 bg-white/[0.03] text-white/80 hover:border-accent/40 hover:bg-white/[0.06] hover:text-white"
+                >
+                  <Link href={`/branches/${branch.slug}`}>Explore branch hub</Link>
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-white opacity-50 shadow-glow-sm">
+                  {branch.joinCta.label}
+                </span>
+                {branch.joinCta.helperText && (
+                  <p className="mt-3 text-xs text-white/35">{branch.joinCta.helperText}</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

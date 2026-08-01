@@ -1,13 +1,19 @@
-import { ArrowUpRight, FolderKanban } from "lucide-react";
+"use client";
 
+import Link from "next/link";
+import { FolderKanban, Plus } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
-import type { Team } from "@/data/teams";
+import { Button } from "@/components/ui/button";
+import { ProjectCard, type ProjectCardProject } from "@/components/sections/projects/project-card";
 
 interface TeamProjectsProps {
-  team: Team;
+  projects: ProjectCardProject[];
+  canManage: boolean;
+  teamId: string;
+  teamSlug: string;
 }
 
-export function TeamProjects({ team }: TeamProjectsProps) {
+export function TeamProjects({ projects, canManage, teamId, teamSlug }: TeamProjectsProps) {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="team-projects-heading">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
@@ -24,48 +30,40 @@ export function TeamProjects({ team }: TeamProjectsProps) {
         </Reveal>
 
         <Reveal delay={80}>
-          <h2
-            id="team-projects-heading"
-            className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
-          >
-            Current projects
-          </h2>
+          <div className="mt-6 flex items-center justify-between">
+            <h2
+              id="team-projects-heading"
+              className="text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
+            >
+              Current projects
+            </h2>
+            {canManage ? (
+              <Button size="sm" variant="secondary" asChild>
+                <Link href={`/projects/create?team=${teamId}`}>
+                  <Plus size={14} />
+                  New Project
+                </Link>
+              </Button>
+            ) : null}
+          </div>
         </Reveal>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {team.projects.map((project, i) => (
-            <Reveal key={project.id} delay={i * 80}>
-              <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]">
-                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
-                <div className="relative flex flex-1 flex-col p-6 sm:p-7">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border-strong bg-white/[0.03] text-accent-400 transition-all duration-500 ease-premium group-hover:-translate-y-1 group-hover:scale-[1.05] group-hover:border-accent-400/40 group-hover:bg-accent/[0.08] group-hover:shadow-glow-sm">
-                    <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,rgba(40,40,255,0.15),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                    <FolderKanban size={17} strokeWidth={1.75} className="relative" />
-                  </div>
-
-                  <div className="mt-5 flex items-center gap-3">
-                    <h3 className="text-[1rem] font-semibold text-ink-50 transition-colors duration-300 group-hover:text-accent-400">
-                      {project.title}
-                    </h3>
-                    <span className="inline-flex items-center rounded-full border border-accent/20 bg-accent/[0.06] px-2.5 py-0.5 text-[11px] font-medium tracking-wide text-accent-300">
-                      {project.status}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 flex-1 text-[0.88rem] leading-relaxed text-ink-400">
-                    {project.description}
-                  </p>
-
-                  <div className="mt-5 flex items-center gap-1.5 text-[13px] font-medium text-accent-400 opacity-0 transition-all duration-300 group-hover:opacity-100">
-                    View details
-                    <ArrowUpRight size={14} />
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+        {projects.length > 0 ? (
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map((project, i) => (
+              <ProjectCard key={project.id} project={project} index={i} />
+            ))}
+          </div>
+        ) : (
+          <Reveal delay={120}>
+            <div className="mt-12 flex flex-col items-center gap-3 py-16 text-center">
+              <FolderKanban className="h-8 w-8 text-ink-600" />
+              <p className="max-w-xs text-sm text-ink-400">
+                No projects yet. {canManage ? "Create the first project for this team." : "Check back later."}
+              </p>
+            </div>
+          </Reveal>
+        )}
       </div>
     </section>
   );

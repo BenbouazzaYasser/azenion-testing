@@ -6,8 +6,6 @@ import { ChevronDown, Search } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 
 const TECHNOLOGIES = ["All", "Next.js", "TypeScript", "Tailwind CSS", "React Native", "Expo", "Supabase", "PostgreSQL"];
-const STATUSES = ["All", "Active", "Planning", "Concept", "In Development"];
-const DIFFICULTIES = ["All", "Beginner", "Intermediate", "Advanced"];
 
 interface DropdownProps {
   label: string;
@@ -61,8 +59,6 @@ function Dropdown({ label, options, value, onChange }: DropdownProps) {
 export function SearchFilters() {
   const [search, setSearch] = useState("");
   const [tech, setTech] = useState("All");
-  const [status, setStatus] = useState("All");
-  const [difficulty, setDifficulty] = useState("All");
 
   return (
     <section className="relative py-12 sm:py-16 lg:py-20" aria-label="Search and filter projects">
@@ -90,8 +86,6 @@ export function SearchFilters() {
 
             <div className="flex flex-wrap gap-3">
               <Dropdown label="Technology" options={TECHNOLOGIES} value={tech} onChange={setTech} />
-              <Dropdown label="Status" options={STATUSES} value={status} onChange={setStatus} />
-              <Dropdown label="Difficulty" options={DIFFICULTIES} value={difficulty} onChange={setDifficulty} />
             </div>
           </div>
         </Reveal>

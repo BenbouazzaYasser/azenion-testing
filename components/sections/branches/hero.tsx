@@ -7,13 +7,17 @@ import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { InfinityHeroArt } from "@/components/graphics/infinity-hero-art";
 import { Reveal } from "@/components/ui/reveal";
-import { activeBranches, totalMemberCount } from "@/data/branches";
 
-export function BranchesHero() {
+interface BranchesHeroProps {
+  branchCount: number;
+  memberCount: number;
+}
+
+export function BranchesHero({ branchCount, memberCount }: BranchesHeroProps) {
   return (
     <section
       aria-labelledby="branches-hero-heading"
-      className="relative flex min-h-[90vh] w-full items-center justify-center overflow-hidden px-6 pb-24 pt-[88px] sm:pt-[104px] lg:pt-[120px]"
+      className="relative flex min-h-[90vh] w-full items-center justify-center overflow-hidden px-6 pb-24 pt-[184px] sm:pt-[216px] lg:pt-[232px]"
     >
       <AmbientBg />
       <BackgroundInfinity variant="branches" />
@@ -84,7 +88,7 @@ export function BranchesHero() {
 
         <Reveal delay={400}>
           <p className="mt-8 text-xs uppercase tracking-[0.2em] text-white/35">
-            {activeBranches.length} active branches · {totalMemberCount}+ members and counting
+            {branchCount} active branches · {memberCount}+ members and counting
           </p>
         </Reveal>
       </div>

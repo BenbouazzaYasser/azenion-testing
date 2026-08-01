@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Github } from "lucide-react";
+import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
 
 import { AmbientBg } from "@/components/graphics/ambient-bg";
 import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
+import { signUp } from "@/actions/auth.actions";
 
 const INPUT_CLASS =
   "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
@@ -21,6 +22,65 @@ export function JoinCard() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.set("email", email);
+    formData.set("password", password);
+    formData.set("username", username);
+    formData.set("full_name", name);
+
+    const result = await signUp(formData);
+    setLoading(false);
+
+    if (result?.error) {
+      setError(result.error);
+      return;
+    }
+
+    setSuccess(true);
+  }
+
+  if (success) {
+    return (
+      <section className="relative flex min-h-[90vh] items-center justify-center pt-[88px] sm:pt-[104px] lg:pt-[120px]">
+        <AmbientBg preset="card" />
+        <BackgroundInfinity variant="join" />
+        <BackgroundAtmosphere />
+
+        <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
+          <Reveal>
+            <div className="overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-10 py-16 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:px-12 sm:py-20">
+              <div className="relative text-center">
+                <h1 className="text-balance text-[1.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2rem]">
+                  Check Your Email
+                </h1>
+                <p className="mt-4 text-[0.95rem] leading-relaxed text-ink-400">
+                  We sent a confirmation link to <span className="text-ink-200">{email}</span>. Click it to activate your account.
+                </p>
+                <Button variant="primary" size="lg" className="mt-8" asChild>
+                  <Link href="/login">Go to Sign In</Link>
+                </Button>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative flex min-h-[90vh] items-center justify-center pt-[88px] sm:pt-[104px] lg:pt-[120px]">
@@ -48,21 +108,20 @@ export function JoinCard() {
               </p>
             </div>
 
-            <form
-              className="relative mt-8 flex flex-col gap-5"
-              onSubmit={(e) => e.preventDefault()}
-            >
+            <form className="relative mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="join-name" className="mb-1.5 block text-sm font-medium text-ink-200">
                   Full Name
                 </label>
                 <input
                   id="join-name"
+                  name="full_name"
                   type="text"
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={INPUT_CLASS}
+                  required
                 />
               </div>
 
@@ -72,11 +131,13 @@ export function JoinCard() {
                 </label>
                 <input
                   id="join-username"
+                  name="username"
                   type="text"
                   placeholder="johndoe"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className={INPUT_CLASS}
+                  required
                 />
               </div>
 
@@ -86,11 +147,13 @@ export function JoinCard() {
                 </label>
                 <input
                   id="join-email"
+                  name="email"
                   type="email"
                   placeholder="john@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={INPUT_CLASS}
+                  required
                 />
               </div>
 
@@ -101,11 +164,13 @@ export function JoinCard() {
                 <div className="relative">
                   <input
                     id="join-password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={INPUT_CLASS + " pr-11"}
+                    required
                   />
                   <button
                     type="button"
@@ -130,6 +195,7 @@ export function JoinCard() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className={INPUT_CLASS + " pr-11"}
+                    required
                   />
                   <button
                     type="button"
@@ -142,8 +208,21 @@ export function JoinCard() {
                 </div>
               </div>
 
-              <Button type="submit" size="lg" className="w-full">
-                Create Account
+              {error && (
+                <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                  {error}
+                </p>
+              )}
+
+              <Button type="submit" size="lg" className="w-full" disabled={loading}>
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 size={18} className="animate-spin" />
+                    Creating Account...
+                  </span>
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </form>
 

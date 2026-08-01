@@ -1,0 +1,3 @@
+-- Baseline migration: establishes the migration workflow.
+-- No schema changes yet — this just creates the foundation.
+-- Subsequent migrations will add tables, policies, and functions.

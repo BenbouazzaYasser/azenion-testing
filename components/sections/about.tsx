@@ -1,7 +1,6 @@
-import { ArrowUpRight, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
-import { Button } from "@/components/ui/button";
+import { DashboardButton } from "@/components/shared/dashboard-button";
 
 export function About() {
   return (
@@ -58,12 +57,7 @@ export function About() {
                 </ul>
               </div>
 
-              <Button size="lg" className="mt-8 w-full justify-center sm:w-auto" asChild>
-                <Link href="/join">
-                  Join the movement
-                  <ArrowUpRight size={16} />
-                </Link>
-              </Button>
+              <DashboardButton size="lg" className="mt-8 w-full justify-center sm:w-auto" label="Join the movement" />
             </div>
           </div>
         </Reveal>

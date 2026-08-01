@@ -17,6 +17,8 @@ export const CONTACT = {
     { label: "X (Twitter)", href: "https://x.com/azenion" },
     { label: "LinkedIn", href: "https://www.linkedin.com/company/azenion" },
     { label: "Instagram", href: "https://instagram.com/Azenion8" },
+    { label: "GitHub", href: "https://github.com/azenion" },
+    { label: "Discord", href: "https://discord.gg/3As5ndwwh" },
   ] as SocialLink[],
   channels: [
     {
@@ -41,7 +43,7 @@ export const CONTACT = {
       label: "GitHub",
       description: "Explore our open-source projects and contribute.",
       detail: "github.com/azenion",
-      href: "#",
+      href: "https://github.com/azenion",
     },
   ] as ContactChannel[],
 };

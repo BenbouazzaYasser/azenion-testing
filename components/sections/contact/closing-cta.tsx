@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
+import { DashboardButton } from "@/components/shared/dashboard-button";
 
 export function ContactCta() {
   return (
@@ -36,12 +35,7 @@ export function ContactCta() {
 
         <Reveal delay={200}>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" asChild>
-              <Link href="/join">
-                Join Azenion
-                <ArrowUpRight size={16} />
-              </Link>
-            </Button>
+            <DashboardButton size="lg" label="Join Azenion" />
             <Button variant="secondary" size="lg" asChild>
               <Link href="/about">Learn More</Link>
             </Button>

@@ -2,13 +2,14 @@ import { AmbientBg } from "@/components/graphics/ambient-bg";
 import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Reveal } from "@/components/ui/reveal";
-import type { Team } from "@/data/teams";
 
 interface TeamAboutProps {
-  team: Team;
+  description: string | null;
 }
 
-export function TeamAbout({ team }: TeamAboutProps) {
+export function TeamAbout({ description }: TeamAboutProps) {
+  if (!description) return null;
+
   return (
     <section className="relative overflow-hidden py-24 sm:py-28 lg:py-32" aria-labelledby="team-about-heading">
       <AmbientBg preset="detail" />
@@ -35,10 +36,7 @@ export function TeamAbout({ team }: TeamAboutProps) {
 
         <Reveal delay={160}>
           <div className="mt-8 space-y-5 text-[1.02rem] leading-8 text-ink-400">
-            <p>{team.about}</p>
-            {team.aboutAdditional.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
+            <p>{description}</p>
           </div>
         </Reveal>
       </div>

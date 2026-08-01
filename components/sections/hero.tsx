@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { InfinityHeroArt } from "@/components/graphics/infinity-hero-art";
+import { DashboardButton } from "@/components/shared/dashboard-button";
 
 export function Hero() {
   return (
@@ -51,12 +52,7 @@ export function Hero() {
 
           <Reveal delay={240}>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button size="lg" asChild>
-              <Link href="/join">
-                Join the Network
-                <ArrowUpRight size={16} />
-              </Link>
-            </Button>
+            <DashboardButton size="lg" label="Join the Network" />
               <Button variant="secondary" size="lg" asChild>
                 <Link href="/projects">Explore Projects</Link>
               </Button>
