@@ -24,7 +24,7 @@ import {
   updateBranchHighlight,
   uploadBranchHighlightImage,
 } from "@/actions/branch.actions";
-import { getBranchFeedItems, type FeedItemWithAuthor } from "@/actions/feed.actions";
+import { getBranchFeedItems, toggleFeedPin, type FeedItemWithAuthor } from "@/actions/feed.actions";
 import { FeedCard } from "@/components/feed/feed-card";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -48,6 +48,12 @@ const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 const MANAGEABLE_TYPES = new Set<FeedItemWithAuthor["source_type"]>([
   "branch_announcement",
   "branch_highlight",
+]);
+
+const PINNABLE_TYPES = new Set<FeedItemWithAuthor["source_type"]>([
+  "branch_announcement",
+  "team_update",
+  "project_update",
 ]);
 
 export function BranchFeed({
@@ -196,11 +202,12 @@ export function BranchFeed({
 
   function handleTogglePin(item: FeedItemWithAuthor) {
     const fd = new FormData();
-    fd.set("id", item.source_id ?? "");
-    fd.set("is_pinned", item.is_pinned ? "false" : "true");
+    fd.set("post_id", item.id);
+    fd.set("scope", "branch");
+    fd.set("branch_id", branchId);
     fd.set("slug", branchSlug);
     startTransition(async () => {
-      const result = await updateBranchAnnouncement(fd);
+      const result = await toggleFeedPin(fd);
       if (result && "error" in result && result.error) {
         setError(result.error);
         return;
@@ -243,13 +250,7 @@ export function BranchFeed({
   const isManageable = (item: FeedItemWithAuthor) => canManage && MANAGEABLE_TYPES.has(item.source_type);
 
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="branch-feed-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[30%] top-[20%] h-56 w-56 -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]" />
-      <div className="pointer-events-none absolute right-[10%] bottom-[20%] h-48 w-48 rounded-full bg-accent-400/8 blur-[110px]" />
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="branch-feed-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -274,7 +275,7 @@ export function BranchFeed({
 
         {canManage ? (
           <Reveal delay={160}>
-            <div className="mt-10 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl sm:p-8">
+            <div className="mt-8 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl sm:p-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-base font-medium text-ink-200">Share with the branch</h3>
                 <div className="flex rounded-xl border border-border-strong bg-white/[0.02] p-1">
@@ -421,9 +422,11 @@ export function BranchFeed({
         ) : null}
 
         {items.length > 0 ? (
-          <div className="mt-12 space-y-6">
+          <div className="mt-10 space-y-6">
             {items.map((item, i) => {
               const manageable = isManageable(item);
+              const pinable = canManage && PINNABLE_TYPES.has(item.source_type);
+              const showMenu = manageable || pinable;
               return (
                 <Reveal key={`${item.source_type}-${item.source_id}`} delay={Math.min(i, 4) * 60}>
                   {editingId === item.source_id ? (
@@ -490,7 +493,7 @@ export function BranchFeed({
                         item={item}
                         currentUserId={currentUserId}
                         headerAction={
-                          manageable ? (
+                          showMenu ? (
                             <div className="relative">
                               <button
                                 type="button"
@@ -504,7 +507,7 @@ export function BranchFeed({
                               </button>
                               {menuOpenId === item.source_id ? (
                                 <div className="absolute right-0 top-full z-20 mt-1 w-[140px] overflow-hidden rounded-xl border border-border-strong bg-[#0e1016] shadow-xl backdrop-blur-xl">
-                                  {item.source_type === "branch_announcement" ? (
+                                  {pinable ? (
                                     <button
                                       type="button"
                                       onClick={() => handleTogglePin(item)}
@@ -514,22 +517,26 @@ export function BranchFeed({
                                       {item.is_pinned ? "Unpin" : "Pin"}
                                     </button>
                                   ) : null}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEdit(item)}
-                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink-300 transition-colors hover:bg-accent/[0.08] hover:text-accent-300"
-                                  >
-                                    <Pencil size={13} />
-                                    Edit
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDelete(item)}
-                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-400 transition-colors hover:bg-red-500/[0.08]"
-                                  >
-                                    <Trash2 size={13} />
-                                    Delete
-                                  </button>
+                                  {manageable ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleEdit(item)}
+                                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink-300 transition-colors hover:bg-accent/[0.08] hover:text-accent-300"
+                                      >
+                                        <Pencil size={13} />
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDelete(item)}
+                                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-400 transition-colors hover:bg-red-500/[0.08]"
+                                      >
+                                        <Trash2 size={13} />
+                                        Delete
+                                      </button>
+                                    </>
+                                  ) : null}
                                 </div>
                               ) : null}
                             </div>
@@ -544,7 +551,7 @@ export function BranchFeed({
           </div>
         ) : (
           <Reveal delay={160}>
-            <div className="mt-12 flex flex-col items-center gap-4 py-16 text-center">
+            <div className="mt-10 flex flex-col items-center gap-4 py-16 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-ink-700/50 bg-white/[0.03]">
                 <MessageSquare className="h-7 w-7 text-ink-500" />
               </div>

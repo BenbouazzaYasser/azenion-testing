@@ -3,7 +3,7 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function AboutHero() {
   return (
-    <PageHero variant="about" slug="about">
+    <PageHero variant="about" slug="about" atmosphere={false}>
       <Reveal delay={0}>
         <h1 className="text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
           Building the future through{" "}
@@ -21,7 +21,7 @@ export function AboutHero() {
       </Reveal>
 
       <Reveal delay={240}>
-        <div className="mt-9 hidden items-center justify-center gap-3 sm:flex">
+        <div className="mt-8 hidden items-center justify-center gap-3 sm:flex">
           <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
             <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
           </span>

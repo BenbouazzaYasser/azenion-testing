@@ -44,23 +44,7 @@ const REASONS: Reason[] = [
 
 export function WhyBuild() {
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="why-build-heading">
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[25%] top-[25%] h-64 w-64 -translate-x-1/2 rounded-full bg-accent/10 blur-[130px]" />
-      <div className="pointer-events-none absolute right-[15%] bottom-[20%] h-48 w-48 rounded-full bg-accent-400/8 blur-[110px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[18%] top-[12%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[82%] top-[22%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[15%] top-[72%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[72%] top-[82%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[50%] top-[5%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[92%] top-[50%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[5%] top-[55%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[65%] top-[92%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-      </div>
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="why-build-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -77,7 +61,7 @@ export function WhyBuild() {
           </h2>
         </Reveal>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {REASONS.map((reason, i) => {
             const Icon = reason.icon;
             return (

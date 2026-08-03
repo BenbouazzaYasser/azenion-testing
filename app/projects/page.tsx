@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Rocket } from "lucide-react";
 
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
@@ -9,6 +10,8 @@ import { MyProjects } from "@/components/sections/projects/my-projects";
 import { CreateProject } from "@/components/sections/projects/create-project";
 import { WhyBuild } from "@/components/sections/projects/why-build";
 import { FutureVision } from "@/components/sections/projects/future-vision";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -226,9 +229,21 @@ export default async function ProjectsPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden bg-[#050507]">
-        <ProjectsHero />
-        {user ? <MyProjects projects={myProjects} /> : null}
+      <main className="relative overflow-hidden">
+        <PageAtmosphere />
+        {user && myProjects.length === 0 ? (
+          <EmptyState
+            icon={<Rocket size={32} />}
+            title="No projects yet"
+            description="You haven't joined or created any projects yet."
+            eyebrow="Your workspace"
+            scrollToId="projects"
+            actionLabel="Explore Projects"
+          />
+        ) : (
+          <ProjectsHero />
+        )}
+        {user && myProjects.length > 0 ? <MyProjects projects={myProjects} /> : null}
         <AllProjects initialProjects={visibleProjects} technologies={technologyOptions} categories={allCategories ?? []} />
         <CreateProject />
         <WhyBuild />

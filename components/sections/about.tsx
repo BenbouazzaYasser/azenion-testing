@@ -4,9 +4,7 @@ import { DashboardButton } from "@/components/shared/dashboard-button";
 
 export function About() {
   return (
-    <section className="relative py-24 sm:py-28 lg:py-32" aria-labelledby="about-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.12),transparent_70%)]" />
+    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="about-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <Reveal className="mx-auto max-w-5xl rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-8 shadow-card backdrop-blur-xl sm:p-10 lg:p-14">
           <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
@@ -57,7 +55,7 @@ export function About() {
                 </ul>
               </div>
 
-              <DashboardButton size="lg" className="mt-8 w-full justify-center sm:w-auto" label="Join the movement" />
+              <DashboardButton size="lg" className="mt-6 w-full justify-center sm:w-auto" label="Join the movement" />
             </div>
           </div>
         </Reveal>

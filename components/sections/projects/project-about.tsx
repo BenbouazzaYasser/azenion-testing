@@ -1,5 +1,3 @@
-import { AmbientBg } from "@/components/graphics/ambient-bg";
-import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Reveal } from "@/components/ui/reveal";
 import type { Project } from "@/data/projects";
@@ -10,10 +8,8 @@ interface ProjectAboutProps {
 
 export function ProjectAbout({ project }: ProjectAboutProps) {
   return (
-    <section className="relative overflow-hidden py-24 sm:py-28 lg:py-32" aria-labelledby="project-about-heading">
-      <AmbientBg preset="detail" />
+    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="project-about-heading">
       <BackgroundInfinity variant="projects" />
-      <BackgroundAtmosphere />
 
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
 
@@ -27,14 +23,14 @@ export function ProjectAbout({ project }: ProjectAboutProps) {
         <Reveal delay={80}>
           <h2
             id="project-about-heading"
-            className="mt-8 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
+            className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
             About this project
           </h2>
         </Reveal>
 
         <Reveal delay={160}>
-          <div className="mt-8 space-y-5 text-[1.02rem] leading-8 text-ink-400">
+          <div className="mt-6 space-y-5 text-[1.02rem] leading-8 text-ink-400">
             <p>{project.about}</p>
             {project.aboutAdditional.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>

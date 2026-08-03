@@ -24,7 +24,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
   const paragraphs = displayText.split("\n").filter(Boolean);
 
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="project-about-heading">
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="project-about-heading">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
 
       <div className="mx-auto max-w-[920px] px-5 sm:px-8 lg:px-12">
@@ -44,7 +44,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
         </Reveal>
 
         <Reveal delay={160}>
-          <div className="mt-8 space-y-5 text-[1.02rem] leading-8 text-ink-400">
+          <div className="mt-6 space-y-5 text-[1.02rem] leading-8 text-ink-400">
             {paragraphs.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
@@ -53,7 +53,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
 
         {categories.length > 0 ? (
           <Reveal delay={180}>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap gap-2">
               {categories.map((cat) => (
                 <span
                   key={cat.id}
@@ -68,7 +68,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
 
         {technologies.length > 0 ? (
           <Reveal delay={200}>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap gap-2">
               {technologies.map((tech) => (
                 <span
                   key={tech}

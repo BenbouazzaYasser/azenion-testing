@@ -77,6 +77,8 @@ interface EntityUpdatesFeedProps {
   updates: UpdateItem[];
   currentUserId: string | null;
   isMember: boolean;
+  /** Overrides the "can write to this feed" check (e.g. team feed requires CREATE_FEED_POSTS). */
+  canPost?: boolean;
   actions: FeedActions;
   labels: FeedLabels;
   wide?: boolean;
@@ -139,6 +141,7 @@ export function EntityUpdatesFeed({
   updates: initialUpdates,
   currentUserId,
   isMember,
+  canPost: canPostPermission = isMember,
   actions,
   labels,
   wide = false,
@@ -207,7 +210,7 @@ export function EntityUpdatesFeed({
   }
 
   function handleFiles(selected: FileList | null) {
-    if (!selected || submitting || !isMember) return;
+    if (!selected || submitting || !canPostPermission) return;
 
     let message: string | null = null;
     const valid: File[] = [];
@@ -240,7 +243,7 @@ export function EntityUpdatesFeed({
 
   async function handleSubmit() {
     const hasText = Boolean(title.trim() || body.trim());
-    if (!hasText || submitting || !isMember) return;
+    if (!hasText || submitting || !canPostPermission) return;
     setError(null);
     setSubmitting(true);
 
@@ -286,7 +289,7 @@ export function EntityUpdatesFeed({
     }
   }
 
-  const canPost = Boolean(title.trim() || body.trim()) && !submitting && isMember;
+  const canPost = Boolean(title.trim() || body.trim()) && !submitting && canPostPermission;
 
   function handleEdit(update: UpdateItem) {
     setEditingId(update.id);
@@ -329,13 +332,7 @@ export function EntityUpdatesFeed({
   }
 
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="entity-updates-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[30%] top-[20%] h-56 w-56 -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]" />
-      <div className="pointer-events-none absolute right-[10%] bottom-[20%] h-48 w-48 rounded-full bg-accent-400/8 blur-[110px]" />
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="entity-updates-heading">
       <div className={cn("mx-auto px-5 sm:px-8 lg:px-12", wide ? "max-w-[960px]" : "max-w-[920px]")}>
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -352,9 +349,9 @@ export function EntityUpdatesFeed({
           </h2>
         </Reveal>
 
-        {isMember ? (
+        {canPostPermission ? (
           <Reveal delay={120}>
-            <div className="mt-10 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 shadow-card backdrop-blur-xl sm:p-6">
+            <div className="mt-8 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 shadow-card backdrop-blur-xl sm:p-6">
               <div className="flex items-center gap-2">
                 <Sparkles size={16} className="shrink-0 text-accent-400" />
                 <h3 className="text-sm font-medium text-ink-300">
@@ -508,7 +505,7 @@ export function EntityUpdatesFeed({
         ) : null}
 
         {updates.length > 0 ? (
-          <div className="mt-12 space-y-6">
+          <div className="mt-10 space-y-6">
             {updates.map((update, i) => (
               <Reveal key={update.id} delay={Math.min(i, 4) * 60}>
                 {editingId === update.id ? (
@@ -605,7 +602,7 @@ export function EntityUpdatesFeed({
           </div>
         ) : (
           <Reveal delay={160}>
-            <div className="mt-12 flex flex-col items-center gap-4 py-16 text-center">
+            <div className="mt-10 flex flex-col items-center gap-4 py-16 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-ink-700/50 bg-white/[0.03]">
                 <MessageSquare className="h-7 w-7 text-ink-500" />
               </div>

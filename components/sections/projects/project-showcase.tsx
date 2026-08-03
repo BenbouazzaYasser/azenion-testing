@@ -33,23 +33,7 @@ const VISIBILITY_LABELS: Record<string, string> = {
 
 export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="showcase-heading">
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[20%] top-[20%] h-64 w-64 -translate-x-1/2 rounded-full bg-accent/10 blur-[130px]" />
-      <div className="pointer-events-none absolute right-[20%] bottom-[20%] h-48 w-48 rounded-full bg-accent-400/8 blur-[110px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[12%] top-[15%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[78%] top-[18%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[18%] top-[78%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[75%] top-[72%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[48%] top-[8%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[90%] top-[45%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[8%] top-[50%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[62%] top-[90%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-      </div>
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="showcase-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -70,7 +54,7 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
         </Reveal>
 
         {projects.length > 0 ? (
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project, i) => (
               <Reveal key={project.id} delay={i * 80}>
                 <Link href={`/projects/${project.slug}`} className="group block h-full">
@@ -130,7 +114,7 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
           </div>
         ) : (
           <Reveal delay={120}>
-            <div className="mt-12 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-14 text-center shadow-card backdrop-blur-xl">
+            <div className="mt-10 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-14 text-center shadow-card backdrop-blur-xl">
               <div className="flex flex-col items-center gap-3">
                 <Users className="h-8 w-8 text-ink-600" />
                 <p className="max-w-xs text-sm text-ink-400">

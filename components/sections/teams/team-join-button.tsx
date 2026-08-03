@@ -1,22 +1,39 @@
 "use client";
 
-import { useTransition, useState } from "react";
-import { Plus, LogOut, Loader2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Plus, LogOut, Hourglass, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { joinTeam, leaveTeam } from "@/actions/team.actions";
+import { leaveTeam } from "@/actions/team.actions";
 import { OwnershipLeaveModal } from "@/components/shared/ownership-leave-modal";
+import { RequestToJoinDialog } from "./request-to-join-dialog";
+
+export type TeamRequestStatus = "PENDING" | "ACCEPTED" | "DECLINED" | null;
 
 interface TeamJoinButtonProps {
   teamId: string;
+  teamName: string;
   teamSlug: string;
   isMember: boolean;
   isOwner: boolean;
+  requestStatus?: TeamRequestStatus;
   onGoToSettings?: () => void;
 }
 
-export function TeamJoinButton({ teamId, teamSlug, isMember, isOwner, onGoToSettings }: TeamJoinButtonProps) {
+export function TeamJoinButton({
+  teamId,
+  teamName,
+  teamSlug,
+  isMember,
+  isOwner,
+  requestStatus = null,
+  onGoToSettings,
+}: TeamJoinButtonProps) {
   const [isPending, startTransition] = useTransition();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showRequestDialog, setShowRequestDialog] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+
+  const isRequestPending = requestStatus === "PENDING" || requestSent;
 
   function handleAction() {
     if (isMember && isOwner) {
@@ -24,26 +41,33 @@ export function TeamJoinButton({ teamId, teamSlug, isMember, isOwner, onGoToSett
       return;
     }
 
-    startTransition(async () => {
-      if (isMember) {
+    if (isMember) {
+      startTransition(async () => {
         const result = await leaveTeam(teamId, teamSlug);
         if (result.error) {
           alert(result.error);
         }
-      } else {
-        const result = await joinTeam(teamId);
-        if (result.error) {
-          alert(result.error);
-        }
-      }
-    });
+      });
+      return;
+    }
+
+    setShowRequestDialog(true);
   }
 
   if (isPending) {
     return (
       <Button size="lg" disabled>
         <Loader2 size={16} className="animate-spin" />
-        {isMember ? "Leaving..." : "Joining..."}
+        Leaving...
+      </Button>
+    );
+  }
+
+  if (isRequestPending && !isMember) {
+    return (
+      <Button size="lg" variant="secondary" disabled title="Your request is awaiting review">
+        <Hourglass size={16} />
+        Request Sent
       </Button>
     );
   }
@@ -63,6 +87,14 @@ export function TeamJoinButton({ teamId, teamSlug, isMember, isOwner, onGoToSett
           </>
         )}
       </Button>
+
+      <RequestToJoinDialog
+        teamId={teamId}
+        teamName={teamName}
+        open={!isMember && showRequestDialog}
+        onClose={() => setShowRequestDialog(false)}
+        onSuccess={() => setRequestSent(true)}
+      />
 
       <OwnershipLeaveModal
         open={showLeaveModal}

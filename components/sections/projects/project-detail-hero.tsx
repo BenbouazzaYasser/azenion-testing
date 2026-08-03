@@ -1,7 +1,5 @@
 import { Users, Plus } from "lucide-react";
 
-import { AmbientBg } from "@/components/graphics/ambient-bg";
-import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -20,11 +18,9 @@ const STATUS_COLORS: Record<string, string> = {
 export function ProjectDetailHero({ project }: ProjectDetailHeroProps) {
   return (
     <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
-      <AmbientBg />
       <BackgroundInfinity variant="projects" />
-      <BackgroundAtmosphere />
 
-      <div className="relative mx-auto max-w-[920px] px-5 pb-32 pt-20 text-center sm:px-8 sm:pt-24 lg:pb-44 lg:pt-32">
+      <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
         <Reveal delay={0}>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
             <span
@@ -37,7 +33,7 @@ export function ProjectDetailHero({ project }: ProjectDetailHeroProps) {
         </Reveal>
 
         <Reveal delay={80}>
-          <h1 className="mt-8 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
+          <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
             {project.title}
           </h1>
         </Reveal>
@@ -49,7 +45,7 @@ export function ProjectDetailHero({ project }: ProjectDetailHeroProps) {
         </Reveal>
 
         <Reveal delay={200}>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-6">
             <div className="flex items-center gap-2 text-sm text-ink-400">
               <Users className="h-4 w-4 text-accent-400" aria-hidden="true" />
               {project.memberCount} Contributor{project.memberCount !== 1 ? "s" : ""}
@@ -58,7 +54,7 @@ export function ProjectDetailHero({ project }: ProjectDetailHeroProps) {
         </Reveal>
 
         <Reveal delay={240}>
-          <div className="mt-10 flex justify-center">
+          <div className="mt-8 flex justify-center">
             <Button size="lg" asChild>
               <a href={project.joinCtaHref}>
                 {project.joinCtaLabel}
@@ -69,7 +65,7 @@ export function ProjectDetailHero({ project }: ProjectDetailHeroProps) {
         </Reveal>
 
         <Reveal delay={320}>
-          <div className="mt-20 hidden items-center justify-center gap-3 sm:flex">
+          <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
             <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>

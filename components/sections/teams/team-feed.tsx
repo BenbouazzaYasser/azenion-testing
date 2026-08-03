@@ -14,6 +14,7 @@ interface TeamFeedProps {
   updates: UpdateItem[];
   currentUserId: string | null;
   isMember: boolean;
+  canPost: boolean;
 }
 
 const teamLabels: FeedLabels = {
@@ -33,6 +34,7 @@ export function TeamFeed({
   updates,
   currentUserId,
   isMember,
+  canPost,
 }: TeamFeedProps) {
   return (
     <EntityUpdatesFeed
@@ -41,6 +43,7 @@ export function TeamFeed({
       updates={updates}
       currentUserId={currentUserId}
       isMember={isMember}
+      canPost={canPost}
       actions={{
         create: createTeamUpdate,
         uploadImage: uploadTeamUpdateImage,

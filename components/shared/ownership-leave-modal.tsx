@@ -75,7 +75,7 @@ export function OwnershipLeaveModal({ open, onClose, type, onGoToSettings }: Own
           <h2 className="mt-5 text-xl font-semibold text-ink-50">{title}</h2>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-400">{body}</p>
 
-          <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
+          <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
             <Button variant="secondary" onClick={onClose} className="sm:flex-1">
               Cancel
             </Button>

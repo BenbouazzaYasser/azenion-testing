@@ -3,12 +3,7 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function OurMission() {
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="mission-heading">
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[30%] top-[20%] h-64 w-64 -translate-x-1/2 rounded-full bg-accent/8 blur-[130px]" />
-      <div className="pointer-events-none absolute right-[20%] bottom-[20%] h-48 w-48 rounded-full bg-accent-400/8 blur-[100px]" />
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="mission-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <h2
@@ -22,7 +17,7 @@ export function OurMission() {
           </p>
         </Reveal>
 
-        <div className="relative mt-14 grid gap-6 sm:grid-cols-3">
+        <div className="relative mt-12 grid gap-6 sm:grid-cols-3">
           {MISSION_CARDS.map((card, i) => {
             const Icon = card.icon;
             return (

@@ -176,10 +176,7 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
   }
 
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="team-open-roles-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.12),transparent_70%)]" />
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="team-open-roles-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -204,7 +201,7 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
           </div>
         </Reveal>
 
-        <div className="mt-12 space-y-5">
+        <div className="mt-10 space-y-5">
           {isAdding ? (
             <div className="rounded-2xl border border-accent-400/40 bg-accent/[0.04] p-6 sm:p-8">
               <div className="space-y-4">

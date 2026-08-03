@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Pin } from "lucide-react";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { FeedCard } from "@/components/feed/feed-card";
-import { getFeedItems, type FeedItemWithAuthor } from "@/actions/feed.actions";
+import { getFeedItems, toggleFeedPin, type FeedItemWithAuthor } from "@/actions/feed.actions";
+import { cn } from "@/lib/utils";
 
 const FILTERS = [
   { id: "all", label: "All" },
@@ -19,14 +21,21 @@ interface FeedListProps {
   initialItems: FeedItemWithAuthor[];
   initialTotal: number;
   currentUserId: string | null;
+  isPlatformAdmin?: boolean;
 }
 
-export function FeedList({ initialItems, initialTotal, currentUserId }: FeedListProps) {
+export function FeedList({
+  initialItems,
+  initialTotal,
+  currentUserId,
+  isPlatformAdmin = false,
+}: FeedListProps) {
   const [items, setItems] = useState<FeedItemWithAuthor[]>(initialItems);
   const [filter, setFilter] = useState("all");
   const [hasMore, setHasMore] = useState(initialItems.length < initialTotal);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pinPendingId, setPinPendingId] = useState<string | null>(null);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -123,6 +132,22 @@ export function FeedList({ initialItems, initialTotal, currentUserId }: FeedList
     }
   };
 
+  const handleToggleGlobalPin = async (item: FeedItemWithAuthor) => {
+    if (pinPendingId) return;
+    setPinPendingId(item.id);
+    setError(null);
+    const fd = new FormData();
+    fd.set("post_id", item.id);
+    fd.set("scope", "global");
+    const result = await toggleFeedPin(fd);
+    setPinPendingId(null);
+    if (result && "error" in result && result.error) {
+      setError(result.error);
+      return;
+    }
+    void loadFirstPage(filterRef.current);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <FilterBubbles
@@ -159,6 +184,25 @@ export function FeedList({ initialItems, initialTotal, currentUserId }: FeedList
             key={`${item.source_type}-${item.source_id}`}
             item={item}
             currentUserId={currentUserId}
+            headerAction={
+              isPlatformAdmin ? (
+                <button
+                  type="button"
+                  onClick={() => void handleToggleGlobalPin(item)}
+                  disabled={pinPendingId === item.id}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
+                    item.is_pinned
+                      ? "bg-accent/[0.12] text-accent-300 hover:bg-accent/[0.16]"
+                      : "bg-white/[0.04] text-ink-500 hover:bg-white/[0.08] hover:text-ink-200",
+                  )}
+                  aria-label={item.is_pinned ? "Unpin from global feed" : "Pin to global feed"}
+                >
+                  <Pin size={13} className={item.is_pinned ? "fill-accent-400 text-accent-400" : ""} />
+                  {item.is_pinned ? "Unpin" : "Pin"}
+                </button>
+              ) : undefined
+            }
           />
         ))}
 

@@ -24,8 +24,8 @@ export function Footer() {
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
       <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.08),transparent_70%)]" />
 
-      <div className="relative mx-auto max-w-[1320px] px-5 py-16 sm:px-8 lg:px-12 lg:py-20">
-        <div className="grid gap-12 lg:grid-cols-[1.3fr_1fr_1fr_1.2fr]">
+      <div className="relative mx-auto max-w-[1320px] px-5 py-14 sm:px-8 lg:px-12 lg:py-16">
+        <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr_1fr_1.2fr]">
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-400">

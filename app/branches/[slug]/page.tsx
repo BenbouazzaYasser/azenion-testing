@@ -15,6 +15,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getBranchFeedItems } from "@/actions/feed.actions";
 import type { TeamCardTeam } from "@/components/sections/teams/team-card";
 import type { ProjectCardProject } from "@/components/sections/projects/project-card";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 interface BranchPageProps {
   params: Promise<{ slug: string }>;
@@ -329,7 +330,8 @@ export default async function BranchPage({ params }: BranchPageProps) {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden bg-[#050507]">
+      <main className="relative overflow-hidden">
+        <PageAtmosphere />
         <BranchPageHero
           branch={branchWithCounts}
           isMember={isMember}

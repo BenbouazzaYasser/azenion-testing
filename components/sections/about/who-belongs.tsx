@@ -3,23 +3,7 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function WhoBelongs() {
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="belongs-heading">
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-1/4 top-1/4 h-64 w-64 -translate-x-1/2 rounded-full bg-accent/10 blur-[130px]" />
-      <div className="pointer-events-none absolute right-1/4 top-1/2 h-48 w-48 rounded-full bg-accent-400/8 blur-[110px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[10%] top-[12%] h-[2px] w-[2px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[82%] top-[18%] h-[3px] w-[3px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[18%] top-[78%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[85%] top-[68%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[50%] top-[5%] h-[3px] w-[3px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[92%] top-[50%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[5%] top-[50%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[65%] top-[92%] h-[3px] w-[3px] rounded-full bg-accent-400/15" />
-      </div>
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="belongs-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <h2
@@ -34,7 +18,7 @@ export function WhoBelongs() {
           </p>
         </Reveal>
 
-        <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {ROLES.map((role, i) => {
             const Icon = role.icon;
             return (
@@ -57,7 +41,7 @@ export function WhoBelongs() {
         </div>
 
         <Reveal delay={500}>
-          <div className="mx-auto mt-16 max-w-2xl text-center">
+          <div className="mx-auto mt-12 max-w-2xl text-center">
             <p className="text-[1.15rem] leading-relaxed text-ink-300">
               If you love building meaningful things,{" "}
               <span className="text-accent-400">you will feel at home.</span>

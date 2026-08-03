@@ -8,7 +8,8 @@ import {
   createProjectUpdateSchema,
   updateProjectUpdateSchema,
   MAX_ASSET_SIZE,
-  ALLOWED_ASSET_TYPES,
+  ALLOWED_LOGO_TYPES,
+  ALLOWED_POST_IMAGE_TYPES,
 } from "@/lib/validations/project.schema";
 
 export async function createProject(formData: FormData) {
@@ -322,7 +323,7 @@ export async function uploadProjectLogo(formData: FormData) {
     return { error: "File too large. Maximum size is 2MB" };
   }
 
-  if (!ALLOWED_ASSET_TYPES.includes(file.type)) {
+  if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
     return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
   }
 
@@ -454,7 +455,7 @@ export async function uploadUpdateImage(formData: FormData) {
     return { error: "File too large. Maximum size is 2MB" };
   }
 
-  if (!ALLOWED_ASSET_TYPES.includes(file.type)) {
+  if (!ALLOWED_POST_IMAGE_TYPES.includes(file.type)) {
     return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
   }
 

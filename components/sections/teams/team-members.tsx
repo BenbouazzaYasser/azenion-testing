@@ -1,10 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
-import { Users, Crown, Shield, ArrowUp, ArrowDown, X } from "lucide-react";
+import { useTransition, useState } from "react";
+import { Users, Crown, Shield, X, UserPlus } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
-import { updateMemberRole, removeMember } from "@/actions/team.actions";
+import { removeMember } from "@/actions/team.actions";
+import { InviteMemberDialog } from "./invite-member-dialog";
 
 interface MemberWithProfile {
   role: string;
@@ -20,29 +21,17 @@ interface MemberWithProfile {
 interface TeamMembersProps {
   members: MemberWithProfile[];
   teamId: string;
+  teamName: string;
   teamSlug: string;
   currentUserId: string | null;
-  userRole: string | null;
+  canInvite: boolean;
+  canRemoveMembers: boolean;
 }
 
-export function TeamMembers({ members, teamId, teamSlug, currentUserId, userRole }: TeamMembersProps) {
+export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId, canInvite, canRemoveMembers }: TeamMembersProps) {
   const [isPending, startTransition] = useTransition();
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   if (members.length === 0) return null;
-
-  const isOwner = userRole === "owner";
-  const isAdmin = userRole === "admin";
-
-  function handleRoleChange(targetUserId: string, newRole: string) {
-    const formData = new FormData();
-    formData.set("team_id", teamId);
-    formData.set("user_id", targetUserId);
-    formData.set("role", newRole);
-    formData.set("slug", teamSlug);
-
-    startTransition(async () => {
-      await updateMemberRole(formData);
-    });
-  }
 
   function handleRemove(targetUserId: string) {
     const formData = new FormData();
@@ -56,12 +45,7 @@ export function TeamMembers({ members, teamId, teamSlug, currentUserId, userRole
   }
 
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="team-members-heading">
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[25%] top-[15%] h-64 w-64 -translate-x-1/2 rounded-full bg-accent/10 blur-[130px]" />
-      <div className="pointer-events-none absolute right-[10%] bottom-[20%] h-48 w-48 rounded-full bg-accent-400/8 blur-[110px]" />
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="team-members-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -70,25 +54,32 @@ export function TeamMembers({ members, teamId, teamSlug, currentUserId, userRole
         </Reveal>
 
         <Reveal delay={80}>
-          <h2
-            id="team-members-heading"
-            className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
-          >
-            Meet the team
-            <span className="ml-3 text-lg font-normal text-ink-500">
-              ({members.length})
-            </span>
-          </h2>
+          <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+            <h2
+              id="team-members-heading"
+              className="text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
+            >
+              Meet the team
+              <span className="ml-3 text-lg font-normal text-ink-500">
+                ({members.length})
+              </span>
+            </h2>
+            {canInvite ? (
+              <Button size="sm" variant="secondary" onClick={() => setShowInviteDialog(true)}>
+                <UserPlus size={14} />
+                Invite
+              </Button>
+            ) : null}
+          </div>
         </Reveal>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {members.map((member, i) => {
             const profile = member.profile;
             const displayName = profile.full_name || `@${profile.username}`;
             const initials = displayName.charAt(0).toUpperCase();
             const isSelf = currentUserId === profile.id;
-            const canManageRole = (isOwner || (isAdmin && member.role === "member")) && !isSelf && member.role !== "owner";
-            const canRemove = (isOwner || (isAdmin && member.role === "member")) && !isSelf && member.role !== "owner";
+            const canRemove = canRemoveMembers && !isSelf && member.role !== "owner";
 
             return (
               <Reveal key={profile.id} delay={i * 80}>
@@ -131,41 +122,17 @@ export function TeamMembers({ members, teamId, teamSlug, currentUserId, userRole
                       ) : null}
                     </div>
 
-                    {canManageRole || canRemove ? (
+                    {canRemove ? (
                       <div className="mt-4 flex gap-2">
-                        {canManageRole && member.role === "member" ? (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleRoleChange(profile.id, "admin")}
-                            disabled={isPending}
-                          >
-                            <ArrowUp size={12} />
-                            Promote
-                          </Button>
-                        ) : null}
-                        {canManageRole && member.role === "admin" && isOwner ? (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleRoleChange(profile.id, "member")}
-                            disabled={isPending}
-                          >
-                            <ArrowDown size={12} />
-                            Demote
-                          </Button>
-                        ) : null}
-                        {canRemove ? (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleRemove(profile.id)}
-                            disabled={isPending}
-                          >
-                            <X size={12} />
-                            Remove
-                          </Button>
-                        ) : null}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRemove(profile.id)}
+                          disabled={isPending}
+                        >
+                          <X size={12} />
+                          Remove
+                        </Button>
                       </div>
                     ) : null}
                   </div>
@@ -174,6 +141,14 @@ export function TeamMembers({ members, teamId, teamSlug, currentUserId, userRole
             );
           })}
         </div>
+
+        <InviteMemberDialog
+          teamId={teamId}
+          teamName={teamName}
+          open={showInviteDialog}
+          onClose={() => setShowInviteDialog(false)}
+          onSuccess={() => setShowInviteDialog(false)}
+        />
       </div>
     </section>
   );

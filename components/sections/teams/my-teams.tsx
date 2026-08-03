@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { Users, Plus } from "lucide-react";
+import { Users } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Reveal } from "@/components/ui/reveal";
-import { Button } from "@/components/ui/button";
 import { TeamCard, type TeamCardTeam } from "./team-card";
 
 interface MyTeamsProps {
@@ -13,36 +12,19 @@ interface MyTeamsProps {
 export function MyTeams({ teams }: MyTeamsProps) {
   if (teams.length === 0) {
     return (
-      <section className="relative py-16 sm:py-20" aria-labelledby="my-teams-heading">
-        <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-          <Reveal>
-            <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-ink-700/50 bg-white/[0.03]">
-                <Users className="h-7 w-7 text-ink-500" />
-              </div>
-              <div>
-                <p className="text-base font-medium text-ink-200">
-                  You&apos;re not part of any team yet.
-                </p>
-                <p className="mt-1.5 text-sm text-ink-500">
-                  Create a team and start building with others.
-                </p>
-              </div>
-              <Button asChild variant="secondary" size="sm" className="mt-2">
-                <Link href="/teams/create">
-                  <Plus size={15} />
-                  Create a team
-                </Link>
-              </Button>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <EmptyState
+        icon={<Users size={32} />}
+        title="No teams yet"
+        description="You're not part of any teams yet."
+        eyebrow="Your workspace"
+        actionHref="/teams"
+        actionLabel="Explore Teams"
+      />
     );
   }
 
   return (
-    <section className="relative py-16 sm:py-20" aria-labelledby="my-teams-heading">
+    <section className="relative py-14 sm:py-16" aria-labelledby="my-teams-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -59,7 +41,7 @@ export function MyTeams({ teams }: MyTeamsProps) {
           </h2>
         </Reveal>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {teams.map((team, i) => (
             <TeamCard key={team.id} team={team} index={i} />
           ))}

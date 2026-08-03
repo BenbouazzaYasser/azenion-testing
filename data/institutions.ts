@@ -4,7 +4,6 @@ export interface Institution {
 }
 
 export const INSTITUTIONS: Institution[] = [
-  { name: "EMSI" },
   { name: "ENSA", fullName: "École Nationale des Sciences Appliquées" },
   { name: "UM6P", fullName: "Université Mohammed VI Polytechnique" },
   { name: "UM5", fullName: "Université Mohammed V" },

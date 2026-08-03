@@ -1,15 +1,48 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut } from "lucide-react";
+import { Menu, X, User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS } from "@/data/nav-links";
 import { useUser } from "@/hooks/use-user";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/actions/auth.actions";
+
+interface MenuLinkProps {
+  href: string;
+  icon: ReactNode;
+  title: string;
+  description?: string;
+  onNavigate: () => void;
+}
+
+function MenuLink({ href, icon, title, description, onNavigate }: MenuLinkProps) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-white/[0.06] hover:shadow-[0_0_24px_-10px_rgba(40,40,255,0.5)]"
+    >
+      <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-accent-400/30 group-hover:bg-accent/[0.08] group-hover:text-accent-300 group-hover:shadow-[0_0_16px_-6px_rgba(40,40,255,0.5)]">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[13.5px] font-medium text-ink-200 transition-colors duration-200 group-hover:text-ink-50">
+          {title}
+        </span>
+        {description ? (
+          <span className="block truncate text-xs text-ink-600 transition-colors duration-200 group-hover:text-ink-500">
+            {description}
+          </span>
+        ) : null}
+      </span>
+    </Link>
+  );
+}
+
 
 export function Navbar() {
   const pathname = usePathname();
@@ -18,7 +51,14 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
+  const [isAcademyOpen, setIsAcademyOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
+
+  const ACADEMY_CHILD_ICONS: Record<string, ReactNode> = {
+    "/academy/courses": <GraduationCap size={16} />,
+    "/academy/live-sessions": <Video size={16} />,
+    "/academy/labs": <FlaskConical size={16} />,
+  };
 
   const avatarLetter = profile?.full_name?.[0] ?? profile?.username?.[0] ?? "U";
 
@@ -57,7 +97,7 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6 sm:pt-5">
       <div
         className={cn(
-          "w-full max-w-[850px] rounded-full border border-white/[0.08] transition-all duration-700 ease-premium will-change-transform backdrop-blur-2xl",
+          "w-full max-w-[1040px] rounded-full border border-white/[0.08] transition-all duration-700 ease-premium will-change-transform backdrop-blur-2xl",
           isScrolled || isMenuOpen
             ? "bg-[rgba(7,8,13,0.78)] shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)]"
             : "bg-[rgba(10,11,16,0.18)] shadow-[0_8px_30px_-25px_rgba(255,255,255,0.05)]"
@@ -71,20 +111,65 @@ export function Navbar() {
               <ul className="hidden items-center gap-0.5 lg:flex">
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
+                  const navLinkClass = cn(
+                    "relative inline-flex items-center rounded-full px-4 py-2 text-[13.5px] font-medium leading-none transition-all duration-300 whitespace-nowrap",
+                    "hover:bg-white/[0.06] hover:text-ink-50",
+                    active
+                      ? "bg-white/[0.05] text-ink-50 ring-1 ring-white/10 shadow-[0_0_18px_-6px_rgba(90,120,255,0.4)]"
+                      : "text-ink-400"
+                  );
+
+                  if (link.children && link.children.length > 0) {
+                    return (
+                      <li key={link.href} className="flex">
+                        <div
+                          className="relative"
+                          onMouseEnter={() => setIsAcademyOpen(true)}
+                          onMouseLeave={() => setIsAcademyOpen(false)}
+                        >
+                          <Link href={link.href} className={navLinkClass}>
+                            {link.label}
+                            <ChevronDown size={12} className="ml-1 opacity-60" />
+                          </Link>
+                          {isAcademyOpen ? (
+                            <div className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2">
+                              <div aria-hidden className="absolute -top-3 left-0 right-0 h-3" />
+                              <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-[0_24px_70px_-20px_rgba(0,0,0,0.65),0_0_50px_-18px_rgba(40,40,255,0.5)] backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                                <div
+                                  aria-hidden
+                                  className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
+                                />
+                                <div
+                                  aria-hidden
+                                  className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-accent/30 blur-[64px]"
+                                />
+                                <div className="px-2.5 pb-3 pt-2">
+                                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                                    Academy
+                                  </p>
+                                  {link.children.map((child) => (
+                                    <MenuLink
+                                      key={child.href}
+                                      href={child.href}
+                                      icon={ACADEMY_CHILD_ICONS[child.href]}
+                                      title={child.label}
+                                      description={child.description}
+                                      onNavigate={() => setIsAcademyOpen(false)}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  }
+
                   return (
                     <li key={link.href} className="flex">
-                      <Link
-                        href={link.href}
-                        className={cn(
-                          "relative rounded-full px-4 py-2 text-[13.5px] font-medium leading-none transition-all duration-300 whitespace-nowrap",
-                          "hover:bg-white/[0.06] hover:text-ink-50",
-                          active ? "text-ink-50" : "text-ink-400"
-                        )}
-                      >
+                      <Link href={link.href} className={navLinkClass}>
                         {link.label}
-                        {active && (
-                          <span className="absolute -bottom-px left-1/2 h-[2px] w-5 -translate-x-1/2 rounded-full bg-gradient-to-r from-accent-400/80 to-accent-400" />
-                        )}
                       </Link>
                     </li>
                   );
@@ -97,33 +182,81 @@ export function Navbar() {
             {loading ? null : user ? (
               <>
                 {isAdmin ? (
-                  <div className="relative">
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setIsAdminOpen(true)}
+                    onMouseLeave={() => setIsAdminOpen(false)}
+                  >
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-10"
                       onClick={() => setIsAdminOpen((v) => !v)}
-                      onMouseEnter={() => setIsAdminOpen(true)}
-                      onMouseLeave={() => setIsAdminOpen(false)}
                     >
                       <Shield size={14} />
                       Admin
                       <ChevronDown size={12} className="ml-0.5" />
                     </Button>
                     {isAdminOpen ? (
-                      <div
-                        className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl border border-border-strong bg-[rgba(10,11,16,0.96)] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
-                        onMouseEnter={() => setIsAdminOpen(true)}
-                        onMouseLeave={() => setIsAdminOpen(false)}
-                      >
-                        <Link
-                          href="/branches/manage"
-                          className="flex items-center gap-2 px-4 py-3 text-sm text-ink-300 transition-colors hover:bg-white/[0.06] hover:text-ink-50"
-                          onClick={() => setIsAdminOpen(false)}
-                        >
-                          <Building2 size={14} />
-                          Manage Branches
-                        </Link>
+                      <div className="absolute right-0 top-full mt-3 w-72">
+                        <div
+                          aria-hidden
+                          className="absolute -top-3 left-0 right-0 h-3"
+                        />
+                        <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-[0_24px_70px_-20px_rgba(0,0,0,0.65),0_0_50px_-18px_rgba(40,40,255,0.5)] backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                        <div
+                          aria-hidden
+                          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
+                        />
+                        <div
+                          aria-hidden
+                          className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-accent/30 blur-[64px]"
+                        />
+
+                        <div className="relative flex items-center gap-3.5 px-5 pb-4 pt-5">
+                          <div className="relative shrink-0">
+                            <div
+                              aria-hidden
+                              className="absolute -inset-2 rounded-full bg-accent/35 blur-xl"
+                            />
+                            <div className="relative flex h-14 w-14 items-center justify-center rounded-xl border border-accent-400/25 bg-gradient-to-br from-accent/[0.18] to-accent/[0.04] text-accent-300 shadow-[0_0_24px_-6px_rgba(109,109,255,0.6)]">
+                              <Shield size={22} />
+                            </div>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate text-[15px] font-semibold leading-tight text-ink-50">
+                              Administrator
+                            </p>
+                            <p className="mt-0.5 truncate text-xs text-accent-300/80">
+                              Full platform access
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="relative">
+                          <div
+                            aria-hidden
+                            className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+                          />
+                          <div
+                            aria-hidden
+                            className="mx-5 h-px bg-gradient-to-r from-accent-300/0 via-accent-300/25 to-accent-300/0"
+                          />
+                        </div>
+
+                        <div className="px-2.5 pb-3 pt-2">
+                          <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                            Management
+                          </p>
+                          <MenuLink
+                            href="/branches/manage"
+                            icon={<Building2 size={16} />}
+                            title="Manage Branches"
+                            description="Create and organize communities"
+                            onNavigate={() => setIsAdminOpen(false)}
+                          />
+                        </div>
+                        </div>
                       </div>
                     ) : null}
                   </div>
@@ -143,49 +276,151 @@ export function Navbar() {
                     )}
                   </button>
                   {isAvatarOpen ? (
-                    <div className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl border border-border-strong bg-[rgba(10,11,16,0.96)] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-                      <Link
-                        href="/profile"
-                        onClick={() => setIsAvatarOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-ink-300 transition-colors hover:bg-white/[0.06] hover:text-ink-50"
-                      >
-                        <User size={15} />
-                        Profile
-                      </Link>
-                      <Link
-                        href="/teams"
-                        onClick={() => setIsAvatarOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-ink-300 transition-colors hover:bg-white/[0.06] hover:text-ink-50"
-                      >
-                        <Users size={15} />
-                        My Teams
-                      </Link>
-                      <Link
-                        href="/projects"
-                        onClick={() => setIsAvatarOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-ink-300 transition-colors hover:bg-white/[0.06] hover:text-ink-50"
-                      >
-                        <Rocket size={15} />
-                        My Projects
-                      </Link>
-                      <Link
-                        href="/profile#account"
-                        onClick={() => setIsAvatarOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-ink-300 transition-colors hover:bg-white/[0.06] hover:text-ink-50"
-                      >
-                        <Settings size={15} />
-                        Settings
-                      </Link>
-                      <div className="border-t border-border-strong" />
-                      <form action={signOut}>
-                        <button
-                          type="submit"
-                          className="flex w-full items-center gap-3 px-4 py-3 text-sm text-red-400 transition-colors hover:bg-white/[0.06]"
-                        >
-                          <LogOut size={15} />
-                          Sign Out
-                        </button>
-                      </form>
+                    <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-[0_24px_70px_-20px_rgba(0,0,0,0.65),0_0_50px_-20px_rgba(40,40,255,0.35)] backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
+                      />
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-accent/20 blur-[64px]"
+                      />
+
+                      <div className="relative flex items-center gap-3.5 px-5 pb-4 pt-5">
+                        <div className="relative shrink-0">
+                          <div
+                            aria-hidden
+                            className="absolute -inset-2 rounded-full bg-accent/25 blur-xl"
+                          />
+                          <div className="relative h-14 w-14 overflow-hidden rounded-full border border-white/[0.14] shadow-[0_0_24px_-8px_rgba(109,109,255,0.5)]">
+                            {profile?.avatar_url ? (
+                              <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-accent-500 to-accent-400 text-lg font-semibold text-white">
+                                {avatarLetter}
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            aria-hidden
+                            className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-[#0a0b10] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-[15px] font-semibold leading-tight text-ink-50">
+                            {profile?.full_name || profile?.username || "User"}
+                          </p>
+                          <p className="mt-0.5 truncate text-xs text-ink-500">
+                            {profile?.username
+                              ? `@${profile.username}`
+                              : user?.email ?? ""}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="relative">
+                        <div
+                          aria-hidden
+                          className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+                        />
+                        <div
+                          aria-hidden
+                          className="mx-5 h-px bg-gradient-to-r from-accent-400/0 via-accent-400/20 to-accent-400/0"
+                        />
+                      </div>
+
+                      <div className="px-2.5 pb-2.5 pt-2">
+                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                          Workspace
+                        </p>
+                        <MenuLink
+                          href="/profile/my-branches"
+                          icon={<Building2 size={16} />}
+                          title="My Branches"
+                          description="Your communities"
+                          onNavigate={() => setIsAvatarOpen(false)}
+                        />
+                        <MenuLink
+                          href="/profile/my-teams"
+                          icon={<Users size={16} />}
+                          title="My Teams"
+                          description="View and manage your teams"
+                          onNavigate={() => setIsAvatarOpen(false)}
+                        />
+                        <MenuLink
+                          href="/profile/my-projects"
+                          icon={<Rocket size={16} />}
+                          title="My Projects"
+                          description="Continue building"
+                          onNavigate={() => setIsAvatarOpen(false)}
+                        />
+                      </div>
+
+                      <div className="relative">
+                        <div
+                          aria-hidden
+                          className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+                        />
+                        <div
+                          aria-hidden
+                          className="mx-5 h-px bg-gradient-to-r from-accent-400/0 via-accent-400/20 to-accent-400/0"
+                        />
+                      </div>
+
+                      <div className="px-2.5 pb-2.5 pt-2">
+                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                          Account
+                        </p>
+                        <MenuLink
+                          href="/profile"
+                          icon={<User size={16} />}
+                          title="Profile"
+                          description="Manage your account"
+                          onNavigate={() => setIsAvatarOpen(false)}
+                        />
+                        <MenuLink
+                          href="/profile#account"
+                          icon={<Settings size={16} />}
+                          title="Settings"
+                          description="Preferences and security"
+                          onNavigate={() => setIsAvatarOpen(false)}
+                        />
+                      </div>
+
+                      <div className="relative">
+                        <div
+                          aria-hidden
+                          className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+                        />
+                        <div
+                          aria-hidden
+                          className="mx-5 h-px bg-gradient-to-r from-red-400/0 via-red-400/20 to-red-400/0"
+                        />
+                      </div>
+
+                      <div className="px-2.5 pb-3 pt-2">
+                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                          Danger Zone
+                        </p>
+                        <form action={signOut}>
+                          <button
+                            type="submit"
+                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-red-500/[0.08] hover:shadow-[0_0_24px_-10px_rgba(248,113,113,0.35)]"
+                          >
+                            <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-red-400/30 group-hover:bg-red-500/[0.1] group-hover:text-red-400">
+                              <LogOut size={16} />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-[13.5px] font-medium text-ink-200 transition-colors duration-200 group-hover:text-red-300">
+                                Sign Out
+                              </span>
+                              <span className="block truncate text-xs text-ink-600 transition-colors duration-200 group-hover:text-red-400/70">
+                                End this session
+                              </span>
+                            </span>
+                          </button>
+                        </form>
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -225,20 +460,41 @@ export function Navbar() {
             {NAV_LINKS.map((link) => {
               const active = isActive(link.href);
               return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={cn(
-                    "relative rounded-xl px-4 py-3 text-[15px] font-medium transition-colors hover:bg-white/[0.05]",
-                    active ? "text-ink-50" : "text-ink-400 hover:text-ink-200"
-                  )}
-                >
-                  {link.label}
-                  {active && (
-                    <span className="absolute bottom-2 left-5 h-[2px] w-5 rounded-full bg-gradient-to-r from-accent-400/80 to-accent-400" />
-                  )}
-                </Link>
+                <div key={link.href}>
+                  <Link
+                    href={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={cn(
+                      "relative rounded-xl px-4 py-3 text-[15px] font-medium transition-colors hover:bg-white/[0.05]",
+                      active ? "text-ink-50" : "text-ink-400 hover:text-ink-200"
+                    )}
+                  >
+                    {link.label}
+                    {active && (
+                      <span className="absolute bottom-2 left-5 h-[2px] w-5 rounded-full bg-gradient-to-r from-accent-400/80 to-accent-400" />
+                    )}
+                  </Link>
+                  {link.children && link.children.length > 0 ? (
+                    <div className="ml-4 border-l border-white/[0.06] pl-2">
+                      {link.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={() => setIsMenuOpen(false)}
+                          className={cn(
+                            "relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/[0.05]",
+                            isActive(child.href)
+                              ? "text-accent-300"
+                              : "text-ink-500 hover:text-ink-200"
+                          )}
+                        >
+                          {ACADEMY_CHILD_ICONS[child.href]}
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               );
             })}
             <div className="mt-4 flex flex-col gap-3 border-t border-border pt-5">
@@ -278,13 +534,19 @@ export function Navbar() {
                     </Link>
                   </Button>
                   <Button variant="ghost" asChild>
-                    <Link href="/teams" onClick={() => setIsMenuOpen(false)}>
+                    <Link href="/profile/my-branches" onClick={() => setIsMenuOpen(false)}>
+                      <Building2 size={14} />
+                      My Branches
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" asChild>
+                    <Link href="/profile/my-teams" onClick={() => setIsMenuOpen(false)}>
                       <Users size={14} />
                       My Teams
                     </Link>
                   </Button>
                   <Button variant="ghost" asChild>
-                    <Link href="/projects" onClick={() => setIsMenuOpen(false)}>
+                    <Link href="/profile/my-projects" onClick={() => setIsMenuOpen(false)}>
                       <Rocket size={14} />
                       My Projects
                     </Link>

@@ -1,5 +1,3 @@
-import { Navbar } from "@/components/layout/navbar";
-
 function Skeleton({ className }: { className: string }) {
   return (
     <div
@@ -33,7 +31,7 @@ function CardSkeleton({ className }: { className?: string }) {
 
 function StatsSkeleton() {
   return (
-    <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
@@ -49,7 +47,7 @@ function StatsSkeleton() {
 
 function DetailsSkeleton() {
   return (
-    <div className="mt-6 overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-7 shadow-card backdrop-blur-xl sm:px-8 sm:py-8">
+    <div className="overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-7 shadow-card backdrop-blur-xl sm:px-8 sm:py-8">
       <Skeleton className="h-4 w-28" />
       <div className="mt-5 grid gap-6 sm:grid-cols-2">
         <div>
@@ -71,7 +69,7 @@ function DetailsSkeleton() {
 
 function TimelineSkeleton() {
   return (
-    <div className="mt-6 overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-8 shadow-card backdrop-blur-xl sm:px-10 sm:py-9">
+    <div className="overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-8 shadow-card backdrop-blur-xl sm:px-10 sm:py-9">
       <Skeleton className="mb-8 h-5 w-40" />
       <div className="space-y-5">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -92,15 +90,10 @@ function TimelineSkeleton() {
 export default function ProfileLoading() {
   return (
     <>
-      <Navbar />
-      <main className="relative min-h-screen overflow-hidden bg-[#050507] pt-24">
-        <div className="mx-auto max-w-[960px] px-5 py-12 sm:px-8 sm:py-16 lg:py-20">
-          <CardSkeleton />
-          <StatsSkeleton />
-          <DetailsSkeleton />
-          <TimelineSkeleton />
-        </div>
-      </main>
+      <CardSkeleton />
+      <StatsSkeleton />
+      <DetailsSkeleton />
+      <TimelineSkeleton />
     </>
   );
 }

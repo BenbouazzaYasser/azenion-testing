@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const MAX_BRANCH_ASSET_SIZE = 2 * 1024 * 1024;
-export const ALLOWED_BRANCH_ASSET_TYPES = ["image/png", "image/jpeg", "image/webp"];
+export const ALLOWED_BRANCH_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+export const ALLOWED_BRANCH_MEDIA_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export const createBranchSchema = z.object({
   name: z

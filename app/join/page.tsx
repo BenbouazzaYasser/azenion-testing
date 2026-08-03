@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { JoinCard } from "@/components/sections/join/join-card";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 export const metadata: Metadata = {
   title: "Join Azenion | The Limitless Network",
@@ -14,7 +15,8 @@ export default function JoinPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden bg-[#050507]">
+      <main className="relative overflow-hidden">
+        <PageAtmosphere />
         <JoinCard />
       </main>
       <Footer />

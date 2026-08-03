@@ -76,6 +76,10 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(14px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "dropdown-in": {
+          "0%": { opacity: "0", transform: "translateY(8px) scale(0.97)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
         "drift-slow": {
           "0%": { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(360deg)" },
@@ -175,6 +179,7 @@ const config: Config = {
       },
       animation: {
         "fade-in-up": "fade-in-up 0.7s cubic-bezier(0.16,1,0.3,1) forwards",
+        "dropdown-in": "dropdown-in 0.28s cubic-bezier(0.16,1,0.3,1)",
         "drift-slow": "drift-slow 240s linear infinite",
         "pulse-glow": "pulse-glow 7s ease-in-out infinite",
         twinkle: "twinkle 5s ease-in-out infinite",

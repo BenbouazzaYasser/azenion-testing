@@ -61,11 +61,7 @@ export function SearchFilters() {
   const [tech, setTech] = useState("All");
 
   return (
-    <section className="relative py-12 sm:py-16 lg:py-20" aria-label="Search and filter projects">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/8 blur-[100px]" />
-
+    <section className="relative py-10 sm:py-12 lg:py-16" aria-label="Search and filter projects">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">

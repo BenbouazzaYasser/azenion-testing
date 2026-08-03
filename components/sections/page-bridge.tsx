@@ -1,6 +1,6 @@
 export function PageBridge() {
   return (
-    <div className="relative h-48 overflow-hidden sm:h-56 lg:h-64" aria-hidden>
+    <div className="relative h-40 overflow-hidden sm:h-48 lg:h-56" aria-hidden>
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.04] to-transparent" />
 
       <div className="absolute left-1/2 top-1/2 h-52 w-[800px] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(40,40,255,0.08),transparent_70%)]" />

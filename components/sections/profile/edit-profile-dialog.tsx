@@ -106,7 +106,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-                <div className="flex-1 space-y-8 overflow-y-auto px-10 py-8">
+                <div className="flex-1 space-y-6 overflow-y-auto px-10 py-8">
                   {error ? (
                     <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                       {error}

@@ -11,8 +11,11 @@ import { TeamOpenRoles } from "@/components/sections/teams/team-open-roles";
 import { TeamProjects } from "@/components/sections/teams/team-projects";
 import { TeamJoinCta } from "@/components/sections/teams/team-join-cta";
 import { TeamFeed } from "@/components/sections/teams/team-feed";
+import { TeamJoinRequests } from "@/components/sections/teams/team-join-requests";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getTeamPermissions, TEAM_PERMISSIONS, TeamPermission } from "@/lib/team-permissions.server";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 interface TeamPageProps {
   params: Promise<{ slug: string }>;
@@ -74,6 +77,14 @@ export default async function TeamPage({ params }: TeamPageProps) {
       .eq("user_id", user.id)
       .maybeSingle();
     if (!membership) notFound();
+  }
+
+  let requestStatus: "PENDING" | "ACCEPTED" | "DECLINED" | null = null;
+  if (user) {
+    const { data: status } = await supabase.rpc("get_my_team_request_status", {
+      p_team_id: team.id,
+    });
+    requestStatus = (status as "PENDING" | "ACCEPTED" | "DECLINED" | null) ?? null;
   }
 
   const { data: members } = await adminClient
@@ -242,15 +253,44 @@ export default async function TeamPage({ params }: TeamPageProps) {
     team: { name: team.name, slug: team.slug },
   }));
 
-  let userRole: string | null = null;
   let currentMember: { role: string } | null = null;
 
   if (user && members) {
     currentMember = members.find(
       (m) => m.user && typeof m.user === "object" && "id" in m.user && (m.user as { id: string }).id === user.id
     ) ?? null;
-    userRole = currentMember?.role ?? null;
   }
+
+  const isMember = !!currentMember;
+  const isOwner = user?.id === team.owner_id;
+
+  let permissions: Record<TeamPermission, boolean> | null = null;
+  if (user) {
+    permissions = await getTeamPermissions(team.id, TEAM_PERMISSIONS);
+  }
+
+  const canReview = permissions?.[TeamPermission.REVIEW_JOIN_REQUESTS] ?? false;
+  const canInvite = permissions?.[TeamPermission.INVITE_MEMBERS] ?? false;
+  const canRemoveMembers = permissions?.[TeamPermission.REMOVE_MEMBERS] ?? false;
+  const canPost = permissions?.[TeamPermission.CREATE_FEED_POSTS] ?? false;
+  const canCreateProjects = permissions?.[TeamPermission.CREATE_PROJECTS] ?? false;
+
+  const { data: rawJoinRequests } = canReview
+    ? await supabase.rpc("get_team_join_requests", { p_team_id: team.id })
+    : { data: null };
+
+  const joinRequests = ((rawJoinRequests ?? []) as Record<string, unknown>[]).map((r) => ({
+    id: r.id as string,
+    team_id: r.team_id as string,
+    user_id: r.user_id as string,
+    username: r.username as string,
+    full_name: r.full_name as string,
+    avatar_url: r.avatar_url as string | null,
+    institution: r.institution as string | null,
+    message: r.message as string | null,
+    status: r.status as string,
+    created_at: r.created_at as string,
+  }));
 
   const ownerProfile = team.owner as unknown as {
     id: string;
@@ -319,20 +359,14 @@ export default async function TeamPage({ params }: TeamPageProps) {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden bg-[#050507]">
+      <main className="relative overflow-hidden">
+        <PageAtmosphere />
         <TeamHero
           team={teamWithOwner}
-          isMember={!!currentMember}
+          isMember={isMember}
           currentUserId={user?.id ?? null}
-          userRole={userRole}
+          requestStatus={requestStatus}
           categories={categoriesData}
-          members={membersWithProfiles.map((m) => ({
-            id: m.profile.id,
-            full_name: m.profile.full_name,
-            username: m.profile.username,
-            avatar_url: m.profile.avatar_url,
-            role: m.role,
-          }))}
         />
         <TeamStats
           memberCount={membersWithProfiles.length}
@@ -341,22 +375,25 @@ export default async function TeamPage({ params }: TeamPageProps) {
           createdAt={team.created_at}
           categories={teamCategories}
         />
+        <TeamJoinRequests requests={joinRequests} />
         <TeamMembers
           members={membersWithProfiles}
           teamId={team.id}
+          teamName={team.name}
           teamSlug={team.slug}
           currentUserId={user?.id ?? null}
-          userRole={userRole}
+          canInvite={canInvite}
+          canRemoveMembers={canRemoveMembers}
         />
         <TeamOpenRoles
           roles={openRolesData}
           teamId={team.id}
           teamSlug={team.slug}
-          canManage={userRole === "owner" || userRole === "admin"}
+          canManage={isOwner}
         />
         <TeamProjects
           projects={projectsData}
-          canManage={userRole === "owner" || userRole === "admin"}
+          canCreateProjects={canCreateProjects}
           teamId={team.id}
           teamSlug={team.slug}
         />
@@ -365,9 +402,17 @@ export default async function TeamPage({ params }: TeamPageProps) {
           teamSlug={team.slug}
           updates={teamUpdates}
           currentUserId={user?.id ?? null}
-          isMember={!!currentMember}
+          isMember={isMember}
+          canPost={canPost}
         />
-        <TeamJoinCta teamId={team.id} teamSlug={team.slug} isMember={!!currentMember} isOwner={user?.id === team.owner_id} />
+        <TeamJoinCta
+          teamId={team.id}
+          teamName={team.name}
+          teamSlug={team.slug}
+          isMember={isMember}
+          isOwner={isOwner}
+          requestStatus={requestStatus}
+        />
         <PageBridge />
       </main>
       <Footer />

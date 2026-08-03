@@ -8,7 +8,7 @@ import {
   createTeamUpdateSchema,
   updateTeamUpdateSchema,
   MAX_ASSET_SIZE,
-  ALLOWED_ASSET_TYPES,
+  ALLOWED_POST_IMAGE_TYPES,
 } from "@/lib/validations/project.schema";
 
 export async function createTeam(formData: FormData) {
@@ -220,30 +220,6 @@ export async function deleteTeam(formData: FormData) {
   return { success: true, redirectTo: "/teams" };
 }
 
-export async function joinTeam(teamId: string) {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Not authenticated" };
-  }
-
-  const { error } = await supabase.rpc("join_team", {
-    p_team_id: teamId,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  revalidatePath("/teams");
-  revalidatePath("/profile");
-  return { success: true };
-}
-
 export async function leaveTeam(teamId: string, slug: string) {
   const supabase = createClient();
 
@@ -317,10 +293,11 @@ export async function uploadTeamLogo(formData: FormData) {
     data: { publicUrl },
   } = supabase.storage.from("team-logos").getPublicUrl(filePath);
 
-  const { error: updateError } = await supabase
-    .from("teams")
-    .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
-    .eq("id", teamId);
+  const { error: updateError } = await supabase.rpc("update_team_appearance", {
+    p_team_id: teamId,
+    p_logo_url: publicUrl,
+    p_banner_url: null,
+  });
 
   if (updateError) {
     return { error: updateError.message };
@@ -379,10 +356,11 @@ export async function uploadTeamBanner(formData: FormData) {
     data: { publicUrl },
   } = supabase.storage.from("team-logos").getPublicUrl(filePath);
 
-  const { error: updateError } = await supabase
-    .from("teams")
-    .update({ banner_url: publicUrl, updated_at: new Date().toISOString() })
-    .eq("id", teamId);
+  const { error: updateError } = await supabase.rpc("update_team_appearance", {
+    p_team_id: teamId,
+    p_logo_url: null,
+    p_banner_url: publicUrl,
+  });
 
   if (updateError) {
     return { error: updateError.message };
@@ -639,7 +617,7 @@ export async function uploadTeamUpdateImage(formData: FormData) {
     return { error: "File too large. Maximum size is 2MB" };
   }
 
-  if (!ALLOWED_ASSET_TYPES.includes(file.type)) {
+  if (!ALLOWED_POST_IMAGE_TYPES.includes(file.type)) {
     return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
   }
 

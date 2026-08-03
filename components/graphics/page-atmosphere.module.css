@@ -1,0 +1,105 @@
+/* Scoped to the shared PageAtmosphere.
+   Renders behind content: blue luminance, drifting energy currents,
+   and cursor-reactive azure nodes. transform/opacity only. */
+
+.layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ------- drifting energy currents ------- */
+
+.current {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform;
+  filter: blur(56px);
+}
+
+.currentA {
+  animation: current-a 64s ease-in-out infinite;
+}
+
+.currentB {
+  animation: current-b 84s ease-in-out infinite;
+}
+
+.currentC {
+  animation: current-c 72s ease-in-out infinite;
+}
+
+@keyframes current-a {
+  0% {
+    transform: translate3d(-7%, 2%, 0) rotate(-3deg);
+  }
+  100% {
+    transform: translate3d(9%, -5%, 0) rotate(3deg);
+  }
+}
+
+@keyframes current-b {
+  0% {
+    transform: translate3d(6%, -3%, 0) rotate(2deg);
+  }
+  100% {
+    transform: translate3d(-8%, 6%, 0) rotate(-2deg);
+  }
+}
+
+@keyframes current-c {
+  0% {
+    transform: translate3d(-4%, -2%, 0) rotate(-2deg);
+  }
+  100% {
+    transform: translate3d(5%, 4%, 0) rotate(2deg);
+  }
+}
+
+/* ------- azure nodes ------- */
+
+.node {
+  position: absolute;
+  will-change: transform;
+}
+
+.core {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+}
+
+.halo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center;
+  border-radius: 9999px;
+  will-change: transform, opacity;
+}
+
+.pulse {
+  animation: node-pulse var(--node-pulse-duration, 6s) ease-in-out
+    var(--node-pulse-delay, 0s) infinite;
+}
+
+@keyframes node-pulse {
+  0%,
+  100% {
+    opacity: var(--node-opacity, 1);
+  }
+  50% {
+    opacity: calc(var(--node-opacity, 1) * 0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current,
+  .currentA,
+  .currentB,
+  .currentC,
+  .pulse {
+    animation: none;
+  }
+}

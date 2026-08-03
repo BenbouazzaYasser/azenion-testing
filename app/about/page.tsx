@@ -9,6 +9,7 @@ import { WhoBelongs } from "@/components/sections/about/who-belongs";
 import { Ecosystem } from "@/components/sections/about/ecosystem";
 import { Vision } from "@/components/sections/about/vision";
 import { ClosingCta } from "@/components/sections/about/closing-cta";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 export const metadata: Metadata = {
   title: "About — Azenion",
@@ -31,7 +32,8 @@ export default function AboutPage() {
         Skip to content
       </a>
       <Navbar />
-      <main id="main">
+      <main id="main" className="relative overflow-hidden">
+        <PageAtmosphere />
         <AboutHero />
         <OurStory />
         <OurMission />

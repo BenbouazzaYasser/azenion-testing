@@ -43,7 +43,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
                 <defs>
                   <linearGradient id={"infinity-grad-".concat(branch.slug)} x1="106.74" y1="349.27" x2="405.26" y2="162.73" gradientUnits="userSpaceOnUse">
                     <stop offset="0.5" stopColor="#0033ff" stopOpacity="1" />
-                    <stop offset="1" stopColor={branch.slug === "fsr" ? "#00007d" : "#00ff00"} stopOpacity="1" />
+                    <stop offset="1" stopColor="#00ff00" stopOpacity="1" />
                   </linearGradient>
                 </defs>
                 <path d="M96 256C96 170 192 170 256 256C320 342 416 342 416 256C416 170 320 170 256 256C192 342 96 342 96 256Z" fill="none" stroke={"url(#infinity-grad-".concat(branch.slug, ")")} strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
@@ -51,10 +51,12 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
             </div>
             <div>
               <Badge>Active branch</Badge>
-              <div className="mt-2 flex items-center gap-1.5 text-xs text-white/45">
-                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                {branch.city}, {branch.country}
-              </div>
+              {[branch.city, branch.country].some(Boolean) ? (
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-white/45">
+                  <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                  {[branch.city, branch.country].filter(Boolean).join(", ")}
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -64,7 +66,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
             {branch.description}
           </p>
 
-          <div className="mt-8 flex items-center gap-6 border-t border-white/10 pt-6">
+          <div className="mt-6 flex items-center gap-6 border-t border-white/10 pt-6">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-[rgb(40,40,255)]" aria-hidden="true" />
               <span className="text-sm text-white/70">{branch.memberCount} Member{branch.memberCount !== 1 ? 's' : ''}</span>
@@ -77,7 +79,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
             ) : null}
           </div>
 
-          <div className="mt-8">
+          <div className="mt-6">
             {branchId ? (
               <div className="flex flex-wrap items-start gap-4">
                 <BranchJoinButton

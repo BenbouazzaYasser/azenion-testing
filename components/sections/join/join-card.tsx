@@ -4,8 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
 
-import { AmbientBg } from "@/components/graphics/ambient-bg";
-import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -57,9 +55,7 @@ export function JoinCard() {
   if (success) {
     return (
       <section className="relative flex min-h-[90vh] items-center justify-center pt-[88px] sm:pt-[104px] lg:pt-[120px]">
-        <AmbientBg preset="card" />
         <BackgroundInfinity variant="join" />
-        <BackgroundAtmosphere />
 
         <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
           <Reveal>
@@ -71,7 +67,7 @@ export function JoinCard() {
                 <p className="mt-4 text-[0.95rem] leading-relaxed text-ink-400">
                   We sent a confirmation link to <span className="text-ink-200">{email}</span>. Click it to activate your account.
                 </p>
-                <Button variant="primary" size="lg" className="mt-8" asChild>
+                <Button variant="primary" size="lg" className="mt-6" asChild>
                   <Link href="/login">Go to Sign In</Link>
                 </Button>
               </div>
@@ -84,9 +80,7 @@ export function JoinCard() {
 
   return (
     <section className="relative flex min-h-[90vh] items-center justify-center pt-[88px] sm:pt-[104px] lg:pt-[120px]">
-      <AmbientBg preset="card" />
       <BackgroundInfinity variant="join" />
-      <BackgroundAtmosphere />
 
       <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
         <Reveal>
@@ -108,7 +102,7 @@ export function JoinCard() {
               </p>
             </div>
 
-            <form className="relative mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
+            <form className="relative mt-6 flex flex-col gap-5" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="join-name" className="mb-1.5 block text-sm font-medium text-ink-200">
                   Full Name
@@ -226,14 +220,14 @@ export function JoinCard() {
               </Button>
             </form>
 
-            <div className="relative mt-8">
+            <div className="relative mt-6">
               <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent" />
               <span className="relative mx-auto flex w-10 justify-center bg-[#050507] text-xs uppercase tracking-[0.12em] text-ink-600">
                 or
               </span>
             </div>
 
-            <div className="relative mt-8 flex flex-col gap-3">
+            <div className="relative mt-6 flex flex-col gap-3">
               <button
                 type="button"
                 onClick={() => {}}
@@ -258,7 +252,7 @@ export function JoinCard() {
               </button>
             </div>
 
-            <div className="relative mt-8 border-t border-border-strong pt-8 text-center">
+            <div className="relative mt-6 border-t border-border-strong pt-8 text-center">
               <p className="text-sm text-ink-400">
                 Already a member?{" "}
                 <Link

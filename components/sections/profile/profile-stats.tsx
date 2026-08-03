@@ -34,17 +34,19 @@ export function ProfileStats({
       label: "Branch",
       value: branch?.name ?? "—",
       icon: Users,
-      href: branch ? "/branches" : undefined,
+      href: branch ? "/profile/my-branches" : undefined,
     },
     {
       label: "Teams",
       value: formatCount(teamsCount),
       icon: UsersRound,
+      href: "/profile/my-teams",
     },
     {
       label: "Projects",
       value: formatCount(projectsCount),
       icon: FolderKanban,
+      href: "/profile/my-projects",
     },
     {
       label: "Activities",

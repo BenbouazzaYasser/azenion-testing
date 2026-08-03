@@ -6,23 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export function CreateTeam() {
   return (
-    <section className="relative py-24 sm:py-28 lg:py-32" aria-labelledby="create-team-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.12),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-1/2 top-[30%] h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[140px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[22%] top-[18%] h-[3px] w-[3px] rounded-full bg-accent-400/30" />
-        <div className="absolute left-[78%] top-[22%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[25%] top-[72%] h-[2px] w-[2px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[72%] top-[78%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[50%] top-[12%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[88%] top-[40%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[10%] top-[55%] h-[2px] w-[2px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[65%] top-[88%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-      </div>
-
+    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="create-team-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="group relative overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-10 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))] sm:p-14 lg:p-16">
@@ -50,7 +34,7 @@ export function CreateTeam() {
                   you.
                 </p>
 
-                <div className="mt-10">
+                <div className="mt-8">
                   <Button size="lg" asChild>
                     <Link href="/teams/create">
                       Create Team

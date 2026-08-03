@@ -14,6 +14,7 @@ export type InfinityVariant =
   | "projects"
   | "showcase"
   | "announcements"
+  | "academy"
   | "contact"
   | "login"
   | "join"
@@ -39,6 +40,7 @@ const variantConfig: Record<InfinityVariant, {
   projects:   { particleAnim: "animate-drift-slow",         glowAnim: "animate-infinity-projects-glow" },
   showcase:   { particleAnim: "animate-drift-slow",         glowAnim: "animate-infinity-showcase-glow" },
   announcements: { particleAnim: "animate-infinity-announcements", glowAnim: "animate-infinity-announcements-glow" },
+  academy: { particleAnim: "animate-drift-slow", glowAnim: "animate-pulse-glow" },
   contact:    { particleAnim: "animate-drift-slow",         glowAnim: "animate-infinity-contact-glow" },
   login:      { particleAnim: "animate-drift-slow",         glowAnim: "animate-infinity-login-glow" },
   join:       { particleAnim: "animate-infinity-join",      glowAnim: "animate-infinity-login-glow" },

@@ -42,24 +42,7 @@ export function Ecosystem() {
   const secondRow = ECOSYSTEM_ITEMS.slice(3, 6);
 
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="ecosystem-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.10),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[40%] top-[25%] h-72 w-72 -translate-x-1/2 rounded-full bg-accent/8 blur-[140px]" />
-      <div className="pointer-events-none absolute right-[10%] bottom-[20%] h-48 w-48 rounded-full bg-accent-400/8 blur-[100px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[15%] top-[20%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[80%] top-[10%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[30%] top-[75%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[70%] top-[80%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[50%] top-[5%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[88%] top-[45%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[8%] top-[55%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[55%] top-[90%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-      </div>
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="ecosystem-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <h2
@@ -73,7 +56,7 @@ export function Ecosystem() {
           </p>
         </Reveal>
 
-        <div className="mt-14 flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-stretch lg:gap-3">
+        <div className="mt-12 flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-stretch lg:gap-3">
           {firstRow.map((item, i) => (
             <Reveal key={item.title} delay={i * 80} className="flex lg:flex-1">
               <EcosystemCard icon={item.icon} title={item.title} description={item.description} index={i} />
@@ -96,7 +79,7 @@ export function Ecosystem() {
         </div>
 
         <Reveal delay={550}>
-          <div className="mx-auto mt-12 max-w-lg text-center">
+          <div className="mx-auto mt-10 max-w-lg text-center">
             <p className="text-sm leading-relaxed text-ink-500">
               Every part of the ecosystem is designed to move you forward —
               from finding your people to building something that matters.

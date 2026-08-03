@@ -1,17 +1,8 @@
-import { AmbientBg } from "@/components/graphics/ambient-bg";
-import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
-import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Reveal } from "@/components/ui/reveal";
 
 export function Vision() {
   return (
-    <section className="relative overflow-hidden py-28 sm:py-32 lg:py-44" aria-labelledby="vision-heading">
-      <AmbientBg preset="section" />
-      <BackgroundInfinity variant="about" />
-      <BackgroundAtmosphere />
-
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
-
+    <section className="relative py-24 sm:py-28 lg:py-36" aria-labelledby="vision-heading">
       <div className="relative mx-auto max-w-[920px] px-5 text-center sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -22,7 +13,7 @@ export function Vision() {
         <Reveal delay={80}>
           <h2
             id="vision-heading"
-            className="mt-8 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
+            className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
           >
             A global ecosystem where{" "}
             <span className="text-accent-400">ideas become reality.</span>
@@ -30,7 +21,7 @@ export function Vision() {
         </Reveal>
 
         <Reveal delay={160}>
-          <div className="mx-auto mt-8 max-w-3xl space-y-6 text-[1.02rem] leading-8 text-ink-400">
+          <div className="mx-auto mt-6 max-w-3xl space-y-6 text-[1.02rem] leading-8 text-ink-400">
             <p>
               We envision a world where no ambitious person ever has to build
               alone. Where ideas find their teams before they fade, projects
@@ -47,7 +38,7 @@ export function Vision() {
         </Reveal>
 
         <Reveal delay={240}>
-          <div className="mt-10 grid gap-4 sm:grid-cols-3 sm:gap-6">
+          <div className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-6">
             {[
               { stat: "Ideas", desc: "become projects" },
               { stat: "Projects", desc: "become startups" },
@@ -65,7 +56,7 @@ export function Vision() {
         </Reveal>
 
         <Reveal delay={320}>
-          <p className="mx-auto mt-14 max-w-2xl text-balance text-[1.3rem] font-medium leading-relaxed text-ink-200 sm:text-[1.45rem]">
+          <p className="mx-auto mt-12 max-w-2xl text-balance text-[1.3rem] font-medium leading-relaxed text-ink-200 sm:text-[1.45rem]">
             That is the world we are building.
             <br />
             <span className="text-accent-400">One connection at a time.</span>

@@ -7,6 +7,7 @@ import { ShowcaseHero } from "@/components/sections/showcase/hero";
 import { ComingSoon } from "@/components/sections/showcase/coming-soon";
 import { FuturePreview } from "@/components/sections/showcase/future-preview";
 import { ClosingCta } from "@/components/sections/showcase/closing-cta";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 export const metadata: Metadata = {
   title: "Showcase | Azenion — The Limitless Network",
@@ -18,7 +19,8 @@ export default function ShowcasePage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden bg-[#050507]">
+      <main className="relative overflow-hidden">
+        <PageAtmosphere />
         <ShowcaseHero />
         <ComingSoon />
         <FuturePreview />

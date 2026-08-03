@@ -2,8 +2,7 @@ import { FEATURES } from "@/data/features";
 
 export function Features() {
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="features-heading">
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="features-heading">
       <h2 id="features-heading" className="sr-only">
         What Azenion gives you
       </h2>

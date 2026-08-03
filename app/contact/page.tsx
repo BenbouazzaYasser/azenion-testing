@@ -6,6 +6,7 @@ import { ContactHero } from "@/components/sections/contact/hero";
 import { ContactSection } from "@/components/sections/contact/contact-section";
 import { Faq } from "@/components/sections/contact/faq";
 import { ContactCta } from "@/components/sections/contact/closing-cta";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 export const metadata: Metadata = {
   title: "Contact | Azenion",
@@ -28,7 +29,8 @@ export default function ContactPage() {
         Skip to content
       </a>
       <Navbar />
-      <main id="main" className="relative overflow-hidden bg-[#050507]">
+      <main id="main" className="relative overflow-hidden">
+        <PageAtmosphere />
         <ContactHero />
         <ContactSection />
         <Faq />

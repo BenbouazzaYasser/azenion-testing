@@ -3,7 +3,7 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function ShowcaseHero() {
   return (
-    <PageHero variant="showcase" slug="showcase">
+    <PageHero variant="showcase" slug="showcase" atmosphere={false}>
       <Reveal delay={0}>
         <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
           Showcase
@@ -26,7 +26,7 @@ export function ShowcaseHero() {
       </Reveal>
 
       <Reveal delay={240}>
-        <div className="mt-9 hidden items-center justify-center gap-3 sm:flex">
+        <div className="mt-8 hidden items-center justify-center gap-3 sm:flex">
           <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
             <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
           </span>

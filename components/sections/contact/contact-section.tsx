@@ -21,10 +21,7 @@ export function ContactSection() {
   const [message, setMessage] = useState("");
 
   return (
-    <section aria-label="Contact us" className="relative py-24 sm:py-28 lg:py-32">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.10),transparent_70%)]" />
-
+    <section aria-label="Contact us" className="relative py-20 sm:py-24 lg:py-28">
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12">
         <div className="grid gap-14 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
           <div className="flex flex-col gap-6">
@@ -89,7 +86,7 @@ export function ContactSection() {
                   </p>
 
                   <form
-                    className="mt-8 flex flex-col gap-5"
+                    className="mt-6 flex flex-col gap-5"
                     onSubmit={(e) => e.preventDefault()}
                   >
                     <div>

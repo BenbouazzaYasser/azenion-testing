@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { Calendar, MapPin, ShieldCheck, Users } from "lucide-react";
-import { AmbientBg } from "@/components/graphics/ambient-bg";
-import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Reveal } from "@/components/ui/reveal";
 import { BranchJoinButton } from "./branch-join-button";
@@ -58,11 +56,9 @@ export function BranchPageHero({
           <div className="absolute inset-0 bg-[#050507]/80 backdrop-blur-sm" />
         </div>
       ) : null}
-      <AmbientBg />
       <BackgroundInfinity variant="teams" />
-      <BackgroundAtmosphere />
 
-      <div className="relative mx-auto max-w-[920px] px-5 pb-32 pt-20 text-center sm:px-8 sm:pt-24 lg:pb-44 lg:pt-32">
+      <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
         <Reveal delay={0}>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -85,7 +81,7 @@ export function BranchPageHero({
         </Reveal>
 
         <Reveal delay={80}>
-          <h1 className="mt-8 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
+          <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
             {branch.name}
           </h1>
         </Reveal>
@@ -105,7 +101,7 @@ export function BranchPageHero({
         ) : null}
 
         <Reveal delay={200}>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
             <span className="inline-flex items-center gap-1.5">
               <Users size={14} className="text-accent-400" />
               {branch.memberCount} {branch.memberCount === 1 ? "member" : "members"}
@@ -124,7 +120,7 @@ export function BranchPageHero({
 
         {leaderProfiles.length > 0 ? (
           <Reveal delay={220}>
-            <div className="mt-8 flex items-center justify-center gap-3">
+            <div className="mt-6 flex items-center justify-center gap-3">
               <div className="flex -space-x-2">
                 {leaderProfiles.slice(0, 5).map((m) =>
                   m.avatar_url ? (
@@ -153,7 +149,7 @@ export function BranchPageHero({
         ) : null}
 
         <Reveal delay={240}>
-          <div className="mt-10 flex flex-wrap items-start justify-center gap-4">
+          <div className="mt-8 flex flex-wrap items-start justify-center gap-4">
             <BranchJoinButton
               branchId={branch.id}
               isMember={isMember}
@@ -176,7 +172,7 @@ export function BranchPageHero({
         </Reveal>
 
         <Reveal delay={320}>
-          <div className="mt-20 hidden items-center justify-center gap-3 sm:flex">
+          <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
             <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>

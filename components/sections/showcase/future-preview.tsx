@@ -50,23 +50,7 @@ const PREVIEWS: PreviewItem[] = [
 
 export function FuturePreview() {
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="future-preview-heading">
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[30%] top-[20%] h-64 w-64 -translate-x-1/2 rounded-full bg-accent/10 blur-[130px]" />
-      <div className="pointer-events-none absolute right-[10%] bottom-[20%] h-56 w-56 rounded-full bg-accent-400/8 blur-[120px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[12%] top-[18%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[82%] top-[12%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[18%] top-[78%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[78%] top-[80%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[48%] top-[5%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[92%] top-[45%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[5%] top-[50%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[62%] top-[92%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-      </div>
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="future-preview-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -86,7 +70,7 @@ export function FuturePreview() {
           </p>
         </Reveal>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {PREVIEWS.map((item, i) => {
             const Icon = item.icon;
             return (

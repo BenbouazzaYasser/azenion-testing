@@ -11,7 +11,7 @@ export function ComingSoonTeaser() {
     <section
       id="coming-soon"
       aria-labelledby="coming-soon-heading"
-      className="relative px-6 pb-24 sm:pb-32"
+      className="relative px-6 pb-20 sm:pb-28"
     >
       <div className="mx-auto max-w-5xl">
         <Reveal>
@@ -35,7 +35,7 @@ export function ComingSoonTeaser() {
                 isn&apos;t here yet, help us bring the Limitless Network to your school.
               </p>
 
-              <div className="mt-10 grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="mt-8 grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
                 {ghostSlots.map((slot) => (
                   <div
                     key={slot}
@@ -51,7 +51,7 @@ export function ComingSoonTeaser() {
 
               <a
                 href={`${CONTACT.emailHref}?subject=Starting%20a%20new%20Azenion%20branch`}
-                className="mt-10 text-sm font-medium text-[rgb(40,40,255)] underline-offset-4 transition-colors duration-500 ease-premium hover:text-white hover:underline"
+                className="mt-8 text-sm font-medium text-[rgb(40,40,255)] underline-offset-4 transition-colors duration-500 ease-premium hover:text-white hover:underline"
               >
                 Nominate your campus →
               </a>

@@ -73,7 +73,6 @@ interface PostRow {
   images: string[] | null;
   source_type: FeedSourceType;
   source_id: string | null;
-  is_pinned: boolean;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -99,11 +98,14 @@ async function fetchBranches(
 /**
  * Resolves entity (project/team/branch) + branch context + author profiles +
  * interaction data for a page of posts. Every lookup is batched — no N+1.
+ * `pinnedPostIds` carries the pin state for THIS feed scope, so `is_pinned`
+ * reflects whether the post is pinned in the feed being rendered.
  */
 async function enrichPosts(
   supabase: ReturnType<typeof createAdminClient>,
   posts: PostRow[],
   userId: string | null,
+  pinnedPostIds: Set<string>,
 ): Promise<FeedItem[]> {
   if (posts.length === 0) return [];
 
@@ -351,7 +353,7 @@ async function enrichPosts(
       body: post.body,
       images: Array.isArray(post.images) ? post.images.filter(Boolean) : [],
       link_url: post.source_type === "branch_highlight" ? highlightLinks.get(post.source_id ?? "") ?? null : null,
-      is_pinned: post.is_pinned,
+      is_pinned: pinnedPostIds.has(post.id),
       created_at: post.created_at,
       updated_at: post.updated_at,
       like_count: likeCounts[key] ?? 0,
@@ -376,19 +378,17 @@ export async function getFeedItems(
   if (filter && filter !== "all") query = query.eq("source_type", filter);
   const { count: total } = await query;
 
-  const from = (page - 1) * pageSize;
-  let itemsQuery = supabase
-    .from("posts")
-    .select("id, author_id, title, body, images, source_type, source_id, is_pinned, created_at, updated_at")
-    .order("is_pinned", { ascending: false })
-    .order("created_at", { ascending: false })
-    .range(from, from + pageSize - 1);
+  const [{ data: pinRows }, { data: posts }] = await Promise.all([
+    supabase.from("feed_pins").select("post_id").eq("scope", "global"),
+    supabase.rpc("get_global_feed_posts", {
+      p_filter: filter ?? null,
+      p_page: page,
+      p_page_size: pageSize,
+    }),
+  ]);
 
-  if (filter && filter !== "all") itemsQuery = itemsQuery.eq("source_type", filter);
-
-  const { data: posts } = await itemsQuery;
-
-  const items = await enrichPosts(supabase, (posts ?? []) as PostRow[], userId ?? null);
+  const pinnedIds = new Set((pinRows ?? []).map((r) => r.post_id));
+  const items = await enrichPosts(supabase, (posts ?? []) as PostRow[], userId ?? null, pinnedIds);
   return { items, total: total ?? 0 };
 }
 
@@ -400,20 +400,20 @@ export async function getFeedItemById(
 
   const { data: post } = await supabase
     .from("posts")
-    .select("id, author_id, title, body, images, source_type, source_id, is_pinned, created_at, updated_at")
+    .select("id, author_id, title, body, images, source_type, source_id, created_at, updated_at")
     .eq("id", postId)
     .maybeSingle();
 
   if (!post) return null;
 
-  const items = await enrichPosts(supabase, [post as PostRow], userId ?? null);
+  const items = await enrichPosts(supabase, [post as PostRow], userId ?? null, new Set<string>());
   return items[0] ?? null;
 }
 
 /**
  * Branch-scoped feed: announcements + highlights + events from the branch plus
  * team updates / project updates from teams & projects that belong to it.
- * Pinned announcements stay on top, then everything else newest first.
+ * Posts pinned in THIS branch stay on top, then everything else newest first.
  */
 export async function getBranchFeedItems(
   branchId: string,
@@ -468,21 +468,66 @@ export async function getBranchFeedItems(
     total = count ?? 0;
   }
 
-  const from = (page - 1) * pageSize;
-  let posts: PostRow[] = [];
-  if (allIds.length > 0) {
-    const { data } = await supabase
-      .from("posts")
-      .select("id, author_id, title, body, images, source_type, source_id, is_pinned, created_at, updated_at")
-      .in("source_id", allIds)
-      .order("is_pinned", { ascending: false })
-      .order("created_at", { ascending: false })
-      .range(from, from + pageSize - 1);
-    posts = (data ?? []) as PostRow[];
+  const [{ data: pinRows }, { data: posts }] = await Promise.all([
+    supabase.from("feed_pins").select("post_id").eq("scope", "branch").eq("branch_id", branchId),
+    allIds.length > 0
+      ? supabase.rpc("get_branch_feed_posts", {
+          p_branch_id: branchId,
+          p_source_ids: allIds,
+          p_page: page,
+          p_page_size: pageSize,
+        })
+      : Promise.resolve({ data: [] as PostRow[] }),
+  ]);
+
+  const pinnedIds = new Set((pinRows ?? []).map((r) => r.post_id));
+  const items = await enrichPosts(supabase, (posts ?? []) as PostRow[], userId ?? null, pinnedIds);
+  return { items, total };
+}
+
+/**
+ * Pins/unpins a post in a specific feed scope (global/branch/team/project).
+ * Permission enforcement happens server-side in the `toggle_feed_pin` RPC:
+ *   global  -> platform admin
+ *   branch  -> branch leader of that branch + platform admin
+ *   team    -> team owner + platform admin
+ *   project -> project owner + platform admin
+ * A single post can be pinned independently in multiple feeds.
+ */
+export async function toggleFeedPin(formData: FormData) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
   }
 
-  const items = await enrichPosts(supabase, posts, userId ?? null);
-  return { items, total };
+  const postId = formData.get("post_id") as string;
+  if (!postId) return { error: "Post ID is required" };
+
+  const scope = formData.get("scope") as string;
+  if (!scope) return { error: "Pin scope is required" };
+
+  const branchId = (formData.get("branch_id") as string) || null;
+  const teamId = (formData.get("team_id") as string) || null;
+  const projectId = (formData.get("project_id") as string) || null;
+
+  const { error } = await supabase.rpc("toggle_feed_pin", {
+    p_post_id: postId,
+    p_scope: scope,
+    p_branch_id: branchId,
+    p_team_id: teamId,
+    p_project_id: projectId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
 }
 
 // ── Standalone composer (main feed) ──────────────────────────────────────

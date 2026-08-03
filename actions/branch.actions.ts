@@ -13,7 +13,8 @@ import {
   createBranchHighlightSchema,
   updateBranchHighlightSchema,
   MAX_BRANCH_ASSET_SIZE,
-  ALLOWED_BRANCH_ASSET_TYPES,
+  ALLOWED_BRANCH_LOGO_TYPES,
+  ALLOWED_BRANCH_MEDIA_TYPES,
 } from "@/lib/validations/branch.schema";
 import { parseEventSchedule } from "@/lib/event-schedule";
 
@@ -30,10 +31,17 @@ function firstZodError(parsed: { error: { flatten: () => { fieldErrors: Record<s
   return (firstError as string) ?? "Invalid input";
 }
 
+function validateLogoUpload(file: File) {
+  if (!file || file.size === 0) return "No file provided";
+  if (file.size > MAX_BRANCH_ASSET_SIZE) return "File too large. Maximum size is 2MB";
+  if (!ALLOWED_BRANCH_LOGO_TYPES.includes(file.type)) return "Invalid file type. Use PNG, JPEG, WebP, or SVG";
+  return null;
+}
+
 function validateUpload(file: File) {
   if (!file || file.size === 0) return "No file provided";
   if (file.size > MAX_BRANCH_ASSET_SIZE) return "File too large. Maximum size is 2MB";
-  if (!ALLOWED_BRANCH_ASSET_TYPES.includes(file.type)) return "Invalid file type. Use PNG, JPEG, or WebP";
+  if (!ALLOWED_BRANCH_MEDIA_TYPES.includes(file.type)) return "Invalid file type. Use PNG, JPEG, or WebP";
   return null;
 }
 
@@ -200,6 +208,16 @@ export async function uploadBranchLogo(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log("AUTH USER:", user?.id);
+
+  const adminCheck = await supabase.rpc("is_platform_admin");
+
+  console.log("RPC RESULT:", adminCheck);
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
   if (!user) {
     return { error: "Not authenticated" };
   }
@@ -221,7 +239,7 @@ export async function uploadBranchLogo(formData: FormData) {
     return { error: "No file provided" };
   }
 
-  const uploadError = validateUpload(file);
+  const uploadError = validateLogoUpload(file);
   if (uploadError) {
     return { error: uploadError };
   }
@@ -243,18 +261,114 @@ export async function uploadBranchLogo(formData: FormData) {
 
   const { error: updateError } = await supabase
     .from("branches")
-    .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
+    .update({ logo_url: publicUrl })
     .eq("id", branchId);
 
   if (updateError) {
-    return { error: updateError.message };
+    console.error("UPDATE ERROR OBJECT");
+    console.error(updateError);
+    console.error(JSON.stringify(updateError, null, 2));
+
+    return {
+      error: updateError.message,
+      code: updateError.code,
+      details: updateError.details,
+      hint: updateError.hint,
+    };
   }
 
   revalidateBranchPaths(slug);
   return { success: true, logo_url: publicUrl };
 }
 
-export async function deleteBranch(formData: FormData) {  const supabase = createClient();
+export async function uploadBranchLogoAsset(formData: FormData) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
+  if (!isPlatformAdmin) {
+    return { error: "Only platform admins can manage branch logos" };
+  }
+
+  const file = formData.get("logo") as File;
+
+  if (!file || file.size === 0) {
+    return { error: "No file provided" };
+  }
+
+  const uploadError = validateLogoUpload(file);
+  if (uploadError) {
+    return { error: uploadError };
+  }
+
+  const ext = file.name.split(".").pop() ?? "png";
+  const filePath = `00000000-0000-0000-0000-000000000000/logos/${crypto.randomUUID()}.${ext}`;
+
+  const { error: storageError } = await supabase.storage
+    .from("branch-assets")
+    .upload(filePath, file, { contentType: file.type, upsert: false });
+
+  if (storageError) {
+    return { error: storageError.message };
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("branch-assets").getPublicUrl(filePath);
+
+  return { success: true, logo_url: publicUrl };
+}
+
+type BranchAssetsBucket = ReturnType<ReturnType<typeof createClient>["storage"]["from"]>;
+
+/**
+ * Recursively collects every file path under `prefix` in the given storage
+ * bucket using the Storage API (list). Folders are returned with a null
+ * metadata entry, so they are traversed; files are returned with their full
+ * path relative to the bucket root.
+ */
+async function listBucketFilePaths(
+  bucket: BranchAssetsBucket,
+  prefix: string,
+): Promise<string[]> {
+  const paths: string[] = [];
+  let offset = 0;
+  const limit = 1000;
+
+  while (true) {
+    const { data, error } = await bucket.list(prefix, {
+      limit,
+      offset,
+      sortBy: { column: "name", order: "asc" },
+    });
+    if (error) throw error;
+
+    const items = data ?? [];
+    for (const item of items) {
+      const fullPath = prefix ? `${prefix}/${item.name}` : item.name;
+      if (item.metadata === null) {
+        paths.push(...(await listBucketFilePaths(bucket, fullPath)));
+      } else {
+        paths.push(fullPath);
+      }
+    }
+
+    if (items.length < limit) break;
+    offset += items.length;
+  }
+
+  return paths;
+}
+
+export async function deleteBranch(formData: FormData) {
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -268,6 +382,32 @@ export async function deleteBranch(formData: FormData) {  const supabase = creat
 
   if (!branchId) {
     return { error: "Branch ID is required" };
+  }
+
+  // The RPC also enforces this, but it must be checked here too because the
+  // storage cleanup below runs before the RPC is called.
+  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
+  if (!isPlatformAdmin) {
+    return { error: "Only the platform administrator can delete branches" };
+  }
+
+  // ── Storage cleanup (Storage API only — direct DML on storage.objects is
+  //    forbidden by Supabase) ────────────────────────────────────────────
+  try {
+    const bucket = supabase.storage.from("branch-assets");
+    const paths = await listBucketFilePaths(bucket, branchId);
+
+    if (paths.length > 0) {
+      for (let i = 0; i < paths.length; i += 1000) {
+        const chunk = paths.slice(i, i + 1000);
+        const { error: storageError } = await bucket.remove(chunk);
+        if (storageError) {
+          return { error: storageError.message };
+        }
+      }
+    }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Failed to clean up branch files" };
   }
 
   const { error } = await supabase.rpc("delete_branch", {
@@ -474,10 +614,13 @@ export async function updateBranchAnnouncement(formData: FormData) {
   if (isPinnedRaw === "true") isPinned = true;
   else if (isPinnedRaw === "false") isPinned = false;
 
+  const title = formData.get("title");
+  const body = formData.get("body");
+
   const raw = {
     id,
-    title: formData.get("title") as string | undefined,
-    body: formData.get("body") as string | undefined,
+    title: title ?? undefined,
+    body: body ?? undefined,
     is_pinned: isPinned ?? undefined,
   };
 

@@ -8,12 +8,7 @@ import { DashboardButton } from "@/components/shared/dashboard-button";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(40,40,255,0.24),transparent_34%),radial-gradient(circle_at_80%_20%,rgba(109,109,255,0.16),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.05),transparent_55%)]" />
-        <div className="absolute inset-x-0 top-0 h-[70vh] bg-gradient-to-b from-accent/10 via-transparent to-transparent" />
-      </div>
-
+    <section className="relative pt-[88px] sm:pt-[104px] lg:pt-[120px]">
       {/* On mobile the artwork sits behind the copy as ambient atmosphere
           rather than a competing second column — the brief for "intentionally
           designed" mobile, not a resized desktop layout. */}
@@ -23,9 +18,9 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-void-950/40 to-void-950" />
       </div>
 
-      <div className="relative mx-auto grid max-w-[1320px] grid-cols-1 items-center gap-16 px-5 pb-28 pt-8 sm:px-8 sm:pt-12 lg:grid-cols-[1fr_1fr] lg:gap-8 lg:px-12 lg:pb-40 lg:pt-16">
+      <div className="relative mx-auto grid w-full max-w-[1320px] grid-cols-1 items-center gap-16 px-5 pb-24 pt-6 sm:px-8 sm:pt-10 lg:-translate-x-[60px] lg:pb-32 lg:pl-2 lg:pr-12 lg:pt-10">
         {/* Left — copy */}
-        <div className="relative z-10 max-w-xl">
+        <div className="relative z-10 max-w-xl lg:-translate-x-5">
           <Reveal delay={0}>
             <Badge className="inline-flex">
               <Globe2 size={13} className="text-accent-400" />
@@ -51,7 +46,7 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={240}>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
             <DashboardButton size="lg" label="Join the Network" />
               <Button variant="secondary" size="lg" asChild>
                 <Link href="/projects">Explore Projects</Link>
@@ -60,16 +55,22 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={320}>
-            <div className="mt-6 rounded-2xl border border-border/80 bg-white/[0.03] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur-sm">
-              <p className="text-sm font-medium text-ink-50">Quick overview</p>
-              <p className="mt-2 text-sm leading-6 text-ink-400">
-                Azenion connects learners, builders, and innovators in one global
-                community to create opportunities and grow together.
-              </p>
+            <div className="relative mt-6">
+              <div
+                aria-hidden
+                className="absolute -inset-x-4 -inset-y-6 rounded-[2rem] bg-accent-400/[0.14] blur-[60px]"
+              />
+              <div className="relative rounded-2xl border border-border/50 bg-gradient-to-b from-white/[0.05] to-white/[0.015] p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35),0_0_0_1px_rgba(255,255,255,0.03)] backdrop-blur-xl">
+                <p className="text-sm font-medium text-ink-50">Quick overview</p>
+                <p className="mt-2 text-sm leading-6 text-ink-400">
+                  Azenion connects learners, builders, and innovators in one global
+                  community to create opportunities and grow together.
+                </p>
+              </div>
             </div>
           </Reveal>
 
-          <div className="mt-14 hidden items-center gap-3 sm:flex">
+          <div className="mt-12 hidden items-center gap-3 sm:flex">
             <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
@@ -79,12 +80,18 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Right — signature artwork (desktop / tablet) */}
-        <div className="relative -mx-8 hidden aspect-[800/520] w-[calc(100%+4rem)] sm:block lg:mx-0 lg:w-full lg:pr-4">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(109,109,255,0.15),transparent_42%),radial-gradient(circle_at_30%_70%,rgba(255,255,255,0.08),transparent_35%)]" />
-          <div className="absolute inset-x-10 top-10 h-32 rounded-full bg-accent/10 blur-[120px]" />
-          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-void-950 via-void-950/20 to-transparent" />
-          <InfinityHeroArt className="absolute inset-0 h-full w-full scale-[1.12] opacity-95" />
+        {/* Right — signature artwork (desktop / tablet).
+            Lifted out of flow so it reads as one composition: the Infinity
+            bleeds in from behind the copy instead of occupying a separate
+            right column. The text (z-10) layers above the symbol. */}
+        {/* Enormous, off-screen-deduct envelope: the artwork feels like a
+            gigantic environmental object with no perceptible start or end.
+            The inner "art" is anchored to the same resting spot the symbol
+            already had; only the wrapper's occupancy is expanded. */}
+        <div className="pointer-events-none absolute -inset-[20%] hidden sm:block">
+          <div className="absolute right-[-16%] top-[7%] aspect-[800/520] w-[50rem] -translate-x-[44.5%] translate-y-[25%]">
+            <InfinityHeroArt className="absolute inset-0 h-full w-full scale-[1.05] opacity-95" />
+          </div>
         </div>
       </div>
     </section>

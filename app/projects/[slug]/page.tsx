@@ -12,6 +12,7 @@ import { ProjectPageActivity } from "@/components/sections/projects/project-page
 import { ProjectPageUpdates } from "@/components/sections/projects/project-page-updates";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 interface ProjectPageProps {
   params: Promise<{ slug: string }>;
@@ -241,7 +242,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden bg-[#050507]">
+      <main className="relative overflow-hidden">
+        <PageAtmosphere />
         <ProjectPageHero
           project={projectData}
           isMember={!!currentMember}

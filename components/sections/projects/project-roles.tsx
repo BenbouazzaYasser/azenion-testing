@@ -7,12 +7,7 @@ interface ProjectRolesProps {
 
 export function ProjectRoles({ project }: ProjectRolesProps) {
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="project-roles-heading">
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[15%] top-[20%] h-60 w-60 -translate-x-1/2 rounded-full bg-accent/10 blur-[125px]" />
-      <div className="pointer-events-none absolute right-[20%] bottom-[20%] h-44 w-44 rounded-full bg-accent-400/8 blur-[100px]" />
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="project-roles-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -29,7 +24,7 @@ export function ProjectRoles({ project }: ProjectRolesProps) {
           </h2>
         </Reveal>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {project.roles.map((role, i) => (
             <Reveal key={role.id} delay={i * 60}>
               <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]">

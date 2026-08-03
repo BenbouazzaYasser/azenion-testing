@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { CreateProjectHero } from "@/components/sections/projects/create-project-hero";
 import { CreateProjectForm } from "@/components/sections/projects/create-project-form";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -45,7 +46,8 @@ export default async function CreateProjectPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden bg-[#050507]">
+      <main className="relative overflow-hidden">
+        <PageAtmosphere />
         <CreateProjectHero />
         <CreateProjectForm teams={teams} categories={allCategories ?? []} />
       </main>

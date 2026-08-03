@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2, Users, MapPin, Building2, X, AlertTriangle, ShieldCheck, UserPlus, UserX, Check } from "lucide-react";
+import { useRef, useState, useTransition } from "react";
+import { Plus, Pencil, Trash2, Users, MapPin, Building2, X, AlertTriangle, ShieldCheck, UserPlus, UserX, Check, ImagePlus, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
-import { AmbientBg } from "@/components/graphics/ambient-bg";
-import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
-import { createBranch, updateBranch, deleteBranch, assignBranchLeader, removeBranchLeader } from "@/actions/branch.actions";
+import { createBranch, updateBranch, deleteBranch, assignBranchLeader, removeBranchLeader, uploadBranchLogoAsset } from "@/actions/branch.actions";
 
 interface BranchLeader {
   id: string;
@@ -62,6 +60,10 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
   const [formCity, setFormCity] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formLogoUrl, setFormLogoUrl] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const [assignFor, setAssignFor] = useState<string | null>(null);
   const [assignQuery, setAssignQuery] = useState("");
@@ -74,6 +76,10 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
     setFormCity("");
     setFormDescription("");
     setFormLogoUrl("");
+    setLogoFile(null);
+    setLogoPreview(null);
+    setLogoUploading(false);
+    if (logoInputRef.current) logoInputRef.current.value = "";
     setEditingId(null);
     setShowForm(false);
   }
@@ -85,9 +91,49 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
     setFormCity(branch.city ?? "");
     setFormDescription(branch.description ?? "");
     setFormLogoUrl(branch.logo_url ?? "");
+    setLogoFile(null);
+    setLogoPreview(null);
+    setLogoUploading(false);
+    if (logoInputRef.current) logoInputRef.current.value = "";
     setEditingId(branch.id);
     setShowForm(true);
     setError(null);
+  }
+
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setLogoPreview(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    setLogoUploading(true);
+    setError(null);
+    const uploadFd = new FormData();
+    uploadFd.set("logo", file);
+
+    const result = await uploadBranchLogoAsset(uploadFd);
+    setLogoUploading(false);
+    if (result && "error" in result && result.error) {
+      setError(result.error);
+      setLogoPreview(null);
+      setLogoFile(null);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+      return;
+    }
+    if (result && "success" in result && result.logo_url) {
+      setFormLogoUrl(result.logo_url);
+    }
+  }
+
+  function handleRemoveLogo() {
+    setFormLogoUrl("");
+    setLogoFile(null);
+    setLogoPreview(null);
+    if (logoInputRef.current) logoInputRef.current.value = "";
   }
 
   function handleNameChange(value: string) {
@@ -192,11 +238,9 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
 
   return (
     <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
-      <AmbientBg />
       <BackgroundInfinity variant="teams" />
-      <BackgroundAtmosphere />
 
-      <div className="relative mx-auto max-w-[960px] px-5 pb-32 pt-20 sm:px-8 sm:pt-24 lg:pb-44 lg:pt-32">
+      <div className="relative mx-auto max-w-[960px] px-5 pb-28 pt-16 sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
         <Reveal>
           <div className="flex items-center justify-between">
             <div>
@@ -232,7 +276,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
 
         {showForm ? (
           <Reveal delay={80}>
-            <div className="mt-10 overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-8 shadow-card backdrop-blur-xl">
+            <div className="mt-8 overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-8 shadow-card backdrop-blur-xl">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-ink-50">
                   {editingId ? "Edit Branch" : "Create Branch"}
@@ -323,15 +367,65 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
 
                 <div>
                   <label htmlFor="branch-logo" className={labelClass}>
-                    Logo URL
+                    Branch Logo
                   </label>
-                  <input
-                    id="branch-logo"
-                    value={formLogoUrl}
-                    onChange={(e) => setFormLogoUrl(e.target.value)}
-                    placeholder="https://..."
-                    className={inputClass}
-                  />
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-accent-400/30 bg-accent/[0.08]">
+                      {logoPreview || formLogoUrl ? (
+                        <img
+                          src={logoPreview ?? formLogoUrl}
+                          alt="Branch logo preview"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Building2 className="h-7 w-7 text-accent-400" />
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          ref={logoInputRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                          onChange={handleLogoChange}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => logoInputRef.current?.click()}
+                          disabled={logoUploading}
+                        >
+                          {logoUploading ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <ImagePlus size={14} />
+                          )}
+                          {logoUploading
+                            ? "Uploading..."
+                            : formLogoUrl
+                              ? "Replace logo"
+                              : "Upload logo"}
+                        </Button>
+                        {formLogoUrl || logoPreview ? (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={handleRemoveLogo}
+                            className="border-red-500/30 text-red-400 hover:border-red-400/60 hover:bg-red-500/[0.08] hover:text-red-300"
+                          >
+                            <Trash2 size={14} />
+                            Remove
+                          </Button>
+                        ) : null}
+                      </div>
+                      <p className="text-xs text-ink-500">
+                        PNG, JPEG, WebP, or SVG. Max 2MB. Stored in Azenion storage.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3 border-t border-border pt-5">
@@ -347,7 +441,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
           </Reveal>
         ) : null}
 
-        <div className="mt-12 grid gap-5">
+        <div className="mt-10 grid gap-5">
           {branches.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <Building2 className="h-8 w-8 text-ink-600" />

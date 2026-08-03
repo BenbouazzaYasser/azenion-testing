@@ -39,12 +39,9 @@ create policy "users can leave their own branch"
 create index idx_branch_members_branch_id on public.branch_members(branch_id);
 create unique index idx_branch_members_user_id on public.branch_members(user_id);
 
--- Seed EMSI and FSR branches
-insert into public.branches (slug, name, full_name, description, city)
-values
-  ('emsi', 'EMSI', 'École Marocaine des Sciences de l''Ingénieur', 'The EMSI branch brings together engineering students who want to move past theory and start shipping — from firmware to full-stack products.', 'Rabat'),
-  ('fsr', 'FSR', 'Faculté des Sciences de Rabat', 'The FSR branch is home to students turning scientific curiosity into working software, research tooling, and early-stage projects.', 'Rabat')
-on conflict (slug) do nothing;
+-- No branches are seeded by default. Branches are created through the
+-- branch management flow; add rows here only when real production branches
+-- are ready to launch.
 
 -- RPC: join_branch
 create or replace function public.join_branch(p_branch_id uuid)

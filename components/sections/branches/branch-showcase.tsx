@@ -1,3 +1,9 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { Landmark, Search } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/ui/reveal";
 import type { Branch } from "@/data/branches";
 
@@ -9,29 +15,29 @@ interface BranchShowcaseProps {
 }
 
 export function BranchShowcase({ branches, membershipBySlug }: BranchShowcaseProps) {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return branches;
+    return branches.filter((branch) =>
+      [branch.name, branch.shortName, branch.city, branch.country, branch.tagline]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(q),
+    );
+  }, [branches, query]);
+
   return (
     <section
       id="branches"
       aria-labelledby="branches-showcase-heading"
-      className="relative px-6 py-24 sm:py-32"
+      className="relative scroll-mt-24 px-6 py-20 sm:py-24 lg:py-28"
     >
-      <div className="pointer-events-none absolute left-[15%] top-[20%] h-80 w-80 -translate-x-1/2 rounded-full bg-accent/8 blur-[150px]" />
-      <div className="pointer-events-none absolute right-[10%] bottom-[20%] h-60 w-60 rounded-full bg-accent-400/8 blur-[120px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[20%] top-[15%] h-[3px] w-[3px] rounded-full bg-accent-400/30" />
-        <div className="absolute left-[75%] top-[25%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[15%] top-[70%] h-[2px] w-[2px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[80%] top-[75%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[45%] top-[8%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[90%] top-[40%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[5%] top-[45%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[60%] top-[90%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-      </div>
-
       <div className="mx-auto max-w-6xl">
         <Reveal>
-          <div className="mx-auto mb-16 max-w-2xl text-center">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2
               id="branches-showcase-heading"
               className="text-3xl font-semibold text-white sm:text-4xl"
@@ -45,19 +51,60 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
           </div>
         </Reveal>
 
-        <div className="flex flex-col gap-8 sm:gap-10">
-          {branches.map((branch, index) => (
-            <Reveal key={branch.slug} delay={index * 120}>
-              <BranchSpotlight
-                branch={branch}
-                index={index}
-                reversed={index % 2 === 1}
-                isMember={membershipBySlug[branch.slug] ?? false}
-                branchId={branch.dbId}
-              />
-            </Reveal>
-          ))}
-        </div>
+        <Reveal delay={80}>
+          <div className="relative mx-auto mb-12 max-w-md">
+            <Search
+              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40"
+              aria-hidden="true"
+            />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search branches..."
+              aria-label="Search branches"
+              className={cn(
+                "w-full rounded-full border border-white/10 bg-white/[0.03] px-11 py-3 text-sm text-white",
+                "placeholder:text-white/40 outline-none backdrop-blur-xl transition-colors",
+                "focus:border-[rgb(40,40,255)]/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(40,40,255,0.25)]",
+              )}
+            />
+          </div>
+        </Reveal>
+
+        {filtered.length === 0 ? (
+          <Reveal delay={160}>
+            <div className="flex flex-col items-center gap-4 py-20 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03]">
+                <Landmark className="h-7 w-7 text-white/50" aria-hidden="true" />
+              </div>
+              <div>
+                <p className="text-base font-medium text-white/90">
+                  {query.trim() ? "No branches match your search" : "No branches yet"}
+                </p>
+                <p className="mt-1.5 text-sm text-white/50">
+                  {query.trim()
+                    ? "Try a different name or location."
+                    : "Branches are being launched campus by campus. Check back soon."}
+                </p>
+              </div>
+            </div>
+          </Reveal>
+        ) : (
+          <div className="flex flex-col gap-6 sm:gap-8">
+            {filtered.map((branch, index) => (
+              <Reveal key={branch.slug} delay={index * 120}>
+                <BranchSpotlight
+                  branch={branch}
+                  index={index}
+                  reversed={index % 2 === 1}
+                  isMember={membershipBySlug[branch.slug] ?? false}
+                  branchId={branch.dbId}
+                />
+              </Reveal>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

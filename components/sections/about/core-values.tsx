@@ -3,23 +3,7 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function CoreValues() {
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="values-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.10),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-1/2 top-[15%] h-80 w-80 -translate-x-1/2 rounded-full bg-accent/8 blur-[140px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[15%] top-[18%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[80%] top-[15%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[20%] top-[72%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[75%] top-[75%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[45%] top-[8%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[90%] top-[45%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[5%] top-[40%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[60%] top-[90%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-      </div>
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="values-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <h2
@@ -33,7 +17,7 @@ export function CoreValues() {
           </p>
         </Reveal>
 
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {CORE_VALUES.map((value, i) => {
             const Icon = value.icon;
             return (

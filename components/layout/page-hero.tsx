@@ -6,21 +6,26 @@ import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 interface PageHeroProps {
   variant: BackgroundInfinityVariant;
   slug: string;
+  atmosphere?: boolean;
   children: React.ReactNode;
 }
 
-export function PageHero({ variant, slug, children }: PageHeroProps) {
+export function PageHero({ variant, slug, atmosphere = true, children }: PageHeroProps) {
   return (
-    <section className="relative overflow-hidden pt-[184px] sm:pt-[216px] lg:pt-[232px]">
-      <AmbientBg />
+    <section
+      className={`relative pt-[120px] sm:pt-[136px] lg:pt-[152px]${atmosphere ? " overflow-hidden" : ""}`}
+    >
+      {atmosphere ? <AmbientBg /> : null}
       <BackgroundInfinity variant={variant} />
-      <BackgroundAtmosphere />
+      {atmosphere ? <BackgroundAtmosphere /> : null}
 
-      <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-20 text-center sm:px-8 sm:pt-24 lg:pb-40 lg:pt-32">
+      <div className="relative mx-auto max-w-[920px] px-5 pb-16 pt-12 text-center sm:px-8 sm:pt-14 lg:pb-24 lg:pt-16">
         {children}
       </div>
 
-      <div className="absolute bottom-0 left-1/2 hidden h-px w-[600px] -translate-x-1/2 bg-gradient-to-r from-transparent via-accent/30 to-transparent lg:block" />
+      {atmosphere ? (
+        <div className="absolute bottom-0 left-1/2 hidden h-px w-[600px] -translate-x-1/2 bg-gradient-to-r from-transparent via-accent/30 to-transparent lg:block" />
+      ) : null}
     </section>
   );
 }

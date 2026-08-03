@@ -106,7 +106,7 @@ export function ProfileAccount({
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-6">
         <div className="relative mb-4">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-red-500/20" />

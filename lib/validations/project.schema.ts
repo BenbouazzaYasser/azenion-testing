@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 export const MAX_ASSET_SIZE = 2 * 1024 * 1024;
-export const ALLOWED_ASSET_TYPES = ["image/png", "image/jpeg", "image/webp"];
+export const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+export const ALLOWED_POST_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+export const ALLOWED_ASSET_TYPES = ALLOWED_POST_IMAGE_TYPES;
 
 export const createProjectSchema = z.object({
   team_id: z.string().uuid(),

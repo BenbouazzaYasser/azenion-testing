@@ -59,13 +59,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
   }, [initialProjects, search, sort, techFilter, categoryFilter]);
 
   return (
-    <section className="relative py-24 sm:py-28 lg:py-32" aria-labelledby="all-projects-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.12),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[25%] top-[15%] h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[140px]" />
-      <div className="pointer-events-none absolute right-[20%] top-[50%] h-48 w-48 rounded-full bg-accent-400/10 blur-[110px]" />
-
+    <section id="projects" className="relative scroll-mt-24 py-20 sm:py-24 lg:py-28" aria-labelledby="all-projects-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -83,7 +77,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
         </Reveal>
 
         <Reveal delay={120}>
-          <div className="mt-8 space-y-4">
+          <div className="mt-6 space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative max-w-md flex-1">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
@@ -152,7 +146,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
 
         {filtered.length === 0 ? (
           <Reveal delay={160}>
-            <div className="mt-12 flex flex-col items-center gap-4 py-20 text-center">
+            <div className="mt-10 flex flex-col items-center gap-4 py-20 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-ink-700/50 bg-white/[0.03]">
                 <Users className="h-7 w-7 text-ink-500" />
               </div>
@@ -176,7 +170,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
             </div>
           </Reveal>
         ) : (
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((project, i) => (
               <ProjectCard key={project.id} project={project} index={i} />
             ))}

@@ -4,8 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
 
-import { AmbientBg } from "@/components/graphics/ambient-bg";
-import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -15,7 +13,7 @@ const INPUT_CLASS =
   "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
 
 export function LoginCard() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
@@ -28,7 +26,7 @@ export function LoginCard() {
     setLoading(true);
 
     const formData = new FormData();
-    formData.set("email", email);
+    formData.set("identifier", identifier);
     formData.set("password", password);
 
     const result = await signIn(formData);
@@ -41,9 +39,7 @@ export function LoginCard() {
 
   return (
     <section className="relative flex min-h-[90vh] items-center justify-center pt-[88px] sm:pt-[104px] lg:pt-[120px]">
-      <AmbientBg preset="card" />
       <BackgroundInfinity variant="login" />
-      <BackgroundAtmosphere />
 
       <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
         <Reveal>
@@ -65,19 +61,20 @@ export function LoginCard() {
               </p>
             </div>
 
-            <form className="relative mt-8 flex flex-col gap-5" onSubmit={handleSubmit}>
+            <form className="relative mt-6 flex flex-col gap-5" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Email
+                <label htmlFor="login-identifier" className="mb-1.5 block text-sm font-medium text-ink-200">
+                  Email or Username
                 </label>
                 <input
-                  id="login-email"
-                  name="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="login-identifier"
+                  name="identifier"
+                  type="text"
+                  placeholder="you@example.com or your username"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   className={INPUT_CLASS}
+                  autoComplete="username"
                   required
                 />
               </div>
@@ -139,14 +136,14 @@ export function LoginCard() {
               </Button>
             </form>
 
-            <div className="relative mt-8">
+            <div className="relative mt-6">
               <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent" />
               <span className="relative mx-auto flex w-10 justify-center bg-[#050507] text-xs uppercase tracking-[0.12em] text-ink-600">
                 or
               </span>
             </div>
 
-            <div className="relative mt-8 flex flex-col gap-3">
+            <div className="relative mt-6 flex flex-col gap-3">
               <button
                 type="button"
                 onClick={() => {}}
@@ -171,7 +168,7 @@ export function LoginCard() {
               </button>
             </div>
 
-            <div className="relative mt-8 border-t border-border-strong pt-8 text-center">
+            <div className="relative mt-6 border-t border-border-strong pt-8 text-center">
               <p className="text-sm text-ink-400">
                 New to Azenion?{" "}
                 <Link

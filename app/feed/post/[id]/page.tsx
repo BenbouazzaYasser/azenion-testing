@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/footer";
 import { FeedCard } from "@/components/feed/feed-card";
 import { CommentSection } from "@/components/interactions/comment-section";
 import { getFeedItemById } from "@/actions/feed.actions";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 interface FeedPostPageProps {
   params: { id: string };
@@ -33,10 +34,8 @@ export default async function FeedPostPage({ params }: FeedPostPageProps) {
         Skip to content
       </a>
       <Navbar />
-      <main id="main" className="relative min-h-screen pt-52 pb-28 sm:pt-60 sm:pb-32">
-        <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.10),transparent_70%)]" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-
+      <main id="main" className="relative min-h-screen overflow-hidden pt-52 pb-24 sm:pt-60 sm:pb-28">
+        <PageAtmosphere />
         <div className="relative mx-auto max-w-[720px] px-5 sm:px-8">
           <Suspense
             fallback={

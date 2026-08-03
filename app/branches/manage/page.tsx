@@ -7,6 +7,7 @@ import { PageBridge } from "@/components/sections/page-bridge";
 import { BranchManageClient } from "@/components/sections/branches/branch-manage-client";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 export const metadata: Metadata = {
   title: "Manage Branches | Azenion",
@@ -107,7 +108,8 @@ export default async function ManageBranchesPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden bg-[#050507]">
+      <main className="relative overflow-hidden">
+        <PageAtmosphere />
         <BranchManageClient branches={branchesWithMembers} profiles={profileOptions} />
         <PageBridge />
       </main>

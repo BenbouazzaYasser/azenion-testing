@@ -10,14 +10,7 @@ interface ProjectJoinCtaProps {
 
 export function ProjectJoinCta({ project }: ProjectJoinCtaProps) {
   return (
-    <section className="relative overflow-hidden py-28 sm:py-32 lg:py-40" aria-labelledby="project-join-heading">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(40,40,255,0.18),transparent_50%)]" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
-      </div>
-
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-80 w-80 -translate-x-1/2 rounded-full bg-accent/8 blur-[140px]" />
-
+    <section className="relative py-24 sm:py-28 lg:py-32" aria-labelledby="project-join-heading">
       <div className="relative mx-auto max-w-[720px] px-5 text-center sm:px-8">
         <Reveal>
           <h2
@@ -37,7 +30,7 @@ export function ProjectJoinCta({ project }: ProjectJoinCtaProps) {
         </Reveal>
 
         <Reveal delay={200}>
-          <div className="mt-10 flex justify-center">
+          <div className="mt-8 flex justify-center">
             <Button size="lg" asChild>
               <a href={project.joinCtaHref}>
                 {project.joinCtaLabel}

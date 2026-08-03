@@ -305,11 +305,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
   }
 
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="branch-events-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-
-      <div className="pointer-events-none absolute left-[15%] top-[30%] h-56 w-56 rounded-full bg-accent-400/8 blur-[110px]" />
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="branch-events-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="flex items-center justify-between">
@@ -356,7 +352,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
 
         {showForm ? (
           <Reveal delay={120}>
-            <div className="mt-10 overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card sm:p-8">
+            <div className="mt-8 overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card sm:p-8">
               <div className="mb-6 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-ink-50">
                   {editingId ? "Edit Event" : "New Event"}
@@ -490,7 +486,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
         ) : null}
 
         {events.length > 0 ? (
-          <div className="mt-12 space-y-6">
+          <div className="mt-10 space-y-6">
             {upcoming.length > 0 ? (
               <>
                 <Reveal delay={120}>
@@ -515,7 +511,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
           </div>
         ) : (
           <Reveal delay={120}>
-            <div className="mt-12 flex flex-col items-center gap-3 py-14 text-center">
+            <div className="mt-10 flex flex-col items-center gap-3 py-14 text-center">
               <Calendar className="h-7 w-7 text-ink-600" />
               <p className="text-sm text-ink-500">
                 {canManage

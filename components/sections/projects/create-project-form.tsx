@@ -91,7 +91,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
   }
 
   return (
-    <section className="relative overflow-hidden pb-28 pt-8 sm:pb-32 lg:pb-44">
+    <section className="relative overflow-hidden pb-24 pt-6 sm:pb-28 lg:pb-36">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
 
       <div className="mx-auto max-w-[640px] px-5 sm:px-8 lg:px-12">

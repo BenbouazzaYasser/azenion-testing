@@ -20,13 +20,7 @@ export function ProjectPageMembers({ members }: ProjectPageMembersProps) {
   if (members.length === 0) return null;
 
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="project-members-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_top,rgba(40,40,255,0.08),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[30%] top-[20%] h-56 w-56 -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]" />
-      <div className="pointer-events-none absolute right-[10%] bottom-[20%] h-48 w-48 rounded-full bg-accent-400/8 blur-[110px]" />
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="project-members-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -44,7 +38,7 @@ export function ProjectPageMembers({ members }: ProjectPageMembersProps) {
           </h2>
         </Reveal>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {members.map((member, i) => {
             const profile = member.profile;
             const displayName = profile.full_name || `@${profile.username}`;

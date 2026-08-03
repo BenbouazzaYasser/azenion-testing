@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { FeedList } from "@/components/feed/feed-list";
 import { getFeedItems } from "@/actions/feed.actions";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 export const metadata: Metadata = {
   title: "Feed — Azenion",
@@ -15,6 +16,8 @@ export default async function FeedPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const userId = user?.id ?? null;
+
+  const isPlatformAdmin = user ? (await supabase.rpc("is_platform_admin"))?.data === true : false;
 
   const { items, total } = await getFeedItems("all", 1, 20, userId);
 
@@ -27,10 +30,8 @@ export default async function FeedPage() {
         Skip to content
       </a>
       <Navbar />
-      <main id="main" className="relative min-h-screen pt-52 pb-28 sm:pt-60 sm:pb-32">
-        <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.10),transparent_70%)]" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-
+      <main id="main" className="relative min-h-screen overflow-hidden pt-52 pb-24 sm:pt-60 sm:pb-28">
+        <PageAtmosphere />
         <div className="relative mx-auto max-w-[720px] px-5 sm:px-8">
           <div className="mb-8">
             <h1 className="text-[2rem] font-semibold tracking-tight text-ink-50 sm:text-[2.5rem]">
@@ -48,7 +49,12 @@ export default async function FeedPage() {
               </div>
             }
           >
-            <FeedList initialItems={items} initialTotal={total} currentUserId={userId} />
+            <FeedList
+              initialItems={items}
+              initialTotal={total}
+              currentUserId={userId}
+              isPlatformAdmin={isPlatformAdmin}
+            />
           </Suspense>
         </div>
       </main>

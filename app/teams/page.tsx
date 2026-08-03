@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
+import { Users } from "lucide-react";
 
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { TeamsHero } from "@/components/sections/teams/hero";
 import { MyTeams } from "@/components/sections/teams/my-teams";
 import { AllTeams } from "@/components/sections/teams/all-teams";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import type { TeamCardTeam } from "@/components/sections/teams/team-card";
 import { WhyTeams } from "@/components/sections/teams/why-teams";
 import { CreateTeam } from "@/components/sections/teams/create-team";
 import { FutureVision } from "@/components/sections/teams/future-vision";
 import { PageBridge } from "@/components/sections/page-bridge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -231,14 +234,28 @@ export default async function TeamsPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden bg-[#050507]">
-        <TeamsHero />
-        {user ? <MyTeams teams={myTeams} /> : null}
-        <AllTeams initialTeams={teamsWithCounts} categories={categories ?? []} />
-        <WhyTeams />
-        <CreateTeam />
-        <FutureVision />
-        <PageBridge />
+      <main className="relative overflow-hidden">
+        <PageAtmosphere />
+        {user && myTeams.length === 0 ? (
+          <EmptyState
+            icon={<Users size={32} />}
+            title="No teams yet"
+            description="You're not part of any teams yet."
+            eyebrow="Your workspace"
+            scrollToId="teams"
+            actionLabel="Explore Teams"
+          />
+        ) : (
+          <TeamsHero />
+        )}
+        <div className="relative">
+          {user && myTeams.length > 0 ? <MyTeams teams={myTeams} /> : null}
+          <AllTeams initialTeams={teamsWithCounts} categories={categories ?? []} />
+          <WhyTeams />
+          <CreateTeam />
+          <FutureVision />
+          <PageBridge />
+        </div>
       </main>
       <Footer />
     </>

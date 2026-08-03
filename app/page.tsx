@@ -5,6 +5,7 @@ import { About } from "@/components/sections/about";
 import { Features } from "@/components/sections/features";
 import { Institutions } from "@/components/sections/institutions";
 import { PageBridge } from "@/components/sections/page-bridge";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 export default function HomePage() {
   return (
@@ -16,7 +17,8 @@ export default function HomePage() {
         Skip to content
       </a>
       <Navbar />
-      <main id="main">
+      <main id="main" className="relative overflow-hidden">
+        <PageAtmosphere />
         <Hero />
         <About />
         <Features />

@@ -36,7 +36,6 @@ export const announcements: Announcement[] = [
     category: "Community",
     description:
       "The first official branches are now available. Members can now join their institution and become part of the growing ecosystem.",
-    details: ["EMSI", "FSR"],
     date: "2024",
   },
 ];

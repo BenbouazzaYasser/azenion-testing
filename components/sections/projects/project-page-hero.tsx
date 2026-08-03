@@ -2,8 +2,6 @@
 
 import { useTransition, useState } from "react";
 import { Users, Plus, LogOut, User, Lock, Eye, UserPlus, Globe, Building2 } from "lucide-react";
-import { AmbientBg } from "@/components/graphics/ambient-bg";
-import { BackgroundAtmosphere } from "@/components/graphics/background-atmosphere";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -78,11 +76,9 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
 
   return (
     <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
-      <AmbientBg />
       <BackgroundInfinity variant="projects" />
-      <BackgroundAtmosphere />
 
-      <div className="relative mx-auto max-w-[920px] px-5 pb-32 pt-20 text-center sm:px-8 sm:pt-24 lg:pb-44 lg:pt-32">
+      <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
         <Reveal delay={0}>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] bg-white/[0.03] border-border-strong text-ink-400">
@@ -103,7 +99,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
         </Reveal>
 
         <Reveal delay={80}>
-          <div className="mt-8 flex items-center justify-center gap-4">
+          <div className="mt-6 flex items-center justify-center gap-4">
             {project.logo_url ? (
               <img src={project.logo_url} alt="" className="h-16 w-16 rounded-2xl border border-accent-400/30 object-cover" />
             ) : null}
@@ -122,7 +118,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
         ) : null}
 
         <Reveal delay={200}>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
             {project.team ? (
               <Link
                 href={`/teams/${project.team.slug}`}
@@ -141,7 +137,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
         </Reveal>
 
         <Reveal delay={240}>
-          <div className="mt-10 flex items-center justify-center gap-4">
+          <div className="mt-8 flex items-center justify-center gap-4">
             {currentUserId ? (
               <>
                 <Button size="lg" onClick={handleJoinLeave} variant={isMember ? "secondary" : "primary"} disabled={isPending}>
@@ -189,7 +185,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
         </Reveal>
 
         <Reveal delay={320}>
-          <div className="mt-20 hidden items-center justify-center gap-3 sm:flex">
+          <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
             <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>

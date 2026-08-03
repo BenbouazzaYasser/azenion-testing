@@ -3,7 +3,7 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function CreateProjectHero() {
   return (
-    <PageHero variant="projects" slug="create-project">
+    <PageHero variant="projects" slug="create-project" atmosphere={false}>
       <Reveal delay={0}>
         <h1
           id="create-project-hero-heading"

@@ -40,24 +40,7 @@ export function Faq() {
   }
 
   return (
-    <section className="relative py-24 sm:py-28 lg:py-32" aria-labelledby="faq-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.10),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-[30%] top-[20%] h-64 w-64 -translate-x-1/2 rounded-full bg-accent/10 blur-[130px]" />
-      <div className="pointer-events-none absolute right-[15%] bottom-[20%] h-48 w-48 rounded-full bg-accent-400/8 blur-[110px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[12%] top-[15%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[80%] top-[18%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[20%] top-[75%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[78%] top-[78%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[48%] top-[8%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[92%] top-[45%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[5%] top-[50%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[62%] top-[92%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-      </div>
-
+    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="faq-heading">
       <div className="mx-auto max-w-[800px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <h2
@@ -71,7 +54,7 @@ export function Faq() {
           </p>
         </Reveal>
 
-        <div className="mt-14 space-y-3">
+        <div className="mt-12 space-y-3">
           {FAQ_ITEMS.map((item, i) => (
             <Reveal key={item.id} delay={i * 60}>
               <div className="group overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]">

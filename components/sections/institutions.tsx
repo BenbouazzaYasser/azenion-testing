@@ -2,8 +2,7 @@ import { INSTITUTIONS } from "@/data/institutions";
 
 export function Institutions() {
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="institutions-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="institutions-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <p
           id="institutions-heading"
@@ -12,7 +11,7 @@ export function Institutions() {
           Trusted by students at
         </p>
 
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-x-12 gap-y-6 sm:gap-x-16">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-12 gap-y-6 sm:gap-x-16">
           {INSTITUTIONS.map((institution) => (
             <span
               key={institution.name}

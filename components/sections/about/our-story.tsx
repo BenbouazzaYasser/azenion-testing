@@ -9,26 +9,7 @@ const REASONS = [
 
 export function OurStory() {
   return (
-    <section className="relative py-24 sm:py-28 lg:py-32" aria-labelledby="story-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.12),transparent_70%)]" />
-
-      <div className="pointer-events-none absolute left-1/4 top-1/3 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[140px]" />
-      <div className="pointer-events-none absolute right-1/3 bottom-1/3 h-56 w-56 rounded-full bg-accent-400/8 blur-[120px]" />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute left-[12%] top-[18%] h-[3px] w-[3px] rounded-full bg-accent-400/25" />
-        <div className="absolute left-[78%] top-[22%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[22%] top-[68%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[72%] top-[72%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[48%] top-[12%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[88%] top-[42%] h-[3px] w-[3px] rounded-full bg-accent-400/20" />
-        <div className="absolute left-[8%] top-[48%] h-[2px] w-[2px] rounded-full bg-accent-400/15" />
-        <div className="absolute left-[58%] top-[88%] h-[2px] w-[2px] rounded-full bg-accent-400/20" />
-      </div>
-
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-void-950/40 via-transparent to-transparent" />
-
+    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="story-heading">
       <div className="mx-auto max-w-[920px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="relative pl-8 sm:pl-14">
@@ -43,7 +24,7 @@ export function OurStory() {
                 Why Azenion exists
               </h2>
 
-              <div className="mt-8 space-y-5 text-[1.02rem] leading-8 text-ink-400">
+              <div className="mt-6 space-y-5 text-[1.02rem] leading-8 text-ink-400">
                 <p>
                   Every great invention, every breakthrough, every movement
                   starts the same way: a person with an idea who refuses to let
@@ -60,7 +41,7 @@ export function OurStory() {
               </div>
             </div>
 
-            <div className="mt-14 space-y-8">
+            <div className="mt-12 space-y-6">
               {REASONS.map((reason, i) => (
                 <div key={reason} className="relative pl-8 sm:pl-10">
                   <div className="absolute left-[-3px] top-[7px] h-[5px] w-[5px] rounded-full border border-accent-400/60 bg-void-950" />
@@ -75,7 +56,7 @@ export function OurStory() {
               ))}
             </div>
 
-            <div className="mt-14 max-w-[640px]">
+            <div className="mt-12 max-w-[640px]">
               <p className="text-[1.02rem] leading-8 text-ink-400">
                 Azenion exists to close that gap. We are building the
                 infrastructure for ambition — a network where talent finds

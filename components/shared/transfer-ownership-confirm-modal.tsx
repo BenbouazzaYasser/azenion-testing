@@ -10,6 +10,8 @@ interface MemberInfo {
   id: string;
   full_name: string | null;
   username: string | null;
+  avatar_url?: string | null;
+  role?: string | null;
 }
 
 interface TransferOwnershipConfirmModalProps {
@@ -49,6 +51,7 @@ export function TransferOwnershipConfirmModal({
   if (!open) return null;
 
   const targetName = targetMember.full_name || targetMember.username || "this member";
+  const targetInitials = (targetName || "?").charAt(0).toUpperCase();
 
   function handleConfirm() {
     const formData = new FormData();
@@ -90,7 +93,25 @@ export function TransferOwnershipConfirmModal({
           </div>
 
           <h2 className="mt-5 text-xl font-semibold text-ink-50">Transfer ownership?</h2>
-          <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-400">
+          <div className="mt-4 flex items-center gap-3">
+            {targetMember.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={targetMember.avatar_url}
+                alt=""
+                className="h-12 w-12 shrink-0 rounded-full border border-accent-400/30 object-cover"
+              />
+            ) : (
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-400 text-base font-semibold text-white">
+                {targetInitials}
+              </span>
+            )}
+            <p className="min-w-0 text-left">
+              <span className="block truncate text-sm font-semibold text-ink-50">{targetName}</span>
+              <span className="block text-xs text-ink-500">@{targetMember.username ?? "user"}</span>
+            </p>
+          </div>
+          <p className="mt-5 max-w-sm text-sm leading-relaxed text-ink-400">
             You are about to transfer ownership of{" "}
             <span className="font-medium text-ink-200">{resourceName}</span> to{" "}
             <span className="font-medium text-ink-200">{targetName}</span>.
@@ -99,7 +120,7 @@ export function TransferOwnershipConfirmModal({
             This action can be reversed later by the new owner.
           </p>
 
-          <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
+          <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
             <Button variant="secondary" onClick={onClose} disabled={isPending} className="sm:flex-1">
               Cancel
             </Button>

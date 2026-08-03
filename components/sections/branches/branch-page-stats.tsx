@@ -21,9 +21,7 @@ export function BranchPageStats({ memberCount, teamsCount, projectsCount, postsC
   ];
 
   return (
-    <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="branch-stats-heading">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="branch-stats-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -40,7 +38,7 @@ export function BranchPageStats({ memberCount, teamsCount, projectsCount, postsC
           </h2>
         </Reveal>
 
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {stats.map((stat, i) => (
             <Reveal key={stat.label} delay={120 + i * 60}>
               <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow-sm">
@@ -64,7 +62,7 @@ export function BranchPageStats({ memberCount, teamsCount, projectsCount, postsC
 
         {createdAt ? (
           <Reveal delay={380}>
-            <p className="mt-8 text-center text-xs text-ink-600">
+            <p className="mt-6 text-center text-xs text-ink-600">
               This branch has been active since {formatDate(createdAt)}.
             </p>
           </Reveal>
