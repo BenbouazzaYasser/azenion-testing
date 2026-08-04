@@ -450,7 +450,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
           ) : (
             branches.map((branch, i) => (
               <Reveal key={branch.id} delay={i * 80}>
-                <div className="group relative flex items-start gap-5 overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow-sm">
+                <div className="group relative flex items-start gap-5 overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08] p-2.5">
                     {branch.logo_url ? (
                       <img src={branch.logo_url} alt="" className="h-full w-full rounded-lg object-cover" />

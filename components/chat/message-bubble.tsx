@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { formatDate, formatDistanceToNow } from "@/lib/date";
+import { formatTime } from "@/lib/date";
 import { editMessage, deleteMessage } from "@/actions/chat.actions";
 
 interface MessageBubbleProps {
@@ -14,6 +14,9 @@ interface MessageBubbleProps {
   sender_name: string | null;
   sender_avatar: string | null;
   isOwn: boolean;
+  isGrouped?: boolean;
+  active?: boolean;
+  onSelect?: (id: string) => void;
 }
 
 export function MessageBubble({
@@ -25,6 +28,9 @@ export function MessageBubble({
   sender_name,
   sender_avatar,
   isOwn,
+  isGrouped = false,
+  active = false,
+  onSelect,
 }: MessageBubbleProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(content);
@@ -47,22 +53,24 @@ export function MessageBubble({
   };
 
   return (
-    <div className={cn("group flex gap-3", isOwn ? "flex-row-reverse" : "flex-row")}>
-      {sender_avatar ? (
+    <div className={cn("group flex items-start gap-3", isOwn ? "flex-row-reverse" : "flex-row")}>
+      {isGrouped ? (
+        <span aria-hidden className="w-8 shrink-0" />
+      ) : sender_avatar ? (
         <img
           src={sender_avatar}
           alt=""
-          className="mt-1 h-8 w-8 shrink-0 rounded-full border border-white/[0.12] object-cover"
+          className="mt-0.5 h-8 w-8 shrink-0 rounded-full border border-white/[0.12] object-cover"
         />
       ) : (
-        <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent-500 to-accent-400 text-[11px] font-semibold text-white">
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent to-accent-glow text-[11px] font-semibold text-white">
           {sender_name?.[0]?.toUpperCase() ?? "U"}
         </span>
       )}
 
       <div className={cn("max-w-[75%]", isOwn ? "items-end" : "items-start")}>
-        {!isOwn && sender_name && (
-          <p className="mb-1 px-1 text-[11px] font-medium text-ink-500">
+        {!isOwn && !isGrouped && sender_name && (
+          <p className="mb-1 px-0.5 text-xs font-medium text-ink-400">
             {sender_name}
           </p>
         )}
@@ -77,7 +85,7 @@ export function MessageBubble({
                 if (e.key === "Enter") handleEdit();
                 if (e.key === "Escape") setIsEditing(false);
               }}
-              className="w-full rounded-xl border border-accent-400/50 bg-white/[0.04] px-3 py-2.5 text-sm text-ink-50 outline-none ring-1 ring-accent-400/30"
+              className="w-full rounded-xl border border-accent-400/50 bg-white/[0.04] px-3 py-2.5 text-sm text-ink-50 outline-none ring-1 ring-accent-400/30 focus:ring-2"
               autoFocus
             />
             <div className="flex gap-2">
@@ -102,43 +110,71 @@ export function MessageBubble({
           </div>
         ) : (
           <div
+            tabIndex={0}
+            role="group"
+            aria-label={`Message from ${sender_name ?? "unknown sender"}`}
+            onClick={() => onSelect?.(id)}
+            onFocus={() => onSelect?.(id)}
             className={cn(
-              "rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-card backdrop-blur-xl transition-all duration-200",
+              "cursor-pointer rounded-2xl px-4 py-2.5 text-sm leading-relaxed backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2",
               isOwn
-                ? "rounded-br-md bg-accent/[0.15] border border-accent-400/20 text-ink-50"
-                : "rounded-bl-md border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] text-ink-200",
+                ? "rounded-br-md border border-accent-300/25 bg-gradient-to-br from-accent to-accent-glow text-white shadow-[0_10px_28px_-12px_rgba(40,40,255,0.55)] focus-visible:ring-accent-300/40"
+                : "rounded-bl-md border border-white/[0.08] bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.04))] text-ink-200 shadow-[0_8px_20px_-14px_rgba(0,0,0,0.85)] focus-visible:ring-accent-400/40",
             )}
           >
             <p className="whitespace-pre-wrap break-words">{content}</p>
-            <div className={cn("mt-1 flex items-center gap-2", isOwn ? "justify-end" : "justify-start")}>
-              {edited_at && (
-                <span className="text-[10px] text-ink-600">(edited)</span>
-              )}
-              {created_at && (
-                <span className="text-[10px] text-ink-600">
-                  {formatDistanceToNow(new Date(created_at))}
-                </span>
-              )}
+            <div
+              aria-hidden={!active}
+              className="grid transition-[grid-template-rows] duration-200 ease-premium"
+              style={{ gridTemplateRows: active ? "1fr" : "0fr" }}
+            >
+              <div className="min-h-0 overflow-hidden">
+                <div
+                  className={cn(
+                    "flex justify-end pt-1.5 transition-opacity duration-200",
+                    active ? "opacity-100" : "opacity-0",
+                  )}
+                >
+                  {created_at && (
+                    <span
+                      className={cn(
+                        "text-[10px] font-medium leading-none tracking-wide",
+                        isOwn ? "text-white/70" : "text-ink-600",
+                      )}
+                    >
+                      {edited_at && <span className="opacity-80">edited&nbsp;&bull;&nbsp;</span>}
+                      {formatTime(created_at)}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
 
         {isOwn && !isEditing && (
-          <div className="mt-1 flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+          <div
+            className={cn(
+              "mt-1 flex justify-end gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100",
+              isGrouped && "mb-2",
+            )}
+          >
             <button
               type="button"
+              aria-label="Edit message"
               onClick={() => {
                 setEditText(content);
                 setIsEditing(true);
               }}
-              className="text-[10px] text-ink-600 transition-colors hover:text-ink-200"
+              className="rounded-md px-1.5 py-0.5 text-[10px] font-medium text-ink-600 transition-colors duration-200 ease-premium hover:bg-white/[0.06] hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
             >
               Edit
             </button>
             <button
               type="button"
+              aria-label="Delete message"
               onClick={handleDelete}
-              className="text-[10px] text-ink-600 transition-colors hover:text-red-400"
+              className="rounded-md px-1.5 py-0.5 text-[10px] font-medium text-ink-600 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
             >
               Delete
             </button>

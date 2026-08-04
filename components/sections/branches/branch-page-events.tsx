@@ -190,7 +190,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
 
     return (
       <Reveal key={event.id} delay={i * 60} className="h-full">
-        <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1 hover:border-accent-400/30 hover:shadow-glow-sm sm:flex-row">
+        <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:flex-row">
           {event.cover_url ? (
             <div className="relative h-40 w-full shrink-0 sm:h-auto sm:w-44">
               <img src={event.cover_url} alt="" className="h-full w-full object-cover" />

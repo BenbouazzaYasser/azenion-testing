@@ -45,7 +45,7 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
   const durationLabel = hasEnd ? formatDuration(session.duration_minutes ?? 0) : null;
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-7">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:p-7">
       <div className="flex items-start justify-between gap-3">
         <SessionStatusBadge status={session.status} />
         <div className="flex items-center gap-2">

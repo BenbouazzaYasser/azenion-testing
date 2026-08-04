@@ -65,22 +65,23 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
   };
 
   return (
-    <div className="flex h-full flex-col border-r border-border-strong">
-      <div className="border-b border-border-strong p-4">
+    <div className="flex h-full min-h-0 flex-col border-r border-border-strong bg-void-900/30 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.05),transparent_55%)]">
+      <div className="shrink-0 border-b border-border-strong p-4 pb-3">
         <div ref={searchRef} className="relative">
           <div className="relative">
-            <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-500" />
+            <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-500" />
             <input
               type="text"
+              aria-label="Search users"
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full rounded-xl border border-border-strong bg-white/[0.03] py-2.5 pl-9 pr-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+              className="w-full rounded-xl border border-border-strong bg-white/[0.03] py-2.5 pl-10 pr-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
             />
           </div>
 
           {showSearch && searchResults.length > 0 && (
-            <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-border-strong bg-[rgba(10,11,16,0.96)] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl border border-border-strong bg-[rgba(10,11,16,0.96)] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
               {searchResults.map((user) => (
                 <Link
                   key={user.id}
@@ -90,12 +91,12 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
                     setSearchQuery("");
                     setSearchResults([]);
                   }}
-                  className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-white/[0.06]"
+                  className="flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-premium hover:bg-white/[0.06] focus-visible:bg-white/[0.06] focus-visible:outline-none"
                 >
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="h-8 w-8 rounded-full border border-white/[0.12] object-cover" />
+                    <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-white/[0.12] object-cover" />
                   ) : (
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent-500 to-accent-400 text-xs font-semibold text-white">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
                       {user.full_name?.[0] ?? user.username[0]?.toUpperCase() ?? "U"}
                     </span>
                   )}
@@ -115,50 +116,80 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(244,245,248,0.14)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/[0.14] [&::-webkit-scrollbar-track]:bg-transparent">
         <div className="p-3">
-          <h2 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-ink-500">
-            Messages
-          </h2>
+          <div className="mb-2 flex items-center justify-between px-3 pt-1">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-500">
+              Messages
+            </h2>
+            {conversations.length > 0 && (
+              <span className="text-[11px] font-medium tabular-nums text-ink-600">
+                {conversations.length}
+              </span>
+            )}
+          </div>
 
           {conversations.length === 0 ? (
-            <div className="flex flex-col items-center px-4 py-8 text-center">
-              <MessageSquare size={24} className="text-ink-600" />
-              <p className="mt-3 text-sm text-ink-500">No conversations yet</p>
+            <div className="flex flex-col items-center px-4 py-10 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-ink-500">
+                <MessageSquare size={20} />
+              </div>
+              <p className="mt-3 text-sm font-medium text-ink-200">No conversations yet</p>
               <p className="mt-1 text-xs text-ink-600">
                 Search for a user above to start messaging.
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1.5">
               {conversations.map((conv) => {
                 const isActive = pathname === `/chat/${conv.id}`;
+                const isOwnLast = conv.last_message?.sender_id === currentUserId;
+                const name = conv.other_user?.full_name ?? conv.other_user?.username ?? "Unknown";
+                const initial = conv.other_user?.full_name?.[0] ?? conv.other_user?.username[0]?.toUpperCase() ?? "?";
+
                 return (
                   <Link
                     key={conv.id}
                     href={`/chat/${conv.id}`}
+                    aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200",
+                      "group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-3 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                       isActive
-                        ? "bg-accent/[0.08] border border-accent-400/20"
-                        : "hover:bg-white/[0.04] border border-transparent",
+                        ? "border border-accent-400/40 bg-[linear-gradient(135deg,rgba(40,40,255,0.16),rgba(40,40,255,0.05))] shadow-glow-sm"
+                        : "border border-transparent hover:border-border hover:bg-surface/50 hover:shadow-card",
                     )}
                   >
+                    {isActive && (
+                      <span
+                        aria-hidden
+                        className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-accent-400 to-accent-glow"
+                      />
+                    )}
+
                     {conv.other_user?.avatar_url ? (
                       <img
                         src={conv.other_user.avatar_url}
                         alt=""
-                        className="h-10 w-10 shrink-0 rounded-full border border-white/[0.12] object-cover"
+                        className={cn(
+                          "h-10 w-10 shrink-0 rounded-full border border-white/[0.12] object-cover transition-all duration-300",
+                          isActive && "border-accent-400/50 shadow-glow-sm",
+                        )}
                       />
                     ) : (
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent-500 to-accent-400 text-sm font-semibold text-white">
-                        {conv.other_user?.full_name?.[0] ?? conv.other_user?.username[0]?.toUpperCase() ?? "?"}
+                      <span
+                        className={cn(
+                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
+                          isActive && "border-accent-400/60 shadow-glow-sm",
+                        )}
+                      >
+                        {initial}
                       </span>
                     )}
+
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-sm font-medium text-ink-50">
-                          {conv.other_user?.full_name ?? conv.other_user?.username ?? "Unknown"}
+                        <p className={cn("truncate text-sm text-ink-50", isActive ? "font-semibold" : "font-medium")}>
+                          {name}
                           {conv.other_user?.username && conv.other_user?.full_name ? (
                             <span className="ml-1.5 text-xs font-normal text-ink-500">
                               @{conv.other_user.username}
@@ -166,12 +197,15 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
                           ) : null}
                         </p>
                         {conv.last_message?.created_at && (
-                          <span className="shrink-0 text-[11px] text-ink-600">
+                          <span className="shrink-0 text-[10px] font-medium tracking-wide text-ink-600 transition-colors duration-200 group-hover:text-ink-500">
                             {formatDistanceToNow(new Date(conv.last_message.created_at))}
                           </span>
                         )}
                       </div>
                       <p className="mt-0.5 truncate text-xs text-ink-500">
+                        {isOwnLast && (
+                          <span className="font-medium text-ink-400">You: </span>
+                        )}
                         {conv.last_message?.content ?? "No messages yet"}
                       </p>
                     </div>

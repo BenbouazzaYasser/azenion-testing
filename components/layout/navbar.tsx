@@ -97,18 +97,20 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6 sm:pt-5">
       <div
         className={cn(
-          "w-full max-w-[1040px] rounded-full border border-white/[0.08] transition-all duration-700 ease-premium will-change-transform backdrop-blur-2xl",
+          "w-full max-w-[980px] rounded-full border border-white/[0.08] transition-all duration-700 ease-premium will-change-transform backdrop-blur-2xl",
           isScrolled || isMenuOpen
             ? "bg-[rgba(7,8,13,0.78)] shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)]"
             : "bg-[rgba(10,11,16,0.18)] shadow-[0_8px_30px_-25px_rgba(255,255,255,0.05)]"
         )}
       >
-        <div className="flex h-[64px] items-center px-4 sm:h-[70px] sm:px-6">
-          <Logo withWordmark={false} />
+        <div className="grid h-[64px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:h-[70px] sm:px-6">
+          <div className="flex items-center">
+            <Logo withWordmark={false} />
+          </div>
 
-          <div className="flex flex-1 items-center justify-center">
+          <div className="hidden lg:flex">
             <nav aria-label="Primary" className="flex items-center">
-              <ul className="hidden items-center gap-0.5 lg:flex">
+              <ul className="flex items-center gap-0.5">
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
                   const navLinkClass = cn(
@@ -178,7 +180,8 @@ export function Navbar() {
             </nav>
           </div>
 
-          <div className="hidden items-center gap-2 lg:flex">
+          <div className="flex items-center justify-end gap-2">
+            <div className="hidden items-center gap-2 lg:flex">
             {loading ? null : user ? (
               <>
                 {isAdmin ? (
@@ -435,17 +438,18 @@ export function Navbar() {
                 </Button>
               </>
             )}
-          </div>
+            </div>
 
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen((v) => !v)}
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isMenuOpen}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-ink-50 transition-colors duration-200 hover:bg-white/[0.06] lg:hidden"
-          >
-            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((v) => !v)}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ink-50 transition-colors duration-200 hover:bg-white/[0.06] lg:hidden"
+            >
+              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
       </div>
 

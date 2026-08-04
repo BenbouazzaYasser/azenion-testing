@@ -25,12 +25,12 @@ export default async function ConversationPage({ params }: Props) {
   return (
     <>
       <Navbar />
-      <main className="relative flex min-h-screen pt-[80px] sm:pt-[90px]">
-        <div className="flex w-full max-w-[1200px] mx-auto">
-          <aside className="w-[360px] shrink-0 hidden md:block">
+      <main className="relative flex h-screen flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
+        <div className="mx-auto flex h-full min-h-0 w-full max-w-[1200px]">
+          <aside className="hidden w-[360px] shrink-0 md:block">
             <ChatSidebar conversations={conversations} currentUserId={user.id} />
           </aside>
-          <div className="flex-1 flex flex-col border-l border-border-strong">
+          <div className="flex min-h-0 flex-1 flex-col border-l border-border-strong">
             <ChatConversation
               conversationId={params.conversationId}
               initialMessages={messages}

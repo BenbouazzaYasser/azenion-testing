@@ -5,7 +5,7 @@ export function ComingSoon() {
     <section className="relative py-24 sm:py-28 lg:py-32" aria-labelledby="coming-soon-heading">
       <div className="mx-auto max-w-[720px] px-5 sm:px-8 lg:px-12">
         <Reveal>
-          <div className="group mx-auto max-w-[600px] overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-10 text-center shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))] sm:p-14">
+          <div className="group mx-auto max-w-[600px] overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-10 text-center shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))] sm:p-14">
             <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-accent/10 blur-[80px]" />

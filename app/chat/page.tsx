@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/navbar";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
@@ -23,15 +24,35 @@ export default async function ChatPage() {
   return (
     <>
       <Navbar />
-      <main className="relative flex min-h-screen pt-[80px] sm:pt-[90px]">
-        <div className="flex w-full max-w-[1200px] mx-auto">
-          <aside className="w-[360px] shrink-0 hidden md:block">
+      <main className="relative flex h-screen flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
+        <div className="mx-auto flex h-full min-h-0 w-full max-w-[1200px]">
+          <aside className="hidden w-[360px] shrink-0 md:block">
             <ChatSidebar conversations={conversations} currentUserId={user.id} />
           </aside>
-          <div className="flex-1 flex items-center justify-center border-l border-border-strong">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-ink-200">Select a conversation</h2>
-              <p className="mt-2 text-sm text-ink-500">
+          <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden border-l border-border-strong">
+            <div aria-hidden className="pointer-events-none absolute inset-0">
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 22% 0%, rgba(40,40,255,0.10), transparent 42%), radial-gradient(circle at 88% 92%, rgba(109,109,255,0.08), transparent 40%)",
+                }}
+              />
+              <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-accent/[0.06] blur-[120px]" />
+              <div className="absolute -right-20 bottom-20 h-80 w-80 rounded-full bg-accent-glow/[0.05] blur-[130px]" />
+            </div>
+            <div className="relative flex flex-col items-center px-6 text-center">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[120px]"
+              />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-accent-400/20 bg-accent/[0.06] text-accent-300 shadow-[0_0_40px_-12px_rgba(109,109,255,0.6)]">
+                <MessageSquare size={26} />
+              </div>
+              <h2 className="relative mt-5 text-lg font-semibold text-ink-50">
+                Select a conversation
+              </h2>
+              <p className="relative mt-1.5 max-w-xs text-sm text-ink-400">
                 Choose a conversation from the sidebar or search for someone to message.
               </p>
             </div>
