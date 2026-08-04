@@ -9,10 +9,10 @@ import {
   Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { formatShortDate, formatTime } from "@/lib/date";
 import { SessionStatusBadge } from "./session-status-badge";
 import { SessionFormDialog } from "./session-form-dialog";
+import { SessionJoinButton } from "./session-join-button";
 import { DeleteSessionButton } from "./delete-session-button";
 import type {
   LiveSessionWithManage,
@@ -34,12 +34,15 @@ interface SessionCardProps {
 
 export function SessionCard({ session, hostOptions }: SessionCardProps) {
   const isEnded = session.status === "ENDED";
-  const joinLabel =
-    session.status === "LIVE" ? "Join Live" : isEnded ? "Recording Soon" : "Join Session";
+  const isLive = session.status === "LIVE";
+  const isFull = session.capacity != null && session.attendee_count >= session.capacity;
 
   const dateLabel = formatShortDate(session.starts_at);
-  const timeLabel = `${formatTime(session.starts_at)} – ${formatTime(session.ends_at)}`;
-  const durationLabel = formatDuration(session.duration_minutes);
+  const hasEnd = Boolean(session.ends_at);
+  const timeLabel = hasEnd
+    ? `${formatTime(session.starts_at)} – ${formatTime(session.ends_at!)}`
+    : formatTime(session.starts_at);
+  const durationLabel = hasEnd ? formatDuration(session.duration_minutes ?? 0) : null;
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-7">
@@ -94,7 +97,12 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
         </div>
       ) : null}
 
-      <div className="mt-6 grid grid-cols-3 divide-x divide-white/10 rounded-xl border border-white/[0.06] bg-white/[0.02] text-center">
+      <div
+        className={cn(
+          "mt-6 grid divide-x divide-white/10 rounded-xl border border-white/[0.06] bg-white/[0.02] text-center",
+          hasEnd ? "grid-cols-3" : "grid-cols-2"
+        )}
+      >
         <div className="flex flex-col items-center gap-1.5 px-2 py-3">
           <Calendar size={14} className="text-accent-400" />
           <span className="text-xs font-medium text-ink-200">{dateLabel}</span>
@@ -105,11 +113,13 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
           <span className="text-xs font-medium text-ink-200">{timeLabel}</span>
           <span className="text-[10px] uppercase tracking-wider text-ink-600">Time</span>
         </div>
-        <div className="flex flex-col items-center gap-1.5 px-2 py-3">
-          <Timer size={14} className="text-accent-400" />
-          <span className="text-xs font-medium text-ink-200">{durationLabel}</span>
-          <span className="text-[10px] uppercase tracking-wider text-ink-600">Duration</span>
-        </div>
+        {hasEnd ? (
+          <div className="flex flex-col items-center gap-1.5 px-2 py-3">
+            <Timer size={14} className="text-accent-400" />
+            <span className="text-xs font-medium text-ink-200">{durationLabel}</span>
+            <span className="text-[10px] uppercase tracking-wider text-ink-600">Duration</span>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-5 flex flex-col gap-2 text-sm">
@@ -133,14 +143,25 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
 
       <div className="flex-1" />
 
-      <Button
-        variant={isEnded ? "secondary" : "primary"}
-        size="sm"
-        disabled={isEnded}
+      {session.capacity != null ? (
+        <div className="mt-5 flex items-center justify-center gap-1.5 text-xs text-ink-400">
+          <Users size={12} className="text-accent-400" />
+          <span>
+            <span className="font-medium text-ink-200">{session.attendee_count}</span>
+            {" / "}
+            {session.capacity} seats
+          </span>
+        </div>
+      ) : null}
+
+      <SessionJoinButton
+        sessionId={session.id}
+        isJoined={session.joined}
+        isFull={isFull}
+        isEnded={isEnded}
+        isLive={isLive}
         className="mt-5 w-full"
-      >
-        {joinLabel}
-      </Button>
+      />
     </article>
   );
 }

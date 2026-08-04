@@ -34,7 +34,9 @@ export const createLiveSessionSchema = z.object({
     .regex(
       DATETIME_24H_RE,
       "End time must be in 24-hour HH:MM format (e.g. 18:30)"
-    ),
+    )
+    .nullable()
+    .optional(),
   location: z
     .string()
     .max(500, "Location must be 500 characters or less")
@@ -77,7 +79,7 @@ export interface LiveSessionRow {
   host_name: string;
   instructor: string;
   starts_at: string;
-  ends_at: string;
+  ends_at: string | null;
   location: string | null;
   meeting_url: string | null;
   format: LiveSessionFormat;
@@ -85,7 +87,10 @@ export interface LiveSessionRow {
   status: LiveSessionStatus;
   topics: string[];
   created_by: string | null;
-  duration_minutes: number;
+  duration_minutes: number | null;
+  attendee_count: number;
+  joined: boolean;
+  seats_remaining: number | null;
 }
 
 export interface LiveSessionWithManage extends LiveSessionRow {

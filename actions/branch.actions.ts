@@ -208,23 +208,8 @@ export async function uploadBranchLogo(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  console.log("AUTH USER:", user?.id);
-
-  const adminCheck = await supabase.rpc("is_platform_admin");
-
-  console.log("RPC RESULT:", adminCheck);
-
   if (!user) {
     return { error: "Not authenticated" };
-  }
-
-  if (!user) {
-    return { error: "Not authenticated" };
-  }
-
-  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
-  if (!isPlatformAdmin) {
-    return { error: "Only platform admins can manage branch logos" };
   }
 
   const branchId = formData.get("branch_id") as string;
@@ -233,6 +218,15 @@ export async function uploadBranchLogo(formData: FormData) {
 
   if (!branchId) {
     return { error: "Branch ID is required" };
+  }
+
+  const [{ data: isPlatformAdmin }, { data: isBranchLeader }] = await Promise.all([
+    supabase.rpc("is_platform_admin"),
+    supabase.rpc("is_branch_leader", { p_branch_id: branchId }),
+  ]);
+
+  if (!isPlatformAdmin && !isBranchLeader) {
+    return { error: "Only platform admins or the leader of this branch can manage its logo" };
   }
 
   if (!file || file.size === 0) {
@@ -259,10 +253,10 @@ export async function uploadBranchLogo(formData: FormData) {
     data: { publicUrl },
   } = supabase.storage.from("branch-assets").getPublicUrl(filePath);
 
-  const { error: updateError } = await supabase
-    .from("branches")
-    .update({ logo_url: publicUrl })
-    .eq("id", branchId);
+  const { error: updateError } = await supabase.rpc("update_branch", {
+    p_branch_id: branchId,
+    p_logo_url: publicUrl,
+  });
 
   if (updateError) {
     console.error("UPDATE ERROR OBJECT");

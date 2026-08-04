@@ -22,6 +22,7 @@ interface BranchSettingsDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   isPlatformAdmin?: boolean;
+  canEditLogo?: boolean;
 }
 
 const inputClass =
@@ -29,7 +30,7 @@ const inputClass =
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
-export function BranchSettingsDialog({ branch, open: controlledOpen, onOpenChange, isPlatformAdmin = false }: BranchSettingsDialogProps) {
+export function BranchSettingsDialog({ branch, open: controlledOpen, onOpenChange, isPlatformAdmin = false, canEditLogo = isPlatformAdmin }: BranchSettingsDialogProps) {
   const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen ?? internalOpen;
@@ -262,7 +263,7 @@ export function BranchSettingsDialog({ branch, open: controlledOpen, onOpenChang
                       <p className="mt-1.5 text-xs text-ink-500">{description.length}/500</p>
                     </div>
 
-                    {isPlatformAdmin ? (
+                    {canEditLogo ? (
                       <div>
                         <label className={labelClass}>Branch Logo</label>
                         <div className="flex items-center gap-4">
@@ -282,7 +283,7 @@ export function BranchSettingsDialog({ branch, open: controlledOpen, onOpenChang
                               <input
                                 ref={logoInputRef}
                                 type="file"
-                                accept="image/png,image/jpeg,image/webp"
+                                accept="image/png,image/jpeg,image/webp,image/svg+xml"
                                 onChange={handleLogoChange}
                                 className="hidden"
                               />
@@ -309,7 +310,7 @@ export function BranchSettingsDialog({ branch, open: controlledOpen, onOpenChang
                               ) : null}
                             </div>
                             <p className="text-xs text-ink-500">
-                              PNG, JPEG, or WebP. Max 2MB. Stored in Azenion storage.
+                              PNG, JPEG, WebP, or SVG. Max 2MB. Stored in Azenion storage.
                             </p>
                           </div>
                         </div>

@@ -658,6 +658,8 @@ grant execute on function public.get_team_join_requests(uuid) to authenticated, 
 -- RLS: join requests / invitations become visible to permission holders
 drop policy if exists "team leaders can view join requests for their teams"
   on public.team_join_requests;
+drop policy if exists "join request reviewers can view requests for their teams"
+  on public.team_join_requests;
 create policy "join request reviewers can view requests for their teams"
   on public.team_join_requests for select
   using (
@@ -665,6 +667,8 @@ create policy "join request reviewers can view requests for their teams"
   );
 
 drop policy if exists "team leaders can view invitations for their teams"
+  on public.team_invitations;
+drop policy if exists "inviters can view invitations for their teams"
   on public.team_invitations;
 create policy "inviters can view invitations for their teams"
   on public.team_invitations for select
@@ -894,6 +898,7 @@ grant execute on function public.get_manageable_session_hosts() to authenticated
 -- Team updates / feed: create → CREATE_FEED_POSTS, edit/delete own posts always
 -- allowed, and EDIT_FEED_POSTS / DELETE_FEED_POSTS cover everyone else's posts.
 drop policy if exists "members can create team updates" on public.team_updates;
+drop policy if exists "feed posters can create team updates" on public.team_updates;
 create policy "feed posters can create team updates"
   on public.team_updates for insert
   with check (
@@ -901,6 +906,7 @@ create policy "feed posters can create team updates"
   );
 
 drop policy if exists "authors can update their own team updates" on public.team_updates;
+drop policy if exists "authors or feed editors can update team updates" on public.team_updates;
 create policy "authors or feed editors can update team updates"
   on public.team_updates for update
   using (
@@ -909,6 +915,7 @@ create policy "authors or feed editors can update team updates"
   );
 
 drop policy if exists "authors can delete their own team updates" on public.team_updates;
+drop policy if exists "authors or feed editors can delete team updates" on public.team_updates;
 create policy "authors or feed editors can delete team updates"
   on public.team_updates for delete
   using (
@@ -918,6 +925,7 @@ create policy "authors or feed editors can delete team updates"
 
 -- Storage: feed posters can upload team update images
 drop policy if exists "team members can upload update images" on storage.objects;
+drop policy if exists "feed posters can upload update images" on storage.objects;
 create policy "feed posters can upload update images"
   on storage.objects for insert with check (
     bucket_id = 'team-updates'

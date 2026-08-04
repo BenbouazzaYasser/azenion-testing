@@ -528,6 +528,50 @@ export async function deleteOpenRole(formData: FormData) {
 
 // ── Team Updates ────────────────────────────────────────────────────────
 
+export async function toggleTeamFeedPin(formData: FormData) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const teamId = formData.get("team_id") as string;
+  const updateId = formData.get("update_id") as string;
+  if (!teamId || !updateId) {
+    return { error: "Missing required fields" };
+  }
+
+  const { data: post } = await supabase
+    .from("posts")
+    .select("id")
+    .eq("source_type", "team_update")
+    .eq("source_id", updateId)
+    .maybeSingle();
+
+  if (!post) {
+    return { error: "Post not found" };
+  }
+
+  const { error } = await supabase.rpc("toggle_feed_pin", {
+    p_post_id: post.id,
+    p_scope: "team",
+    p_team_id: teamId,
+    p_branch_id: null,
+    p_project_id: null,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/teams/${formData.get("slug")}`);
+  return { success: true };
+}
+
 export async function createTeamUpdate(formData: FormData) {
   try {
     const supabase = createClient();
@@ -622,10 +666,10 @@ export async function uploadTeamUpdateImage(formData: FormData) {
   }
 
   const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+  const filePath = `${teamId}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
-    .from("feed-images")
+    .from("team-updates")
     .upload(filePath, file, { contentType: file.type, upsert: false });
 
   if (uploadError) {
@@ -634,7 +678,7 @@ export async function uploadTeamUpdateImage(formData: FormData) {
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from("feed-images").getPublicUrl(filePath);
+  } = supabase.storage.from("team-updates").getPublicUrl(filePath);
 
   const { data: existing } = await supabase
     .from("team_updates")

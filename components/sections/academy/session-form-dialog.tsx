@@ -54,6 +54,15 @@ function validateTimeField(time: string): string | null {
   return null;
 }
 
+function validateEndTimeFields(date: string, time: string): string | null {
+  const value = time.trim();
+  if (!date && !value) return null;
+  if (!date) return "End date is required when an end time is provided";
+  if (!value) return "End time is required when an end date is provided";
+  if (!TIME_24H_RE.test(value)) return "Use 24-hour HH:MM, e.g. 18:30";
+  return null;
+}
+
 export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -88,9 +97,14 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
       const start = isoToLocalParts(session.starts_at);
       setStartsDate(start.date);
       setStartsTime(start.time);
-      const end = isoToLocalParts(session.ends_at);
-      setEndsDate(end.date);
-      setEndsTime(end.time);
+      if (session.ends_at) {
+        const end = isoToLocalParts(session.ends_at);
+        setEndsDate(end.date);
+        setEndsTime(end.time);
+      } else {
+        setEndsDate("");
+        setEndsTime("");
+      }
     } else {
       setStartsDate("");
       setStartsTime("");
@@ -120,10 +134,25 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
     };
   }, [open]);
 
-  const filteredHosts = useMemo(
-    () => hostOptions.filter((host) => host.host_type === hostType),
-    [hostOptions, hostType]
-  );
+  const filteredHosts = useMemo(() => {
+    const matching = hostOptions.filter((host) => host.host_type === hostType);
+    if (
+      mode === "edit" &&
+      session &&
+      session.host_type === hostType &&
+      !matching.some((host) => host.host_id === session.host_id)
+    ) {
+      return [
+        {
+          host_type: session.host_type,
+          host_id: session.host_id,
+          host_name: session.host_name,
+        },
+        ...matching,
+      ];
+    }
+    return matching;
+  }, [hostOptions, hostType, mode, session]);
 
   function resetForm() {
     setTitle(session?.title ?? "");
@@ -135,9 +164,14 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
       const start = isoToLocalParts(session.starts_at);
       setStartsDate(start.date);
       setStartsTime(start.time);
-      const end = isoToLocalParts(session.ends_at);
-      setEndsDate(end.date);
-      setEndsTime(end.time);
+      if (session.ends_at) {
+        const end = isoToLocalParts(session.ends_at);
+        setEndsDate(end.date);
+        setEndsTime(end.time);
+      } else {
+        setEndsDate("");
+        setEndsTime("");
+      }
     } else {
       setStartsDate("");
       setStartsTime("");
@@ -166,18 +200,19 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
     }
 
     const startTimeError = validateTimeField(startsTime);
-    const endTimeError = validateTimeField(endsTime);
     if (startTimeError) {
       setStartsTimeError(startTimeError);
       return;
     }
+    const endTimeError = validateEndTimeFields(endsDate, endsTime);
     if (endTimeError) {
       setEndsTimeError(endTimeError);
       return;
     }
 
     const startsAt = `${startsDate}T${startsTime.trim()}`;
-    const endsAt = `${endsDate}T${endsTime.trim()}`;
+    const hasEnd = Boolean(endsDate && endsTime.trim());
+    const endsAt = hasEnd ? `${endsDate}T${endsTime.trim()}` : "";
 
     startTransition(async () => {
       const fd = new FormData();
@@ -461,14 +496,13 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                       </div>
                       <div>
                         <label htmlFor="session-ends-date" className={labelClass}>
-                          Ends at
+                          End Time <span className="text-ink-600">(optional)</span>
                         </label>
                         <input
                           id="session-ends-date"
                           type="date"
                           value={endsDate}
                           onChange={(e) => setEndsDate(e.target.value)}
-                          required
                           className={inputClass}
                         />
                         <input
@@ -479,7 +513,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           autoComplete="off"
                           maxLength={5}
                           placeholder="18:30"
-                          aria-label="End time (24-hour format)"
+                          aria-label="End time (24-hour format, optional)"
                           className={cn(
                             inputClass,
                             "mt-3",
@@ -491,7 +525,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           <p className="mt-1.5 text-xs text-red-300">{endsTimeError}</p>
                         ) : (
                           <p className="mt-1.5 text-xs text-ink-500">
-                            24-hour format, e.g. 18:30
+                            24-hour format, e.g. 18:30. Leave empty for an open-ended session.
                           </p>
                         )}
                       </div>

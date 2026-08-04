@@ -27,8 +27,8 @@ export function AvatarUpload({ avatarUrl, username }: AvatarUploadProps) {
       return;
     }
 
-    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-      setError("Use PNG, JPEG, or WebP.");
+    if (!["image/png", "image/jpeg", "image/webp", "image/svg+xml"].includes(file.type)) {
+      setError("Use SVG, PNG, JPEG, or WebP.");
       return;
     }
 
@@ -83,7 +83,7 @@ export function AvatarUpload({ avatarUrl, username }: AvatarUploadProps) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp"
+        accept="image/png,image/jpeg,image/webp,image/svg+xml"
         className="hidden"
         onChange={handleFileSelect}
       />

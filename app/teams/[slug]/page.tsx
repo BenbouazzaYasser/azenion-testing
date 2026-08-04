@@ -114,6 +114,25 @@ export default async function TeamPage({ params }: TeamPageProps) {
   const teamUpdateCommentCounts: Record<string, number> = {};
   const teamUpdateUserLikes = new Set<string>();
 
+  const { data: teamPins } = await adminClient
+    .from("feed_pins")
+    .select("post_id")
+    .eq("scope", "team")
+    .eq("team_id", team.id);
+
+  const pinnedUpdateIds = new Set<string>();
+  const pinnedPostIds = (teamPins ?? []).map((p) => p.post_id);
+  if (pinnedPostIds.length > 0) {
+    const { data: pinnedPosts } = await adminClient
+      .from("posts")
+      .select("source_id")
+      .eq("source_type", "team_update")
+      .in("id", pinnedPostIds);
+    for (const p of pinnedPosts ?? []) {
+      if (p.source_id) pinnedUpdateIds.add(p.source_id);
+    }
+  }
+
   if (teamUpdateIds.length > 0) {
     const [{ data: tuLikes }, { data: tuComments }] = await Promise.all([
       adminClient.from("update_likes").select("target_id").eq("target_type", "team_update").in("target_id", teamUpdateIds),
@@ -273,6 +292,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
   const canInvite = permissions?.[TeamPermission.INVITE_MEMBERS] ?? false;
   const canRemoveMembers = permissions?.[TeamPermission.REMOVE_MEMBERS] ?? false;
   const canPost = permissions?.[TeamPermission.CREATE_FEED_POSTS] ?? false;
+  const canPin = permissions?.[TeamPermission.EDIT_FEED_POSTS] ?? false;
   const canCreateProjects = permissions?.[TeamPermission.CREATE_PROJECTS] ?? false;
 
   const { data: rawJoinRequests } = canReview
@@ -323,11 +343,19 @@ export default async function TeamPage({ params }: TeamPageProps) {
     slug: c.slug,
   }));
 
-  const teamUpdates = (rawTeamUpdates ?? []).map((u: Record<string, unknown>) => ({
+  const sortedTeamUpdates = [...(rawTeamUpdates ?? [])].sort((a, b) => {
+    const aPinned = pinnedUpdateIds.has(a.id) ? 1 : 0;
+    const bPinned = pinnedUpdateIds.has(b.id) ? 1 : 0;
+    if (aPinned !== bPinned) return bPinned - aPinned;
+    return new Date(b.created_at as string).getTime() - new Date(a.created_at as string).getTime();
+  });
+
+  const teamUpdates = sortedTeamUpdates.map((u: Record<string, unknown>) => ({
     id: u.id as string,
     title: u.title as string,
     body: u.body as string | null,
     image_url: u.image_url as string | null,
+    images: Array.isArray(u.images) ? (u.images as string[]).filter(Boolean) : [],
     created_at: u.created_at as string,
     updated_at: u.updated_at as string,
     author: u.author as {
@@ -339,6 +367,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
     like_count: teamUpdateLikeCounts[u.id as string] ?? 0,
     comment_count: teamUpdateCommentCounts[u.id as string] ?? 0,
     user_has_liked: teamUpdateUserLikes.has(u.id as string),
+    is_pinned: pinnedUpdateIds.has(u.id as string),
   }));
 
   const teamWithOwner = {
@@ -404,6 +433,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
           currentUserId={user?.id ?? null}
           isMember={isMember}
           canPost={canPost}
+          canPin={canPin}
         />
         <TeamJoinCta
           teamId={team.id}

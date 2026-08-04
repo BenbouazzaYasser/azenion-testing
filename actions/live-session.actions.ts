@@ -56,7 +56,7 @@ export async function createLiveSession(formData: FormData) {
     host_id: (formData.get("host_id") as string) ?? "",
     instructor: (formData.get("instructor") as string) ?? "",
     starts_at: (formData.get("starts_at") as string) ?? "",
-    ends_at: (formData.get("ends_at") as string) ?? "",
+    ends_at: parseOptionalText(formData.get("ends_at")),
     location: parseOptionalText(formData.get("location")),
     meeting_url: parseOptionalText(formData.get("meeting_url")),
     format: (formData.get("format") as string) ?? "ONLINE",
@@ -71,12 +71,12 @@ export async function createLiveSession(formData: FormData) {
   }
 
   const startsAt = new Date(parsed.data.starts_at);
-  const endsAt = new Date(parsed.data.ends_at);
-
-  if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
-    return { error: "Please provide valid start and end times" };
+  if (Number.isNaN(startsAt.getTime())) {
+    return { error: "Please provide a valid start time" };
   }
-  if (endsAt <= startsAt) {
+
+  const endsAt = parsed.data.ends_at ? new Date(parsed.data.ends_at) : null;
+  if (endsAt && (Number.isNaN(endsAt.getTime()) || endsAt <= startsAt)) {
     return { error: "End time must be after the start time" };
   }
 
@@ -87,7 +87,7 @@ export async function createLiveSession(formData: FormData) {
     p_host_id: parsed.data.host_id,
     p_instructor: parsed.data.instructor,
     p_starts_at: startsAt.toISOString(),
-    p_ends_at: endsAt.toISOString(),
+    p_ends_at: endsAt ? endsAt.toISOString() : null,
     p_location: parsed.data.location ?? null,
     p_meeting_url: parsed.data.meeting_url ?? null,
     p_format: parsed.data.format,
@@ -122,7 +122,7 @@ export async function updateLiveSession(formData: FormData) {
     host_id: (formData.get("host_id") as string) ?? "",
     instructor: (formData.get("instructor") as string) ?? "",
     starts_at: (formData.get("starts_at") as string) ?? "",
-    ends_at: (formData.get("ends_at") as string) ?? "",
+    ends_at: parseOptionalText(formData.get("ends_at")),
     location: parseOptionalText(formData.get("location")),
     meeting_url: parseOptionalText(formData.get("meeting_url")),
     format: (formData.get("format") as string) ?? "ONLINE",
@@ -137,12 +137,12 @@ export async function updateLiveSession(formData: FormData) {
   }
 
   const startsAt = new Date(parsed.data.starts_at);
-  const endsAt = new Date(parsed.data.ends_at);
-
-  if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
-    return { error: "Please provide valid start and end times" };
+  if (Number.isNaN(startsAt.getTime())) {
+    return { error: "Please provide a valid start time" };
   }
-  if (endsAt <= startsAt) {
+
+  const endsAt = parsed.data.ends_at ? new Date(parsed.data.ends_at) : null;
+  if (endsAt && (Number.isNaN(endsAt.getTime()) || endsAt <= startsAt)) {
     return { error: "End time must be after the start time" };
   }
 
@@ -154,12 +154,58 @@ export async function updateLiveSession(formData: FormData) {
     p_host_id: parsed.data.host_id,
     p_instructor: parsed.data.instructor,
     p_starts_at: startsAt.toISOString(),
-    p_ends_at: endsAt.toISOString(),
+    p_ends_at: endsAt ? endsAt.toISOString() : null,
     p_location: parsed.data.location ?? null,
     p_meeting_url: parsed.data.meeting_url ?? null,
     p_format: parsed.data.format,
     p_capacity: parsed.data.capacity ?? null,
     p_topics: parsed.data.topics,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(LIVE_SESSIONS_PATH);
+  return { success: true };
+}
+
+export async function joinLiveSession(sessionId: string) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { data, error } = await supabase.rpc("join_live_session", {
+    p_session_id: sessionId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(LIVE_SESSIONS_PATH);
+  return { success: true, ...((data?.[0] as Record<string, unknown>) ?? {}) };
+}
+
+export async function leaveLiveSession(sessionId: string) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase.rpc("leave_live_session", {
+    p_session_id: sessionId,
   });
 
   if (error) {

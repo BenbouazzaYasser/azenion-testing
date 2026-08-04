@@ -34,6 +34,11 @@ export function CommentSection({
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [totalComments, setTotalComments] = useState(0);
+  const [loadedCount, setLoadedCount] = useState(0);
+
+  const hasMore = loadedCount < totalComments;
 
   const findComment = (id: string) => {
     for (const comment of comments) {
@@ -76,11 +81,32 @@ export function CommentSection({
   const toggleOpen = async () => {
     if (!isOpen && comments.length === 0) {
       setIsLoading(true);
-      const data = await getCommentsAction(targetType, targetId, currentUserId);
-      setComments(data);
+      const result = await getCommentsAction(targetType, targetId, currentUserId);
+      setComments(result.comments);
+      setTotalComments(result.total);
+      setLoadedCount(result.comments.length);
       setIsLoading(false);
     }
     setIsOpen((v) => !v);
+  };
+
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return;
+
+    setIsLoadingMore(true);
+    const result = await getCommentsAction(targetType, targetId, currentUserId, {
+      offset: loadedCount,
+    });
+    setTotalComments(result.total);
+
+    setComments((prev) => {
+      const existingIds = new Set(prev.map((c) => c.id));
+      const fresh = result.comments.filter((c) => !existingIds.has(c.id));
+      return [...prev.slice(0, loadedCount), ...fresh, ...prev.slice(loadedCount)];
+    });
+
+    setLoadedCount((c) => c + result.comments.length);
+    setIsLoadingMore(false);
   };
 
   const handlePost = () => {
@@ -94,6 +120,9 @@ export function CommentSection({
       if (result?.success && result.comment) {
         setComments((prev) => [...prev, result.comment as CommentWithAuthor]);
         setCommentCount((c) => c + 1);
+        if (!result.comment.parent_comment_id) {
+          setTotalComments((t) => t + 1);
+        }
       }
     });
   };
@@ -142,6 +171,14 @@ export function CommentSection({
     const removed = findComment(id);
     if (!removed) return;
 
+    if (!removed.parent_comment_id) {
+      const idx = comments.findIndex((c) => c.id === id);
+      if (idx >= 0 && idx < loadedCount) {
+        setLoadedCount((c) => c - 1);
+      }
+      setTotalComments((t) => Math.max(0, t - 1));
+    }
+
     setComments((prev) => removeCommentById(prev, id));
     setCommentCount((c) => Math.max(0, c - 1));
 
@@ -150,6 +187,13 @@ export function CommentSection({
       if (result?.error) {
         setComments((prev) => reinsertComment(prev, removed));
         setCommentCount((c) => c + 1);
+        if (!removed.parent_comment_id) {
+          setTotalComments((t) => t + 1);
+          const idx = comments.findIndex((c) => c.id === id);
+          if (idx >= 0 && idx < loadedCount) {
+            setLoadedCount((c) => c + 1);
+          }
+        }
       }
     });
   };
@@ -203,6 +247,23 @@ export function CommentSection({
             <p className="py-3 text-center text-sm text-ink-500">
               No comments yet. {currentUserId && "Start the discussion."}
             </p>
+          )}
+
+          {hasMore && (
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="flex items-center gap-2 rounded-full border border-border-strong bg-white/[0.03] px-5 py-1.5 text-xs font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm disabled:opacity-50"
+              >
+                {isLoadingMore ? (
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" />
+                ) : (
+                  "Load More"
+                )}
+              </button>
+            </div>
           )}
 
           {currentUserId && (

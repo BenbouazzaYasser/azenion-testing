@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface MessageWithSender {
   id: string;
@@ -69,7 +70,7 @@ export async function getConversations(userId: string): Promise<ConversationWith
     ...new Set(membersResults.flatMap((r) => r.members.map((m) => m.user_id))),
   ];
 
-  const { data: profiles } = await supabase
+  const { data: profiles } = await createAdminClient()
     .from("profiles")
     .select("id, full_name, avatar_url, username")
     .in("id", allUserIds);

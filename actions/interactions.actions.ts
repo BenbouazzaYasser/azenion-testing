@@ -249,32 +249,66 @@ export async function updateComment(commentId: string, body: string) {
   return { success: true };
 }
 
+const COMMENT_PAGE_SIZE = 5;
+
+export interface GetCommentsResult {
+  comments: CommentWithAuthor[];
+  total: number;
+}
+
+const COMMENT_SELECT = `
+  id,
+  user_id,
+  target_type,
+  target_id,
+  parent_comment_id,
+  body,
+  created_at,
+  updated_at,
+  author:user_id ( id, full_name, username, avatar_url )
+`;
+
+/**
+ * Loads a page of top-level comments for a target, oldest first, along with
+ * their replies. `total` is the number of top-level comments on the target, so
+ * the client can keep showing "Load More" until every comment is fetched.
+ */
 export async function getCommentsAction(
   targetType: string,
   targetId: string,
   userId: string | null,
-): Promise<CommentWithAuthor[]> {
+  options?: { offset?: number; limit?: number },
+): Promise<GetCommentsResult> {
   const supabaseAdmin = createAdminClient();
+  const offset = options?.offset ?? 0;
+  const limit = options?.limit ?? COMMENT_PAGE_SIZE;
 
-  const { data: raw } = await supabaseAdmin
+  const { data: topLevelRows, count } = await supabaseAdmin
     .from("update_comments")
-    .select(`
-      id,
-      user_id,
-      target_type,
-      target_id,
-      parent_comment_id,
-      body,
-      created_at,
-      updated_at,
-      author:user_id ( id, full_name, username, avatar_url )
-    `)
+    .select(COMMENT_SELECT, { count: "exact" })
     .eq("target_type", targetType)
     .eq("target_id", targetId)
+    .is("parent_comment_id", null)
+    .order("created_at", { ascending: true })
+    .range(offset, offset + limit - 1);
+
+  if (!topLevelRows || topLevelRows.length === 0) {
+    return { comments: [], total: count ?? 0 };
+  }
+
+  const { data: replyRows } = await supabaseAdmin
+    .from("update_comments")
+    .select(COMMENT_SELECT)
+    .in(
+      "parent_comment_id",
+      topLevelRows.map((c) => c.id),
+    )
     .order("created_at", { ascending: true });
 
-  const comments = (raw ?? []) as unknown as CommentWithAuthor[];
-  if (comments.length === 0) return [];
+  const comments = [
+    ...(topLevelRows as unknown as CommentWithAuthor[]),
+    ...((replyRows ?? []) as unknown as CommentWithAuthor[]),
+  ];
 
   const allCommentIds = comments.map((c) => c.id);
   const [likeCounts, userLikes] = await Promise.all([
@@ -309,7 +343,7 @@ export async function getCommentsAction(
     }
   }
 
-  return topLevel;
+  return { comments: topLevel, total: count ?? 0 };
 }
 
 export async function toggleSavePost(postId: string) {

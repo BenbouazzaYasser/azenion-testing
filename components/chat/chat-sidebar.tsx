@@ -159,6 +159,11 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
                       <div className="flex items-center justify-between gap-2">
                         <p className="truncate text-sm font-medium text-ink-50">
                           {conv.other_user?.full_name ?? conv.other_user?.username ?? "Unknown"}
+                          {conv.other_user?.username && conv.other_user?.full_name ? (
+                            <span className="ml-1.5 text-xs font-normal text-ink-500">
+                              @{conv.other_user.username}
+                            </span>
+                          ) : null}
                         </p>
                         {conv.last_message?.created_at && (
                           <span className="shrink-0 text-[11px] text-ink-600">

@@ -109,9 +109,9 @@ export async function uploadAvatar(formData: FormData) {
     return { error: "File too large. Maximum size is 2MB" };
   }
 
-  const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
+  const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
   if (!allowedTypes.includes(file.type)) {
-    return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
+    return { error: "Invalid file type. Use SVG, PNG, JPEG, or WebP" };
   }
 
   const ext = file.name.split(".").pop() ?? "png";

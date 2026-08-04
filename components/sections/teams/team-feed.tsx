@@ -6,6 +6,7 @@ import {
   uploadTeamUpdateImage,
   updateTeamUpdate,
   deleteTeamUpdate,
+  toggleTeamFeedPin,
 } from "@/actions/team.actions";
 
 interface TeamFeedProps {
@@ -15,6 +16,7 @@ interface TeamFeedProps {
   currentUserId: string | null;
   isMember: boolean;
   canPost: boolean;
+  canPin: boolean;
 }
 
 const teamLabels: FeedLabels = {
@@ -35,6 +37,7 @@ export function TeamFeed({
   currentUserId,
   isMember,
   canPost,
+  canPin,
 }: TeamFeedProps) {
   return (
     <EntityUpdatesFeed
@@ -44,11 +47,13 @@ export function TeamFeed({
       currentUserId={currentUserId}
       isMember={isMember}
       canPost={canPost}
+      canPin={canPin}
       actions={{
         create: createTeamUpdate,
         uploadImage: uploadTeamUpdateImage,
         update: updateTeamUpdate,
         delete: deleteTeamUpdate,
+        togglePin: toggleTeamFeedPin,
       }}
       labels={teamLabels}
     />

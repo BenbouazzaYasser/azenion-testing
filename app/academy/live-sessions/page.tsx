@@ -48,6 +48,7 @@ export default async function LiveSessionsPage() {
     (session) => {
       const canManage =
         isAdmin ||
+        (user !== null && session.created_by === user.id) ||
         hostOptions.some(
           (host) => host.host_type === session.host_type && host.host_id === session.host_id
         );

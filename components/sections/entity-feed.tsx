@@ -7,6 +7,7 @@ import {
   MessageSquare,
   MoreHorizontal,
   Pencil,
+  Pin,
   Send,
   Sparkles,
   Trash2,
@@ -42,6 +43,8 @@ export interface UpdateItem {
   like_count?: number;
   comment_count?: number;
   user_has_liked?: boolean;
+  /** Whether this post is pinned in the feed being rendered. */
+  is_pinned?: boolean;
 }
 
 interface FeedActionResult {
@@ -57,6 +60,8 @@ export interface FeedActions {
   uploadImage: (fd: FormData) => Promise<FeedActionResult>;
   update: (fd: FormData) => Promise<FeedActionResult>;
   delete: (fd: FormData) => Promise<FeedActionResult>;
+  /** Optional: pin/unpin an update in this feed's scope. */
+  togglePin?: (fd: FormData) => Promise<FeedActionResult>;
 }
 
 export interface FeedLabels {
@@ -79,6 +84,8 @@ interface EntityUpdatesFeedProps {
   isMember: boolean;
   /** Overrides the "can write to this feed" check (e.g. team feed requires CREATE_FEED_POSTS). */
   canPost?: boolean;
+  /** Whether the current user may pin/unpin posts in this feed (e.g. team EDIT_FEED_POSTS). */
+  canPin?: boolean;
   actions: FeedActions;
   labels: FeedLabels;
   wide?: boolean;
@@ -124,7 +131,7 @@ function toFeedItem(update: UpdateItem, interactionType: FeedLabels["interaction
     body: update.body,
     images,
     link_url: null,
-    is_pinned: false,
+    is_pinned: update.is_pinned ?? false,
     created_at: update.created_at,
     updated_at: update.updated_at,
     like_count: update.like_count ?? 0,
@@ -142,6 +149,7 @@ export function EntityUpdatesFeed({
   currentUserId,
   isMember,
   canPost: canPostPermission = isMember,
+  canPin = false,
   actions,
   labels,
   wide = false,
@@ -326,6 +334,25 @@ export function EntityUpdatesFeed({
 
     startTransition(async () => {
       await actions.delete(fd);
+      setMenuOpenId(null);
+      router.refresh();
+    });
+  }
+
+  function handleTogglePin(update: UpdateItem) {
+    if (!actions.togglePin) return;
+    const fd = new FormData();
+    fd.set(labels.entityIdField, entityId);
+    fd.set("update_id", update.id);
+    fd.set("slug", entitySlug);
+
+    startTransition(async () => {
+      const result = await actions.togglePin!(fd);
+      if (result && "error" in result && result.error) {
+        setError(result.error);
+        return;
+      }
+      setError(null);
       setMenuOpenId(null);
       router.refresh();
     });
@@ -559,7 +586,7 @@ export function EntityUpdatesFeed({
                     item={toFeedItem(update, labels.interactionType)}
                     currentUserId={currentUserId}
                     headerAction={
-                      currentUserId === update.author.id ? (
+                      canPin || currentUserId === update.author.id ? (
                         <div className="relative shrink-0">
                           <button
                             type="button"
@@ -574,22 +601,36 @@ export function EntityUpdatesFeed({
 
                           {menuOpenId === update.id ? (
                             <div className="absolute right-0 top-full z-20 mt-1 w-[140px] overflow-hidden rounded-xl border border-border-strong bg-[#0e1016] shadow-xl backdrop-blur-xl">
-                              <button
-                                type="button"
-                                onClick={() => handleEdit(update)}
-                                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink-300 transition-colors hover:bg-accent/[0.08] hover:text-accent-300"
-                              >
-                                <Pencil size={13} />
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDelete(update.id)}
-                                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-400 transition-colors hover:bg-red-500/[0.08]"
-                              >
-                                <Trash2 size={13} />
-                                Delete
-                              </button>
+                              {canPin ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleTogglePin(update)}
+                                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink-300 transition-colors hover:bg-accent/[0.08] hover:text-accent-300"
+                                >
+                                  <Pin size={13} />
+                                  {update.is_pinned ? "Unpin" : "Pin"}
+                                </button>
+                              ) : null}
+                              {currentUserId === update.author.id ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEdit(update)}
+                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink-300 transition-colors hover:bg-accent/[0.08] hover:text-accent-300"
+                                  >
+                                    <Pencil size={13} />
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDelete(update.id)}
+                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-400 transition-colors hover:bg-red-500/[0.08]"
+                                  >
+                                    <Trash2 size={13} />
+                                    Delete
+                                  </button>
+                                </>
+                              ) : null}
                             </div>
                           ) : null}
                         </div>

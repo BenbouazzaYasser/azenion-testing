@@ -490,7 +490,7 @@ export async function getBranchFeedItems(
  * Permission enforcement happens server-side in the `toggle_feed_pin` RPC:
  *   global  -> platform admin
  *   branch  -> branch leader of that branch + platform admin
- *   team    -> team owner + platform admin
+ *   team    -> team owner, members with EDIT_FEED_POSTS, + platform admin
  *   project -> project owner + platform admin
  * A single post can be pinned independently in multiple feeds.
  */

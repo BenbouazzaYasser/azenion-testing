@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, MapPin, ShieldCheck, Users } from "lucide-react";
+import { Calendar, GitBranch, MapPin, ShieldCheck, Users } from "lucide-react";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Reveal } from "@/components/ui/reveal";
 import { BranchJoinButton } from "./branch-join-button";
@@ -59,6 +59,25 @@ export function BranchPageHero({
       <BackgroundInfinity variant="teams" />
 
       <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
+        <Reveal delay={0}>
+          <div className="mb-9 flex justify-center sm:mb-10">
+            <div className="relative">
+              <div className="absolute -inset-3 rounded-[2.25rem] bg-accent/10 blur-2xl" />
+              <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/15 bg-white/[0.06] shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_20px_60px_-20px_rgba(40,40,255,0.35)] backdrop-blur-xl sm:h-28 sm:w-28 sm:rounded-[2rem] lg:h-32 lg:w-32">
+                {branch.logo_url ? (
+                  <img
+                    src={branch.logo_url}
+                    alt={`${branch.name} logo`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <GitBranch className="h-12 w-12 text-accent-400 sm:h-14 sm:w-14" />
+                )}
+              </div>
+            </div>
+          </div>
+        </Reveal>
+
         <Reveal delay={0}>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -166,6 +185,7 @@ export function BranchPageHero({
                 open={settingsOpen}
                 onOpenChange={setSettingsOpen}
                 isPlatformAdmin={isPlatformAdmin}
+                canEditLogo={isPlatformAdmin || isBranchLeader}
               />
             ) : null}
           </div>
