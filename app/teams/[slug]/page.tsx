@@ -178,6 +178,8 @@ export default async function TeamPage({ params }: TeamPageProps) {
       description,
       logo_url,
       visibility,
+      lifecycle_status,
+      last_activity_at,
       created_at,
       updated_at,
       technologies,
@@ -241,6 +243,8 @@ export default async function TeamPage({ params }: TeamPageProps) {
     description: string | null;
     logo_url: string | null;
     visibility: string;
+    lifecycle_status: string | null;
+    last_activity_at: string | null;
     created_at: string | null;
     updated_at: string | null;
     technologies: string[];
@@ -256,6 +260,8 @@ export default async function TeamPage({ params }: TeamPageProps) {
     description: p.description,
     logo_url: p.logo_url,
     visibility: p.visibility,
+    lifecycle_status: p.lifecycle_status,
+    last_activity_at: p.last_activity_at as string | null,
     created_at: p.created_at,
     updated_at: p.updated_at as string | null,
     technologies: Array.isArray(p.technologies) ? p.technologies : [],
@@ -378,6 +384,8 @@ export default async function TeamPage({ params }: TeamPageProps) {
     logo_url: team.logo_url,
     banner_url: team.banner_url,
     visibility: team.visibility,
+    status: team.status,
+    last_activity_at: team.last_activity_at,
     created_at: team.created_at,
     categories: teamCategories,
     owner: ownerProfile,

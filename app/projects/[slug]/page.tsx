@@ -237,6 +237,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     team: projectTeam,
     owner: projectOwner,
     branch: branchData,
+    lifecycle_status: project.lifecycle_status as string | null,
+    last_activity_at: project.last_activity_at as string | null,
   };
 
   return (

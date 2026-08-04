@@ -23,7 +23,9 @@ export function ProfileTimeline({ activities, cardClass }: ProfileTimelineProps)
 
       {activities.length === 0 ? (
         <div className="mt-6 flex flex-col items-center gap-3 py-10 text-center">
-          <Clock className="h-6 w-6 text-ink-600" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border-strong bg-white/[0.03]">
+            <Clock className="h-6 w-6 text-ink-600" />
+          </div>
           <p className="max-w-xs text-sm text-ink-400">
             No activity yet — joining a branch, creating a team, or shipping
             a project will show up here.
@@ -31,7 +33,7 @@ export function ProfileTimeline({ activities, cardClass }: ProfileTimelineProps)
         </div>
       ) : (
         <div className="relative mt-6 space-y-6 pl-6">
-          <div className="absolute bottom-1 left-[4.5px] top-1 w-px bg-border" />
+          <div className="absolute bottom-1 left-[4.5px] top-1 w-px bg-border/50" />
           {activities.map((activity, index) => (
             <Reveal key={activity.id} delay={index * 40}>
               <div className="relative">

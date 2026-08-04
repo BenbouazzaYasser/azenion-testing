@@ -189,6 +189,37 @@ export async function updateTeam(formData: FormData) {
   return { success: true };
 }
 
+export async function reactivateTeam(formData: FormData) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const teamId = formData.get("team_id") as string;
+  const slug = formData.get("slug") as string;
+
+  if (!teamId) {
+    return { error: "Team ID is required" };
+  }
+
+  const { error } = await supabase.rpc("reactivate_team", {
+    p_team_id: teamId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/teams/${slug}`);
+  revalidatePath("/teams");
+  return { success: true };
+}
+
 export async function deleteTeam(formData: FormData) {
   const supabase = createClient();
 

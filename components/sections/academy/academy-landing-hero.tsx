@@ -11,7 +11,7 @@ export function AcademyLandingHero() {
       </Reveal>
 
       <Reveal delay={80}>
-        <h1 className="mt-4 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
+        <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
           Learn. Build. <span className="text-accent-400">Grow.</span>
         </h1>
       </Reveal>

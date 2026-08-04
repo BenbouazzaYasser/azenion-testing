@@ -15,6 +15,7 @@ import { PageBridge } from "@/components/sections/page-bridge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isTeamHidden } from "@/lib/lifecycle";
 
 export const metadata: Metadata = {
   title: "Teams | Azenion — The Limitless Network",
@@ -44,6 +45,8 @@ export default async function TeamsPage() {
         description,
         logo_url,
         visibility,
+        status,
+        last_activity_at,
         created_at,
         updated_at,
         technologies,
@@ -123,7 +126,9 @@ export default async function TeamsPage() {
     teamCategoryMap.set(edge.team_id, entries);
   }
 
-  const teamsWithCounts = (teams ?? []).map((team) => {
+  const teamsWithCounts = (teams ?? [])
+    .filter((team) => !isTeamHidden(team.last_activity_at as string | null))
+    .map((team) => {
     return {
       id: team.id,
       slug: team.slug,
@@ -131,6 +136,8 @@ export default async function TeamsPage() {
       description: team.description,
       logo_url: team.logo_url,
       visibility: team.visibility,
+      status: team.status,
+      last_activity_at: team.last_activity_at as string | null,
       created_at: team.created_at,
       updated_at: team.updated_at as string | null,
       technologies: Array.isArray(team.technologies) ? team.technologies : [],
@@ -151,7 +158,8 @@ export default async function TeamsPage() {
           .select(`
             role,
             team:team_id (
-              id, slug, name, description, logo_url, visibility, created_at, updated_at,
+              id, slug, name, description, logo_url, visibility, status,
+              last_activity_at, created_at, updated_at,
               technologies,
               owner:owner_id ( username, full_name, avatar_url )
             )
@@ -213,6 +221,8 @@ export default async function TeamsPage() {
               description: string | null;
               logo_url: string | null;
               visibility: string;
+              status: string | null;
+              last_activity_at: string | null;
               created_at: string | null;
               updated_at: string | null;
               technologies: string[];

@@ -11,6 +11,13 @@ export function AnnouncementsHero() {
         </h1>
       </Reveal>
 
+      <Reveal delay={160}>
+        <p className="mx-auto mt-6 max-w-3xl text-balance text-[1.05rem] leading-relaxed text-ink-400 sm:text-[1.1rem] sm:leading-8">
+          The latest news, milestones and updates from across the community —
+          from platform launches to branch announcements.
+        </p>
+      </Reveal>
+
       <Reveal delay={240}>
         <div className="mt-8 hidden items-center justify-center gap-3 sm:flex">
           <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">

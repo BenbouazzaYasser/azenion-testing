@@ -266,6 +266,37 @@ export async function updateProjectSettings(formData: FormData) {
   return { success: true };
 }
 
+export async function restoreProject(formData: FormData) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const projectId = formData.get("project_id") as string;
+  const slug = formData.get("slug") as string;
+
+  if (!projectId) {
+    return { error: "Project ID is required" };
+  }
+
+  const { error } = await supabase.rpc("restore_project", {
+    p_project_id: projectId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(`/projects/${slug}`);
+  revalidatePath("/projects");
+  return { success: true };
+}
+
 export async function deleteProject(formData: FormData) {
   const supabase = createClient();
 

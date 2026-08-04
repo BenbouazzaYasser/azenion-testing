@@ -12,7 +12,7 @@ interface ProfileStatsProps {
 }
 
 function formatCount(value: number) {
-  return value > 0 ? String(value) : "—";
+  return value > 0 ? String(value) : "\u2014";
 }
 
 interface StatCard {
@@ -60,7 +60,7 @@ export function ProfileStats({
       {cards.map((card, index) => {
         const Icon = card.icon;
         const content = (
-          <div className={`${cardClass} h-full`}>
+          <div className={`${cardClass} h-full transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]`}>
             <Icon className="h-4 w-4 text-accent-400" />
             <p className="mt-3 truncate text-lg font-semibold text-ink-50">
               {card.value}
@@ -70,9 +70,12 @@ export function ProfileStats({
         );
 
         return (
-          <Reveal key={card.label} delay={index * 80} className="h-full">
+          <Reveal key={card.label} delay={index * 60} className="h-full">
             {card.href ? (
-              <Link href={card.href} className="block h-full transition-opacity hover:opacity-90">
+              <Link
+                href={card.href}
+                className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 rounded-[1.5rem]"
+              >
                 {content}
               </Link>
             ) : (

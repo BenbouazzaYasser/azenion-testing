@@ -1,4 +1,5 @@
 import { Calendar, GraduationCap, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { AvatarUpload } from "./avatar-upload";
 import { EditProfileDialog } from "./edit-profile-dialog";
 import { formatDate } from "@/lib/date";
@@ -50,23 +51,23 @@ export function ProfileHeader({ profile, branch, cardClass }: ProfileHeaderProps
               </p>
             ) : null}
 
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-xs text-ink-400">
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs text-ink-400">
               {profile.institution ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <GraduationCap className="h-3.5 w-3.5 text-accent-400" />
+                <Badge className="border-ink-500/30 bg-ink-500/10 text-ink-300 h-5 px-2.5 py-0 gap-1.5">
+                  <GraduationCap className="h-3 w-3" />
                   {profile.institution}
-                </span>
+                </Badge>
               ) : null}
               {branch ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5 text-accent-400" />
+                <Badge className="border-ink-500/30 bg-ink-500/10 text-ink-300 h-5 px-2.5 py-0 gap-1.5">
+                  <Users className="h-3 w-3" />
                   {branch.name}
-                </span>
+                </Badge>
               ) : null}
-              <span className="inline-flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-accent-400" />
+              <Badge className="border-ink-500/30 bg-ink-500/10 text-ink-300 h-5 px-2.5 py-0 gap-1.5">
+                <Calendar className="h-3 w-3" />
                 Member since {formatDate(profile.created_at)}
-              </span>
+              </Badge>
             </div>
           </div>
         </div>

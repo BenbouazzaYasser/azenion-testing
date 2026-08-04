@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getProjectLifecycleStatus } from "@/lib/lifecycle";
 
 export const metadata: Metadata = {
   title: "Projects | Azenion — The Limitless Network",
@@ -36,6 +37,8 @@ export default async function ProjectsPage() {
       description,
       logo_url,
       visibility,
+      lifecycle_status,
+      last_activity_at,
       created_at,
       updated_at,
       technologies,
@@ -102,13 +105,17 @@ export default async function ProjectsPage() {
     }
   }
 
-  const visibleProjects = (projects ?? []).map((p) => ({
+  const visibleProjects = (projects ?? [])
+    .filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED")
+    .map((p) => ({
     id: p.id,
     slug: p.slug,
     name: p.name,
     description: p.description,
     logo_url: p.logo_url,
     visibility: p.visibility,
+    lifecycle_status: p.lifecycle_status,
+    last_activity_at: p.last_activity_at as string | null,
     created_at: p.created_at,
     updated_at: p.updated_at as string | null,
     technologies: Array.isArray(p.technologies) ? p.technologies : [],
@@ -132,6 +139,8 @@ export default async function ProjectsPage() {
     description: string | null;
     logo_url: string | null;
     visibility: string;
+    lifecycle_status: string | null;
+    last_activity_at: string | null;
     created_at: string | null;
     updated_at: string | null;
     technologies: string[];
@@ -149,7 +158,8 @@ export default async function ProjectsPage() {
       .select(`
         role,
         project:project_id (
-          id, slug, name, description, logo_url, visibility, created_at, updated_at,
+          id, slug, name, description, logo_url, visibility, lifecycle_status,
+          last_activity_at, created_at, updated_at,
           technologies, recruitment,
           owner:owner_id ( username, full_name, avatar_url ),
           team:team_id ( name, slug )
@@ -192,6 +202,8 @@ export default async function ProjectsPage() {
           description: string | null;
           logo_url: string | null;
           visibility: string;
+          lifecycle_status: string | null;
+          last_activity_at: string | null;
           created_at: string | null;
           updated_at: string | null;
           technologies: string[];
@@ -206,6 +218,8 @@ export default async function ProjectsPage() {
           description: p.description,
           logo_url: p.logo_url,
           visibility: p.visibility,
+          lifecycle_status: p.lifecycle_status,
+          last_activity_at: p.last_activity_at,
           created_at: p.created_at,
           updated_at: p.updated_at,
           technologies: Array.isArray(p.technologies) ? p.technologies : [],

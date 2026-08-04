@@ -1,7 +1,7 @@
 function Skeleton({ className }: { className: string }) {
   return (
     <div
-      className={`animate-pulse rounded-xl bg-white/[0.04] ${className}`}
+      className={`animate-pulse rounded-[0.75rem] bg-white/[0.04] ${className}`}
     />
   );
 }
@@ -17,12 +17,15 @@ function CardSkeleton({ className }: { className?: string }) {
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-5 w-24" />
           <Skeleton className="h-4 w-72" />
-          <div className="flex gap-4">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-36" />
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-5 w-16" />
+            ))}
           </div>
-          <Skeleton className="h-9 w-28 rounded-full" />
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-5 w-48" />
+          </div>
         </div>
       </div>
     </div>
@@ -35,7 +38,7 @@ function StatsSkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="overflow-hidden rounded-[1.5rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-5 py-5 shadow-card backdrop-blur-xl"
+          className="overflow-hidden rounded-[1.5rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-5 py-5 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]"
         >
           <Skeleton className="mb-2 h-4 w-16" />
           <Skeleton className="h-6 w-12" />
@@ -47,20 +50,20 @@ function StatsSkeleton() {
 
 function DetailsSkeleton() {
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-7 shadow-card backdrop-blur-xl sm:px-8 sm:py-8">
-      <Skeleton className="h-4 w-28" />
-      <div className="mt-5 grid gap-6 sm:grid-cols-2">
-        <div>
-          <Skeleton className="mb-3 h-4 w-12" />
-          <div className="flex flex-wrap gap-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-6 w-16 rounded-full" />
-            ))}
-          </div>
+    <div className="space-y-4">
+      <div className="overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-7 shadow-card backdrop-blur-xl sm:px-8 sm:py-8">
+        <Skeleton className="h-4 w-28" />
+        <div className="mt-5 flex flex-wrap gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-5 w-16" />
+          ))}
         </div>
-        <div className="space-y-3">
-          <Skeleton className="h-14 w-full rounded-xl" />
-          <Skeleton className="h-14 w-full rounded-xl" />
+      </div>
+      <div className="overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-7 shadow-card backdrop-blur-xl sm:px-8 sm:py-8">
+        <Skeleton className="h-4 w-28" />
+        <div className="mt-5 space-y-3">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
         </div>
       </div>
     </div>

@@ -46,12 +46,12 @@ export function AcademyFeatures() {
       <div className="mx-auto max-w-[1080px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="text-center">
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-300">
+            <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
               Explore the Academy
             </span>
             <h2
               id="academy-features-heading"
-              className="mt-5 text-balance text-3xl font-semibold leading-[1.15] tracking-tight text-ink-50 sm:text-4xl lg:text-[2.75rem]"
+              className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
             >
               Three ways to <span className="text-accent-400">level up.</span>
             </h2>
@@ -61,7 +61,7 @@ export function AcademyFeatures() {
         <div className="mt-14 grid gap-5 md:grid-cols-3">
           {FEATURES.map((feature, i) => (
             <Reveal key={feature.title} delay={i * 120}>
-              <article className="group flex h-full flex-col rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-8 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-accent-400/30 hover:shadow-glow-sm">
+              <article className="group flex h-full flex-col rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-8 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-accent-400/30 hover:shadow-glow-sm">
                 <div className="flex items-center justify-between">
                   <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-accent-400/25 bg-accent/[0.08] text-accent-300 shadow-[0_0_24px_-6px_rgba(109,109,255,0.5)]">
                     <feature.icon size={22} />

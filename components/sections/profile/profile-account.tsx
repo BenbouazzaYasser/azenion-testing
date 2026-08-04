@@ -13,6 +13,9 @@ interface ProfileAccountProps {
   cardClass: string;
 }
 
+const iconContainerClass =
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent-400/30 bg-accent/[0.08]";
+
 export function ProfileAccount({
   profileUserId,
   currentUserId,
@@ -39,7 +42,7 @@ export function ProfileAccount({
         <div className={cardClass}>
           <div className="flex items-center justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong bg-white/[0.03]">
+              <div className={iconContainerClass}>
                 <Mail size={18} className="text-accent-400" />
               </div>
               <div>
@@ -58,7 +61,7 @@ export function ProfileAccount({
 
         <div className={cardClass}>
           <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong bg-white/[0.03]">
+            <div className={iconContainerClass}>
               <KeyRound size={18} className="text-accent-400" />
             </div>
             <div className="flex flex-1 items-center justify-between gap-4">
@@ -75,7 +78,7 @@ export function ProfileAccount({
 
         <div className={cardClass}>
           <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong bg-white/[0.03]">
+            <div className={iconContainerClass}>
               <UserCircle size={18} className="text-accent-400" />
             </div>
             <div className="flex-1">
@@ -109,10 +112,10 @@ export function ProfileAccount({
       <div className="mt-6">
         <div className="relative mb-4">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-red-500/20" />
+            <div className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-start">
-            <span className="bg-[#050507] pr-4 text-xs font-medium uppercase tracking-widest text-red-400/60">
+            <span className="bg-[#050507] pr-4 text-xs font-medium uppercase tracking-widest text-ink-500">
               Danger Zone
             </span>
           </div>

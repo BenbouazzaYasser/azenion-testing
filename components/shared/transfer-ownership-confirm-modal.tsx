@@ -3,6 +3,7 @@
 import { useEffect, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { ShieldAlert } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { transferTeamOwnership, transferProjectOwnership } from "@/actions/ownership.actions";
 
@@ -63,9 +64,10 @@ export function TransferOwnershipConfirmModal({
       const action = type === "team" ? transferTeamOwnership : transferProjectOwnership;
       const result = await action(formData);
       if (result.error) {
-        alert(result.error);
+        toast.error(result.error);
         return;
       }
+      toast.success(`Ownership of ${resourceName} transferred.`);
       onClose();
     });
   }

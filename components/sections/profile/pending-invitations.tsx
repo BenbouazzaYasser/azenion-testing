@@ -71,16 +71,16 @@ export function PendingInvitations({ invitations, cardClass }: PendingInvitation
 
           return (
             <Reveal key={inv.id}>
-              <div className="rounded-xl border border-border-strong bg-white/[0.02] p-4">
+              <div className={`${cardClass} p-4`}>
                 <div className="flex items-start gap-3">
                   {inv.team_logo_url ? (
                     <img
                       src={inv.team_logo_url}
                       alt=""
-                      className="h-10 w-10 shrink-0 rounded-lg border border-accent-400/30 object-cover"
+                      className="h-10 w-10 shrink-0 rounded-[0.75rem] border border-accent-400/30 object-cover"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-accent-400/30 bg-accent/[0.08] text-sm font-semibold text-accent-400">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-accent-400/30 bg-accent/[0.08] text-sm font-semibold text-accent-400">
                       {initials}
                     </div>
                   )}

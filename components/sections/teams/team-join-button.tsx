@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Plus, LogOut, Hourglass, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { leaveTeam } from "@/actions/team.actions";
 import { OwnershipLeaveModal } from "@/components/shared/ownership-leave-modal";
@@ -45,7 +46,7 @@ export function TeamJoinButton({
       startTransition(async () => {
         const result = await leaveTeam(teamId, teamSlug);
         if (result.error) {
-          alert(result.error);
+          toast.error(result.error);
         }
       });
       return;

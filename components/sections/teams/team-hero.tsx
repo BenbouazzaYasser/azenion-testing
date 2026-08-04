@@ -1,13 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Users, Calendar, User, Building2, Settings } from "lucide-react";
+import { useTransition } from "react";
+import { Users, Calendar, User, Building2, Settings, Clock, Archive } from "lucide-react";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Reveal } from "@/components/ui/reveal";
 import { TeamJoinButton, type TeamRequestStatus } from "./team-join-button";
 import { TeamCategoryBadge } from "./team-category-badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/date";
+import { getTeamStatus, isTeamHidden } from "@/lib/lifecycle";
+import { reactivateTeam } from "@/actions/team.actions";
 import Link from "next/link";
 
 interface TeamHeroProps {
@@ -19,6 +22,8 @@ interface TeamHeroProps {
     logo_url: string | null;
     banner_url: string | null;
     visibility: string;
+    status?: string | null;
+    last_activity_at?: string | null;
     created_at: string | null;
     categories: { id: string; name: string; slug: string }[];
     owner: {
@@ -38,9 +43,21 @@ interface TeamHeroProps {
 
 export function TeamHero({ team, isMember, currentUserId, requestStatus, categories }: TeamHeroProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const isOwner = currentUserId === team.owner.id;
   const visibleCats = team.categories.slice(0, 3);
   const catOverflow = team.categories.length - visibleCats.length;
+  const inactive = getTeamStatus(team.last_activity_at) === "inactive";
+  const hidden = isTeamHidden(team.last_activity_at);
+
+  function handleReactivate() {
+    const formData = new FormData();
+    formData.set("team_id", team.id);
+    formData.set("slug", team.slug);
+    startTransition(async () => {
+      await reactivateTeam(formData);
+    });
+  }
 
   return (
     <section className="relative pt-[88px] sm:pt-[104px] lg:pt-[120px]">
@@ -82,6 +99,43 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
             ) : null}
           </div>
         </Reveal>
+
+        {inactive || hidden ? (
+          <Reveal delay={40}>
+            <div className="mt-5 flex flex-col items-center gap-3">
+              <div
+                className={`inline-flex max-w-xl items-center gap-2 rounded-2xl border px-4 py-3 text-left text-sm ${
+                  hidden
+                    ? "border-red-500/25 bg-red-500/[0.07] text-red-300"
+                    : "border-amber-500/25 bg-amber-500/[0.07] text-amber-300"
+                }`}
+              >
+                {hidden ? (
+                  <>
+                    <Archive size={15} className="shrink-0" />
+                    <span>
+                      This team has been inactive for a long time and is hidden from discovery. It
+                      stays accessible to members.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Clock size={15} className="shrink-0" />
+                    <span>
+                      This team has been inactive. It will be hidden from discovery if activity does
+                      not resume.
+                    </span>
+                  </>
+                )}
+              </div>
+              {isOwner ? (
+                <Button size="sm" variant="secondary" onClick={handleReactivate} disabled={isPending}>
+                  {isPending ? "Reactivating..." : "Reactivate team"}
+                </Button>
+              ) : null}
+            </div>
+          </Reveal>
+        ) : null}
 
         <Reveal delay={80}>
           <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">

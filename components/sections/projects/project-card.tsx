@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, Users, Eye, Lock, UserPlus, Globe } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { formatDistanceToNow } from "@/lib/date";
+import { getProjectLifecycleStatus } from "@/lib/lifecycle";
 
 export interface RecruitmentRole {
   id: string;
@@ -20,6 +21,8 @@ export interface ProjectCardProject {
   description: string | null;
   logo_url: string | null;
   visibility: string;
+  lifecycle_status?: string | null;
+  last_activity_at?: string | null;
   created_at: string | null;
   updated_at: string | null;
   technologies: string[];
@@ -56,6 +59,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
   const roleOverflow = roles.length - visibleRoles.length;
 
   const vis = visibilityConfig[project.visibility];
+  const lifecycle = getProjectLifecycleStatus(project.last_activity_at);
 
   return (
     <Reveal delay={index * 60}>
@@ -151,6 +155,15 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
                       return <Icon size={10} />;
                     })()}
                     {vis.label}
+                  </span>
+                ) : null}
+                {lifecycle === "ARCHIVED" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-red-500/25 bg-red-500/[0.07] px-2 py-0.5 font-medium text-red-400">
+                    Archived
+                  </span>
+                ) : lifecycle === "INACTIVE" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/[0.07] px-2 py-0.5 font-medium text-amber-400">
+                    Inactive
                   </span>
                 ) : null}
                 <span className="inline-flex items-center gap-1">

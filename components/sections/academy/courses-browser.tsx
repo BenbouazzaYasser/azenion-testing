@@ -23,7 +23,7 @@ export function CoursesBrowser() {
   const [category, setCategory] = useState("");
 
   return (
-    <section className="relative py-16 sm:py-20" aria-labelledby="courses-browser-heading">
+    <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="courses-browser-heading">
       <div className="mx-auto max-w-[880px] px-5 sm:px-8">
         <Reveal>
           <div className="relative">

@@ -1,5 +1,5 @@
 import { Github, Linkedin } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface ProfileRow {
   id: string;
@@ -20,6 +20,9 @@ interface ProfileDetailsProps {
   cardClass: string;
 }
 
+const skillBadgeClass =
+  "inline-flex items-center rounded-full border border-accent/20 bg-accent/[0.06] px-2.5 py-0.5 text-[11px] font-medium text-accent-300";
+
 function stripProtocol(url: string) {
   return url.replace(/^https?:\/\//, "");
 }
@@ -37,7 +40,11 @@ export function ProfileDetails({ profile, cardClass }: ProfileDetailsProps) {
         </h2>
         <div className="mt-4 flex flex-wrap gap-2">
           {skills.length > 0 ? (
-            skills.map((skill) => <Badge key={skill}>{skill}</Badge>)
+            skills.map((skill) => (
+              <span key={skill} className={skillBadgeClass}>
+                {skill}
+              </span>
+            ))
           ) : (
             <p className="text-sm text-ink-400">No skills added yet</p>
           )}
@@ -56,7 +63,7 @@ export function ProfileDetails({ profile, cardClass }: ProfileDetailsProps) {
                 href={githubUrl}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="truncate text-ink-200 transition-colors hover:text-ink-50"
+                className="truncate text-ink-200 transition-all duration-300 hover:text-accent-400 hover:translate-x-0.5"
               >
                 {stripProtocol(githubUrl)}
               </a>
@@ -71,7 +78,7 @@ export function ProfileDetails({ profile, cardClass }: ProfileDetailsProps) {
                 href={linkedinUrl}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="truncate text-ink-200 transition-colors hover:text-ink-50"
+                className="truncate text-ink-200 transition-all duration-300 hover:text-accent-400 hover:translate-x-0.5"
               >
                 {stripProtocol(linkedinUrl)}
               </a>

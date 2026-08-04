@@ -1,14 +1,15 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { Users, Plus, LogOut, User, Lock, Eye, UserPlus, Globe, Building2 } from "lucide-react";
+import { Users, Plus, LogOut, User, Lock, Eye, UserPlus, Globe, Building2, Archive, Clock } from "lucide-react";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
-import { joinProject, leaveProject } from "@/actions/project.actions";
+import { joinProject, leaveProject, restoreProject } from "@/actions/project.actions";
 import { OwnershipLeaveModal } from "@/components/shared/ownership-leave-modal";
 import type { RecruitmentRole } from "./recruitment-editor";
 import { ProjectSettingsDialog } from "./project-settings-dialog";
+import { getProjectLifecycleStatus } from "@/lib/lifecycle";
 import Link from "next/link";
 
 interface MemberInfo {
@@ -37,6 +38,8 @@ interface ProjectPageHeroProps {
     recruitment: RecruitmentRole[];
     categories: { id: string; name: string; slug: string }[];
     branch: { id: string; name: string; slug: string } | null;
+    lifecycle_status?: string | null;
+    last_activity_at?: string | null;
   };
   isMember: boolean;
   currentUserId: string | null;
@@ -53,11 +56,23 @@ const VISIBILITY_CONFIG: Record<string, { icon: typeof Lock; label: string; clas
 
 export function ProjectPageHero({ project, isMember, currentUserId, userRole, members, allCategories }: ProjectPageHeroProps) {
   const [isPending, startTransition] = useTransition();
+  const [restorePending, startRestoreTransition] = useTransition();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const isOwner = currentUserId === project.owner?.id;
+  const canRestore = isOwner || userRole === "owner" || userRole === "admin";
+  const lifecycle = getProjectLifecycleStatus(project.last_activity_at);
   const visConfig = VISIBILITY_CONFIG[project.visibility] ?? VISIBILITY_CONFIG.open!;
   const VisIcon = visConfig.icon;
+
+  function handleRestore() {
+    const formData = new FormData();
+    formData.set("project_id", project.id);
+    formData.set("slug", project.slug);
+    startRestoreTransition(async () => {
+      await restoreProject(formData);
+    });
+  }
 
   function handleJoinLeave() {
     if (isMember && isOwner) {
@@ -86,17 +101,59 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
               <VisIcon size={12} />
               {visConfig.label}
             </div>
-            {project.branch ? (
-              <Link
-                href={`/branches/${project.branch.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium text-accent-300 transition-colors hover:bg-accent/[0.14]"
+                {project.branch ? (
+                  <Link
+                    href={`/branches/${project.branch.slug}`}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium text-accent-300 transition-colors hover:bg-accent/[0.14]"
+                  >
+                    <Building2 size={12} />
+                    {project.branch.name} • Azenion
+                  </Link>
+                ) : null}
+              </div>
+            </Reveal>
+
+        {lifecycle !== "ACTIVE" ? (
+          <Reveal delay={40}>
+            <div className="mt-5 flex flex-col items-center gap-3">
+              <div
+                className={`inline-flex max-w-xl items-center gap-2 rounded-2xl border px-4 py-3 text-left text-sm ${
+                  lifecycle === "ARCHIVED"
+                    ? "border-red-500/25 bg-red-500/[0.07] text-red-300"
+                    : "border-amber-500/25 bg-amber-500/[0.07] text-amber-300"
+                }`}
               >
-                <Building2 size={12} />
-                {project.branch.name} • Azenion
-              </Link>
-            ) : null}
-          </div>
-        </Reveal>
+                {lifecycle === "ARCHIVED" ? (
+                  <>
+                    <Archive size={15} className="shrink-0" />
+                    <span>
+                      This project has been archived due to inactivity. It remains accessible to
+                      members but is hidden from discovery.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Clock size={15} className="shrink-0" />
+                    <span>
+                      This project has been inactive for a while and will be archived soon if no
+                      new activity happens.
+                    </span>
+                  </>
+                )}
+              </div>
+              {lifecycle === "ARCHIVED" && canRestore ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleRestore}
+                  disabled={restorePending}
+                >
+                  {restorePending ? "Restoring..." : "Restore project"}
+                </Button>
+              ) : null}
+            </div>
+          </Reveal>
+        ) : null}
 
         <Reveal delay={80}>
           <div className="mt-6 flex items-center justify-center gap-4">

@@ -13,19 +13,19 @@ export function LabsHero() {
       </Reveal>
 
       <Reveal delay={80}>
-        <h1 className="text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
+        <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
           Labs
         </h1>
       </Reveal>
 
       <Reveal delay={140}>
-        <p className="mt-5 text-balance text-lg font-medium text-accent-300 sm:text-xl">
+        <p className="mt-6 text-balance text-lg font-medium text-accent-300 sm:text-xl">
           Where ideas become reality.
         </p>
       </Reveal>
 
       <Reveal delay={180}>
-        <div className="mt-5 flex justify-center">
+        <div className="mt-6 flex justify-center">
           <Badge className="border-accent-400/30 bg-accent/[0.08] text-accent-300">
             Coming Soon
           </Badge>

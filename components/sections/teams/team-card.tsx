@@ -5,6 +5,7 @@ import { ArrowUpRight, Users, FolderKanban, MessageSquare } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { TeamCategoryBadge } from "./team-category-badge";
 import { formatDistanceToNow } from "@/lib/date";
+import { getTeamStatus, isTeamHidden } from "@/lib/lifecycle";
 
 export interface TeamOpenRole {
   title: string;
@@ -17,6 +18,8 @@ export interface TeamCardTeam {
   description: string | null;
   logo_url: string | null;
   visibility: string;
+  status?: string | null;
+  last_activity_at?: string | null;
   created_at: string | null;
   updated_at: string | null;
   technologies: string[];
@@ -50,6 +53,9 @@ export function TeamCard({ team, index }: TeamCardProps) {
   const visibleCats = cats.slice(0, 3);
   const catOverflow = cats.length - visibleCats.length;
 
+  const inactive = getTeamStatus(team.last_activity_at) === "inactive";
+  const hidden = isTeamHidden(team.last_activity_at);
+
   return (
     <Reveal delay={index * 60}>
       <Link href={`/teams/${team.slug}`} className="group block h-full">
@@ -77,6 +83,22 @@ export function TeamCard({ team, index }: TeamCardProps) {
                 ) : null}
               </div>
             </div>
+
+            {/* Lifecycle */}
+            {inactive || hidden ? (
+              <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                {inactive ? (
+                  <span className="inline-flex rounded-full border border-amber-500/25 bg-amber-500/[0.07] px-2.5 py-0.5 text-[11px] font-medium text-amber-400">
+                    Inactive
+                  </span>
+                ) : null}
+                {hidden ? (
+                  <span className="inline-flex rounded-full border border-red-500/25 bg-red-500/[0.07] px-2.5 py-0.5 text-[11px] font-medium text-red-400">
+                    Hidden from discovery
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
 
             {/* Categories */}
             {cats.length > 0 ? (
