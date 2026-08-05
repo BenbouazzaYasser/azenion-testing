@@ -35,14 +35,19 @@ const config: Config = {
         // Brand accent — rgb(40,40,255), used sparingly
         accent: {
           DEFAULT: "#2828FF",
-          400: "#6D6DFF",
+          200: "#D6D8FF",
           300: "#A5A8FF",
+          400: "#6D6DFF",
+          500: "#2020E8",
+          600: "#1818C0",
           glow: "#4747FF",
         },
         ink: {
           50: "#F4F5F8",
           200: "#C7C9D6",
+          300: "#A9ACBA",
           400: "#8B8D9A",
+          500: "#6E7180",
           600: "#5B5D6B",
         },
         border: {
@@ -70,6 +75,16 @@ const config: Config = {
         glow: "0 0 60px -15px rgba(40,40,255,0.55)",
         "glow-sm": "0 0 24px -8px rgba(40,40,255,0.45)",
         card: "0 1px 0 0 rgba(244,245,248,0.06) inset",
+        "card-hover":
+          "0 0 0 1px rgba(109,109,255,0.12) inset, 0 10px 30px -12px rgba(0,0,0,0.4)",
+        "card-active":
+          "0 0 0 1px rgba(109,109,255,0.18) inset, 0 2px 10px -4px rgba(0,0,0,0.45)",
+        dialog:
+          "0 0 0 1px rgba(255,255,255,0.04) inset, 0 30px 80px -20px rgba(40,40,255,0.15)",
+        dropdown:
+          "0 24px 70px -20px rgba(0,0,0,0.65), 0 0 50px -18px rgba(40,40,255,0.5)",
+        input: "0 0 0 1px rgba(109,109,255,0.15)",
+        "input-error": "0 0 0 1px rgba(239,68,68,0.3)",
       },
       keyframes: {
         "fade-in-up": {

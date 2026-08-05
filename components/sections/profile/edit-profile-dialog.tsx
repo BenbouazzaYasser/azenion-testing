@@ -23,7 +23,7 @@ interface EditProfileDialogProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border bg-white/[0.03] px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(109,109,255,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
+  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
 
 export function EditProfileDialog({ profile }: EditProfileDialogProps) {
   const [open, setOpen] = useState(false);
@@ -84,7 +84,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
             />
 
             <div
-              className="relative z-10 flex max-h-[85vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_30px_80px_-20px_rgba(40,40,255,0.15)] backdrop-blur-2xl transition-all duration-200 ease-premium"
+              className="relative z-10 flex max-h-[85vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
               style={{
                 opacity: mounted ? 1 : 0,
                 transform: mounted ? "scale(1)" : "scale(0.95)",
@@ -99,7 +99,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Close"
-                  className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-colors hover:bg-white/5 hover:text-ink-50"
+                  className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-white/[0.06] hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                 >
                   <X className="h-5 w-5" />
                 </button>

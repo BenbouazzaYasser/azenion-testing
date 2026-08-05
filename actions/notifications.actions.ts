@@ -19,10 +19,23 @@ export interface AppNotification {
   } | null;
 }
 
+/**
+ * The authenticated user is always derived from the server session.
+ * Client-provided ids are never trusted.
+ */
+async function getSessionUserId(): Promise<string | null> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
+
 export async function getNotificationsAction(
-  userId: string | null,
+  _userId: string | null,
   limit = 20,
 ): Promise<AppNotification[]> {
+  const userId = await getSessionUserId();
   if (!userId) return [];
 
   const supabase = createAdminClient();
@@ -47,7 +60,8 @@ export async function getNotificationsAction(
   return (data ?? []) as unknown as AppNotification[];
 }
 
-export async function getUnreadNotificationCount(userId: string | null): Promise<number> {
+export async function getUnreadNotificationCount(_userId: string | null): Promise<number> {
+  const userId = await getSessionUserId();
   if (!userId) return 0;
 
   const supabase = createAdminClient();
@@ -61,7 +75,8 @@ export async function getUnreadNotificationCount(userId: string | null): Promise
   return count ?? 0;
 }
 
-export async function markNotificationsRead(userId: string | null) {
+export async function markNotificationsRead(_userId: string | null) {
+  const userId = await getSessionUserId();
   if (!userId) return;
 
   const supabase = createClient();
@@ -73,4 +88,69 @@ export async function markNotificationsRead(userId: string | null) {
     .eq("read", false);
 
   if (error) console.error("[notifications] mark read failed:", error.message);
+}
+
+/**
+ * Marks a single notification as read. Ownership is enforced via the session
+ * user id and the notifications RLS policy.
+ */
+export async function markNotificationRead(notificationId: string) {
+  const userId = await getSessionUserId();
+  if (!userId) return;
+
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("notifications")
+    .update({ read: true })
+    .eq("id", notificationId)
+    .eq("user_id", userId)
+    .eq("read", false);
+
+  if (error) console.error("[notifications] mark single read failed:", error.message);
+}
+
+/**
+ * Resolves the navigable route for a notification using its target_type and
+ * target_id. Returns null when there is no resolvable destination.
+ */
+export async function resolveNotificationTarget(
+  targetType: string | null,
+  targetId: string | null,
+): Promise<string | null> {
+  if (!targetType || !targetId) return null;
+
+  const supabase = createAdminClient();
+
+  if (targetType === "project_update") {
+    const { data } = await supabase
+      .from("project_updates")
+      .select("project:project_id ( slug )")
+      .eq("id", targetId)
+      .maybeSingle();
+    const project = data as unknown as { project: { slug: string } | null } | null;
+    return project?.project?.slug ? `/projects/${project.project.slug}` : null;
+  }
+
+  if (targetType === "team_update") {
+    const { data } = await supabase
+      .from("team_updates")
+      .select("team:team_id ( slug )")
+      .eq("id", targetId)
+      .maybeSingle();
+    const team = data as unknown as { team: { slug: string } | null } | null;
+    return team?.team?.slug ? `/teams/${team.team.slug}` : null;
+  }
+
+  if (targetType === "branch_announcement") {
+    const { data } = await supabase
+      .from("branch_announcements")
+      .select("branch:branch_id ( slug )")
+      .eq("id", targetId)
+      .maybeSingle();
+    const branch = data as unknown as { branch: { slug: string } | null } | null;
+    return branch?.branch?.slug ? `/branches/${branch.branch.slug}` : null;
+  }
+
+  return null;
 }

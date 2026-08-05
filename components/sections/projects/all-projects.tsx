@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Search, Users, ArrowDownWideNarrow } from "lucide-react";
+import { Search, Users, Rocket, ArrowDownWideNarrow } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
@@ -86,7 +86,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
                   placeholder="Search projects..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-xl border border-border-strong bg-white/[0.03] px-11 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(109,109,255,0.15)]"
+                  className="w-full rounded-xl border border-border-strong bg-white/[0.03] px-11 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input"
                 />
               </div>
 
@@ -95,7 +95,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as SortKey)}
-                  className="appearance-none rounded-xl border border-border-strong bg-white/[0.03] px-3 py-3 pr-8 text-sm text-ink-50 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(109,109,255,0.15)]"
+                  className="appearance-none rounded-xl border border-border-strong bg-white/[0.03] px-3 py-3 pr-8 text-sm text-ink-50 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input"
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value} className="bg-[#0c0c0f] text-ink-50">
@@ -147,8 +147,8 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
         {filtered.length === 0 ? (
           <Reveal delay={160}>
             <div className="mt-10 flex flex-col items-center gap-4 py-20 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-ink-700/50 bg-white/[0.03]">
-                <Users className="h-7 w-7 text-ink-500" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                <Rocket className="h-7 w-7 text-accent-300" />
               </div>
               <div>
                 <p className="text-base font-medium text-ink-200">
@@ -156,7 +156,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
                     ? "No projects match your filters"
                     : "No projects have been created yet"}
                 </p>
-                <p className="mt-1.5 text-sm text-ink-500">
+                <p className="mt-1.5 text-sm text-ink-600">
                   {search || techFilter.length > 0 || categoryFilter.length > 0
                     ? "Try adjusting your search or filters."
                     : "Create the first project and start building the Azenion network."}

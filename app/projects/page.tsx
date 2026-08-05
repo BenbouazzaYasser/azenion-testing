@@ -58,8 +58,6 @@ export default async function ProjectsPage() {
     memberCountMap.set(row.project_id, (memberCountMap.get(row.project_id) ?? 0) + 1);
   }
 
-  console.log("[DEBUG] projects from DB:", JSON.stringify((projects ?? []).map(p => ({ name: p.name, technologies: p.technologies }))));
-
   const allTechs = new Set<string>();
   for (const p of projects ?? []) {
     if (p.technologies && Array.isArray(p.technologies)) {
@@ -71,8 +69,6 @@ export default async function ProjectsPage() {
   const technologyOptions = [...allTechs].sort((a, b) =>
     a.localeCompare(b, undefined, { sensitivity: "base" })
   );
-
-  console.log("[DEBUG] Unique technologies:", technologyOptions);
 
   const { data: projectCategoryEdges } = projectIds.length > 0
     ? await adminClient.from("project_category_members").select("project_id, category_id").in("project_id", projectIds)

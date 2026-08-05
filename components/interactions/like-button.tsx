@@ -45,7 +45,7 @@ export function LikeButton({
       disabled={!currentUserId || isPending}
       onClick={handleClick}
       className={cn(
-        "flex items-center gap-1.5 text-xs transition-all duration-300 ease-premium",
+        "flex items-center gap-1.5 rounded-full text-xs transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
         liked
           ? "text-red-400 hover:text-red-300"
           : "text-ink-600 hover:text-ink-200",

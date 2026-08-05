@@ -55,7 +55,7 @@ function getEventStatus(event: { starts_at: string | null; ends_at: string | nul
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(109,109,255,0.15)]";
+  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -360,7 +360,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-full p-1.5 text-ink-400 transition-colors hover:bg-white/5 hover:text-ink-50"
+                  className="rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-white/[0.06] hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                 >
                   <X size={18} />
                 </button>
@@ -511,9 +511,11 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
           </div>
         ) : (
           <Reveal delay={120}>
-            <div className="mt-10 flex flex-col items-center gap-3 py-14 text-center">
-              <Calendar className="h-7 w-7 text-ink-600" />
-              <p className="text-sm text-ink-500">
+            <div className="mt-10 flex flex-col items-center gap-4 py-14 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                <Calendar className="h-6 w-6 text-accent-300" />
+              </div>
+              <p className="max-w-xs text-sm text-ink-600">
                 {canManage
                   ? "No events yet. Add the branch's first event."
                   : "No events have been scheduled yet."}

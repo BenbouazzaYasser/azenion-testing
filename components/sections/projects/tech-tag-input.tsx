@@ -10,7 +10,7 @@ interface TechTagInputProps {
 }
 
 const inputBase =
-  "rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(109,109,255,0.15)]";
+  "rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus-within:border-accent-400/60 focus-within:bg-white/[0.06] focus-within:shadow-input";
 
 export function TechTagInput({ tags, onChange, disabled }: TechTagInputProps) {
   const [input, setInput] = useState("");
@@ -56,7 +56,7 @@ export function TechTagInput({ tags, onChange, disabled }: TechTagInputProps) {
               removeTag(i);
             }}
             disabled={disabled}
-            className="rounded p-0.5 text-accent-400/60 transition-colors hover:text-accent-300 disabled:opacity-40"
+            className="rounded p-0.5 text-accent-400/60 transition-colors hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 disabled:opacity-40"
           >
             <X size={12} />
           </button>

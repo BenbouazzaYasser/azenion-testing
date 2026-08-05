@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pin } from "lucide-react";
+import { Pin, Newspaper } from "lucide-react";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { FeedCard } from "@/components/feed/feed-card";
 import { getFeedItems, toggleFeedPin, type FeedItemWithAuthor } from "@/actions/feed.actions";
@@ -16,6 +16,17 @@ const FILTERS = [
 ];
 
 const PAGE_SIZE = 20;
+
+const FILTER_LABELS: Record<string, string> = {
+  project_update: "project",
+  team_update: "team",
+  branch_announcement: "branch",
+  branch_event: "event",
+};
+
+function filterDisplay(filter: string): string {
+  return FILTER_LABELS[filter] ?? "post";
+}
 
 interface FeedListProps {
   initialItems: FeedItemWithAuthor[];
@@ -158,11 +169,31 @@ export function FeedList({
 
       <div className="flex flex-col gap-4">
         {items.length === 0 && !isLoadingMore && !error && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-lg font-medium text-ink-200">No feed items yet</p>
-            <p className="mt-1 text-sm text-ink-500">
-              Posts, updates, and branch events will appear here.
-            </p>
+          <div className="flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+              <Newspaper className="h-7 w-7 text-accent-300" />
+            </div>
+            <div>
+              <p className="text-base font-medium text-ink-200">
+                {filter !== "all"
+                  ? `No ${filterDisplay(filter)} posts yet`
+                  : "No feed items yet"}
+              </p>
+              <p className="mt-1.5 text-sm text-ink-600">
+                {filter !== "all"
+                  ? "Try a different filter to see more posts."
+                  : "Posts, updates, and branch events will appear here."}
+              </p>
+            </div>
+            {filter !== "all" ? (
+              <button
+                type="button"
+                onClick={() => handleFilter("all")}
+                className="mt-1 rounded-full border border-border-strong bg-white/[0.03] px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
+              >
+                Show all posts
+              </button>
+            ) : null}
           </div>
         )}
 

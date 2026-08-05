@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, MessageSquare, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { formatDistanceToNow } from "@/lib/date";
 import { searchUsers } from "@/actions/chat.actions";
 
@@ -24,12 +25,16 @@ interface Conversation {
   updated_at: string | null;
 }
 
+export type { Conversation };
+
 interface ChatSidebarProps {
   conversations: Conversation[];
   currentUserId: string;
+  onNavigate?: () => void;
+  className?: string;
 }
 
-export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) {
+export function ChatSidebar({ conversations, currentUserId, onNavigate, className }: ChatSidebarProps) {
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<
@@ -65,7 +70,12 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col border-r border-border-strong bg-void-900/30 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.05),transparent_55%)]">
+    <div
+      className={cn(
+        "flex h-full min-h-0 flex-col border-r border-border-strong bg-void-900/30 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.05),transparent_55%)]",
+        className,
+      )}
+    >
       <div className="shrink-0 border-b border-border-strong p-4 pb-3">
         <div ref={searchRef} className="relative">
           <div className="relative">
@@ -80,9 +90,12 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
             />
           </div>
 
-          {showSearch && searchResults.length > 0 && (
-            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl border border-border-strong bg-[rgba(10,11,16,0.96)] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-              {searchResults.map((user) => (
+          {showSearch && (
+            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl border border-border-strong bg-[rgba(10,11,16,0.96)] shadow-dropdown backdrop-blur-2xl">
+              {searchResults.length === 0 ? (
+                <p className="px-4 py-3 text-sm text-ink-600">No users found.</p>
+              ) : (
+                searchResults.map((user) => (
                 <Link
                   key={user.id}
                   href={`/chat/start/${user.id}`}
@@ -90,6 +103,7 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
                     setShowSearch(false);
                     setSearchQuery("");
                     setSearchResults([]);
+                    onNavigate?.();
                   }}
                   className="flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-premium hover:bg-white/[0.06] focus-visible:bg-white/[0.06] focus-visible:outline-none"
                 >
@@ -110,13 +124,14 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
                   </div>
                   <Plus size={14} className="ml-auto shrink-0 text-ink-400" />
                 </Link>
-              ))}
+                ))
+              )}
             </div>
           )}
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:rgba(244,245,248,0.14)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/[0.14] [&::-webkit-scrollbar-track]:bg-transparent">
+      <div className={cn("flex-1 min-h-0 overflow-y-auto", SCROLLBAR_CLASSES)}>
         <div className="p-3">
           <div className="mb-2 flex items-center justify-between px-3 pt-1">
             <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-500">
@@ -131,8 +146,8 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
 
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center px-4 py-10 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-ink-500">
-                <MessageSquare size={20} />
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                <MessageSquare size={22} />
               </div>
               <p className="mt-3 text-sm font-medium text-ink-200">No conversations yet</p>
               <p className="mt-1 text-xs text-ink-600">
@@ -152,6 +167,7 @@ export function ChatSidebar({ conversations, currentUserId }: ChatSidebarProps) 
                     key={conv.id}
                     href={`/chat/${conv.id}`}
                     aria-current={isActive ? "page" : undefined}
+                    onClick={onNavigate}
                     className={cn(
                       "group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-3 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                       isActive

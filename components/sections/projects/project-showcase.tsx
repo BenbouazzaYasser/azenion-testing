@@ -115,11 +115,16 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
         ) : (
           <Reveal delay={120}>
             <div className="mt-10 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-14 text-center shadow-card backdrop-blur-xl">
-              <div className="flex flex-col items-center gap-3">
-                <Users className="h-8 w-8 text-ink-600" />
-                <p className="max-w-xs text-sm text-ink-400">
-                  No public projects yet. The first one to launch will appear here.
-                </p>
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                  <Users className="h-6 w-6 text-accent-300" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-ink-200">No public projects yet</p>
+                  <p className="mt-1 max-w-xs text-sm text-ink-600">
+                    The first one to launch will appear here.
+                  </p>
+                </div>
               </div>
             </div>
           </Reveal>

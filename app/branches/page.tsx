@@ -78,8 +78,8 @@ export default async function BranchesPage() {
         {user && !isBranchMember ? (
           <EmptyState
             icon={<Landmark size={32} />}
-            title="No branches yet"
-            description="You haven't joined any branches yet."
+            title="You haven't joined any branches yet."
+            description="Explore the communities below and join one."
             eyebrow="Your branches"
             scrollToId="branches"
             actionLabel="Explore Branches"

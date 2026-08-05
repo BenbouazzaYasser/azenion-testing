@@ -249,8 +249,8 @@ export default async function TeamsPage() {
         {user && myTeams.length === 0 ? (
           <EmptyState
             icon={<Users size={32} />}
-            title="No teams yet"
-            description="You're not part of any teams yet."
+            title="You haven't joined any teams yet."
+            description="Explore the teams below and join one."
             eyebrow="Your workspace"
             scrollToId="teams"
             actionLabel="Explore Teams"

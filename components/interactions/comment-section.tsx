@@ -244,8 +244,8 @@ export function CommentSection({
               ))}
             </div>
           ) : (
-            <p className="py-3 text-center text-sm text-ink-500">
-              No comments yet. {currentUserId && "Start the discussion."}
+            <p className="py-3 text-center text-sm text-ink-600">
+              {currentUserId ? "No comments yet. Start the discussion." : "No comments yet."}
             </p>
           )}
 
@@ -279,7 +279,7 @@ export function CommentSection({
                     handlePost();
                   }
                 }}
-                className="flex-1 rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04]"
+                className="flex-1 rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
               />
               <button
                 type="button"
@@ -444,7 +444,7 @@ function CommentItem({
               onChange={(e) => setDraft(e.target.value)}
               autoFocus
               rows={2}
-              className="w-full resize-y rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 outline-none transition-all focus:border-accent-400/50"
+              className="w-full resize-y rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
             />
             <div className="mt-2 flex items-center gap-2">
               <button
@@ -518,7 +518,7 @@ function CommentItem({
                 }
               }}
               autoFocus
-              className="flex-1 rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04]"
+              className="flex-1 rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
             />
             <button
               type="button"

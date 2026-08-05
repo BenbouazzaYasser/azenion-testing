@@ -1,12 +1,15 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
-import { Send, MessageSquare, Users } from "lucide-react";
+import { Send, MessageSquare, Users, Menu } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { sendMessage } from "@/actions/chat.actions";
 import { formatDate } from "@/lib/date";
+import { useMobileConversations } from "@/components/chat/mobile-conversations-context";
 
 interface Message {
   id: string;
@@ -154,6 +157,7 @@ export function ChatConversation({
 
   const participantName = participant?.full_name ?? participant?.username ?? "Conversation";
   const participantInitial = (participant?.full_name?.[0] ?? participant?.username?.[0] ?? "?").toUpperCase();
+  const mobileConversations = useMobileConversations();
 
   return (
     <div
@@ -174,6 +178,17 @@ export function ChatConversation({
       </div>
 
       <header className="relative z-10 flex shrink-0 items-center gap-3 border-b border-border bg-void-900/50 px-4 py-3 backdrop-blur-xl sm:px-6">
+        {mobileConversations ? (
+          <button
+            type="button"
+            onClick={mobileConversations.open}
+            aria-label="Open conversations"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
+          >
+            <Menu size={18} />
+          </button>
+        ) : null}
+
         {participant?.avatar_url ? (
           <img
             src={participant.avatar_url}
@@ -203,14 +218,14 @@ export function ChatConversation({
         </div>
       </header>
 
-      <div className="relative z-10 flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 [scrollbar-width:thin] [scrollbar-color:rgba(244,245,248,0.14)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/[0.14] [&::-webkit-scrollbar-track]:bg-transparent">
+      <div className={cn("relative z-10 flex-1 min-h-0 overflow-y-auto p-5 sm:p-6", SCROLLBAR_CLASSES)}>
         {messages.length === 0 && (
           <div className="relative flex h-full min-h-0 flex-col items-center justify-center px-6 text-center">
             <div
               aria-hidden
               className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[120px]"
             />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-accent-400/20 bg-accent/[0.06] text-accent-300 shadow-[0_0_40px_-12px_rgba(109,109,255,0.6)]">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300 shadow-input">
               <MessageSquare size={26} />
             </div>
             <h2 className="mt-5 text-lg font-semibold text-ink-50">No messages yet</h2>

@@ -50,11 +50,16 @@ export function TeamProjects({ projects, canCreateProjects, teamId, teamSlug }: 
           </div>
         ) : (
           <Reveal delay={120}>
-            <div className="mt-10 flex flex-col items-center gap-3 py-16 text-center">
-              <FolderKanban className="h-8 w-8 text-ink-600" />
-              <p className="max-w-xs text-sm text-ink-400">
-                No projects yet. {canCreateProjects ? "Create the first project for this team." : "Check back later."}
-              </p>
+            <div className="mt-10 flex flex-col items-center gap-4 py-16 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                <FolderKanban className="h-6 w-6 text-accent-300" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-ink-200">No projects yet</p>
+                <p className="mt-1 max-w-xs text-sm text-ink-600">
+                  {canCreateProjects ? "Create the first project for this team." : "Check back later."}
+                </p>
+              </div>
             </div>
           </Reveal>
         )}

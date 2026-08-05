@@ -9,7 +9,7 @@ import { updateTeam, uploadTeamLogo, uploadTeamBanner } from "@/actions/team.act
 import type { TeamSettingsClientProps } from "./team-settings-client";
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(109,109,255,0.15)]";
+  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 

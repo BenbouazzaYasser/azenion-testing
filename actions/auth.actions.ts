@@ -52,6 +52,11 @@ export async function signIn(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
+
+  const next = formData.get("next");
+  if (typeof next === "string" && next.startsWith("/") && !next.startsWith("//") && next !== "/login" && next !== "/join") {
+    redirect(next);
+  }
   redirect("/");
 }
 

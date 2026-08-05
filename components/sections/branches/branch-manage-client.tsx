@@ -40,7 +40,7 @@ interface BranchManageClientProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(109,109,255,0.15)]";
+  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -284,7 +284,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-full p-1.5 text-ink-400 transition-colors hover:bg-white/5 hover:text-ink-50"
+                  className="rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-white/[0.06] hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                 >
                   <X size={18} />
                 </button>
@@ -443,9 +443,14 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
 
         <div className="mt-10 grid gap-5">
           {branches.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <Building2 className="h-8 w-8 text-ink-600" />
-              <p className="text-sm text-ink-400">No branches yet. Create the first one.</p>
+            <div className="flex flex-col items-center gap-4 py-16 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                <Building2 className="h-6 w-6 text-accent-300" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-ink-200">No branches yet</p>
+                <p className="mt-1 text-sm text-ink-600">Create the first one to get started.</p>
+              </div>
             </div>
           ) : (
             branches.map((branch, i) => (

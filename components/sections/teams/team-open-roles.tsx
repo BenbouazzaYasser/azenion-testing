@@ -63,7 +63,7 @@ function OpenRoleCard({
   }
 
   const inputClass =
-    "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(109,109,255,0.15)]";
+    "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
 
   if (isEditing) {
     return (
@@ -251,11 +251,16 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
           ) : null}
 
           {roles.length === 0 && !isAdding ? (
-            <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <UserPlus className="h-8 w-8 text-ink-600" />
-              <p className="max-w-xs text-sm text-ink-400">
-                No open roles yet. {canManage ? "Add roles your team is looking for." : "Check back later."}
-              </p>
+            <div className="flex flex-col items-center gap-4 py-16 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                <UserPlus className="h-6 w-6 text-accent-300" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-ink-200">No open roles yet</p>
+                <p className="mt-1 max-w-xs text-sm text-ink-600">
+                  {canManage ? "Add roles your team is looking for." : "Check back later."}
+                </p>
+              </div>
             </div>
           ) : (
             roles.map((role, i) => (

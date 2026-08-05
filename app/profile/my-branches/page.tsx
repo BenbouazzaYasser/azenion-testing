@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Building2 } from "lucide-react";
 import { ProfileBranches } from "@/components/sections/profile/profile-branches";
 import { ProfileSubpageHeader } from "@/components/sections/profile/profile-subpage-header";
 import { ProfileEmptyCard } from "@/components/sections/profile/profile-empty-card";
@@ -28,6 +29,7 @@ export default async function MyBranchesPage() {
         <ProfileBranches branches={[branch]} cardClass={sectionCardClass} />
       ) : (
         <ProfileEmptyCard
+          icon={<Building2 className="h-7 w-7" />}
           title="You haven't joined a branch yet"
           description="Join your campus branch to connect with builders near you."
           href="/branches"

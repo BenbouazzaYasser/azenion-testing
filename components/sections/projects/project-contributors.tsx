@@ -53,9 +53,15 @@ export function ProjectContributors({ project }: ProjectContributorsProps) {
         ) : (
           <Reveal delay={160}>
             <div className="mt-10 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-10 text-center shadow-card backdrop-blur-xl">
-              <p className="text-[1.02rem] text-ink-400">
-                No contributors yet. Be the first to join this project.
-              </p>
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                  <Users className="h-6 w-6 text-accent-300" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-ink-200">No contributors yet</p>
+                  <p className="mt-1 text-sm text-ink-600">Be the first to join this project.</p>
+                </div>
+              </div>
             </div>
           </Reveal>
         )}

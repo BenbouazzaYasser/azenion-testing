@@ -15,9 +15,16 @@ export const NAV_LINKS: NavLink[] = [
   { label: "Teams", href: "/teams" },
   { label: "Projects", href: "/projects" },
   { label: "Branches", href: "/branches" },
-  { label: "Feed", href: "/feed" },
+  {
+    label: "Community",
+    href: "/community",
+    children: [
+      { label: "Feed", href: "/feed", description: "Updates across the network" },
+      { label: "Showcase", href: "/showcase", description: "Community highlights" },
+      { label: "Announcements", href: "/announcements", description: "Platform updates and milestones" },
+    ],
+  },
   { label: "Chat", href: "/chat" },
-  { label: "Announcements", href: "/announcements" },
   {
     label: "Academy",
     href: "/academy",

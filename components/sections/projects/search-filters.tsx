@@ -23,7 +23,7 @@ function Dropdown({ label, options, value, onChange }: DropdownProps) {
         type="button"
         onClick={() => setOpen(!open)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-2.5 text-sm text-ink-200 backdrop-blur-xl transition-all duration-300 hover:border-accent-400/40 sm:w-auto"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-2.5 text-sm text-ink-200 backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 sm:w-auto"
       >
         <span>{value === "All" ? label : value}</span>
         <ChevronDown
@@ -33,7 +33,7 @@ function Dropdown({ label, options, value, onChange }: DropdownProps) {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1.5 w-full min-w-[160px] overflow-hidden rounded-xl border border-border-strong bg-[#0e1016] shadow-xl backdrop-blur-xl">
+        <div className="absolute left-0 top-full z-20 mt-1.5 w-full min-w-[160px] overflow-hidden rounded-xl border border-border-strong bg-[#0e1016] shadow-dropdown backdrop-blur-xl">
           {options.map((option) => (
             <button
               key={option}
@@ -43,7 +43,7 @@ function Dropdown({ label, options, value, onChange }: DropdownProps) {
                 onChange(option);
                 setOpen(false);
               }}
-              className={`w-full px-4 py-2 text-left text-sm transition-colors duration-200 hover:bg-accent/[0.08] hover:text-accent-300 ${
+              className={`w-full px-4 py-2 text-left text-sm transition-all duration-200 ease-premium hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 ${
                 value === option ? "text-accent-400" : "text-ink-400"
               }`}
             >

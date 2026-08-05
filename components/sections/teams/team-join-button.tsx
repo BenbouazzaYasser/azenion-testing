@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { Plus, LogOut, Hourglass, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { leaveTeam } from "@/actions/team.actions";
 import { OwnershipLeaveModal } from "@/components/shared/ownership-leave-modal";
 import { RequestToJoinDialog } from "./request-to-join-dialog";
+import { useUser } from "@/hooks/use-user";
 
 export type TeamRequestStatus = "PENDING" | "ACCEPTED" | "DECLINED" | null;
 
@@ -33,6 +35,9 @@ export function TeamJoinButton({
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, loading } = useUser();
 
   const isRequestPending = requestStatus === "PENDING" || requestSent;
 
@@ -49,6 +54,13 @@ export function TeamJoinButton({
           toast.error(result.error);
         }
       });
+      return;
+    }
+
+    if (!loading && !user) {
+      const next = pathname ? `?next=${encodeURIComponent(pathname)}` : "";
+      toast.info("Sign in to join this team.");
+      router.push(`/login${next}`);
       return;
     }
 

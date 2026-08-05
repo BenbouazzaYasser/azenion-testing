@@ -3,13 +3,14 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical } from "lucide-react";
+import { Menu, X, User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical, Newspaper, Megaphone, Sparkles } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS } from "@/data/nav-links";
 import { useUser } from "@/hooks/use-user";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/actions/auth.actions";
+import { NotificationCenter } from "@/components/notifications/notification-center";
 
 interface MenuLinkProps {
   href: string;
@@ -24,7 +25,7 @@ function MenuLink({ href, icon, title, description, onNavigate }: MenuLinkProps)
     <Link
       href={href}
       onClick={onNavigate}
-      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-white/[0.06] hover:shadow-[0_0_24px_-10px_rgba(40,40,255,0.5)]"
+      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-white/[0.06] hover:shadow-glow-sm"
     >
       <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-accent-400/30 group-hover:bg-accent/[0.08] group-hover:text-accent-300 group-hover:shadow-[0_0_16px_-6px_rgba(40,40,255,0.5)]">
         {icon}
@@ -51,13 +52,16 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
-  const [isAcademyOpen, setIsAcademyOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
 
-  const ACADEMY_CHILD_ICONS: Record<string, ReactNode> = {
+  const CHILD_ICONS: Record<string, ReactNode> = {
     "/academy/courses": <GraduationCap size={16} />,
     "/academy/live-sessions": <Video size={16} />,
     "/academy/labs": <FlaskConical size={16} />,
+    "/feed": <Newspaper size={16} />,
+    "/showcase": <Sparkles size={16} />,
+    "/announcements": <Megaphone size={16} />,
   };
 
   const avatarLetter = profile?.full_name?.[0] ?? profile?.username?.[0] ?? "U";
@@ -97,20 +101,20 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6 sm:pt-5">
       <div
         className={cn(
-          "w-full max-w-[980px] rounded-full border border-white/[0.08] transition-all duration-700 ease-premium will-change-transform backdrop-blur-2xl",
+          "w-full lg:w-fit rounded-full border border-white/[0.08] transition-[background-color,box-shadow] duration-700 ease-premium will-change-transform backdrop-blur-2xl",
           isScrolled || isMenuOpen
             ? "bg-[rgba(7,8,13,0.78)] shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)]"
             : "bg-[rgba(10,11,16,0.18)] shadow-[0_8px_30px_-25px_rgba(255,255,255,0.05)]"
         )}
       >
-        <div className="grid h-[64px] grid-cols-[1fr_auto_1fr] items-center px-4 sm:h-[70px] sm:px-6">
+        <div className="flex h-[64px] items-center justify-between px-4 sm:h-[70px] sm:px-6 lg:justify-start">
           <div className="flex items-center">
-            <Logo withWordmark={false} />
+            <Logo withWordmark={false} markSize={32} />
           </div>
 
-          <div className="hidden lg:flex">
+          <div className="hidden lg:flex lg:ml-4">
             <nav aria-label="Primary" className="flex items-center">
-              <ul className="flex items-center gap-0.5">
+              <ul className="flex items-center gap-4">
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
                   const navLinkClass = cn(
@@ -122,21 +126,22 @@ export function Navbar() {
                   );
 
                   if (link.children && link.children.length > 0) {
+                    const isDropdownOpen = openDropdown === link.href;
                     return (
                       <li key={link.href} className="flex">
                         <div
                           className="relative"
-                          onMouseEnter={() => setIsAcademyOpen(true)}
-                          onMouseLeave={() => setIsAcademyOpen(false)}
+                          onMouseEnter={() => setOpenDropdown(link.href)}
+                          onMouseLeave={() => setOpenDropdown(null)}
                         >
                           <Link href={link.href} className={navLinkClass}>
                             {link.label}
                             <ChevronDown size={12} className="ml-1 opacity-60" />
                           </Link>
-                          {isAcademyOpen ? (
+                          {isDropdownOpen ? (
                             <div className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2">
                               <div aria-hidden className="absolute -top-3 left-0 right-0 h-3" />
-                              <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-[0_24px_70px_-20px_rgba(0,0,0,0.65),0_0_50px_-18px_rgba(40,40,255,0.5)] backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                              <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                                 <div
                                   aria-hidden
                                   className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
@@ -147,16 +152,16 @@ export function Navbar() {
                                 />
                                 <div className="px-2.5 pb-3 pt-2">
                                   <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
-                                    Academy
+                                    {link.label}
                                   </p>
                                   {link.children.map((child) => (
                                     <MenuLink
                                       key={child.href}
                                       href={child.href}
-                                      icon={ACADEMY_CHILD_ICONS[child.href]}
+                                      icon={CHILD_ICONS[child.href]}
                                       title={child.label}
                                       description={child.description}
-                                      onNavigate={() => setIsAcademyOpen(false)}
+                                      onNavigate={() => setOpenDropdown(null)}
                                     />
                                   ))}
                                 </div>
@@ -180,7 +185,7 @@ export function Navbar() {
             </nav>
           </div>
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-2 lg:ml-4">
             <div className="hidden items-center gap-2 lg:flex">
             {loading ? null : user ? (
               <>
@@ -206,7 +211,7 @@ export function Navbar() {
                           aria-hidden
                           className="absolute -top-3 left-0 right-0 h-3"
                         />
-                        <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-[0_24px_70px_-20px_rgba(0,0,0,0.65),0_0_50px_-18px_rgba(40,40,255,0.5)] backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                        <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                         <div
                           aria-hidden
                           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
@@ -264,11 +269,12 @@ export function Navbar() {
                     ) : null}
                   </div>
                 ) : null}
+                <NotificationCenter />
                 <div ref={avatarRef} className="relative">
                   <button
                     type="button"
                     onClick={() => setIsAvatarOpen((v) => !v)}
-                    className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.12] transition-all duration-300 hover:scale-105 hover:border-accent-400/40 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)]"
+                    className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.12] transition-all duration-300 hover:scale-105 hover:border-accent-400/40 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -279,7 +285,7 @@ export function Navbar() {
                     )}
                   </button>
                   {isAvatarOpen ? (
-                    <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-[0_24px_70px_-20px_rgba(0,0,0,0.65),0_0_50px_-20px_rgba(40,40,255,0.35)] backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                    <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                       <div
                         aria-hidden
                         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
@@ -408,7 +414,7 @@ export function Navbar() {
                         <form action={signOut}>
                           <button
                             type="submit"
-                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-red-500/[0.08] hover:shadow-[0_0_24px_-10px_rgba(248,113,113,0.35)]"
+                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-red-500/[0.08] hover:shadow-[0_0_24px_-10px_rgba(248,113,113,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                           >
                             <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-red-400/30 group-hover:bg-red-500/[0.1] group-hover:text-red-400">
                               <LogOut size={16} />
@@ -440,12 +446,14 @@ export function Navbar() {
             )}
             </div>
 
+            <div className="lg:hidden">{user ? <NotificationCenter /> : null}</div>
+
             <button
               type="button"
               onClick={() => setIsMenuOpen((v) => !v)}
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMenuOpen}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-ink-50 transition-colors duration-200 hover:bg-white/[0.06] lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ink-50 transition-colors duration-200 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 lg:hidden"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -492,7 +500,7 @@ export function Navbar() {
                               : "text-ink-500 hover:text-ink-200"
                           )}
                         >
-                          {ACADEMY_CHILD_ICONS[child.href]}
+                          {CHILD_ICONS[child.href]}
                           {child.label}
                         </Link>
                       ))}

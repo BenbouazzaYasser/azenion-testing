@@ -22,14 +22,17 @@ export function ProfileTimeline({ activities, cardClass }: ProfileTimelineProps)
       </h2>
 
       {activities.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center gap-3 py-10 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border-strong bg-white/[0.03]">
-            <Clock className="h-6 w-6 text-ink-600" />
+        <div className="mt-6 flex flex-col items-center gap-4 py-10 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+            <Clock className="h-6 w-6 text-accent-300" />
           </div>
-          <p className="max-w-xs text-sm text-ink-400">
-            No activity yet — joining a branch, creating a team, or shipping
-            a project will show up here.
-          </p>
+          <div>
+            <p className="text-sm font-medium text-ink-200">No activity yet</p>
+            <p className="mt-1 max-w-xs text-sm leading-relaxed text-ink-600">
+              Joining a branch, creating a team, or shipping a project will
+              show up here.
+            </p>
+          </div>
         </div>
       ) : (
         <div className="relative mt-6 space-y-6 pl-6">

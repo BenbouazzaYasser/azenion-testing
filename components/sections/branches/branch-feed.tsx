@@ -41,7 +41,7 @@ interface BranchFeedProps {
 type ComposeMode = "announcement" | "highlight";
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(109,109,255,0.15)]";
+  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -552,12 +552,12 @@ export function BranchFeed({
         ) : (
           <Reveal delay={160}>
             <div className="mt-10 flex flex-col items-center gap-4 py-16 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-ink-700/50 bg-white/[0.03]">
-                <MessageSquare className="h-7 w-7 text-ink-500" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                <MessageSquare className="h-7 w-7 text-accent-300" />
               </div>
               <div>
                 <p className="text-base font-medium text-ink-200">No posts in this branch yet.</p>
-                <p className="mt-1.5 text-sm text-ink-500">
+                <p className="mt-1.5 text-sm text-ink-600">
                   {canManage
                     ? "Publish the first announcement or highlight to get things moving."
                     : "Check back later for announcements and updates."}

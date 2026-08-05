@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Rocket } from "lucide-react";
 import { ProfileProjects } from "@/components/sections/profile/profile-projects";
 import { ProfileSubpageHeader } from "@/components/sections/profile/profile-subpage-header";
 import { ProfileEmptyCard } from "@/components/sections/profile/profile-empty-card";
@@ -28,6 +29,7 @@ export default async function MyProjectsPage() {
         <ProfileProjects projects={projects} cardClass={sectionCardClass} />
       ) : (
         <ProfileEmptyCard
+          icon={<Rocket className="h-7 w-7" />}
           title="You haven't joined or created any projects yet"
           description="Start a project or join an existing one to turn ideas into reality."
           href="/projects"

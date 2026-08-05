@@ -75,14 +75,14 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
         {filtered.length === 0 ? (
           <Reveal delay={160}>
             <div className="flex flex-col items-center gap-4 py-20 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03]">
-                <Landmark className="h-7 w-7 text-white/50" aria-hidden="true" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+                <Landmark className="h-7 w-7 text-accent-300" aria-hidden="true" />
               </div>
               <div>
-                <p className="text-base font-medium text-white/90">
+                <p className="text-base font-medium text-ink-200">
                   {query.trim() ? "No branches match your search" : "No branches yet"}
                 </p>
-                <p className="mt-1.5 text-sm text-white/50">
+                <p className="mt-1.5 text-sm text-ink-600">
                   {query.trim()
                     ? "Try a different name or location."
                     : "Branches are being launched campus by campus. Check back soon."}
