@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { FeedComposer } from "@/components/feed/feed-composer";
 import { FeedList } from "@/components/feed/feed-list";
 import { getFeedItems } from "@/actions/feed.actions";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
@@ -41,6 +42,8 @@ export default async function FeedPage() {
               Stay up to date with projects, teams, and branches across Azenion.
             </p>
           </div>
+
+          {user ? <FeedComposer className="mb-8" /> : null}
 
           <Suspense
             fallback={

@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, formatShortDate, formatTime } from "@/lib/date";
 import { ImageGallery } from "@/components/feed/image-gallery";
+import { VideoGallery } from "@/components/feed/video-gallery";
 import { LikeButton } from "@/components/interactions/like-button";
 import { CommentSection } from "@/components/interactions/comment-section";
 import { toggleLike } from "@/actions/interactions.actions";
@@ -274,6 +275,12 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
         {item.images.length > 0 ? (
           <div className="mt-4">
             <ImageGallery images={item.images} />
+          </div>
+        ) : null}
+
+        {item.videos.length > 0 ? (
+          <div className="mt-4">
+            <VideoGallery videos={item.videos} />
           </div>
         ) : null}
 

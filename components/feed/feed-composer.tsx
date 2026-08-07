@@ -2,24 +2,37 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Loader2, Send, Sparkles, X } from "lucide-react";
+import { Film, ImagePlus, Loader2, Send, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
-  ALLOWED_ASSET_TYPES,
-  MAX_ASSET_SIZE,
-} from "@/lib/validations/project.schema";
+  ALLOWED_IMAGE_TYPES,
+  ALLOWED_VIDEO_TYPES,
+  formatFileSize,
+  isVideoMimeType,
+  MAX_IMAGE_SIZE,
+  MAX_VIDEO_SIZE,
+  type FeedMediaKind,
+} from "@/lib/validations/media.schema";
 import {
   createFeedPost,
-  uploadFeedPostImage,
+  uploadFeedPostMedia,
 } from "@/actions/feed.actions";
 
 interface FeedComposerProps {
   onPosted?: (postId: string) => void;
-  maxImages?: number;
+  maxMedia?: number;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+}
+
+interface MediaItem {
+  id: string;
+  file: File;
+  kind: FeedMediaKind;
+  url: string;
+  duration?: number;
 }
 
 const MAX_TITLE_LENGTH = 200;
@@ -34,9 +47,25 @@ function autosize(el: HTMLTextAreaElement) {
   el.style.height = `${Math.min(el.scrollHeight, MAX_PREVIEW_HEIGHT)}px`;
 }
 
+function mediaId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2);
+}
+
+function formatVideoDuration(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds <= 0) return "";
+  const total = Math.floor(seconds);
+  const s = total % 60;
+  const m = Math.floor(total / 60) % 60;
+  const h = Math.floor(total / 3600);
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
 export function FeedComposer({
   onPosted,
-  maxImages = 6,
+  maxMedia = 6,
   placeholder = "Share an update with Azenion\u2026",
   disabled = false,
   className,
@@ -44,12 +73,10 @@ export function FeedComposer({
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
-  const previewsRef = useRef<string[]>([]);
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [media, setMedia] = useState<MediaItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [uploadStep, setUploadStep] = useState<{
@@ -57,9 +84,11 @@ export function FeedComposer({
     total: number;
   } | null>(null);
 
+  const mediaRef = useRef<MediaItem[]>([]);
+
   useEffect(() => {
     return () => {
-      for (const url of previewsRef.current) URL.revokeObjectURL(url);
+      for (const item of mediaRef.current) URL.revokeObjectURL(item.url);
     };
   }, []);
 
@@ -68,51 +97,58 @@ export function FeedComposer({
       ? Math.max(0, (uploadStep.index - 1) / uploadStep.total)
       : 0;
 
-  function addAccepted(accepted: File[]) {
-    const urls = accepted.map((f) => URL.createObjectURL(f));
-    previewsRef.current = [...previewsRef.current, ...urls];
-    setPreviews((prev) => [...prev, ...urls]);
-    setFiles((prev) => [...prev, ...accepted]);
+  function addAccepted(accepted: MediaItem[]) {
+    mediaRef.current = [...mediaRef.current, ...accepted];
+    setMedia((prev) => [...prev, ...accepted]);
   }
 
-  function removeImage(index: number) {
-    const url = previews[index];
-    if (url) URL.revokeObjectURL(url);
-    previewsRef.current = previewsRef.current.filter((_, i) => i !== index);
-    setPreviews((prev) => prev.filter((_, i) => i !== index));
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+  function removeMedia(index: number) {
+    const item = media[index];
+    if (item) URL.revokeObjectURL(item.url);
+    mediaRef.current = mediaRef.current.filter((_, i) => i !== index);
+    setMedia((prev) => prev.filter((_, i) => i !== index));
   }
 
   function reset() {
-    for (const url of previewsRef.current) URL.revokeObjectURL(url);
-    previewsRef.current = [];
+    for (const item of mediaRef.current) URL.revokeObjectURL(item.url);
+    mediaRef.current = [];
     if (bodyRef.current) bodyRef.current.style.height = "";
     setTitle("");
     setBody("");
-    setFiles([]);
-    setPreviews([]);
+    setMedia([]);
   }
 
   function handleFiles(selected: FileList | null) {
     if (!selected || submitting || disabled) return;
 
     let message: string | null = null;
-    const valid: File[] = [];
+    const valid: MediaItem[] = [];
     for (const file of Array.from(selected)) {
-      if (!ALLOWED_ASSET_TYPES.includes(file.type)) {
-        message = `"${file.name}" isn't a PNG, JPEG, or WebP image.`;
+      const isVideo = isVideoMimeType(file.type);
+      if (!isVideo && !ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        message = `"${file.name}" isn't a supported image or video. Use PNG, JPEG, WebP, MP4, WebM, or MOV.`;
         continue;
       }
-      if (file.size > MAX_ASSET_SIZE) {
-        message = `"${file.name}" exceeds the 2MB limit.`;
+      if (isVideo) {
+        if (file.size > MAX_VIDEO_SIZE) {
+          message = `"${file.name}" exceeds the 50MB video limit.`;
+          continue;
+        }
+      } else if (file.size > MAX_IMAGE_SIZE) {
+        message = `"${file.name}" exceeds the 2MB image limit.`;
         continue;
       }
-      valid.push(file);
+      valid.push({
+        id: mediaId(),
+        file,
+        kind: isVideo ? "video" : "image",
+        url: URL.createObjectURL(file),
+      });
     }
 
-    const remaining = maxImages - previews.length;
+    const remaining = maxMedia - media.length;
     if (valid.length > remaining) {
-      message = message ?? `You can attach up to ${maxImages} images.`;
+      message = message ?? `You can attach up to ${maxMedia} images or videos.`;
     }
     const accepted = valid.slice(0, Math.max(remaining, 0));
 
@@ -147,12 +183,14 @@ export function FeedComposer({
         return;
       }
 
-      for (let i = 0; i < files.length; i++) {
-        setUploadStep({ index: i + 1, total: files.length });
-        const imgFd = new FormData();
-        imgFd.set("post_id", postId);
-        imgFd.set("image", files[i]!);
-        const uploaded = await uploadFeedPostImage(imgFd);
+      for (let i = 0; i < media.length; i++) {
+        const item = media[i]!;
+        setUploadStep({ index: i + 1, total: media.length });
+        const mediaFd = new FormData();
+        mediaFd.set("post_id", postId);
+        mediaFd.set("file", item.file);
+        mediaFd.set("kind", item.kind);
+        const uploaded = await uploadFeedPostMedia(mediaFd);
         if (uploaded && "error" in uploaded && uploaded.error) {
           setError(uploaded.error);
           break;
@@ -171,6 +209,7 @@ export function FeedComposer({
   }
 
   const canPost = Boolean(title.trim() || body.trim()) && !disabled;
+  const kindLabel = (kind: FeedMediaKind) => (kind === "video" ? "video" : "image");
 
   return (
     <div
@@ -234,31 +273,58 @@ export function FeedComposer({
           ) : null}
         </div>
 
-        {previews.length > 0 ? (
+        {media.length > 0 ? (
           <div
             className={cn(
               "grid gap-2",
-              previews.length === 1 ? "grid-cols-1" : "grid-cols-2",
+              media.length === 1 ? "grid-cols-1" : "grid-cols-2",
             )}
           >
-            {previews.map((src, i) => (
+            {media.map((item, i) => (
               <div
-                key={`${src}-${i}`}
+                key={item.id}
                 className={cn(
                   "group relative overflow-hidden rounded-xl border border-border-strong bg-white/[0.03]",
-                  previews.length === 1 ? "aspect-[16/10]" : "aspect-[4/3]",
+                  media.length === 1 ? "aspect-[16/10]" : "aspect-[4/3]",
                 )}
               >
-                <img
-                  src={src}
-                  alt=""
-                  className="h-full w-full object-cover transition-transform duration-500 ease-premium group-hover:scale-[1.03]"
-                />
+                {item.kind === "video" ? (
+                  <PlayerPreview
+                    item={item}
+                    onDuration={(seconds) =>
+                      setMedia((prev) =>
+                        prev.map((m) =>
+                          m.id === item.id ? { ...m, duration: seconds } : m,
+                        ),
+                      )
+                    }
+                  />
+                ) : (
+                  <img
+                    src={item.url}
+                    alt=""
+                    className="h-full w-full object-cover transition-transform duration-500 ease-premium group-hover:scale-[1.03]"
+                  />
+                )}
+
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-5 text-[11px] text-white/90">
+                  <Film size={11} className="shrink-0" />
+                  <span className="min-w-0 flex-1 truncate">{item.file.name}</span>
+                  {item.duration ? (
+                    <span className="shrink-0 font-medium tabular-nums">
+                      {formatVideoDuration(item.duration)}
+                    </span>
+                  ) : null}
+                  <span className="shrink-0 text-white/60">
+                    {formatFileSize(item.file.size)}
+                  </span>
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => removeImage(i)}
+                  onClick={() => removeMedia(i)}
                   disabled={submitting || disabled}
-                  aria-label={`Remove image ${i + 1}`}
+                  aria-label={`Remove ${kindLabel(item.kind)} ${i + 1}`}
                   className="absolute right-2 top-2 rounded-full border border-white/20 bg-black/60 p-1.5 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
                 >
                   <X size={14} />
@@ -282,7 +348,7 @@ export function FeedComposer({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/png,image/jpeg,image/webp"
+          accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
           multiple
           onChange={(e) => handleFiles(e.target.files)}
           className="hidden"
@@ -290,15 +356,15 @@ export function FeedComposer({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={submitting || disabled || previews.length >= maxImages}
+          disabled={submitting || disabled || media.length >= maxMedia}
           className="inline-flex h-9 items-center gap-1.5 text-sm text-ink-400 transition-colors hover:text-accent-400 disabled:pointer-events-none disabled:opacity-40"
-          title="PNG, JPEG, or WebP \u2014 up to 2MB each"
+          title="Images (PNG, JPEG, WebP up to 2MB) or videos (MP4, WebM, MOV up to 50MB)"
         >
           <ImagePlus size={16} />
-          Add images
-          {previews.length > 0 ? (
+          Add media
+          {media.length > 0 ? (
             <span className="rounded-full bg-white/[0.05] px-1.5 py-0.5 text-[0.68rem] font-medium text-ink-400">
-              {previews.length}/{maxImages}
+              {media.length}/{maxMedia}
             </span>
           ) : null}
         </button>
@@ -316,7 +382,7 @@ export function FeedComposer({
               {uploadStep
                 ? uploadStep.total > 1
                   ? `Uploading ${uploadStep.index}/${uploadStep.total}`
-                  : "Uploading image\u2026"
+                  : "Uploading media\u2026"
                 : "Posting\u2026"}
             </>
           ) : (
@@ -328,5 +394,31 @@ export function FeedComposer({
         </Button>
       </div>
     </div>
+  );
+}
+
+function PlayerPreview({
+  item,
+  onDuration,
+}: {
+  item: MediaItem;
+  onDuration: (seconds: number) => void;
+}) {
+  function handleMetadata(event: React.SyntheticEvent<HTMLVideoElement>) {
+    if (Number.isFinite(event.currentTarget.duration) && event.currentTarget.duration > 0) {
+      onDuration(event.currentTarget.duration);
+    }
+  }
+
+  return (
+    <video
+      src={item.url}
+      muted
+      controls
+      preload="metadata"
+      playsInline
+      onLoadedMetadata={handleMetadata}
+      className="h-full w-full bg-black/40 object-contain"
+    />
   );
 }

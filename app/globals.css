@@ -91,3 +91,32 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Appearance (theme) support.
+   The brand is a dark, layered-gloss aesthetic. The base `:root` is dark.
+   The `data-theme` attribute (set by components/theme/theme-provider.tsx,
+   "system" | "light" | "dark") drives `color-scheme` and the page canvas.
+   Signature dark-glass panels are intentionally theme-independent so the
+   brand look stays coherent in both light and dark modes.
+--------------------------------------------------------------------------- */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+[data-theme="light"] body {
+  background-color: #f2f3f8;
+  color: #0d0f16;
+  background-image:
+    radial-gradient(ellipse 1000px 560px at 15% 0%, rgba(40, 40, 255, 0.05), transparent 60%),
+    radial-gradient(ellipse 800px 540px at 100% 30%, rgba(40, 40, 255, 0.04), transparent 55%);
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(40, 40, 255, 0.22);
+  color: #0d0f16;
+}

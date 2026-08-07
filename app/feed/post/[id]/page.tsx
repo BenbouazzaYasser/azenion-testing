@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { FeedCard } from "@/components/feed/feed-card";
 import { CommentSection } from "@/components/interactions/comment-section";
+import { PostViewTracker } from "@/components/interactions/post-view-tracker";
 import { getFeedItemById } from "@/actions/feed.actions";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
@@ -65,6 +66,7 @@ async function FeedPost({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-8">
+      <PostViewTracker postId={item.id} />
       <FeedCard item={item} currentUserId={userId} />
 
       <section className="rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 shadow-card backdrop-blur-xl sm:p-6">

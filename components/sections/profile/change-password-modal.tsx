@@ -114,12 +114,14 @@ export function ChangePasswordModal() {
                           required
                           minLength={6}
                           placeholder="Enter new password"
+                          autoFocus
                           className={`${inputClass} pr-10`}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-200"
+                          aria-label={showPassword ? "Hide new password" : "Show new password"}
+                          className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-400 transition-colors hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                         >
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
@@ -140,7 +142,8 @@ export function ChangePasswordModal() {
                         <button
                           type="button"
                           onClick={() => setShowConfirm((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-200"
+                          aria-label={showConfirm ? "Hide confirmation" : "Show confirmation"}
+                          className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-400 transition-colors hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                         >
                           {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>

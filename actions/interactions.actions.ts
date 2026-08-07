@@ -145,6 +145,36 @@ export async function toggleCommentLike(commentId: string) {
   return { liked: true, count: count ?? 0 };
 }
 
+/**
+ * Records a single view for a feed post, using a per-browser session token so
+ * rapid refreshes from the same session are de-duplicated in the database
+ * (`record_post_view` RPC). Best-effort: never fails the surrounding render.
+ */
+export async function recordPostView(postId: string, sessionToken: string) {
+  const supabase = createClient();
+  const supabaseAdmin = createAdminClient();
+
+  let viewerId: string | null = null;
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    viewerId = user?.id ?? null;
+  } catch {
+    viewerId = null;
+  }
+
+  try {
+    await supabaseAdmin.rpc("record_post_view", {
+      p_post_id: postId,
+      p_viewer_id: viewerId,
+      p_session_token: sessionToken.trim() || null,
+    });
+  } catch {
+    // best-effort view tracking
+  }
+}
+
 export async function createComment(
   targetType: string,
   targetId: string,

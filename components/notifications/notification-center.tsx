@@ -222,7 +222,7 @@ export function NotificationCenter() {
     if (nextOpen && userId) {
       setLoading(true);
       const items = await getNotificationsAction(userId, 20);
-      setNotifications(items);
+      setNotifications(Array.isArray(items) ? items : []);
       setLoading(false);
     }
   };

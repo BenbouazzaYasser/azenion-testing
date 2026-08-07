@@ -1,0 +1,78 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Monitor, SunMedium, Moon, CheckCircle2 } from "lucide-react";
+import { useTheme, type Theme } from "@/components/theme/theme-provider";
+import { SettingsPanel, SaveIndicator, type SaveState } from "./settings-panel";
+import { cn } from "@/lib/utils";
+
+const OPTIONS: { value: Theme; label: string; description: string; icon: typeof Monitor }[] = [
+  { value: "system", label: "System", description: "Follow your device setting", icon: Monitor },
+  { value: "light", label: "Light", description: "Light canvas", icon: SunMedium },
+  { value: "dark", label: "Dark", description: "The Azenion signature", icon: Moon },
+];
+
+export function AppearanceSection() {
+  const { theme, setTheme } = useTheme();
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+
+  useEffect(() => {
+    setSaveState("saved");
+    const t = window.setTimeout(() => setSaveState("idle"), 1600);
+    return () => window.clearTimeout(t);
+  }, [theme]);
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-3">
+        {OPTIONS.map((option) => {
+          const active = theme === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setTheme(option.value)}
+              aria-pressed={active}
+              className={cn(
+                "group relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+                active
+                  ? "border-accent-400/50 bg-accent/[0.08] shadow-[0_0_24px_-10px_rgba(90,120,255,0.6)]"
+                  : "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04]",
+              )}
+            >
+              {active ? (
+                <span className="absolute right-3 top-3 text-accent-300">
+                  <CheckCircle2 size={16} />
+                </span>
+              ) : null}
+              <span
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-xl border",
+                  active
+                    ? "border-accent-400/40 bg-accent/[0.12] text-accent-200"
+                    : "border-white/[0.08] bg-white/[0.04] text-ink-300",
+                )}
+              >
+                <option.icon size={18} />
+              </span>
+              <span className="mt-3 block text-sm font-medium text-ink-50">{option.label}</span>
+              <span className="mt-0.5 block text-xs text-ink-500">{option.description}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <SettingsPanel>
+        <div className="flex items-center justify-between gap-3 p-5">
+          <div>
+            <h3 className="text-sm font-medium text-ink-50">Appearance</h3>
+            <p className="mt-0.5 text-xs text-ink-500">
+              Your theme applies instantly and syncs across your devices.
+            </p>
+          </div>
+          <SaveIndicator state={saveState} />
+        </div>
+      </SettingsPanel>
+    </div>
+  );
+}

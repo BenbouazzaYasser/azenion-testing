@@ -11,6 +11,7 @@ import { useUser } from "@/hooks/use-user";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/actions/auth.actions";
 import { NotificationCenter } from "@/components/notifications/notification-center";
+import { GlobalSearch } from "@/components/search/global-search";
 
 interface MenuLinkProps {
   href: string;
@@ -25,7 +26,7 @@ function MenuLink({ href, icon, title, description, onNavigate }: MenuLinkProps)
     <Link
       href={href}
       onClick={onNavigate}
-      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-white/[0.06] hover:shadow-glow-sm"
+      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-white/[0.06] hover:shadow-glow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
     >
       <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-accent-400/30 group-hover:bg-accent/[0.08] group-hover:text-accent-300 group-hover:shadow-[0_0_16px_-6px_rgba(40,40,255,0.5)]">
         {icon}
@@ -54,6 +55,7 @@ export function Navbar() {
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   const CHILD_ICONS: Record<string, ReactNode> = {
     "/academy/courses": <GraduationCap size={16} />,
@@ -78,6 +80,18 @@ export function Navbar() {
     return () => {
       document.body.style.overflow = "";
     };
+  }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setIsMenuOpen(false);
+        toggleRef.current?.focus();
+      }
+    }
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isMenuOpen]);
 
   useEffect(() => {
@@ -120,6 +134,7 @@ export function Navbar() {
                   const navLinkClass = cn(
                     "relative inline-flex items-center rounded-full px-4 py-2 text-[13.5px] font-medium leading-none transition-all duration-300 whitespace-nowrap",
                     "hover:bg-white/[0.06] hover:text-ink-50",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                     active
                       ? "bg-white/[0.05] text-ink-50 ring-1 ring-white/10 shadow-[0_0_18px_-6px_rgba(90,120,255,0.4)]"
                       : "text-ink-400"
@@ -187,6 +202,7 @@ export function Navbar() {
 
           <div className="flex items-center justify-end gap-2 lg:ml-4">
             <div className="hidden items-center gap-2 lg:flex">
+            <GlobalSearch variant="desktop" />
             {loading ? null : user ? (
               <>
                 {isAdmin ? (
@@ -388,7 +404,7 @@ export function Navbar() {
                           onNavigate={() => setIsAvatarOpen(false)}
                         />
                         <MenuLink
-                          href="/profile#account"
+                          href="/settings"
                           icon={<Settings size={16} />}
                           title="Settings"
                           description="Preferences and security"
@@ -448,12 +464,17 @@ export function Navbar() {
 
             <div className="lg:hidden">{user ? <NotificationCenter /> : null}</div>
 
+            <div className="lg:hidden">
+              <GlobalSearch variant="mobile" />
+            </div>
+
             <button
               type="button"
+              ref={toggleRef}
               onClick={() => setIsMenuOpen((v) => !v)}
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMenuOpen}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-ink-50 transition-colors duration-200 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ink-50 transition-all duration-300 hover:scale-105 hover:bg-white/[0.06] hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 lg:hidden"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -477,7 +498,7 @@ export function Navbar() {
                     href={link.href}
                     onClick={() => setIsMenuOpen(false)}
                     className={cn(
-                      "relative rounded-xl px-4 py-3 text-[15px] font-medium transition-colors hover:bg-white/[0.05]",
+                      "relative rounded-xl px-4 py-3 text-[15px] font-medium transition-colors hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                       active ? "text-ink-50" : "text-ink-400 hover:text-ink-200"
                     )}
                   >
@@ -494,7 +515,7 @@ export function Navbar() {
                           href={child.href}
                           onClick={() => setIsMenuOpen(false)}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/[0.05]",
+                            "relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                             isActive(child.href)
                               ? "text-accent-300"
                               : "text-ink-500 hover:text-ink-200"
@@ -564,7 +585,7 @@ export function Navbar() {
                     </Link>
                   </Button>
                   <Button variant="ghost" asChild>
-                    <Link href="/profile#account" onClick={() => setIsMenuOpen(false)}>
+                    <Link href="/settings" onClick={() => setIsMenuOpen(false)}>
                       <Settings size={14} />
                       Settings
                     </Link>

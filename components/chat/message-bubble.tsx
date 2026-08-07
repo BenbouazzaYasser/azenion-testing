@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { formatTime } from "@/lib/date";
 import { editMessage, deleteMessage } from "@/actions/chat.actions";
 
@@ -44,12 +45,17 @@ export function MessageBubble({
     const result = await editMessage(id, editText);
     if (!result.error) {
       setIsEditing(false);
+    } else {
+      toast.error(result.error);
     }
   };
 
   const handleDelete = async () => {
-    await deleteMessage(id);
+    const result = await deleteMessage(id);
     setShowMenu(false);
+    if (result.error) {
+      toast.error(result.error);
+    }
   };
 
   return (

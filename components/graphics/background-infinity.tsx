@@ -9,6 +9,7 @@ export type BackgroundInfinityVariant =
   | "showcase"
   | "announcements"
   | "academy"
+  | "community"
   | "contact"
   | "login"
   | "join";
@@ -26,6 +27,7 @@ const bgAnimation: Record<BackgroundInfinityVariant, string> = {
   showcase: "animate-bg-infinity-pulse",
   announcements: "",
   academy: "animate-drift-slow",
+  community: "animate-bg-infinity-pulse",
   contact: "animate-drift-slow",
   login: "animate-float-y",
   join: "",

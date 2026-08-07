@@ -1,6 +1,7 @@
-import { CheckCircle, KeyRound, Mail, UserCircle, Calendar, LogIn } from "lucide-react";
+import { CheckCircle, KeyRound, Mail, Sparkles, UserCircle, Calendar, LogIn } from "lucide-react";
 import { ChangePasswordModal } from "./change-password-modal";
 import { DeleteAccountModal } from "./delete-account-modal";
+import { RestartOnboardingButton } from "@/components/onboarding/restart-onboarding-button";
 import { formatDate } from "@/lib/date";
 
 interface ProfileAccountProps {
@@ -72,6 +73,23 @@ export function ProfileAccount({
                 </p>
               </div>
               <ChangePasswordModal />
+            </div>
+          </div>
+        </div>
+
+        <div className={cardClass}>
+          <div className="flex items-start gap-4">
+            <div className={iconContainerClass}>
+              <Sparkles size={18} className="text-accent-400" />
+            </div>
+            <div className="flex flex-1 items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-ink-50">Onboarding</h3>
+                <p className="mt-1 text-sm text-ink-400">
+                  Walk through profile, branch, teams, and projects again.
+                </p>
+              </div>
+              <RestartOnboardingButton />
             </div>
           </div>
         </div>

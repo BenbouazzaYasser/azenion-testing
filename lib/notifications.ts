@@ -11,12 +11,67 @@ export interface NotificationInput {
 }
 
 /**
+ * Maps a notification `type` to a user_settings.notifications preference key.
+ * When the recipient has disabled that preference, the notification is skipped
+ * at the single insertion choke point so delivery gates for all sources.
+ */
+function notificationPreferenceKey(type: string): string {
+  switch (type) {
+    case "team_update":
+    case "created_team_update":
+    case "joined_team":
+    case "team_roll_change":
+      return "team_updates";
+    case "project_update":
+      return "project_updates";
+    case "liked_your_update":
+    case "commented_on_your_update":
+      return "feed_interactions";
+    case "replied_to_your_comment":
+    case "liked_your_comment":
+      return "replies";
+    case "mentioned_you":
+      return "mentions";
+    case "branch_announcement":
+      return "branch_announcements";
+    case "academy_session":
+      return "academy_sessions";
+    default:
+      return "feed_interactions";
+  }
+}
+
+/**
+ * Returns whether the recipient should receive a notification of `type` based
+ * on their stored preferences. Uses an admin client to read settings
+ * regardless of who is authenticated. Unknown rows default to enabled.
+ */
+async function recipientEnabled(userId: string, type: string): Promise<boolean> {
+  const prefKey = notificationPreferenceKey(type);
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("user_settings")
+    .select("notifications")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!data) return true;
+  const bag = (data.notifications ?? {}) as Record<string, unknown>;
+  if (typeof bag[prefKey] === "boolean") return bag[prefKey] as boolean;
+  return true;
+}
+
+/**
  * Inserts a notification for `userId`, de-duplicated: if an unread
  * notification of the same (type, actor, target) already exists we skip so
  * rapid like/unlike/like cycles never spam the recipient.
  */
 export async function insertNotification(input: NotificationInput) {
   const supabase = createClient();
+
+  if (!(await recipientEnabled(input.userId, input.type))) {
+    return { skipped: true };
+  }
 
   const { data: existing } = await supabase
     .from("notifications")

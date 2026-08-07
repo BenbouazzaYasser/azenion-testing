@@ -37,6 +37,7 @@ export interface UpdateItem {
   body: string | null;
   image_url: string | null;
   images?: string[];
+  videos?: string[];
   created_at: string;
   updated_at: string;
   author: UpdateAuthor;
@@ -130,6 +131,7 @@ function toFeedItem(update: UpdateItem, interactionType: FeedLabels["interaction
     title: update.title,
     body: update.body,
     images,
+    videos: update.videos ?? [],
     link_url: null,
     is_pinned: update.is_pinned ?? false,
     created_at: update.created_at,
@@ -333,8 +335,12 @@ export function EntityUpdatesFeed({
     fd.set(labels.entityIdField, entityId);
 
     startTransition(async () => {
-      await actions.delete(fd);
+      const result = await actions.delete(fd);
       setMenuOpenId(null);
+      if (result && "error" in result && result.error) {
+        setError(result.error as string);
+        return;
+      }
       router.refresh();
     });
   }

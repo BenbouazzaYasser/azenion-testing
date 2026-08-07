@@ -6,8 +6,17 @@ import {
   getBatchLikerNames,
   getSavedPostIds,
 } from "@/data/interactions";
-import { MAX_ASSET_SIZE, ALLOWED_ASSET_TYPES } from "@/lib/validations/project.schema";
+import {
+  ALLOWED_IMAGE_TYPES,
+  ALLOWED_VIDEO_TYPES,
+  IMAGE_STORAGE_BUCKET,
+  MAX_IMAGE_SIZE,
+  MAX_VIDEO_SIZE,
+  VIDEO_STORAGE_BUCKET,
+  type FeedMediaKind,
+} from "@/lib/validations/media.schema";
 import { notifyMentions } from "@/lib/notifications";
+import { TRENDING_WINDOW_DAYS } from "@/lib/trending";
 
 export type FeedSourceType =
   | "project_update"
@@ -35,6 +44,7 @@ export interface FeedItem {
   title: string;
   body: string | null;
   images: string[];
+  videos: string[];
   link_url?: string | null;
   is_pinned: boolean;
   created_at: string | null;
@@ -71,6 +81,7 @@ interface PostRow {
   title: string;
   body: string | null;
   images: string[] | null;
+  videos: string[] | null;
   source_type: FeedSourceType;
   source_id: string | null;
   created_at: string | null;
@@ -352,6 +363,7 @@ async function enrichPosts(
       title: post.title,
       body: post.body,
       images: Array.isArray(post.images) ? post.images.filter(Boolean) : [],
+      videos: Array.isArray(post.videos) ? post.videos.filter(Boolean) : [],
       link_url: post.source_type === "branch_highlight" ? highlightLinks.get(post.source_id ?? "") ?? null : null,
       is_pinned: pinnedPostIds.has(post.id),
       created_at: post.created_at,
@@ -384,6 +396,7 @@ export async function getFeedItems(
       p_filter: filter ?? null,
       p_page: page,
       p_page_size: pageSize,
+      p_viewer: userId ?? null,
     }),
   ]);
 
@@ -392,15 +405,43 @@ export async function getFeedItems(
   return { items, total: total ?? 0 };
 }
 
+/**
+ * Trending Feed: the highest-scoring posts over the rolling window, ranked by
+ * the `get_trending_feed` RPC (40% views / 35% likes / 25% comments + replies).
+ * Returns items already ordered by score. If the RPC is unavailable this
+ * degrades to an empty list so the caller can fall back to the latest feed.
+ */
+export async function getTrendingFeedItems(
+  limit: number = 12,
+  userId?: string | null,
+): Promise<{ items: FeedItem[]; total: number }> {
+  const supabase = createAdminClient();
+
+  let posts: PostRow[] = [];
+  try {
+    const { data, error } = await supabase.rpc("get_trending_feed", {
+      p_window_days: TRENDING_WINDOW_DAYS,
+      p_limit: limit,
+      p_viewer: userId ?? null,
+    });
+    if (error) throw new Error(error.message);
+    posts = (data ?? []) as PostRow[];
+  } catch {
+    return { items: [], total: 0 };
+  }
+
+  const items = await enrichPosts(supabase, posts, userId ?? null, new Set<string>());
+  return { items, total: items.length };
+}
+
 export async function getFeedItemById(
   postId: string,
   userId?: string | null,
-): Promise<FeedItem | null> {
-  const supabase = createAdminClient();
+): Promise<FeedItem | null> {  const supabase = createAdminClient();
 
   const { data: post } = await supabase
     .from("posts")
-    .select("id, author_id, title, body, images, source_type, source_id, created_at, updated_at")
+    .select("id, author_id, title, body, images, videos, source_type, source_id, created_at, updated_at")
     .eq("id", postId)
     .maybeSingle();
 
@@ -476,6 +517,7 @@ export async function getBranchFeedItems(
           p_source_ids: allIds,
           p_page: page,
           p_page_size: pageSize,
+          p_viewer: userId ?? null,
         })
       : Promise.resolve({ data: [] as PostRow[] }),
   ]);
@@ -568,7 +610,7 @@ export async function createFeedPost(formData: FormData) {
   return { success: true, id: post.id };
 }
 
-export async function uploadFeedPostImage(formData: FormData) {
+export async function uploadFeedPostMedia(formData: FormData) {
   const supabase = createClient();
 
   const {
@@ -578,47 +620,63 @@ export async function uploadFeedPostImage(formData: FormData) {
   if (!user) return { error: "Not authenticated" };
 
   const postId = formData.get("post_id") as string;
-  const file = formData.get("image") as File;
+  const file = formData.get("file") as File;
+  const kind = (formData.get("kind") as FeedMediaKind | null) ?? "image";
+  const isVideo = kind === "video";
 
   if (!postId || !file || file.size === 0) {
     return { error: "Missing required fields" };
   }
-  if (file.size > MAX_ASSET_SIZE) {
-    return { error: "File too large. Maximum size is 2MB" };
+
+  const allowedTypes = isVideo ? ALLOWED_VIDEO_TYPES : ALLOWED_IMAGE_TYPES;
+  const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+  const bucket = isVideo ? VIDEO_STORAGE_BUCKET : IMAGE_STORAGE_BUCKET;
+  const column = isVideo ? "videos" : "images";
+
+  if (file.size > maxSize) {
+    return {
+      error: isVideo
+        ? "Video too large. Maximum size is 50MB"
+        : "Image too large. Maximum size is 2MB",
+    };
   }
-  if (!ALLOWED_ASSET_TYPES.includes(file.type)) {
-    return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
+  if (!allowedTypes.includes(file.type)) {
+    return {
+      error: isVideo
+        ? "Unsupported video format. Use MP4, WebM, or MOV."
+        : "Invalid file type. Use PNG, JPEG, or WebP",
+    };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
+  const ext = file.name.split(".").pop() ?? (isVideo ? "mp4" : "png");
   const filePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
-    .from("feed-images")
+    .from(bucket)
     .upload(filePath, file, { contentType: file.type, upsert: false });
 
   if (uploadError) return { error: uploadError.message };
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from("feed-images").getPublicUrl(filePath);
+  } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
   const { data: existing } = await supabase
     .from("posts")
-    .select("images")
+    .select("images, videos")
     .eq("id", postId)
     .eq("author_id", user.id)
     .maybeSingle();
 
-  const images = Array.isArray(existing?.images) ? existing.images : [];
+  const media = Array.isArray(existing?.[column]) ? existing[column] : [];
 
   const { error: updateError } = await supabase
     .from("posts")
-    .update({ images: [...images, publicUrl], updated_at: new Date().toISOString() })
+    .update({ [column]: [...media, publicUrl], updated_at: new Date().toISOString() })
     .eq("id", postId)
     .eq("author_id", user.id);
 
   if (updateError) return { error: updateError.message };
 
-  return { success: true, image_url: publicUrl };
+  return { success: true, media_url: publicUrl };
 }

@@ -177,6 +177,28 @@ export async function updateProjectSettings(formData: FormData) {
     return { error: "Project ID is required" };
   }
 
+  // Proxy the caller before any write. `supabase` here is the service-role
+  // client, so RLS cannot protect the write; the authorization MUST happen
+  // server-side. Only the project owner or an owner/maintainer member may edit.
+  const { data: memberRows } = await supabase
+    .from("project_members")
+    .select("role")
+    .eq("project_id", projectId)
+    .eq("user_id", user.id);
+  const { data: projectRow } = await supabase
+    .from("projects")
+    .select("owner_id")
+    .eq("id", projectId)
+    .single();
+
+  const memberRole = memberRows?.[0]?.role;
+  const isOwner = projectRow?.owner_id === user.id;
+  const canManage = isOwner || memberRole === "owner" || memberRole === "maintainer";
+
+  if (!canManage) {
+    return { error: "You do not have permission to edit this project" };
+  }
+
   const updates: Record<string, unknown> = {};
 
   const name = formData.get("name") as string | null;

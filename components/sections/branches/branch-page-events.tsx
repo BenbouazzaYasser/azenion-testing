@@ -142,7 +142,11 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
     fd.set("id", eventId);
     fd.set("slug", branchSlug);
     startTransition(async () => {
-      await deleteBranchEvent(fd);
+      const result = await deleteBranchEvent(fd);
+      if (result && "error" in result && result.error) {
+        setError(result.error);
+        return;
+      }
       router.refresh();
     });
   }
