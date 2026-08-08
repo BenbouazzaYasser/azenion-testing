@@ -22,6 +22,39 @@ function getTargetTable(targetType: string) {
   return TARGET_TABLES[targetType] ?? null;
 }
 
+/**
+ * The authenticated user is always derived from the server session.
+ * Client-provided ids are never trusted for authorization.
+ */
+async function getSessionUserId(): Promise<string | null> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
+
+/**
+ * Mirrors `is_feed_post_visible`: only team_update / project_update targets
+ * are visibility-restricted; every other source type (branch items, user
+ * posts) is public content. The viewer id is always the server-derived id.
+ */
+async function isTargetVisible(
+  targetType: string,
+  targetId: string | null,
+  viewerId: string | null,
+): Promise<boolean> {
+  if (targetType !== "team_update" && targetType !== "project_update") return true;
+  if (!targetId) return true;
+  const supabaseAdmin = createAdminClient();
+  const { data } = await supabaseAdmin.rpc("is_feed_post_visible", {
+    p_source_type: targetType,
+    p_source_id: targetId,
+    p_user_id: viewerId,
+  });
+  return data === true;
+}
+
 export async function toggleLike(targetType: string, targetId: string) {
   const supabase = createClient();
   const supabaseAdmin = createAdminClient();
@@ -306,12 +339,16 @@ const COMMENT_SELECT = `
 export async function getCommentsAction(
   targetType: string,
   targetId: string,
-  userId: string | null,
+  _userId: string | null,
   options?: { offset?: number; limit?: number },
 ): Promise<GetCommentsResult> {
   const supabaseAdmin = createAdminClient();
+  const userId = await getSessionUserId();
   const offset = options?.offset ?? 0;
   const limit = options?.limit ?? COMMENT_PAGE_SIZE;
+
+  const visible = await isTargetVisible(targetType, targetId || null, userId);
+  if (!visible) return { comments: [], total: 0 };
 
   const { data: topLevelRows, count } = await supabaseAdmin
     .from("update_comments")

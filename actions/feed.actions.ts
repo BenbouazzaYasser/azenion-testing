@@ -65,6 +65,18 @@ export interface FeedItem {
 
 export type FeedItemWithAuthor = FeedItem;
 
+/**
+ * The authenticated user is always derived from the server session.
+ * Client-provided ids are never trusted for authorization.
+ */
+async function getSessionUserId(): Promise<string | null> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
+
 const INTERACTIONLESS_TYPES = new Set<FeedSourceType>([
   "branch_highlight",
   "branch_event",
@@ -392,9 +404,10 @@ export async function getFeedItems(
   filter?: string,
   page: number = 1,
   pageSize: number = 20,
-  userId?: string | null,
+  _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
+  const userId = await getSessionUserId();
 
   let query = supabase.from("posts").select("id", { count: "exact", head: true });
   if (filter && filter !== "all") query = query.eq("source_type", filter);
@@ -406,12 +419,12 @@ export async function getFeedItems(
       p_filter: filter ?? null,
       p_page: page,
       p_page_size: pageSize,
-      p_viewer: userId ?? null,
+      p_viewer: userId,
     }),
   ]);
 
   const pinnedIds = new Set((pinRows ?? []).map((r) => r.post_id));
-  const items = await enrichPosts(supabase, (posts ?? []) as PostRow[], userId ?? null, pinnedIds);
+  const items = await enrichPosts(supabase, (posts ?? []) as PostRow[], userId, pinnedIds);
   return { items, total: total ?? 0 };
 }
 
@@ -423,16 +436,17 @@ export async function getFeedItems(
  */
 export async function getTrendingFeedItems(
   limit: number = 12,
-  userId?: string | null,
+  _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
+  const userId = await getSessionUserId();
 
   let posts: PostRow[] = [];
   try {
     const { data, error } = await supabase.rpc("get_trending_feed", {
       p_window_days: TRENDING_WINDOW_DAYS,
       p_limit: limit,
-      p_viewer: userId ?? null,
+      p_viewer: userId,
     });
     if (error) throw new Error(error.message);
     posts = (data ?? []) as PostRow[];
@@ -440,14 +454,16 @@ export async function getTrendingFeedItems(
     return { items: [], total: 0 };
   }
 
-  const items = await enrichPosts(supabase, posts, userId ?? null, new Set<string>());
+  const items = await enrichPosts(supabase, posts, userId, new Set<string>());
   return { items, total: items.length };
 }
 
 export async function getFeedItemById(
   postId: string,
-  userId?: string | null,
-): Promise<FeedItem | null> {  const supabase = createAdminClient();
+  _userId?: string | null,
+): Promise<FeedItem | null> {
+  const supabase = createAdminClient();
+  const userId = await getSessionUserId();
 
   const { data: post } = await supabase
     .from("posts")
@@ -460,12 +476,12 @@ export async function getFeedItemById(
   const { data: visible } = await supabase.rpc("is_feed_post_visible", {
     p_source_type: post.source_type,
     p_source_id: post.source_id,
-    p_user_id: userId ?? null,
+    p_user_id: userId,
   });
 
   if (visible !== true) return null;
 
-  const items = await enrichPosts(supabase, [post as PostRow], userId ?? null, new Set<string>());
+  const items = await enrichPosts(supabase, [post as PostRow], userId, new Set<string>());
   return items[0] ?? null;
 }
 
@@ -478,9 +494,10 @@ export async function getBranchFeedItems(
   branchId: string,
   page: number = 1,
   pageSize: number = 20,
-  userId?: string | null,
+  _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
+  const userId = await getSessionUserId();
 
   const { data: branchTeams } = await supabase
     .from("teams")
@@ -535,13 +552,13 @@ export async function getBranchFeedItems(
           p_source_ids: allIds,
           p_page: page,
           p_page_size: pageSize,
-          p_viewer: userId ?? null,
+          p_viewer: userId,
         })
       : Promise.resolve({ data: [] as PostRow[] }),
   ]);
 
   const pinnedIds = new Set((pinRows ?? []).map((r) => r.post_id));
-  const items = await enrichPosts(supabase, (posts ?? []) as PostRow[], userId ?? null, pinnedIds);
+  const items = await enrichPosts(supabase, (posts ?? []) as PostRow[], userId, pinnedIds);
   return { items, total };
 }
 

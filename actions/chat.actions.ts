@@ -120,9 +120,17 @@ export async function getOrCreateConversation(otherUserId: string) {
 export async function searchUsers(query: string) {
   if (!query.trim()) return [];
 
-  const supabase = createAdminClient();
+  const supabase = createClient();
 
-  const { data } = await supabase
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const supabaseAdmin = createAdminClient();
+
+  const { data } = await supabaseAdmin
     .from("profiles")
     .select("id, full_name, username, avatar_url")
     .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
