@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "Azenion — Infinite minds. Limitless impact.",
   description:
     "Azenion is a global network connecting ambitious students, developers, designers, entrepreneurs and innovators through learning, collaboration and building impactful projects.",
-  metadataBase: new URL("https://azenion.io"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://azenion.io"),
   openGraph: {
     title: "Azenion — Infinite minds. Limitless impact.",
     description: "A global network connecting ambitious minds through learning, collaboration and innovation.",

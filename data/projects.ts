@@ -54,8 +54,6 @@ export const projects: Project[] = [
     ],
     contributors: [
       { id: "ziyad", name: "Ziyad", role: "Founder & Lead Developer" },
-      { id: "member-2", name: "Member #2", role: "Frontend Developer" },
-      { id: "member-3", name: "Member #3", role: "UI/UX Designer" },
     ],
     roles: [
       {
@@ -101,7 +99,7 @@ export const projects: Project[] = [
       },
     ],
     joinCtaLabel: "Join This Project",
-    joinCtaHref: "#",
+    joinCtaHref: "/projects",
   },
   {
     slug: "azenion-mobile",
@@ -157,7 +155,7 @@ export const projects: Project[] = [
       },
     ],
     joinCtaLabel: "Join This Project",
-    joinCtaHref: "#",
+    joinCtaHref: "/projects",
   },
   {
     slug: "community-platform",
@@ -221,7 +219,7 @@ export const projects: Project[] = [
       },
     ],
     joinCtaLabel: "Join This Project",
-    joinCtaHref: "#",
+    joinCtaHref: "/projects",
   },
 ];
 

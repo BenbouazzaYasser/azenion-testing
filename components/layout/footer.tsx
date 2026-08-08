@@ -144,6 +144,9 @@ export function Footer() {
           <p className="text-center text-xs text-ink-600 sm:text-left">
             &copy; {new Date().getFullYear()} Azenion. All rights reserved.
           </p>
+          <p className="mt-2 text-center text-xs text-ink-600/80 sm:text-left">
+            Founded by Ziyad
+          </p>
         </div>
       </div>
     </footer>

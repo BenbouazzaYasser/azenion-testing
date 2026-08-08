@@ -3,7 +3,6 @@ import { Footer } from "@/components/layout/footer";
 import { Hero } from "@/components/sections/hero";
 import { About } from "@/components/sections/about";
 import { Features } from "@/components/sections/features";
-import { Institutions } from "@/components/sections/institutions";
 import { PageBridge } from "@/components/sections/page-bridge";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { WhyAzenion } from "@/components/sections/home/why-azenion";
@@ -215,7 +214,6 @@ const teams: TeamCardTeam[] = await Promise.all(
         <AcademyPreview sessions={sessions} />
         <FeedPreview items={feedItems} />
         <Features />
-        <Institutions />
         <CommunityNumbers
           members={countMembers ?? 0}
           teams={countTeams ?? 0}

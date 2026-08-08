@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { useUser } from "@/hooks/use-user";
 import {
   Search,
   X,
@@ -34,6 +35,8 @@ interface GlobalSearchProps {
 
 export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { user, loading: userLoading } = useUser();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [data, setData] = useState<GlobalSearchResponse | null>(null);
@@ -152,6 +155,12 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
 
   function handleSelect(href: string) {
     setOpen(false);
+    // If navigating to chat/start and user is not authenticated, redirect to login with next param
+    if (href.startsWith("/chat/start/") && !user) {
+      const next = encodeURIComponent(href);
+      router.push(`/login?next=${encodeURIComponent(href)}`);
+      return;
+    }
     router.push(href);
   }
 

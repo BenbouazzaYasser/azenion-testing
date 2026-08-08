@@ -109,8 +109,6 @@ export const teams: Team[] = [
     ],
     members: [
       { id: "ziyad", name: "Ziyad", role: "Founder" },
-      { id: "member-2", name: "Member #2", role: "Developer" },
-      { id: "member-3", name: "Member #3", role: "Designer" },
     ],
     values: [
       {
@@ -145,7 +143,7 @@ export const teams: Team[] = [
       },
     ],
     joinCtaLabel: "Request to Join",
-    joinCtaHref: "#",
+    joinCtaHref: "/teams",
   },
 ];
 

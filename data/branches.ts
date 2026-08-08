@@ -95,7 +95,7 @@ export function mapBranchRow(row: BranchRow): Branch {
     upcomingEvents: [],
     joinCta: {
       label: "Join Branch",
-      href: "#",
+      href: "/branches",
       helperText: `Become a member of ${name}`,
     },
   };
