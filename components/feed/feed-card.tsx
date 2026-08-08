@@ -305,7 +305,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
 
         {!noInteractions ? (
           <div className="mt-3 flex flex-wrap items-start justify-between gap-3 border-t border-border-strong/50 pt-3">
-            <div className="flex items-start gap-4">
+            <div className="flex min-w-0 items-start gap-4">
               <LikeButton
                 initialCount={item.like_count}
                 initialLiked={item.user_has_liked}
@@ -321,7 +321,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
               />
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex min-w-0 items-center gap-4">
               <button
                 type="button"
                 disabled

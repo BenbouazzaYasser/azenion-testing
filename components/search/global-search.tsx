@@ -216,7 +216,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
           type="button"
           onClick={openPalette}
           aria-label="Search"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-ink-50 transition-transform duration-300 hover:scale-105 hover:bg-white/[0.06] hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-transform duration-300 hover:scale-105 hover:bg-white/[0.06] hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-5 w-5">
             <circle cx="11" cy="11" r="8" />

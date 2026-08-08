@@ -11,17 +11,19 @@ import {
   ALLOWED_LOGO_TYPES,
   ALLOWED_POST_IMAGE_TYPES,
 } from "@/lib/validations/project.schema";
+import {
+  PRIVATE_MEDIA_BUCKET,
+  privateObjectPath,
+  privateMarkerFor,
+  isProjectMediaPrivate,
+} from "@/lib/media";
 
 export async function createProject(formData: FormData) {
-  console.log("--- createProject action started ---");
-
   const supabase = createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  console.log("user from auth:", user?.id ?? "null");
 
   if (!user) {
     return { error: "Not authenticated" };
@@ -38,27 +40,13 @@ export async function createProject(formData: FormData) {
     logo_url: null,
   };
 
-  console.log("raw formData:", raw);
-
   const parsed = createProjectSchema.safeParse(raw);
-
-  console.log("zod parsed:", parsed);
 
   if (!parsed.success) {
     const fieldErrors = parsed.error.flatten().fieldErrors;
     const firstError = Object.values(fieldErrors).flat()[0];
     return { error: firstError ?? "Invalid input" };
   }
-
-  console.log("parsed.data:", parsed.data);
-  console.log("calling create_project RPC with:", {
-    p_team_id: parsed.data.team_id,
-    p_name: parsed.data.name,
-    p_slug: parsed.data.slug,
-    p_description: parsed.data.description ?? null,
-    p_visibility: parsed.data.visibility,
-    p_logo_url: null,
-  });
 
   const { data: projectId, error } = await supabase.rpc("create_project", {
     p_team_id: parsed.data.team_id,
@@ -68,8 +56,6 @@ export async function createProject(formData: FormData) {
     p_visibility: parsed.data.visibility,
     p_logo_url: null,
   });
-
-  console.log("RPC result:", { data: projectId, error });
 
   if (error) {
     if (error.message.includes("duplicate key") || error.message.includes("unique")) {
@@ -91,7 +77,7 @@ export async function createProject(formData: FormData) {
       .from("project_category_members")
       .insert(members);
     if (catError) {
-      console.log("[DEBUG] category insert error:", catError);
+      // Category insert failed but project created; non-fatal
     }
   }
 
@@ -150,12 +136,6 @@ export async function leaveProject(projectId: string, slug: string) {
 }
 
 export async function updateProjectSettings(formData: FormData) {
-  console.log("[DEBUG] updateProjectSettings called");
-  console.log("[DEBUG] formData entries:");
-  for (const [key, val] of formData.entries()) {
-    console.log(`  ${key}:`, val);
-  }
-
   const ssr = createClient(); // SSR-aware, has cookies → can auth
   const supabase = createAdminClient(); // service-role, bypasses RLS
 
@@ -163,17 +143,13 @@ export async function updateProjectSettings(formData: FormData) {
     data: { user },
   } = await ssr.auth.getUser();
 
-  console.log("[DEBUG] authenticated user:", user?.id);
-
   if (!user) {
     return { error: "Not authenticated" };
   }
 
   const projectId = formData.get("project_id") as string;
-  console.log("[DEBUG] projectId from form:", projectId);
 
   if (!projectId) {
-    console.log("[DEBUG] projectId is missing");
     return { error: "Project ID is required" };
   }
 
@@ -223,8 +199,7 @@ export async function updateProjectSettings(formData: FormData) {
   if (technologiesRaw) {
     try {
       updates.technologies = JSON.parse(technologiesRaw);
-    } catch (e) {
-      console.log("[DEBUG] technologies JSON parse error:", e);
+    } catch {
       return { error: "Invalid technologies format" };
     }
   }
@@ -232,17 +207,12 @@ export async function updateProjectSettings(formData: FormData) {
   if (recruitmentRaw) {
     try {
       updates.recruitment = JSON.parse(recruitmentRaw);
-    } catch (e) {
-      console.log("[DEBUG] recruitment JSON parse error:", e);
+    } catch {
       return { error: "Invalid recruitment format" };
     }
   }
 
-  console.log("[DEBUG] final updates payload:", JSON.stringify(updates));
-  console.log("[DEBUG] projectId for WHERE clause:", projectId);
-
   const payload = { ...updates, updated_at: new Date().toISOString() };
-  console.log("[DEBUG] full update payload with timestamps:", JSON.stringify(payload));
 
   const { data: updateData, error: updateError } = await supabase
     .from("projects")
@@ -250,11 +220,7 @@ export async function updateProjectSettings(formData: FormData) {
     .eq("id", projectId)
     .select();
 
-  console.log("[DEBUG] update error:", updateError);
-  console.log("[DEBUG] update data:", updateData);
-
   if (updateError) {
-    console.log("[DEBUG] update failed with error:", updateError.message, updateError.details, updateError.hint);
     return { error: updateError.message };
   }
 
@@ -263,8 +229,6 @@ export async function updateProjectSettings(formData: FormData) {
     .select("*")
     .eq("id", projectId)
     .single();
-
-  console.log("[DEBUG] row after update:", JSON.stringify(verify));
 
   if (categoryIdsRaw !== null) {
     const categoryIds: string[] = JSON.parse(categoryIdsRaw) as string[];
@@ -278,7 +242,7 @@ export async function updateProjectSettings(formData: FormData) {
         .from("project_category_members")
         .insert(members);
       if (catError) {
-        console.log("[DEBUG] category sync error:", catError);
+        // Category sync failed but project updated; non-fatal
       }
     }
   }
@@ -381,11 +345,15 @@ export async function uploadProjectLogo(formData: FormData) {
   }
 
   const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `${projectId}/${crypto.randomUUID()}.${ext}`;
+  const isPrivate = await isProjectMediaPrivate(supabase, projectId);
+  const bucket = isPrivate ? PRIVATE_MEDIA_BUCKET : "project-logos";
+  const objectPath = isPrivate
+    ? privateObjectPath("project", projectId, `${crypto.randomUUID()}.${ext}`)
+    : `${projectId}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
-    .from("project-logos")
-    .upload(filePath, file, {
+    .from(bucket)
+    .upload(objectPath, file, {
       contentType: file.type,
       upsert: false,
     });
@@ -394,13 +362,13 @@ export async function uploadProjectLogo(formData: FormData) {
     return { error: uploadError.message };
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("project-logos").getPublicUrl(filePath);
+  const storedValue = isPrivate
+    ? privateMarkerFor(objectPath)
+    : supabase.storage.from(bucket).getPublicUrl(objectPath).data.publicUrl;
 
   const { error: updateError } = await supabase.rpc("update_project_logo", {
     p_project_id: projectId,
-    p_logo_url: publicUrl,
+    p_logo_url: storedValue,
   });
 
   if (updateError) {
@@ -409,19 +377,16 @@ export async function uploadProjectLogo(formData: FormData) {
 
   revalidatePath("/projects");
   revalidatePath(`/projects/${formData.get("slug")}`);
-  return { success: true, logo_url: publicUrl };
+  return { success: true, logo_url: storedValue };
 }
 
 export async function createProjectUpdate(formData: FormData) {
   try {
-    console.log("[DEBUG] createProjectUpdate called");
     const supabase = createClient();
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
-    console.log("[DEBUG] auth user:", user?.id ?? "null");
 
     if (!user) {
       return { error: "Not authenticated" };
@@ -433,19 +398,13 @@ export async function createProjectUpdate(formData: FormData) {
       body: (formData.get("body") as string) || null,
     };
 
-    console.log("[DEBUG] raw formData:", raw);
-
     const parsed = createProjectUpdateSchema.safeParse(raw);
 
-    console.log("[DEBUG] zod parsed success:", parsed.success);
     if (!parsed.success) {
-      console.log("[DEBUG] zod errors:", JSON.stringify(parsed.error.flatten()));
       const fieldErrors = parsed.error.flatten().fieldErrors;
       const firstError = Object.values(fieldErrors).flat()[0];
       return { error: firstError ?? "Invalid input" };
     }
-
-    console.log("[DEBUG] parsed data:", parsed.data);
 
     const { data: update, error } = await supabase
       .from("project_updates")
@@ -458,11 +417,7 @@ export async function createProjectUpdate(formData: FormData) {
       .select("id")
       .single();
 
-    console.log("[DEBUG] insert error:", error);
-    console.log("[DEBUG] insert data:", update);
-
     if (error) {
-      console.log("[DEBUG] insert failed:", error.message, error.details, error.hint);
       return { error: error.message };
     }
 
@@ -474,13 +429,9 @@ export async function createProjectUpdate(formData: FormData) {
       .order("created_at", { ascending: false })
       .limit(1);
 
-    console.log("[DEBUG] verify fetched newest update:", JSON.stringify(verify));
-
     revalidatePath(`/projects/${formData.get("slug")}`);
-    console.log("[DEBUG] revalidated path:", `/projects/${formData.get("slug")}`);
     return { success: true, id: update.id };
   } catch (err) {
-    console.error("[DEBUG] createProjectUpdate threw:", err);
     return { error: err instanceof Error ? err.message : "Server error" };
   }
 }
@@ -513,19 +464,23 @@ export async function uploadUpdateImage(formData: FormData) {
   }
 
   const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `${projectId}/${crypto.randomUUID()}.${ext}`;
+  const isPrivate = await isProjectMediaPrivate(supabase, projectId);
+  const bucket = isPrivate ? PRIVATE_MEDIA_BUCKET : "project-updates";
+  const objectPath = isPrivate
+    ? privateObjectPath("project", projectId, `${crypto.randomUUID()}.${ext}`)
+    : `${projectId}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
-    .from("project-updates")
-    .upload(filePath, file, { contentType: file.type, upsert: false });
+    .from(bucket)
+    .upload(objectPath, file, { contentType: file.type, upsert: false });
 
   if (uploadError) {
     return { error: uploadError.message };
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("project-updates").getPublicUrl(filePath);
+  const storedValue = isPrivate
+    ? privateMarkerFor(objectPath)
+    : supabase.storage.from(bucket).getPublicUrl(objectPath).data.publicUrl;
 
   const { data: existing } = await supabase
     .from("project_updates")
@@ -539,8 +494,8 @@ export async function uploadUpdateImage(formData: FormData) {
   const { error: updateError } = await supabase
     .from("project_updates")
     .update({
-      images: [...images, publicUrl],
-      image_url: existing?.image_url ?? publicUrl,
+      images: [...images, storedValue],
+      image_url: existing?.image_url ?? storedValue,
       updated_at: new Date().toISOString(),
     })
     .eq("id", updateId)
@@ -551,7 +506,7 @@ export async function uploadUpdateImage(formData: FormData) {
   }
 
   revalidatePath(`/projects/${formData.get("slug")}`);
-  return { success: true, image_url: publicUrl };
+  return { success: true, image_url: storedValue };
 }
 
 export async function updateProjectUpdate(formData: FormData) {

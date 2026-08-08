@@ -98,7 +98,6 @@ function NotificationItem({
   return (
     <button
       type="button"
-      role="listitem"
       onClick={() => onOpen(notification)}
       className={cn(
         "group relative flex w-full cursor-pointer gap-3 rounded-xl px-3.5 py-3 text-left transition-colors duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
@@ -264,7 +263,7 @@ export function NotificationCenter() {
             : "Notifications"
         }
         onClick={handleOpen}
-        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -278,7 +277,7 @@ export function NotificationCenter() {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.86)] shadow-dropdown backdrop-blur-2xl backdrop-saturate-150"
+          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.86)] shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
         >
           <div
             aria-hidden
@@ -350,7 +349,7 @@ export function NotificationCenter() {
                 </p>
               </div>
             ) : (
-              <div role="list" className="flex flex-col p-2.5 pb-3">
+              <div className="flex flex-col p-2.5 pb-3">
                 {notifications.map((n) => (
                   <NotificationItem
                     key={n.id}

@@ -25,7 +25,7 @@ export default async function ChatPage() {
   return (
     <>
       <Navbar />
-      <main className="relative flex h-screen flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
+      <main className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
         <ChatLayout conversations={conversations} currentUserId={user.id}>
           <div className="relative min-h-0 flex-1 overflow-hidden md:hidden">
             <ChatSidebar conversations={conversations} currentUserId={user.id} />

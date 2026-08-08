@@ -8,6 +8,7 @@ import { CalendarPlus, ChevronDown, MapPin, Shuffle, Video, X } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { createSessionRequest } from "@/actions/session-request.actions";
 import { SESSION_REQUEST_FORMATS } from "@/lib/validations/session-request.schema";
+import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { cn } from "@/lib/utils";
 
 export interface BranchOption {
@@ -39,6 +40,7 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
+  const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -118,7 +120,9 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
               />
 
               <div
-                className="relative z-10 flex max-h-[85vh] w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+                ref={dialogFocusRef}
+                tabIndex={-1}
+                className="relative z-10 flex max-h-[85vh] w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.95)",

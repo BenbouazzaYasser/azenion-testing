@@ -87,7 +87,9 @@ export async function markNotificationsRead(_userId: string | null) {
     .eq("user_id", userId)
     .eq("read", false);
 
-  if (error) console.error("[notifications] mark read failed:", error.message);
+  if (error) {
+    // Mark all read failed; non-fatal
+  }
 }
 
 /**
@@ -107,7 +109,9 @@ export async function markNotificationRead(notificationId: string) {
     .eq("user_id", userId)
     .eq("read", false);
 
-  if (error) console.error("[notifications] mark single read failed:", error.message);
+  if (error) {
+    // Mark single read failed; non-fatal
+  }
 }
 
 /**

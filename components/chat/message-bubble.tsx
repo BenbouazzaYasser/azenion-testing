@@ -161,7 +161,7 @@ export function MessageBubble({
         {isOwn && !isEditing && (
           <div
             className={cn(
-              "mt-1 flex justify-end gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100",
+              "mt-1 flex justify-end gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 focus-within:opacity-100 max-sm:opacity-100",
               isGrouped && "mb-2",
             )}
           >
@@ -172,7 +172,7 @@ export function MessageBubble({
                 setEditText(content);
                 setIsEditing(true);
               }}
-              className="rounded-md px-1.5 py-0.5 text-[10px] font-medium text-ink-600 transition-colors duration-200 ease-premium hover:bg-white/[0.06] hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+              className="inline-flex min-h-9 items-center rounded-md px-2 py-0.5 text-[10px] font-medium text-ink-600 transition-colors duration-200 ease-premium hover:bg-white/[0.06] hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
             >
               Edit
             </button>
@@ -180,7 +180,7 @@ export function MessageBubble({
               type="button"
               aria-label="Delete message"
               onClick={handleDelete}
-              className="rounded-md px-1.5 py-0.5 text-[10px] font-medium text-ink-600 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+              className="inline-flex min-h-9 items-center rounded-md px-2 py-0.5 text-[10px] font-medium text-ink-600 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
             >
               Delete
             </button>

@@ -125,7 +125,7 @@ export function WhyAzenion() {
       </div>
 
       {/* Value pillars */}
-      <div className="mx-auto mt-16 max-w-[1320px] px-5 sm:px-8 lg:mt-20 lg:px-12">
+      <div className="mx-auto mt-[0.875rem] max-w-[1320px] px-5 sm:px-8 lg:mt-[1.5rem] lg:px-12">
         <Reveal>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PILLARS.map((pillar) => {
@@ -133,16 +133,23 @@ export function WhyAzenion() {
               return (
                 <div
                   key={pillar.title}
-                  className="group flex items-center gap-4 rounded-2xl border border-border/70 bg-white/[0.02] px-5 py-4 transition-all duration-300 ease-premium hover:border-accent-400/30 hover:bg-white/[0.04]"
+                  className="group relative overflow-hidden rounded-[1.4rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] hover:shadow-glow-sm"
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border-strong bg-white/[0.03] text-accent-400 transition-colors duration-300 group-hover:text-accent-300">
-                    <Icon size={17} strokeWidth={1.75} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[15px] font-semibold text-ink-50">{pillar.title}</p>
-                    <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ink-500">
-                      {pillar.description}
-                    </p>
+                  <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[1.6rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.07),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                  />
+                  <div className="relative flex items-center gap-4">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent-400/25 bg-accent/[0.08] text-accent-300 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-glow-sm">
+                      <Icon size={17} strokeWidth={1.75} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-semibold text-ink-50">{pillar.title}</p>
+                      <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ink-500">
+                        {pillar.description}
+                      </p>
+                    </div>
                   </div>
                 </div>
               );

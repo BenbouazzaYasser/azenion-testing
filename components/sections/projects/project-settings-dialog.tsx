@@ -25,6 +25,7 @@ import { TechTagInput } from "./tech-tag-input";
 import { RecruitmentEditor, type RecruitmentRole } from "./recruitment-editor";
 import { deleteProject, updateProjectSettings, uploadProjectLogo } from "@/actions/project.actions";
 import { TransferOwnershipConfirmModal } from "@/components/shared/transfer-ownership-confirm-modal";
+import { useDialogFocus } from "@/lib/use-dialog-focus";
 
 interface ProjectSettingsData {
   id: string;
@@ -102,6 +103,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
   const [mounted, setMounted] = useState(false);
+  const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -261,7 +263,9 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
               />
 
               <div
-                className="relative z-10 flex max-h-[90vh] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+                ref={dialogFocusRef}
+                tabIndex={-1}
+                className="relative z-10 flex max-h-[90vh] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.95)",

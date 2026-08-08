@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDialogFocus } from "@/lib/use-dialog-focus";
 
 interface OwnershipLeaveModalProps {
   open: boolean;
@@ -13,7 +14,7 @@ interface OwnershipLeaveModalProps {
 }
 
 export function OwnershipLeaveModal({ open, onClose, type, onGoToSettings }: OwnershipLeaveModalProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useDialogFocus<HTMLDivElement>(open);
 
   useEffect(() => {
     if (!open) return;
@@ -27,12 +28,6 @@ export function OwnershipLeaveModal({ open, onClose, type, onGoToSettings }: Own
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open, onClose]);
-
-  useEffect(() => {
-    if (open) {
-      dialogRef.current?.focus();
-    }
-  }, [open]);
 
   if (!open) return null;
 

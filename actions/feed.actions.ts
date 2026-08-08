@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolveMediaValue } from "@/lib/media";
 import {
   getBatchLikerNames,
   getSavedPostIds,
@@ -301,7 +302,8 @@ async function enrichPosts(
 
   // ── Assemble ───────────────────────────────────────────────────────────
 
-  return posts.map((post) => {
+  return await Promise.all(
+    posts.map(async (post) => {
     const branch = post.source_id ? branchBySource.get(post.source_id) : null;
     const profile = post.author_id ? profileMap.get(post.author_id) : null;
     const isBranchAuthored = BRANCH_AUTHORED_TYPES.has(post.source_type);
@@ -343,6 +345,13 @@ async function enrichPosts(
 
     const key = keyOf(post);
 
+    const [resolvedEntityLogo, resolvedBranchLogo, resolvedImages, resolvedVideos] = await Promise.all([
+      resolveMediaValue(entityLogo),
+      resolveMediaValue(branch?.logo_url ?? null),
+      resolveMediaValue(Array.isArray(post.images) ? post.images.filter(Boolean) : []),
+      resolveMediaValue(Array.isArray(post.videos) ? post.videos.filter(Boolean) : []),
+    ]);
+
     return {
       id: post.id,
       source_type: post.source_type,
@@ -355,15 +364,15 @@ async function enrichPosts(
       author_username: isUserPost ? profile?.username ?? null : null,
       entity_name: entityName,
       entity_slug: entitySlug,
-      entity_logo_url: entityLogo,
+      entity_logo_url: (resolvedEntityLogo ?? entityLogo) as string | null,
       entity_type: entityType,
       branch_name: branch?.name ?? null,
       branch_slug: branch?.slug ?? null,
-      branch_logo_url: branch?.logo_url ?? null,
+      branch_logo_url: resolvedBranchLogo as string | null,
       title: post.title,
       body: post.body,
-      images: Array.isArray(post.images) ? post.images.filter(Boolean) : [],
-      videos: Array.isArray(post.videos) ? post.videos.filter(Boolean) : [],
+      images: (resolvedImages as string[] | undefined) ?? [],
+      videos: (resolvedVideos as string[] | undefined ?? []),
       link_url: post.source_type === "branch_highlight" ? highlightLinks.get(post.source_id ?? "") ?? null : null,
       is_pinned: pinnedPostIds.has(post.id),
       created_at: post.created_at,
@@ -375,7 +384,8 @@ async function enrichPosts(
       saved_by_user: savedSet.has(post.id),
       ...(eventDetails.get(post.source_id ?? "") ?? {}),
     };
-  });
+    }),
+  );
 }
 
 export async function getFeedItems(
@@ -446,6 +456,14 @@ export async function getFeedItemById(
     .maybeSingle();
 
   if (!post) return null;
+
+  const { data: visible } = await supabase.rpc("is_feed_post_visible", {
+    p_source_type: post.source_type,
+    p_source_id: post.source_id,
+    p_user_id: userId ?? null,
+  });
+
+  if (visible !== true) return null;
 
   const items = await enrichPosts(supabase, [post as PostRow], userId ?? null, new Set<string>());
   return items[0] ?? null;

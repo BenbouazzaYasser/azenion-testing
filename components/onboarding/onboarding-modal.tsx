@@ -25,6 +25,7 @@ import {
   saveOnboardingProfile,
 } from "@/actions/onboarding.actions";
 import { uploadAvatar } from "@/actions/profile.actions";
+import { useDialogFocus } from "@/lib/use-dialog-focus";
 import type {
   OnboardingBranchOption,
   OnboardingData,
@@ -64,7 +65,7 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const dialogRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useDialogFocus<HTMLDivElement>(open, { initialFocus: "panel" });
   const busyRef = useRef(false);
   busyRef.current = busy;
 
@@ -87,13 +88,11 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
       if (e.key === "Escape") dismiss();
     }
     document.addEventListener("keydown", handleKeyDown);
-    const focusTimer = window.setTimeout(() => dialogRef.current?.focus(), 60);
 
     return () => {
       cancelAnimationFrame(frame);
       document.body.style.overflow = "";
       document.removeEventListener("keydown", handleKeyDown);
-      window.clearTimeout(focusTimer);
       setMounted(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface NotificationInput {
@@ -67,7 +66,7 @@ async function recipientEnabled(userId: string, type: string): Promise<boolean> 
  * rapid like/unlike/like cycles never spam the recipient.
  */
 export async function insertNotification(input: NotificationInput) {
-  const supabase = createClient();
+  const supabase = createAdminClient();
 
   if (!(await recipientEnabled(input.userId, input.type))) {
     return { skipped: true };
@@ -98,7 +97,7 @@ export async function insertNotification(input: NotificationInput) {
   });
 
   if (error) {
-    console.error("[notifications] insert failed:", error.message);
+    // Notification insert failed; best-effort
     return { error };
   }
   return { inserted: true };

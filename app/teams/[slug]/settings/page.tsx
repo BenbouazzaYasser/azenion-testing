@@ -13,6 +13,7 @@ import {
   getTeamPermissions,
 } from "@/lib/team-permissions.server";
 import { TeamSettingsClient } from "@/components/sections/teams/settings/team-settings-client";
+import { resolveMediaValue } from "@/lib/media";
 
 interface TeamSettingsPageProps {
   params: Promise<{ slug: string }>;
@@ -47,9 +48,7 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
 
   if (!team) notFound();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect(`/teams/${slug}`);
 
@@ -61,6 +60,16 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
     .maybeSingle();
 
   if (!membership) redirect(`/teams/${slug}`);
+
+  const [resolvedLogo, resolvedBanner] = await Promise.all([
+    resolveMediaValue(team.logo_url),
+    resolveMediaValue(team.banner_url),
+  ]);
+  const teamData = {
+    ...team,
+    logo_url: (resolvedLogo as string | null) ?? null,
+    banner_url: (resolvedBanner as string | null) ?? null,
+  };
 
   const isOwner = user.id === team.owner_id;
   const isPlatformAdmin = (await supabase.rpc("is_platform_admin"))?.data === true;
@@ -195,7 +204,7 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
       <main className="relative overflow-hidden">
         <PageAtmosphere />
         <TeamSettingsClient
-          team={team}
+          team={teamData}
           isOwner={isOwner}
           isPlatformAdmin={isPlatformAdmin}
           canManageRoles={canManageRoles}

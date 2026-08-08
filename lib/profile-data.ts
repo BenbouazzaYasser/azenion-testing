@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { User } from "@supabase/supabase-js";
+import { resolveMediaValue } from "@/lib/media";
 
 export type UserTeam = {
   id: string;
@@ -44,7 +45,7 @@ export async function getOrCreateProfile(user: User) {
     .maybeSingle();
 
   if (profileError) {
-    console.error("[profile] failed to fetch profile row:", profileError.message);
+    // Profile fetch failed, will attempt self-healing insert
   }
 
   if (!profile) {
@@ -62,7 +63,7 @@ export async function getOrCreateProfile(user: User) {
       .single();
 
     if (createError) {
-      console.error("[profile] self-healing INSERT failed:", createError.message);
+      // Self-healing INSERT failed
     } else {
       profile = created;
     }
@@ -99,13 +100,15 @@ export async function getUserTeams(userId: string): Promise<UserTeam[]> {
     team_logo_url: string | null;
   }[];
 
-  return rows.map((t) => ({
-    id: t.team_id,
-    slug: t.team_slug,
-    name: t.team_name,
-    logo_url: t.team_logo_url,
-    role: t.role,
-  }));
+  return await Promise.all(
+    rows.map(async (t) => ({
+      id: t.team_id,
+      slug: t.team_slug,
+      name: t.team_name,
+      logo_url: ((await resolveMediaValue(t.team_logo_url, undefined, supabase)) as string | null) ?? null,
+      role: t.role,
+    })),
+  );
 }
 
 export async function getUserProjects(userId: string): Promise<UserProject[]> {
@@ -152,12 +155,15 @@ export async function getUserProjects(userId: string): Promise<UserProject[]> {
     countMap.set(row.project_id, (countMap.get(row.project_id) ?? 0) + 1);
   }
 
-  return raw.map((p) => ({
-    ...p,
-    visibility: p.visibility ?? "open",
-    technologies: Array.isArray(p.technologies) ? p.technologies : [],
-    member_count: countMap.get(p.id) ?? 0,
-  }));
+  return await Promise.all(
+    raw.map(async (p) => ({
+      ...p,
+      logo_url: ((await resolveMediaValue(p.logo_url, undefined, supabase)) as string | null) ?? null,
+      visibility: p.visibility ?? "open",
+      technologies: Array.isArray(p.technologies) ? p.technologies : [],
+      member_count: countMap.get(p.id) ?? 0,
+    })),
+  );
 }
 
 export async function getUserActivities(userId: string) {

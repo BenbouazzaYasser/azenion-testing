@@ -54,12 +54,12 @@ export function JoinCard() {
 
   if (success) {
     return (
-      <section className="relative flex min-h-[90vh] items-center justify-center pt-[88px] sm:pt-[104px] lg:pt-[120px]">
+      <section className="relative flex min-h-dvh items-center justify-center pb-[env(safe-area-inset-bottom)] pt-[88px] sm:pt-[104px] lg:pt-[120px]">
         <BackgroundInfinity variant="join" />
 
         <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
           <Reveal>
-            <div className="overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-10 py-16 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:px-12 sm:py-20">
+            <div className="overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-16 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:px-12 sm:py-20">
               <div className="relative text-center">
                 <h1 className="text-balance text-[1.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2rem]">
                   Check Your Email
@@ -79,12 +79,12 @@ export function JoinCard() {
   }
 
   return (
-    <section className="relative flex min-h-[90vh] items-center justify-center pt-[88px] sm:pt-[104px] lg:pt-[120px]">
+    <section className="relative flex min-h-dvh items-center justify-center pb-[env(safe-area-inset-bottom)] pt-[88px] sm:pt-[104px] lg:pt-[120px]">
       <BackgroundInfinity variant="join" />
 
       <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
         <Reveal>
-          <div className="group overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-10 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:shadow-glow-sm sm:px-12 sm:py-9">
+          <div className="group overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:shadow-glow-sm sm:px-12 sm:py-9">
             <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative text-center">

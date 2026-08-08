@@ -15,6 +15,7 @@ import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getProjectLifecycleStatus } from "@/lib/lifecycle";
+import { resolveMediaValue } from "@/lib/media";
 
 export const metadata: Metadata = {
   title: "Projects | Azenion — The Limitless Network",
@@ -101,14 +102,15 @@ export default async function ProjectsPage() {
     }
   }
 
-  const visibleProjects = (projects ?? [])
-    .filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED")
-    .map((p) => ({
+  const visibleProjects = await Promise.all(
+    (projects ?? [])
+      .filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED")
+      .map(async (p) => ({
     id: p.id,
     slug: p.slug,
     name: p.name,
     description: p.description,
-    logo_url: p.logo_url,
+    logo_url: ((await resolveMediaValue(p.logo_url, undefined, supabase)) as string | null) ?? null,
     visibility: p.visibility,
     lifecycle_status: p.lifecycle_status,
     last_activity_at: p.last_activity_at as string | null,
@@ -126,7 +128,8 @@ export default async function ProjectsPage() {
     owner: p.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
     team: p.team as unknown as { name: string; slug: string } | null,
     member_count: memberCountMap.get(p.id) ?? 0,
-  }));
+    }))
+  );
 
   let myProjects: {
     id: string;
@@ -190,7 +193,8 @@ export default async function ProjectsPage() {
         myCategoryMap.set(edge.project_id, entries);
       }
 
-      myProjects = myMemberships.map((m) => {
+      myProjects = await Promise.all(
+        myMemberships.map(async (m) => {
         const p = m.project as unknown as {
           id: string;
           slug: string;
@@ -212,7 +216,7 @@ export default async function ProjectsPage() {
           slug: p.slug,
           name: p.name,
           description: p.description,
-          logo_url: p.logo_url,
+          logo_url: ((await resolveMediaValue(p.logo_url, undefined, supabase)) as string | null) ?? null,
           visibility: p.visibility,
           lifecycle_status: p.lifecycle_status,
           last_activity_at: p.last_activity_at,
@@ -232,7 +236,8 @@ export default async function ProjectsPage() {
           member_count: myMemberCountMap.get(p.id) ?? 0,
           role: m.role as "owner" | "admin" | "member",
         };
-      });
+      })
+      );
     }
   }
 

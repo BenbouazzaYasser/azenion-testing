@@ -16,6 +16,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getTeamPermissions, TEAM_PERMISSIONS, TeamPermission } from "@/lib/team-permissions.server";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
+import { resolveMediaValue } from "@/lib/media";
 
 interface TeamPageProps {
   params: Promise<{ slug: string }>;
@@ -253,12 +254,13 @@ export default async function TeamPage({ params }: TeamPageProps) {
     owner: { username: string; full_name: string; avatar_url: string | null } | null;
     member_count: number;
     team: { name: string; slug: string };
-  }[] = (teamProjects ?? []).map((p) => ({
+  }[] = await Promise.all(
+    (teamProjects ?? []).map(async (p) => ({
     id: p.id,
     slug: p.slug,
     name: p.name,
     description: p.description,
-    logo_url: p.logo_url,
+    logo_url: ((await resolveMediaValue(p.logo_url)) as string | null) ?? null,
     visibility: p.visibility,
     lifecycle_status: p.lifecycle_status,
     last_activity_at: p.last_activity_at as string | null,
@@ -276,7 +278,8 @@ export default async function TeamPage({ params }: TeamPageProps) {
     owner: p.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
     member_count: projectMemberCounts[p.id] ?? 0,
     team: { name: team.name, slug: team.slug },
-  }));
+    }))
+  );
 
   let currentMember: { role: string } | null = null;
 
@@ -356,33 +359,42 @@ export default async function TeamPage({ params }: TeamPageProps) {
     return new Date(b.created_at as string).getTime() - new Date(a.created_at as string).getTime();
   });
 
-  const teamUpdates = sortedTeamUpdates.map((u: Record<string, unknown>) => ({
-    id: u.id as string,
-    title: u.title as string,
-    body: u.body as string | null,
-    image_url: u.image_url as string | null,
-    images: Array.isArray(u.images) ? (u.images as string[]).filter(Boolean) : [],
-    created_at: u.created_at as string,
-    updated_at: u.updated_at as string,
-    author: u.author as {
-      id: string;
-      username: string;
-      full_name: string;
-      avatar_url: string | null;
-    },
-    like_count: teamUpdateLikeCounts[u.id as string] ?? 0,
-    comment_count: teamUpdateCommentCounts[u.id as string] ?? 0,
-    user_has_liked: teamUpdateUserLikes.has(u.id as string),
-    is_pinned: pinnedUpdateIds.has(u.id as string),
-  }));
+  const teamUpdates = await Promise.all(
+    sortedTeamUpdates.map(async (u: Record<string, unknown>) => ({
+      id: u.id as string,
+      title: u.title as string,
+      body: u.body as string | null,
+      image_url: ((await resolveMediaValue(u.image_url as string | null)) as string | null) ?? null,
+      images: ((await resolveMediaValue(
+        Array.isArray(u.images) ? (u.images as string[]).filter(Boolean) : [],
+      )) as string[] | undefined) ?? [],
+      created_at: u.created_at as string,
+      updated_at: u.updated_at as string,
+      author: u.author as {
+        id: string;
+        username: string;
+        full_name: string;
+        avatar_url: string | null;
+      },
+      like_count: teamUpdateLikeCounts[u.id as string] ?? 0,
+      comment_count: teamUpdateCommentCounts[u.id as string] ?? 0,
+      user_has_liked: teamUpdateUserLikes.has(u.id as string),
+      is_pinned: pinnedUpdateIds.has(u.id as string),
+    })),
+  );
+
+  const [teamLogoResolved, teamBannerResolved] = await Promise.all([
+    resolveMediaValue(team.logo_url),
+    resolveMediaValue(team.banner_url),
+  ]);
 
   const teamWithOwner = {
     id: team.id,
     slug: team.slug,
     name: team.name,
     description: team.description,
-    logo_url: team.logo_url,
-    banner_url: team.banner_url,
+    logo_url: (teamLogoResolved as string | null) ?? null,
+    banner_url: (teamBannerResolved as string | null) ?? null,
     visibility: team.visibility,
     status: team.status,
     last_activity_at: team.last_activity_at,

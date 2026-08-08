@@ -82,6 +82,17 @@ export function Navbar() {
     };
   }, [isMenuOpen]);
 
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+    if (isMenuOpen) {
+      drawer.inert = false;
+    } else {
+      drawer.inert = true;
+    }
+  }, [isMenuOpen]);
+
   useEffect(() => {
     if (!isMenuOpen) return;
     function handleEscape(e: KeyboardEvent) {
@@ -115,18 +126,18 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6 sm:pt-5">
       <div
         className={cn(
-          "w-full lg:w-fit rounded-full border border-white/[0.08] transition-[background-color,box-shadow] duration-700 ease-premium will-change-transform backdrop-blur-2xl",
+          "w-full xl:w-fit rounded-full border border-white/[0.08] transition-[background-color,box-shadow] duration-700 ease-premium will-change-transform backdrop-blur-2xl",
           isScrolled || isMenuOpen
             ? "bg-[rgba(7,8,13,0.78)] shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)]"
             : "bg-[rgba(10,11,16,0.18)] shadow-[0_8px_30px_-25px_rgba(255,255,255,0.05)]"
         )}
       >
-        <div className="flex h-[64px] items-center justify-between px-4 sm:h-[70px] sm:px-6 lg:justify-start">
+        <div className="flex h-[64px] items-center justify-between px-4 sm:h-[70px] sm:px-6 xl:justify-start">
           <div className="flex items-center">
             <Logo withWordmark={false} markSize={32} />
           </div>
 
-          <div className="hidden lg:flex lg:ml-4">
+          <div className="hidden xl:flex xl:ml-4">
             <nav aria-label="Primary" className="flex items-center">
               <ul className="flex items-center gap-4">
                 {NAV_LINKS.map((link) => {
@@ -148,8 +159,14 @@ export function Navbar() {
                           className="relative"
                           onMouseEnter={() => setOpenDropdown(link.href)}
                           onMouseLeave={() => setOpenDropdown(null)}
+                          onFocus={() => setOpenDropdown(link.href)}
+                          onBlur={(e) => {
+                            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                              setOpenDropdown(null);
+                            }
+                          }}
                         >
-                          <Link href={link.href} className={navLinkClass}>
+                          <Link href={link.href} className={navLinkClass} aria-haspopup="true" aria-expanded={isDropdownOpen}>
                             {link.label}
                             <ChevronDown size={12} className="ml-1 opacity-60" />
                           </Link>
@@ -200,8 +217,8 @@ export function Navbar() {
             </nav>
           </div>
 
-          <div className="flex items-center justify-end gap-2 lg:ml-4">
-            <div className="hidden items-center gap-2 lg:flex">
+          <div className="flex items-center justify-end gap-2 xl:ml-4">
+            <div className="hidden items-center gap-2 xl:flex">
             <GlobalSearch variant="desktop" />
             {loading ? null : user ? (
               <>
@@ -215,6 +232,7 @@ export function Navbar() {
                       variant="ghost"
                       size="sm"
                       className="h-10"
+                      aria-expanded={isAdminOpen}
                       onClick={() => setIsAdminOpen((v) => !v)}
                     >
                       <Shield size={14} />
@@ -290,6 +308,8 @@ export function Navbar() {
                   <button
                     type="button"
                     onClick={() => setIsAvatarOpen((v) => !v)}
+                    aria-haspopup="menu"
+                    aria-expanded={isAvatarOpen}
                     className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.12] transition-all duration-300 hover:scale-105 hover:border-accent-400/40 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     {profile?.avatar_url ? (
@@ -462,9 +482,9 @@ export function Navbar() {
             )}
             </div>
 
-            <div className="lg:hidden">{user ? <NotificationCenter /> : null}</div>
+            <div className="xl:hidden">{user ? <NotificationCenter /> : null}</div>
 
-            <div className="lg:hidden">
+            <div className="xl:hidden">
               <GlobalSearch variant="mobile" />
             </div>
 
@@ -474,7 +494,7 @@ export function Navbar() {
               onClick={() => setIsMenuOpen((v) => !v)}
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMenuOpen}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-ink-50 transition-all duration-300 hover:scale-105 hover:bg-white/[0.06] hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 lg:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-all duration-300 hover:scale-105 hover:bg-white/[0.06] hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -483,12 +503,14 @@ export function Navbar() {
       </div>
 
       <div
+        ref={drawerRef}
+        aria-hidden={!isMenuOpen}
         className={cn(
-          "absolute left-4 right-4 top-[78px] grid overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-[rgba(7,8,13,0.88)] shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)] backdrop-blur-2xl transition-all duration-[400ms] ease-premium lg:hidden",
+          "absolute left-4 right-4 top-[78px] grid overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-[rgba(7,8,13,0.88)] shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)] backdrop-blur-2xl transition-all duration-[400ms] ease-premium xl:hidden",
           isMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         )}
       >
-        <div className="min-h-0">
+        <div className="min-h-0 max-h-[calc(100dvh_-_112px)] overflow-y-auto overscroll-contain">
           <div className="flex flex-col gap-1 p-5">
             {NAV_LINKS.map((link) => {
               const active = isActive(link.href);

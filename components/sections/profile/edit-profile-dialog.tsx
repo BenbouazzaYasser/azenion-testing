@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AvatarUpload } from "./avatar-upload";
 import { updateProfile } from "@/actions/profile.actions";
+import { useDialogFocus } from "@/lib/use-dialog-focus";
 
 interface EditProfileDialogProps {
   profile: {
@@ -27,6 +28,7 @@ const inputClass =
 
 export function EditProfileDialog({ profile }: EditProfileDialogProps) {
   const [open, setOpen] = useState(false);
+  const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
@@ -83,8 +85,10 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
               onClick={() => setOpen(false)}
             />
 
-            <div
-              className="relative z-10 flex max-h-[85vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+<div
+                ref={dialogFocusRef}
+                tabIndex={-1}
+                className="relative z-10 flex max-h-[85vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
               style={{
                 opacity: mounted ? 1 : 0,
                 transform: mounted ? "scale(1)" : "scale(0.95)",

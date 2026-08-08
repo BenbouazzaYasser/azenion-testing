@@ -259,10 +259,6 @@ export async function uploadBranchLogo(formData: FormData) {
   });
 
   if (updateError) {
-    console.error("UPDATE ERROR OBJECT");
-    console.error(updateError);
-    console.error(JSON.stringify(updateError, null, 2));
-
     return {
       error: updateError.message,
       code: updateError.code,

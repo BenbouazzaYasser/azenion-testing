@@ -6,6 +6,7 @@ import { X, Settings, ImagePlus, Trash2, GitBranch } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { updateBranch, uploadBranchLogo } from "@/actions/branch.actions";
+import { useDialogFocus } from "@/lib/use-dialog-focus";
 
 interface BranchData {
   id: string;
@@ -38,6 +39,7 @@ export function BranchSettingsDialog({ branch, open: controlledOpen, onOpenChang
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
+  const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
 
   const [name, setName] = useState(branch.name);
   const [slug, setSlug] = useState(branch.slug);
@@ -163,7 +165,9 @@ export function BranchSettingsDialog({ branch, open: controlledOpen, onOpenChang
               />
 
               <div
-                className="relative z-10 flex max-h-[85vh] w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+                ref={dialogFocusRef}
+                tabIndex={-1}
+                className="relative z-10 flex max-h-[85vh] w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.95)",

@@ -13,6 +13,8 @@ import { FeaturedProjects } from "@/components/sections/community/featured-proje
 import { AcademySessions } from "@/components/sections/community/academy-sessions";
 import { CommunityCta } from "@/components/sections/community/final-cta";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import { resolveMediaValue } from "@/lib/media";
 import { getFeedItems, getTrendingFeedItems } from "@/actions/feed.actions";
 import {
   getTrendingTeamIds,
@@ -38,6 +40,7 @@ export const revalidate = 300;
 
 export default async function CommunityPage() {
   const admin = createAdminClient();
+  const supabase = createClient();
 
   const [trendingTeamIds, featuredProjectIds] = await Promise.all([
     getTrendingTeamIds(8),
@@ -201,56 +204,60 @@ export default async function CommunityPage() {
     }
   }
 
-  const teams: TeamCardTeam[] = (orderedTeamRows ?? [])
-    .filter((team) => !isTeamHidden(team.last_activity_at as string | null))
-    .slice(0, 3)
-    .map((team) => ({
-      id: team.id,
-      slug: team.slug,
-      name: team.name,
-      description: team.description,
-      logo_url: team.logo_url,
-      visibility: team.visibility,
-      status: team.status,
-      last_activity_at: team.last_activity_at as string | null,
-      created_at: team.created_at,
-      updated_at: team.updated_at as string | null,
-      technologies: Array.isArray(team.technologies) ? team.technologies : [],
-      categories: [],
-      owner: team.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
-      member_count: memberCountMap.get(team.id) ?? 0,
-      project_count: projectCountMap.get(team.id) ?? 0,
-      update_count: 0,
-      open_roles: [],
-    }));
+const teams: TeamCardTeam[] = await Promise.all(
+    (orderedTeamRows ?? [])
+      .filter((team) => !isTeamHidden(team.last_activity_at as string | null))
+      .slice(0, 3)
+      .map(async (team) => ({
+    id: team.id,
+    slug: team.slug,
+    name: team.name,
+    description: team.description,
+    logo_url: ((await resolveMediaValue(team.logo_url, undefined, supabase)) as string | null) ?? null,
+    visibility: team.visibility,
+    status: team.status,
+    last_activity_at: team.last_activity_at as string | null,
+    created_at: team.created_at,
+    updated_at: team.updated_at as string | null,
+    technologies: Array.isArray(team.technologies) ? team.technologies : [],
+    categories: [],
+    owner: team.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
+    member_count: memberCountMap.get(team.id) ?? 0,
+    project_count: projectCountMap.get(team.id) ?? 0,
+    update_count: 0,
+    open_roles: [],
+    }))
+  );
 
-  const projects: ProjectCardProject[] = (orderedProjectRows ?? [])
-    .filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED")
-    .slice(0, 4)
-    .map((p) => ({
-      id: p.id,
-      slug: p.slug,
-      name: p.name,
-      description: p.description,
-      logo_url: p.logo_url,
-      visibility: p.visibility,
-      lifecycle_status: p.lifecycle_status,
-      last_activity_at: p.last_activity_at as string | null,
-      created_at: p.created_at,
-      updated_at: p.updated_at as string | null,
-      technologies: Array.isArray(p.technologies) ? p.technologies : [],
-      recruitment: parseRecruitment(p.recruitment) as {
-        id: string;
-        title: string;
-        experience: "beginner" | "intermediate" | "advanced";
-        positions: number;
-        description: string;
-      }[],
-      categories: [],
-      owner: p.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
-      team: p.team as unknown as { name: string; slug: string } | null,
-      member_count: projectMemberCountMap.get(p.id) ?? 0,
-    }));
+  const projects: ProjectCardProject[] = await Promise.all(
+    (orderedProjectRows ?? [])
+      .filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED")
+      .slice(0, 4)
+      .map(async (p) => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    description: p.description,
+    logo_url: ((await resolveMediaValue(p.logo_url, undefined, supabase)) as string | null) ?? null,
+    visibility: p.visibility,
+    lifecycle_status: p.lifecycle_status,
+    last_activity_at: p.last_activity_at as string | null,
+    created_at: p.created_at,
+    updated_at: p.updated_at as string | null,
+    technologies: Array.isArray(p.technologies) ? p.technologies : [],
+    recruitment: parseRecruitment(p.recruitment) as {
+      id: string;
+      title: string;
+      experience: "beginner" | "intermediate" | "advanced";
+      positions: number;
+      description: string;
+    }[],
+    categories: [],
+    owner: p.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
+    team: p.team as unknown as { name: string; slug: string } | null,
+    member_count: projectMemberCountMap.get(p.id) ?? 0,
+    }))
+  );
 
   const sessions: LiveSessionWithManage[] = ((sessionRows ?? []) as LiveSessionRow[]).map(
     (session) => ({

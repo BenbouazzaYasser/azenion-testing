@@ -75,7 +75,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
 
       <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
         <Reveal delay={0}>
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
               <span className="flex h-2 w-2 rounded-full bg-accent-400" />
               {team.visibility === "public" ? "Public" : "Private"}

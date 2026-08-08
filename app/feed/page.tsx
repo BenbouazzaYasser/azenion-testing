@@ -31,7 +31,7 @@ export default async function FeedPage() {
         Skip to content
       </a>
       <Navbar />
-      <main id="main" className="relative min-h-screen overflow-hidden pt-52 pb-24 sm:pt-60 sm:pb-28">
+      <main id="main" className="relative min-h-screen overflow-hidden pt-32 pb-24 sm:pt-40 sm:pb-28">
         <PageAtmosphere />
         <div className="relative mx-auto max-w-[720px] px-5 sm:px-8">
           <div className="mb-8">

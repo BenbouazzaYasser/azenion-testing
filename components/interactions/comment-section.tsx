@@ -279,7 +279,7 @@ export function CommentSection({
                     handlePost();
                   }
                 }}
-                className="flex-1 rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
+                className="min-w-0 flex-1 rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
               />
               <button
                 type="button"
@@ -518,7 +518,7 @@ function CommentItem({
                 }
               }}
               autoFocus
-              className="flex-1 rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
+              className="min-w-0 flex-1 rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
             />
             <button
               type="button"

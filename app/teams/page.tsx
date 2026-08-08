@@ -62,7 +62,7 @@ export default async function TeamsPage() {
   ]);
 
   if (teamsError) {
-    console.error("Teams fetch error:", teamsError);
+    // Teams fetch error handled silently
   }
 
   const teamIds = teams?.map((t) => t.id) ?? [];

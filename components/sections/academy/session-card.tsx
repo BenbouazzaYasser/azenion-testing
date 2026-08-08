@@ -100,7 +100,7 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
       <div
         className={cn(
           "mt-6 grid divide-x divide-white/10 rounded-xl border border-white/[0.06] bg-white/[0.02] text-center",
-          hasEnd ? "grid-cols-3" : "grid-cols-2"
+          hasEnd ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"
         )}
       >
         <div className="flex flex-col items-center gap-1.5 px-2 py-3">
@@ -123,22 +123,22 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
       </div>
 
       <div className="mt-5 flex flex-col gap-2 text-sm">
-        <span className="inline-flex items-center gap-1.5 text-ink-400">
-          {session.host_type === "BRANCH" ? (
-            <Building2 size={13} className="shrink-0 text-accent-400" />
-          ) : (
-            <Users size={13} className="shrink-0 text-accent-400" />
-          )}
-          <span className="truncate">
-            Hosted by <span className="text-ink-200">{session.host_name}</span>
+<span className="inline-flex items-center gap-1.5 text-ink-400">
+            {session.host_type === "BRANCH" ? (
+              <Building2 size={13} className="shrink-0 text-accent-400" />
+            ) : (
+              <Users size={13} className="shrink-0 text-accent-400" />
+            )}
+            <span className="min-w-0 truncate">
+              Hosted by <span className="text-ink-200">{session.host_name}</span>
+            </span>
           </span>
-        </span>
-        <span className="inline-flex items-center gap-1.5 text-ink-400">
-          <User size={13} className="shrink-0 text-accent-400" />
-          <span className="truncate">
-            Instructor <span className="text-ink-200">{session.instructor}</span>
+          <span className="inline-flex items-center gap-1.5 text-ink-400">
+            <User size={13} className="shrink-0 text-accent-400" />
+            <span className="min-w-0 truncate">
+              Instructor <span className="text-ink-200">{session.instructor}</span>
+            </span>
           </span>
-        </span>
       </div>
 
       <div className="flex-1" />

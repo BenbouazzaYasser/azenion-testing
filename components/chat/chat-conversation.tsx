@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
 import { Send, MessageSquare, Users, Menu } from "lucide-react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { Button } from "@/components/ui/button";
@@ -151,8 +152,18 @@ export function ChatConversation({
     };
 
     setMessages((prev) => [...prev, optimistic]);
-    await sendMessage(conversationId, content);
-    setIsSending(false);
+    try {
+      const result = await sendMessage(conversationId, content);
+      if (result && "error" in result && result.error) {
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        toast.error(result.error);
+      }
+    } catch {
+      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+      toast.error("Message could not be sent. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const participantName = participant?.full_name ?? participant?.username ?? "Conversation";
@@ -210,7 +221,7 @@ export function ChatConversation({
           )}
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1">
+        <div className="ml-auto hidden shrink-0 items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1 sm:flex">
           <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent-400" />
           <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">
             Private

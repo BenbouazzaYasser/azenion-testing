@@ -3,7 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createTeamSchema, updateTeamSchema, openRoleSchema, MAX_LOGO_SIZE, ALLOWED_LOGO_TYPES } from "@/lib/validations/team.schema";
+import {
+  createTeamSchema,
+  updateTeamSchema,
+  openRoleSchema,
+  MAX_LOGO_SIZE,
+  ALLOWED_LOGO_TYPES,
+} from "@/lib/validations/team.schema";
+import {
+  PRIVATE_MEDIA_BUCKET,
+  privateObjectPath,
+  privateMarkerFor,
+  isTeamMediaPrivate,
+} from "@/lib/media";
 import {
   createTeamUpdateSchema,
   updateTeamUpdateSchema,
@@ -307,11 +319,15 @@ export async function uploadTeamLogo(formData: FormData) {
   }
 
   const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `${teamId}/${crypto.randomUUID()}.${ext}`;
+  const isPrivate = await isTeamMediaPrivate(supabase, teamId);
+  const bucket = isPrivate ? PRIVATE_MEDIA_BUCKET : "team-logos";
+  const objectPath = isPrivate
+    ? privateObjectPath("team", teamId, `${crypto.randomUUID()}.${ext}`)
+    : `${teamId}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
-    .from("team-logos")
-    .upload(filePath, file, {
+    .from(bucket)
+    .upload(objectPath, file, {
       contentType: file.type,
       upsert: false,
     });
@@ -320,13 +336,13 @@ export async function uploadTeamLogo(formData: FormData) {
     return { error: uploadError.message };
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("team-logos").getPublicUrl(filePath);
+  const storedValue = isPrivate
+    ? privateMarkerFor(objectPath)
+    : supabase.storage.from(bucket).getPublicUrl(objectPath).data.publicUrl;
 
   const { error: updateError } = await supabase.rpc("update_team_appearance", {
     p_team_id: teamId,
-    p_logo_url: publicUrl,
+    p_logo_url: storedValue,
     p_banner_url: null,
   });
 
@@ -336,7 +352,7 @@ export async function uploadTeamLogo(formData: FormData) {
 
   revalidatePath("/teams");
   revalidatePath(`/teams/${formData.get("slug")}`);
-  return { success: true, logo_url: publicUrl };
+  return { success: true, logo_url: storedValue };
 }
 
 export async function uploadTeamBanner(formData: FormData) {
@@ -370,11 +386,15 @@ export async function uploadTeamBanner(formData: FormData) {
   }
 
   const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `banners/${teamId}/${crypto.randomUUID()}.${ext}`;
+  const isPrivate = await isTeamMediaPrivate(supabase, teamId);
+  const bucket = isPrivate ? PRIVATE_MEDIA_BUCKET : "team-logos";
+  const objectPath = isPrivate
+    ? privateObjectPath("team", teamId, `${crypto.randomUUID()}.${ext}`)
+    : `banners/${teamId}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
-    .from("team-logos")
-    .upload(filePath, file, {
+    .from(bucket)
+    .upload(objectPath, file, {
       contentType: file.type,
       upsert: false,
     });
@@ -383,14 +403,14 @@ export async function uploadTeamBanner(formData: FormData) {
     return { error: uploadError.message };
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("team-logos").getPublicUrl(filePath);
+  const storedValue = isPrivate
+    ? privateMarkerFor(objectPath)
+    : supabase.storage.from(bucket).getPublicUrl(objectPath).data.publicUrl;
 
   const { error: updateError } = await supabase.rpc("update_team_appearance", {
     p_team_id: teamId,
     p_logo_url: null,
-    p_banner_url: publicUrl,
+    p_banner_url: storedValue,
   });
 
   if (updateError) {
@@ -398,7 +418,7 @@ export async function uploadTeamBanner(formData: FormData) {
   }
 
   revalidatePath(`/teams/${formData.get("slug")}`);
-  return { success: true, banner_url: publicUrl };
+  return { success: true, banner_url: storedValue };
 }
 
 export async function updateMemberRole(formData: FormData) {
@@ -697,19 +717,23 @@ export async function uploadTeamUpdateImage(formData: FormData) {
   }
 
   const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `${teamId}/${crypto.randomUUID()}.${ext}`;
+  const isPrivate = await isTeamMediaPrivate(supabase, teamId);
+  const bucket = isPrivate ? PRIVATE_MEDIA_BUCKET : "team-updates";
+  const objectPath = isPrivate
+    ? privateObjectPath("team", teamId, `${crypto.randomUUID()}.${ext}`)
+    : `${teamId}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
-    .from("team-updates")
-    .upload(filePath, file, { contentType: file.type, upsert: false });
+    .from(bucket)
+    .upload(objectPath, file, { contentType: file.type, upsert: false });
 
   if (uploadError) {
     return { error: uploadError.message };
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("team-updates").getPublicUrl(filePath);
+  const storedValue = isPrivate
+    ? privateMarkerFor(objectPath)
+    : supabase.storage.from(bucket).getPublicUrl(objectPath).data.publicUrl;
 
   const { data: existing } = await supabase
     .from("team_updates")
@@ -723,8 +747,8 @@ export async function uploadTeamUpdateImage(formData: FormData) {
   const { error: updateError } = await supabase
     .from("team_updates")
     .update({
-      images: [...images, publicUrl],
-      image_url: existing?.image_url ?? publicUrl,
+      images: [...images, storedValue],
+      image_url: existing?.image_url ?? storedValue,
       updated_at: new Date().toISOString(),
     })
     .eq("id", updateId)
@@ -735,7 +759,7 @@ export async function uploadTeamUpdateImage(formData: FormData) {
   }
 
   revalidatePath(`/teams/${formData.get("slug")}`);
-  return { success: true, image_url: publicUrl };
+  return { success: true, image_url: storedValue };
 }
 
 export async function updateTeamUpdate(formData: FormData) {

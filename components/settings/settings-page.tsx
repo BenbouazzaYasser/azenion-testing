@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { AccountSection } from "./account-section";
 import { ProfileSection } from "./profile-section";
 import { NotificationsSection } from "./notifications-section";
@@ -163,7 +164,7 @@ export function SettingsPage({ account, profile, branch, settings }: SettingsPag
                     onKeyDown={(e) => handleNavKeyDown(e, index)}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm font-medium whitespace-nowrap transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 lg:w-full",
+                      "flex items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-medium whitespace-nowrap transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 lg:w-full",
                       isActive
                         ? "border-accent-400/30 bg-white/[0.05] text-ink-50 shadow-[0_0_18px_-8px_rgba(90,120,255,0.5)]"
                         : "border-transparent text-ink-400 hover:bg-white/[0.04] hover:text-ink-200",
@@ -241,9 +242,19 @@ function ConfirmOverlay({
   onDiscard: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
+  const confirmFocusRef = useDialogFocus<HTMLDivElement>(true);
   useEffect(() => {
     const r = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(r);
+  }, []);
+
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === "Escape") onStay();
+  }
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -256,7 +267,9 @@ function ConfirmOverlay({
         onClick={onStay}
       />
       <div
-        className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+        ref={confirmFocusRef}
+        tabIndex={-1}
+        className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
         style={{ opacity: mounted ? 1 : 0, transform: mounted ? "scale(1)" : "scale(0.96)" }}
       >
         <div className="flex items-start justify-between border-b border-border px-6 py-5">
@@ -268,7 +281,7 @@ function ConfirmOverlay({
             type="button"
             onClick={onStay}
             aria-label="Close"
-            className="rounded-full p-1.5 text-ink-400 transition-colors hover:bg-white/[0.06] hover:text-ink-50"
+            className="rounded-full p-2 text-ink-400 transition-colors hover:bg-white/[0.06] hover:text-ink-50"
           >
             <X size={16} />
           </button>

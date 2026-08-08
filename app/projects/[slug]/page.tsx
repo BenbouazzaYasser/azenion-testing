@@ -13,6 +13,7 @@ import { ProjectPageUpdates } from "@/components/sections/projects/project-page-
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
+import { resolveMediaValue } from "@/lib/media";
 
 interface ProjectPageProps {
   params: Promise<{ slug: string }>;
@@ -155,11 +156,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   const isMember = !!currentMember;
 
-  const updates = (rawUpdates ?? []).map((u: Record<string, unknown>) => ({
+  const updates = await Promise.all(
+    (rawUpdates ?? []).map(async (u: Record<string, unknown>) => ({
     id: u.id as string,
     title: u.title as string,
     body: u.body as string | null,
-    image_url: u.image_url as string | null,
+    image_url: ((await resolveMediaValue(u.image_url as string | null)) as string | null) ?? null,
     created_at: u.created_at as string,
     updated_at: u.updated_at as string,
     author: u.author as {
@@ -171,7 +173,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     like_count: likeCounts[u.id as string] ?? 0,
     comment_count: commentCounts[u.id as string] ?? 0,
     user_has_liked: userLikeTargets.has(u.id as string),
-  }));
+    })),
+  );
 
   const projectTeam = project.team as unknown as { name: string; slug: string } | null;
   const projectOwner = project.owner as unknown as {
@@ -226,7 +229,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     name: project.name,
     description: project.description,
     description_long: project.description_long,
-    logo_url: project.logo_url,
+    logo_url: ((await resolveMediaValue(project.logo_url)) as string | null) ?? null,
     visibility: project.visibility,
     website: project.website,
     github_url: project.github_url,
