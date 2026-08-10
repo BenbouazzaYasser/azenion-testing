@@ -15,7 +15,7 @@ export function ComingSoonTeaser() {
     >
       <div className="mx-auto max-w-5xl">
         <Reveal>
-          <div className="relative overflow-hidden rounded-[2rem] border border-dashed border-white/15 bg-white/[0.015] p-10 text-center sm:p-16">
+          <div className="relative overflow-hidden rounded-[2rem] border border-dashed border-border-strong bg-surface p-10 text-center sm:p-16">
             <div
               aria-hidden="true"
               className="animate-pulse-glow pointer-events-none absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgb(40,40,255)]/15 blur-[110px]"
@@ -27,10 +27,10 @@ export function ComingSoonTeaser() {
                 More branches, launching soon
               </Badge>
 
-              <h2 id="coming-soon-heading" className="text-2xl font-semibold text-white sm:text-3xl">
+              <h2 id="coming-soon-heading" className="text-2xl font-semibold text-ink-50 sm:text-3xl">
                 The network is just getting started.
               </h2>
-              <p className="mt-4 text-sm text-white/55 sm:text-base">
+              <p className="mt-4 text-sm text-ink-400 sm:text-base">
                 New branches are opening across campuses as the Azenion community grows. If yours
                 isn&apos;t here yet, help us bring the Limitless Network to your school.
               </p>
@@ -39,7 +39,7 @@ export function ComingSoonTeaser() {
                 {ghostSlots.map((slot) => (
                   <div
                     key={slot}
-                    className="flex h-28 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/10 text-white/30 transition-colors duration-700 ease-premium hover:border-[rgba(40,40,255,0.35)] hover:text-white/50"
+                    className="flex h-28 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border-strong text-ink-600 transition-colors duration-700 ease-premium hover:border-[rgba(40,40,255,0.35)] hover:text-ink-400"
                   >
                     <span className="text-2xl font-light" aria-hidden="true">
                       ∞
@@ -51,7 +51,7 @@ export function ComingSoonTeaser() {
 
               <a
                 href={`${CONTACT.emailHref}?subject=Starting%20a%20new%20Azenion%20branch`}
-                className="mt-8 text-sm font-medium text-[rgb(40,40,255)] underline-offset-4 transition-colors duration-500 ease-premium hover:text-white hover:underline"
+                className="mt-8 text-sm font-medium text-accent-500 underline-offset-4 transition-colors duration-500 ease-premium hover:text-accent-300 hover:underline"
               >
                 Nominate your campus →
               </a>

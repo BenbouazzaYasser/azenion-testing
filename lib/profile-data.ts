@@ -170,11 +170,29 @@ export async function getUserActivities(userId: string) {
   const supabase = createClient();
   const { data } = await supabase
     .from("activities")
-    .select("*")
+    .select("*, creator:user_id ( username, full_name )")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(20);
-  return data ?? [];
+  return (data ?? []).map((activity) => ({
+    id: activity.id,
+    type: activity.type,
+    metadata: activity.metadata ?? {},
+    created_at: activity.created_at,
+    creator_name: activityCreatorName(activity.creator),
+  }));
+}
+
+function activityCreatorName(creator: unknown): string | null {
+  const entry = Array.isArray(creator) ? creator[0] : creator;
+  if (!entry) return null;
+  const fullName = (entry as { full_name?: unknown })?.full_name;
+  const username = (entry as { username?: unknown })?.username;
+  return (
+    (typeof fullName === "string" && fullName.trim()) ||
+    (typeof username === "string" && username.trim()) ||
+    null
+  );
 }
 
 export type UserInvitation = {

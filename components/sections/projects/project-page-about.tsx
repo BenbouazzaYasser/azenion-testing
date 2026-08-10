@@ -96,7 +96,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
               {visibility ? (
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[12px] font-medium uppercase tracking-wider ${
-                    visibilityConfig[visibility]?.class ?? "border-ink-700/50 bg-white/[0.04] text-ink-400"
+                    visibilityConfig[visibility]?.class ?? "border-ink-700/50 bg-surface text-ink-400"
                   }`}
                 >
                   {(() => {

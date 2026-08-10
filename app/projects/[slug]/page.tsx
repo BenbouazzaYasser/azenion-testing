@@ -109,7 +109,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   const { data: activities } = await adminClient
     .from("activities")
-    .select("*")
+    .select("*, creator:user_id ( username, full_name )")
     .filter("metadata->>project_id", "eq", project.id)
     .order("created_at", { ascending: false })
     .limit(20);
@@ -290,6 +290,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               type: a.type,
               metadata: a.metadata as Record<string, unknown>,
               created_at: a.created_at ?? "",
+              creator_name:
+                (Array.isArray(a.creator)
+                  ? a.creator[0]?.full_name ?? a.creator[0]?.username
+                  : a.creator?.full_name ?? a.creator?.username) ?? null,
             }))}
           />
         ) : null}

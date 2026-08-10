@@ -71,7 +71,7 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
           <div
             ref={dialogFocusRef}
             tabIndex={-1}
-            className="absolute inset-y-0 left-0 flex w-[85%] max-w-[330px] flex-col overflow-hidden border-r border-border-strong bg-[rgba(9,10,15,0.92)] shadow-dropdown backdrop-blur-2xl transition-all duration-300 ease-premium focus:outline-none"
+            className="absolute inset-y-0 left-0 flex w-[85%] max-w-[330px] flex-col overflow-hidden border-r border-border-strong bg-glass shadow-dropdown backdrop-blur-2xl transition-all duration-300 ease-premium focus:outline-none"
             style={{
               opacity: mounted ? 1 : 0,
               transform: mounted ? "translateX(0)" : "translateX(-100%)",
@@ -85,7 +85,7 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
                 aria-label="Close conversations"
                 className={cn(
                   "-mr-1.5 -mt-1.5 rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium",
-                  "hover:bg-white/[0.06] hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+                  "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                 )}
               >
                 <X className="h-5 w-5" />

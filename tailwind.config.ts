@@ -24,36 +24,50 @@ const config: Config = {
       colors: {
         // Base surfaces — several near-black shades, never flat pure #000
         void: {
-          950: "#050507",
-          900: "#0a0b10",
-          800: "#0e1016",
+          950: "rgb(var(--void-950) / <alpha-value>)",
+          900: "rgb(var(--void-900) / <alpha-value>)",
+          800: "rgb(var(--void-800) / <alpha-value>)",
         },
         surface: {
-          DEFAULT: "#12141c",
-          hover: "#171a24",
+          DEFAULT: "rgb(var(--surface) / <alpha-value>)",
+          hover: "rgb(var(--surface-hover) / <alpha-value>)",
         },
-        // Brand accent — rgb(40,40,255), used sparingly
+        // Brand accent — rgb(40,40,255), used sparingly. Core shades are
+        // theme-independent; the tint shades adapt to the current theme.
         accent: {
           DEFAULT: "#2828FF",
-          200: "#D6D8FF",
-          300: "#A5A8FF",
+          200: "rgb(var(--accent-200) / <alpha-value>)",
+          300: "rgb(var(--accent-300) / <alpha-value>)",
           400: "#6D6DFF",
           500: "#2020E8",
           600: "#1818C0",
           glow: "#4747FF",
         },
         ink: {
-          50: "#F4F5F8",
-          200: "#C7C9D6",
-          300: "#A9ACBA",
-          400: "#8B8D9A",
-          500: "#6E7180",
-          600: "#5B5D6B",
+          50: "rgb(var(--ink-50) / <alpha-value>)",
+          100: "rgb(var(--ink-100) / <alpha-value>)",
+          200: "rgb(var(--ink-200) / <alpha-value>)",
+          300: "rgb(var(--ink-300) / <alpha-value>)",
+          400: "rgb(var(--ink-400) / <alpha-value>)",
+          500: "rgb(var(--ink-500) / <alpha-value>)",
+          600: "rgb(var(--ink-600) / <alpha-value>)",
+          700: "rgb(var(--ink-700) / <alpha-value>)",
         },
         border: {
-          DEFAULT: "rgba(244,245,248,0.08)",
-          strong: "rgba(244,245,248,0.14)",
+          DEFAULT: "rgba(var(--border) / 0.08)",
+          strong: "rgba(var(--border-strong) / 0.14)",
         },
+        // Glass overlays — dropdowns, drawers, panels, navbar pill
+        glass: {
+          DEFAULT: "rgba(var(--glass) / 0.82)",
+          strong: "rgba(var(--glass-strong) / 0.94)",
+          panel: "rgba(var(--glass-panel) / 0.72)",
+          nav: "rgba(var(--glass-nav) / 0.78)",
+        },
+        // Modal backdrop — always dark, matches the brand's night scrim
+        scrim: "rgb(var(--scrim) / <alpha-value>)",
+        // Signature cosmic surfaces — always dark, theme-independent
+        cosmic: "rgb(var(--cosmic))",
         dust: "#FFD9B3",
       },
       fontFamily: {

@@ -60,7 +60,7 @@ export function ProfileStats({
       {cards.map((card, index) => {
         const Icon = card.icon;
         const content = (
-          <div className={`${cardClass} h-full transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]`}>
+          <div className={`${cardClass} h-full transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm`}>
             <Icon className="h-4 w-4 text-accent-400" />
             <p className="mt-3 truncate text-lg font-semibold text-ink-50">
               {card.value}

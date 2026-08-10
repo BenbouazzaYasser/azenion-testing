@@ -51,7 +51,7 @@ export function FutureVision() {
             ].map((item) => (
               <div
                 key={item.stat}
-                className="group rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm"
+                className="group rounded-2xl border border-border-strong card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm"
               >
                 <p className="text-lg font-semibold text-accent-400">{item.stat}</p>
                 <p className="mt-1 text-sm text-ink-400">{item.desc}</p>

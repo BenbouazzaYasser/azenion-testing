@@ -66,10 +66,10 @@ export function MessageBubble({
         <img
           src={sender_avatar}
           alt=""
-          className="mt-0.5 h-8 w-8 shrink-0 rounded-full border border-white/[0.12] object-cover"
+          className="mt-0.5 h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.12] object-cover"
         />
       ) : (
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent to-accent-glow text-[11px] font-semibold text-white">
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-[11px] font-semibold text-white">
           {sender_name?.[0]?.toUpperCase() ?? "U"}
         </span>
       )}
@@ -91,7 +91,7 @@ export function MessageBubble({
                 if (e.key === "Enter") handleEdit();
                 if (e.key === "Escape") setIsEditing(false);
               }}
-              className="w-full rounded-xl border border-accent-400/50 bg-white/[0.04] px-3 py-2.5 text-sm text-ink-50 outline-none ring-1 ring-accent-400/30 focus:ring-2"
+              className="w-full rounded-xl border border-accent-400/50 bg-surface px-3 py-2.5 text-sm text-ink-50 outline-none ring-1 ring-accent-400/30 focus:ring-2"
               autoFocus
             />
             <div className="flex gap-2">
@@ -125,7 +125,7 @@ export function MessageBubble({
               "cursor-pointer rounded-2xl px-4 py-2.5 text-sm leading-relaxed backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2",
               isOwn
                 ? "rounded-br-md border border-accent-300/25 bg-gradient-to-br from-accent to-accent-glow text-white shadow-[0_10px_28px_-12px_rgba(40,40,255,0.55)] focus-visible:ring-accent-300/40"
-                : "rounded-bl-md border border-white/[0.08] bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.04))] text-ink-200 shadow-[0_8px_20px_-14px_rgba(0,0,0,0.85)] focus-visible:ring-accent-400/40",
+                : "rounded-bl-md border border-border-strong bg-[linear-gradient(135deg,rgb(var(--surface)/0.5),rgb(var(--surface)/0.3))] text-ink-300 shadow-[0_8px_20px_-14px_rgba(0,0,0,0.85)] focus-visible:ring-accent-400/40",
             )}
           >
             <p className="whitespace-pre-wrap break-words">{content}</p>
@@ -172,7 +172,7 @@ export function MessageBubble({
                 setEditText(content);
                 setIsEditing(true);
               }}
-              className="inline-flex min-h-9 items-center rounded-md px-2 py-0.5 text-[10px] font-medium text-ink-600 transition-colors duration-200 ease-premium hover:bg-white/[0.06] hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+              className="inline-flex min-h-9 items-center rounded-md px-2 py-0.5 text-[10px] font-medium text-ink-600 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
             >
               Edit
             </button>

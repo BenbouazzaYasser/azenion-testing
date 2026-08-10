@@ -10,7 +10,7 @@ import { formatDate } from "@/lib/date";
 import { toast } from "sonner";
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-2.5 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
+  "w-full rounded-xl border border-border-strong bg-surface px-4 py-2.5 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
 
 interface AccountSectionProps {
   userId: string;
@@ -180,7 +180,7 @@ export function AccountSection({
               <div className="flex items-center gap-2.5 text-sm">
                 <UserCircle size={14} className="shrink-0 text-ink-600" />
                 <span className="text-ink-400">User ID:</span>
-                <code className="rounded-md border border-border bg-white/[0.03] px-2 py-0.5 text-xs text-ink-200">
+                <code className="rounded-md border border-border bg-surface px-2 py-0.5 text-xs text-ink-200">
                   {userId.slice(0, 12)}…
                 </code>
               </div>

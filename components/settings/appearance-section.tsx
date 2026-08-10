@@ -37,7 +37,7 @@ export function AppearanceSection() {
                 "group relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                 active
                   ? "border-accent-400/50 bg-accent/[0.08] shadow-[0_0_24px_-10px_rgba(90,120,255,0.6)]"
-                  : "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04]",
+                  : "border-border-strong/[0.08] bg-surface hover:border-border-strong/[0.16] hover:bg-surface-hover",
               )}
             >
               {active ? (
@@ -50,7 +50,7 @@ export function AppearanceSection() {
                   "flex h-10 w-10 items-center justify-center rounded-xl border",
                   active
                     ? "border-accent-400/40 bg-accent/[0.12] text-accent-200"
-                    : "border-white/[0.08] bg-white/[0.04] text-ink-300",
+                    : "border-border-strong/[0.08] bg-surface text-ink-300",
                 )}
               >
                 <option.icon size={18} />

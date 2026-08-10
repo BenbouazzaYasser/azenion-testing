@@ -166,8 +166,8 @@ export function SettingsPage({ account, profile, branch, settings }: SettingsPag
                     className={cn(
                       "flex items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-medium whitespace-nowrap transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 lg:w-full",
                       isActive
-                        ? "border-accent-400/30 bg-white/[0.05] text-ink-50 shadow-[0_0_18px_-8px_rgba(90,120,255,0.5)]"
-                        : "border-transparent text-ink-400 hover:bg-white/[0.04] hover:text-ink-200",
+                        ? "border-accent-400/30 bg-surface text-ink-50 shadow-[0_0_18px_-8px_rgba(90,120,255,0.5)]"
+                        : "border-transparent text-ink-400 hover:bg-surface-hover hover:text-ink-200",
                     )}
                   >
                     <span
@@ -175,7 +175,7 @@ export function SettingsPage({ account, profile, branch, settings }: SettingsPag
                         "flex h-7 w-7 items-center justify-center rounded-lg",
                         isActive
                           ? "bg-accent/[0.12] text-accent-200"
-                          : "bg-white/[0.03] text-ink-400",
+                          : "bg-surface text-ink-400",
                       )}
                     >
                       <section.icon size={15} />
@@ -269,7 +269,7 @@ function ConfirmOverlay({
       <div
         ref={confirmFocusRef}
         tabIndex={-1}
-        className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
+        className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
         style={{ opacity: mounted ? 1 : 0, transform: mounted ? "scale(1)" : "scale(0.96)" }}
       >
         <div className="flex items-start justify-between border-b border-border px-6 py-5">
@@ -281,7 +281,7 @@ function ConfirmOverlay({
             type="button"
             onClick={onStay}
             aria-label="Close"
-            className="rounded-full p-2 text-ink-400 transition-colors hover:bg-white/[0.06] hover:text-ink-50"
+            className="rounded-full p-2 text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50"
           >
             <X size={16} />
           </button>

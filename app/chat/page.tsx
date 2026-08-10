@@ -47,7 +47,7 @@ export default async function ChatPage() {
                 aria-hidden
                 className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[120px]"
               />
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300 shadow-input">
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300 shadow-input">
                 <MessageSquare size={26} />
               </div>
               <h2 className="relative mt-5 text-lg font-semibold text-ink-50">

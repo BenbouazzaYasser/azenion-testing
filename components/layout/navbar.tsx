@@ -26,9 +26,9 @@ function MenuLink({ href, icon, title, description, onNavigate }: MenuLinkProps)
     <Link
       href={href}
       onClick={onNavigate}
-      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-white/[0.06] hover:shadow-glow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-surface-hover hover:shadow-glow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
     >
-      <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-accent-400/30 group-hover:bg-accent/[0.08] group-hover:text-accent-300 group-hover:shadow-[0_0_16px_-6px_rgba(40,40,255,0.5)]">
+      <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-border-strong/[0.06] bg-surface text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-accent-400/30 group-hover:bg-accent/[0.08] group-hover:text-accent-300 group-hover:shadow-[0_0_16px_-6px_rgba(40,40,255,0.5)]">
         {icon}
       </span>
       <span className="min-w-0">
@@ -126,9 +126,9 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6 sm:pt-5">
       <div
         className={cn(
-          "w-full xl:w-fit rounded-full border border-white/[0.08] transition-[background-color,box-shadow] duration-700 ease-premium will-change-transform backdrop-blur-2xl",
+          "w-full xl:w-fit rounded-full border border-border-strong/[0.08] transition-[background-color,box-shadow] duration-700 ease-premium will-change-transform backdrop-blur-2xl",
           isScrolled || isMenuOpen
-            ? "bg-[rgba(7,8,13,0.78)] shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)]"
+            ? "bg-glass-nav shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)]"
             : "bg-[rgba(10,11,16,0.18)] shadow-[0_8px_30px_-25px_rgba(255,255,255,0.05)]"
         )}
       >
@@ -144,10 +144,10 @@ export function Navbar() {
                   const active = isActive(link.href);
                   const navLinkClass = cn(
                     "relative inline-flex items-center rounded-full px-4 py-2 text-[13.5px] font-medium leading-none transition-all duration-300 whitespace-nowrap",
-                    "hover:bg-white/[0.06] hover:text-ink-50",
+                    "hover:bg-surface-hover hover:text-ink-50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                     active
-                      ? "bg-white/[0.05] text-ink-50 ring-1 ring-white/10 shadow-[0_0_18px_-6px_rgba(90,120,255,0.4)]"
+                      ? "bg-surface text-ink-50 ring-1 ring-white/10 shadow-[0_0_18px_-6px_rgba(90,120,255,0.4)]"
                       : "text-ink-400"
                   );
 
@@ -173,7 +173,7 @@ export function Navbar() {
                           {isDropdownOpen ? (
                             <div className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2">
                               <div aria-hidden className="absolute -top-3 left-0 right-0 h-3" />
-                              <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                              <div className="relative overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                                 <div
                                   aria-hidden
                                   className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
@@ -245,7 +245,7 @@ export function Navbar() {
                           aria-hidden
                           className="absolute -top-3 left-0 right-0 h-3"
                         />
-                        <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                        <div className="relative overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                         <div
                           aria-hidden
                           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
@@ -278,7 +278,7 @@ export function Navbar() {
                         <div className="relative">
                           <div
                             aria-hidden
-                            className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+                            className="mx-5 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
                           />
                           <div
                             aria-hidden
@@ -310,7 +310,7 @@ export function Navbar() {
                     onClick={() => setIsAvatarOpen((v) => !v)}
                     aria-haspopup="menu"
                     aria-expanded={isAvatarOpen}
-                    className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.12] transition-all duration-300 hover:scale-105 hover:border-accent-400/40 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="h-10 w-10 overflow-hidden rounded-full border border-border-strong/[0.12] transition-all duration-300 hover:scale-105 hover:border-accent-400/40 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -321,7 +321,7 @@ export function Navbar() {
                     )}
                   </button>
                   {isAvatarOpen ? (
-                    <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.82)] shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                    <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                       <div
                         aria-hidden
                         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
@@ -337,7 +337,7 @@ export function Navbar() {
                             aria-hidden
                             className="absolute -inset-2 rounded-full bg-accent/25 blur-xl"
                           />
-                          <div className="relative h-14 w-14 overflow-hidden rounded-full border border-white/[0.14] shadow-[0_0_24px_-8px_rgba(109,109,255,0.5)]">
+                          <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border-strong/[0.14] shadow-[0_0_24px_-8px_rgba(109,109,255,0.5)]">
                             {profile?.avatar_url ? (
                               <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
                             ) : (
@@ -348,7 +348,7 @@ export function Navbar() {
                           </div>
                           <span
                             aria-hidden
-                            className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-[#0a0b10] bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
+                            className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-void-900 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
                           />
                         </div>
                         <div className="min-w-0">
@@ -366,7 +366,7 @@ export function Navbar() {
                       <div className="relative">
                         <div
                           aria-hidden
-                          className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+                          className="mx-5 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
                         />
                         <div
                           aria-hidden
@@ -404,7 +404,7 @@ export function Navbar() {
                       <div className="relative">
                         <div
                           aria-hidden
-                          className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+                          className="mx-5 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
                         />
                         <div
                           aria-hidden
@@ -435,7 +435,7 @@ export function Navbar() {
                       <div className="relative">
                         <div
                           aria-hidden
-                          className="mx-5 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+                          className="mx-5 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
                         />
                         <div
                           aria-hidden
@@ -452,7 +452,7 @@ export function Navbar() {
                             type="submit"
                             className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-red-500/[0.08] hover:shadow-[0_0_24px_-10px_rgba(248,113,113,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                           >
-                            <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-red-400/30 group-hover:bg-red-500/[0.1] group-hover:text-red-400">
+                            <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-border-strong/[0.06] bg-surface text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-red-400/30 group-hover:bg-red-500/[0.1] group-hover:text-red-400">
                               <LogOut size={16} />
                             </span>
                             <span className="min-w-0">
@@ -494,7 +494,7 @@ export function Navbar() {
               onClick={() => setIsMenuOpen((v) => !v)}
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMenuOpen}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-all duration-300 hover:scale-105 hover:bg-white/[0.06] hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-all duration-300 hover:scale-105 hover:bg-surface-hover hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -506,7 +506,7 @@ export function Navbar() {
         ref={drawerRef}
         aria-hidden={!isMenuOpen}
         className={cn(
-          "absolute left-4 right-4 top-[78px] grid overflow-hidden rounded-[1.5rem] border border-white/[0.08] bg-[rgba(7,8,13,0.88)] shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)] backdrop-blur-2xl transition-all duration-[400ms] ease-premium xl:hidden",
+          "absolute left-4 right-4 top-[78px] grid overflow-hidden rounded-[1.5rem] border border-border-strong/[0.08] bg-glass-nav shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)] backdrop-blur-2xl transition-all duration-[400ms] ease-premium xl:hidden",
           isMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         )}
       >
@@ -520,7 +520,7 @@ export function Navbar() {
                     href={link.href}
                     onClick={() => setIsMenuOpen(false)}
                     className={cn(
-                      "relative rounded-xl px-4 py-3 text-[15px] font-medium transition-colors hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+                      "relative rounded-xl px-4 py-3 text-[15px] font-medium transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                       active ? "text-ink-50" : "text-ink-400 hover:text-ink-200"
                     )}
                   >
@@ -530,14 +530,14 @@ export function Navbar() {
                     )}
                   </Link>
                   {link.children && link.children.length > 0 ? (
-                    <div className="ml-4 border-l border-white/[0.06] pl-2">
+                    <div className="ml-4 border-l border-border-strong/[0.06] pl-2">
                       {link.children.map((child) => (
                         <Link
                           key={child.href}
                           href={child.href}
                           onClick={() => setIsMenuOpen(false)}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+                            "relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                             isActive(child.href)
                               ? "text-accent-300"
                               : "text-ink-500 hover:text-ink-200"
@@ -564,7 +564,7 @@ export function Navbar() {
                     </Button>
                   ) : null}
                   <div className="flex items-center gap-3 rounded-xl px-4 py-3">
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-white/[0.12]">
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border-strong/[0.12]">
                       {profile?.avatar_url ? (
                         <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
                       ) : (

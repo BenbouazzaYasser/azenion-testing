@@ -45,7 +45,7 @@ export function BranchPageHero({
   const canManage = isPlatformAdmin || isBranchLeader;
 
   return (
-    <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
+    <section className="section-cosmic relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
       {branch.logo_url ? (
         <div className="absolute inset-0">
           <img
@@ -91,7 +91,7 @@ export function BranchPageHero({
               </span>
             ) : null}
             {branch.city ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-white/[0.03] px-3 py-1.5 text-[12px] font-medium text-ink-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-white/[0.03] px-3 py-1.5 text-[12px] font-medium text-white/55">
                 <MapPin size={12} className="text-accent-400" />
                 {branch.city}
               </span>
@@ -100,7 +100,7 @@ export function BranchPageHero({
         </Reveal>
 
         <Reveal delay={80}>
-          <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
+          <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-[3.4rem] lg:text-[4rem]">
             {branch.name}
           </h1>
         </Reveal>
@@ -113,21 +113,21 @@ export function BranchPageHero({
 
         {branch.description ? (
           <Reveal delay={160}>
-            <p className="mx-auto mt-6 max-w-2xl text-balance text-[1.05rem] leading-relaxed text-ink-400 sm:text-[1.1rem] sm:leading-8">
+            <p className="mx-auto mt-6 max-w-2xl text-balance text-[1.05rem] leading-relaxed text-white/55 sm:text-[1.1rem] sm:leading-8">
               {branch.description}
             </p>
           </Reveal>
         ) : null}
 
         <Reveal delay={200}>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/55">
             <span className="inline-flex items-center gap-1.5">
               <Users size={14} className="text-accent-400" />
               {branch.memberCount} {branch.memberCount === 1 ? "member" : "members"}
             </span>
             {branch.created_at ? (
               <>
-                <span className="hidden text-ink-600 sm:inline">·</span>
+                <span className="hidden text-white/30 sm:inline">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar size={14} className="text-accent-400" />
                   Founded {formatDate(branch.created_at)}
@@ -159,7 +159,7 @@ export function BranchPageHero({
                   )
                 )}
               </div>
-              <span className="text-xs text-ink-500">
+              <span className="text-xs text-white/55">
                 Led by {leaderProfiles.slice(0, 3).map((m) => m.full_name || `@${m.username}`).join(", ")}
                 {leaderProfiles.length > 3 ? ` +${leaderProfiles.length - 3}` : ""}
               </span>
@@ -173,6 +173,7 @@ export function BranchPageHero({
               branchId={branch.id}
               isMember={isMember}
               label={isMember ? "Your Branch" : "Join Branch"}
+              cosmic
               helperText={
                 isMember
                   ? "You are a member of this branch."
@@ -196,7 +197,7 @@ export function BranchPageHero({
             <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
-            <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
+            <span className="text-xs font-medium uppercase tracking-[0.14em] text-white/30">
               Scroll to explore
             </span>
           </div>

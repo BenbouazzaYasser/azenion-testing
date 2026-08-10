@@ -61,13 +61,13 @@ export function Faq() {
           {FAQS.map((faq, i) => (
             <Reveal key={faq.question} delay={i * 60}>
               <details
-                className="group rounded-[1.5rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium open:border-accent-400/40 open:shadow-glow-sm"
+                className="group rounded-[1.5rem] border border-border-strong card-surface-soft shadow-card backdrop-blur-xl transition-all duration-500 ease-premium open:border-accent-400/40 open:shadow-glow-sm"
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 [&::-webkit-details-marker]:hidden">
                   <span className="text-[1.05rem] font-semibold text-ink-50">
                     {faq.question}
                   </span>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong bg-white/[0.03] text-ink-300 transition-transform duration-500 ease-premium group-open:rotate-180">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong bg-surface text-ink-300 transition-transform duration-500 ease-premium group-open:rotate-180">
                     <ChevronDown size={16} />
                   </span>
                 </summary>

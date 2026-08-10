@@ -62,21 +62,21 @@ function NotificationAvatar({
       <img
         src={actor.avatar_url}
         alt=""
-        className="h-9 w-9 shrink-0 rounded-full border border-white/[0.12] object-cover"
+        className="h-9 w-9 shrink-0 rounded-full border border-border-strong/[0.12] object-cover"
       />
     );
   }
   if (actor?.full_name || actor?.username) {
     const initial = actor.full_name?.[0] ?? actor.username?.[0]?.toUpperCase() ?? "?";
     return (
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
         {initial}
       </span>
     );
   }
   const Icon = TYPE_CONFIG[notification.type]?.icon ?? DEFAULT_TYPE.icon;
   return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.03] text-ink-400">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.1] bg-surface text-ink-400">
       <Icon size={16} />
     </span>
   );
@@ -102,8 +102,8 @@ function NotificationItem({
       className={cn(
         "group relative flex w-full cursor-pointer gap-3 rounded-xl px-3.5 py-3 text-left transition-colors duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
         unread
-          ? "bg-white/[0.03] hover:bg-white/[0.05]"
-          : "hover:bg-white/[0.03]",
+          ? "bg-surface hover:bg-surface-hover"
+          : "hover:bg-surface-hover",
       )}
     >
       {unread && (
@@ -263,11 +263,11 @@ export function NotificationCenter() {
             : "Notifications"
         }
         onClick={handleOpen}
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-border-strong/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-white ring-2 ring-[#0a0b10]">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-white ring-2 ring-void-900">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -277,7 +277,7 @@ export function NotificationCenter() {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-2xl border border-white/[0.1] bg-[rgba(9,10,15,0.86)] shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
+          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
         >
           <div
             aria-hidden
@@ -311,7 +311,7 @@ export function NotificationCenter() {
 
           <div
             aria-hidden
-            className="relative mx-4 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+            className="relative mx-4 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
           />
 
           <div
@@ -327,17 +327,17 @@ export function NotificationCenter() {
                     key={i}
                     className="flex animate-pulse gap-3 rounded-xl px-3.5 py-3"
                   >
-                    <div className="h-9 w-9 shrink-0 rounded-full bg-white/[0.06]" />
+                    <div className="h-9 w-9 shrink-0 rounded-full bg-surface" />
                     <div className="flex-1 space-y-2 py-1">
-                      <div className="h-3 w-3/5 rounded-full bg-white/[0.06]" />
-                      <div className="h-2.5 w-4/5 rounded-full bg-white/[0.04]" />
+                      <div className="h-3 w-3/5 rounded-full bg-surface" />
+                      <div className="h-2.5 w-4/5 rounded-full bg-surface" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center px-6 py-12 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
                   <BellOff size={24} />
                 </div>
                 <p className="mt-4 text-sm font-medium text-ink-200">
@@ -363,7 +363,7 @@ export function NotificationCenter() {
 
           <div
             aria-hidden
-            className="relative mx-4 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent"
+            className="relative mx-4 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
           />
           <p className="relative px-4 py-2.5 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-ink-600">
             Azenion

@@ -57,7 +57,7 @@ export function Faq() {
         <div className="mt-12 space-y-3">
           {FAQ_ITEMS.map((item, i) => (
             <Reveal key={item.id} delay={i * 60}>
-              <div className="group overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]">
+              <div className="group overflow-hidden rounded-2xl border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
                 <button
                   type="button"
                   onClick={() => toggle(item.id)}

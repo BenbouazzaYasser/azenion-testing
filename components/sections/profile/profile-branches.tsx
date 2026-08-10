@@ -26,7 +26,7 @@ export function ProfileBranches({ branches, cardClass }: ProfileBranchesProps) {
           <Link
             key={branch.slug}
             href={`/branches/${branch.slug}`}
-            className="group flex items-center gap-3 rounded-xl border border-border-strong bg-white/[0.02] px-4 py-3 transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.04]"
+            className="group flex items-center gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3 transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.04]"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-accent-400/30 bg-accent/[0.08] p-2">
               <Building2 size={16} className="text-accent-400" />

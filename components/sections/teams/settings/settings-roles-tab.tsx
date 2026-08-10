@@ -128,7 +128,7 @@ export function SettingsRolesTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border-strong bg-white/[0.02] p-6 shadow-card backdrop-blur-xl sm:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border-strong bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
         <div>
           <h3 className="text-lg font-semibold text-ink-50">Roles &amp; permissions</h3>
           <p className="mt-1 text-sm text-ink-400">
@@ -156,7 +156,7 @@ export function SettingsRolesTab({
                 onChange={(e) => setNewName(e.target.value)}
                 maxLength={40}
                 placeholder="e.g. Media Manager"
-                className="w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06]"
+                className="w-full rounded-xl border border-border-strong bg-surface px-4 py-3 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
               />
             </div>
             <div>
@@ -192,7 +192,7 @@ export function SettingsRolesTab({
         return (
           <div
             key={role.id}
-            className="overflow-hidden rounded-2xl border border-border-strong bg-white/[0.02] shadow-card backdrop-blur-xl"
+            className="overflow-hidden rounded-2xl border border-border-strong bg-surface shadow-card backdrop-blur-xl"
           >
             <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4 sm:px-6">
               <ColorDot color={role.color} />
@@ -202,7 +202,7 @@ export function SettingsRolesTab({
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     maxLength={40}
-                    className="rounded-lg border border-border-strong bg-white/[0.03] px-3 py-1.5 text-sm text-ink-50 outline-none focus:border-accent-400/60"
+                    className="rounded-lg border border-border-strong bg-surface px-3 py-1.5 text-sm text-ink-50 outline-none focus:border-accent-400/60"
                   />
                   <Button size="sm" variant="ghost" onClick={() => handleRename(role)}>
                     <Check size={14} />
@@ -334,14 +334,14 @@ export function SettingsRolesTab({
       })}
 
       {roles.length === 0 && canManageRoles ? (
-        <div className="rounded-2xl border border-border-strong bg-white/[0.02] p-10 text-center shadow-card backdrop-blur-xl">
+        <div className="rounded-2xl border border-border-strong bg-surface p-10 text-center shadow-card backdrop-blur-xl">
           <p className="text-ink-400">No roles yet. Create your first role to start assigning permissions.</p>
         </div>
       ) : null}
 
       {!canManageRoles ? (
-        <div className="rounded-2xl border border-border-strong bg-white/[0.02] p-6 shadow-card backdrop-blur-xl">
-          <div className="rounded-xl border border-border bg-white/[0.02] px-4 py-3 text-sm text-ink-500">
+        <div className="rounded-2xl border border-border-strong bg-surface p-6 shadow-card backdrop-blur-xl">
+          <div className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink-500">
             <Lock size={13} className="mr-1.5 inline -translate-y-px" />
             Only the team owner can create, edit, or delete roles and change permissions.
           </div>

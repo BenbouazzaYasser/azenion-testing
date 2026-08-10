@@ -40,7 +40,7 @@ const MAX_BODY_LENGTH = 5000;
 const MAX_PREVIEW_HEIGHT = 320;
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input disabled:cursor-not-allowed disabled:opacity-50";
 
 function autosize(el: HTMLTextAreaElement) {
   el.style.height = "auto";
@@ -214,7 +214,7 @@ export function FeedComposer({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 shadow-card backdrop-blur-xl sm:p-6",
+        "rounded-2xl border border-border-strong card-surface p-5 shadow-card backdrop-blur-xl sm:p-6",
         className,
       )}
     >
@@ -284,7 +284,7 @@ export function FeedComposer({
               <div
                 key={item.id}
                 className={cn(
-                  "group relative overflow-hidden rounded-xl border border-border-strong bg-white/[0.03]",
+                  "group relative overflow-hidden rounded-xl border border-border-strong bg-surface",
                   media.length === 1 ? "aspect-[16/10]" : "aspect-[4/3]",
                 )}
               >
@@ -336,7 +336,7 @@ export function FeedComposer({
       </div>
 
       {uploadStep && uploadStep.total > 1 && submitting ? (
-        <div className="mt-4 h-0.5 overflow-hidden rounded-full bg-white/[0.06]">
+        <div className="mt-4 h-0.5 overflow-hidden rounded-full bg-surface">
           <div
             className="h-full rounded-full bg-gradient-to-r from-accent-400 to-accent transition-[width] duration-300 ease-premium"
             style={{ width: `${uploadProgress * 100}%` }}
@@ -363,7 +363,7 @@ export function FeedComposer({
           <ImagePlus size={16} />
           Add media
           {media.length > 0 ? (
-            <span className="rounded-full bg-white/[0.05] px-1.5 py-0.5 text-[0.68rem] font-medium text-ink-400">
+            <span className="rounded-full bg-surface px-1.5 py-0.5 text-[0.68rem] font-medium text-ink-400">
               {media.length}/{maxMedia}
             </span>
           ) : null}

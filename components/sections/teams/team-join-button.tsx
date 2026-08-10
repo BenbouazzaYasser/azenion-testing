@@ -20,6 +20,7 @@ interface TeamJoinButtonProps {
   isOwner: boolean;
   requestStatus?: TeamRequestStatus;
   onGoToSettings?: () => void;
+  className?: string;
 }
 
 export function TeamJoinButton({
@@ -30,6 +31,7 @@ export function TeamJoinButton({
   isOwner,
   requestStatus = null,
   onGoToSettings,
+  className,
 }: TeamJoinButtonProps) {
   const [isPending, startTransition] = useTransition();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -78,7 +80,7 @@ export function TeamJoinButton({
 
   if (isRequestPending && !isMember) {
     return (
-      <Button size="lg" variant="secondary" disabled title="Your request is awaiting review">
+      <Button size="lg" variant="secondary" disabled className={className} title="Your request is awaiting review">
         <Hourglass size={16} />
         Request Sent
       </Button>
@@ -87,7 +89,7 @@ export function TeamJoinButton({
 
   return (
     <>
-      <Button size="lg" onClick={handleAction} variant={isMember ? "secondary" : "primary"}>
+      <Button size="lg" onClick={handleAction} variant={isMember ? "secondary" : "primary"} className={isMember ? className : undefined}>
         {isMember ? (
           <>
             <LogOut size={16} />

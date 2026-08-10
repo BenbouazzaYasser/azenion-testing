@@ -96,7 +96,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
       <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
         <Reveal delay={0}>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] bg-white/[0.03] border-border-strong text-ink-400">
+            <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] bg-surface border-border-strong text-ink-400">
               <span className={`flex h-2 w-2 rounded-full ${visConfig.class.split(" ")[0]}`} />
               <VisIcon size={12} />
               {visConfig.label}

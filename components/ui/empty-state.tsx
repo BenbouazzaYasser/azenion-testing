@@ -51,7 +51,7 @@ export function EmptyState({
 
       <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center text-center">
         <Reveal>
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+          <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
             {icon}
           </div>
         </Reveal>

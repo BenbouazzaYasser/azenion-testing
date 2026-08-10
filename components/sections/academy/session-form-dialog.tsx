@@ -33,7 +33,7 @@ interface SessionFormDialogProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
+  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -284,7 +284,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
               <div
                 ref={dialogFocusRef}
                 tabIndex={-1}
-                className="relative z-10 flex max-h-[85vh] w-full max-w-[640px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
+                className="relative z-10 flex max-h-[85vh] w-full max-w-[640px] flex-col overflow-hidden rounded-2xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.95)",
@@ -305,7 +305,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                     type="button"
                     onClick={() => setOpen(false)}
                     aria-label="Close"
-                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-white/[0.06] hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -385,7 +385,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                                   "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border",
                                   selected
                                     ? "border-accent-400/50 bg-accent/10 text-accent-300"
-                                    : "border-border-strong bg-white/[0.02] text-ink-400"
+                                    : "border-border-strong bg-surface text-ink-400"
                                 )}
                               >
                                 <Icon size={15} />
@@ -564,7 +564,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                                   "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border",
                                   selected
                                     ? "border-accent-400/50 bg-accent/10 text-accent-300"
-                                    : "border-border-strong bg-white/[0.02] text-ink-400"
+                                    : "border-border-strong bg-surface text-ink-400"
                                 )}
                               >
                                 <Icon size={15} />

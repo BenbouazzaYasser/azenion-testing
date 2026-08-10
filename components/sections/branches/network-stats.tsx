@@ -29,15 +29,15 @@ export function NetworkStats({ branchCount, memberCount, upcomingEvents }: Netwo
   return (
     <section aria-label="Network at a glance" className="relative px-6 pb-16 sm:pb-24">
       <Reveal>
-        <div className="mx-auto grid max-w-4xl grid-cols-1 divide-y divide-white/10 rounded-[2rem] border border-white/10 bg-white/[0.02] backdrop-blur-xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 divide-y divide-border-strong card-surface rounded-[2rem] border border-border-strong backdrop-blur-xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           {stats.map((stat) => (
             <div
               key={stat.label}
               className="flex flex-col items-center gap-2 px-8 py-8 text-center"
             >
               <stat.icon className="h-5 w-5 text-[rgb(40,40,255)]" aria-hidden="true" />
-              <span className="text-3xl font-semibold text-white">{stat.value}</span>
-              <span className="text-xs uppercase tracking-[0.15em] text-white/45">
+              <span className="text-3xl font-semibold text-ink-50">{stat.value}</span>
+              <span className="text-xs uppercase tracking-[0.15em] text-ink-500">
                 {stat.label}
               </span>
             </div>

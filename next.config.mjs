@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  distDir: process.env.NEXT_PROD_DIST ? process.env.NEXT_PROD_DIST : ".next",
 };
 
 export default nextConfig;

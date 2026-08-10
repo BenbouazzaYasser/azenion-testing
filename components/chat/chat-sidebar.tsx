@@ -86,7 +86,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full rounded-xl border border-border-strong bg-white/[0.03] py-2.5 pl-10 pr-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
+              className="w-full rounded-xl border border-border-strong bg-surface py-2.5 pl-10 pr-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
             />
           </div>
 
@@ -105,12 +105,12 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                     setSearchResults([]);
                     onNavigate?.();
                   }}
-                  className="flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-premium hover:bg-white/[0.06] focus-visible:bg-white/[0.06] focus-visible:outline-none"
+                  className="flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-premium hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
                 >
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-white/[0.12] object-cover" />
+                    <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.12] object-cover" />
                   ) : (
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
                       {user.full_name?.[0] ?? user.username[0]?.toUpperCase() ?? "U"}
                     </span>
                   )}
@@ -146,7 +146,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
 
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center px-4 py-10 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
                 <MessageSquare size={22} />
               </div>
               <p className="mt-3 text-sm font-medium text-ink-200">No conversations yet</p>
@@ -187,14 +187,14 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                         src={conv.other_user.avatar_url}
                         alt=""
                         className={cn(
-                          "h-10 w-10 shrink-0 rounded-full border border-white/[0.12] object-cover transition-all duration-300",
+                          "h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.12] object-cover transition-all duration-300",
                           isActive && "border-accent-400/50 shadow-glow-sm",
                         )}
                       />
                     ) : (
                       <span
                         className={cn(
-                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.12] bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
+                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
                           isActive && "border-accent-400/60 shadow-glow-sm",
                         )}
                       >

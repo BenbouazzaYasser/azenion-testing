@@ -41,7 +41,7 @@ interface BranchFeedProps {
 type ComposeMode = "announcement" | "highlight";
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
+  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -275,10 +275,10 @@ export function BranchFeed({
 
         {canManage ? (
           <Reveal delay={160}>
-            <div className="mt-8 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl sm:p-8">
+            <div className="mt-8 rounded-2xl border border-border-strong card-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-base font-medium text-ink-200">Share with the branch</h3>
-                <div className="flex rounded-xl border border-border-strong bg-white/[0.02] p-1">
+                <div className="flex rounded-xl border border-border-strong bg-surface p-1">
                   {(["announcement", "highlight"] as const).map((m) => (
                     <button
                       key={m}
@@ -381,7 +381,7 @@ export function BranchFeed({
                         setImageFile(null);
                         setImagePreview(null);
                       }}
-                      className="absolute -right-2 -top-2 rounded-full border border-border-strong bg-[#0c0c0f] p-1 text-ink-400 transition-colors hover:text-ink-200"
+                      className="absolute -right-2 -top-2 rounded-full border border-border-strong bg-surface p-1 text-ink-400 transition-colors hover:text-ink-200"
                     >
                       <X size={12} />
                     </button>
@@ -430,7 +430,7 @@ export function BranchFeed({
               return (
                 <Reveal key={`${item.source_type}-${item.source_id}`} delay={Math.min(i, 4) * 60}>
                   {editingId === item.source_id ? (
-                    <div className="rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 shadow-card backdrop-blur-xl sm:p-6">
+                    <div className="rounded-2xl border border-border-strong card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
                       <h3 className="text-base font-medium text-ink-200">
                         Edit {editingType === "branch_highlight" ? "highlight" : "announcement"}
                       </h3>
@@ -500,13 +500,13 @@ export function BranchFeed({
                                 onClick={() =>
                                   setMenuOpenId(menuOpenId === item.source_id ? null : item.source_id)
                                 }
-                                className="rounded-lg bg-white/[0.04] p-1.5 text-ink-500 transition-colors hover:bg-white/[0.08] hover:text-ink-200"
+                                className="rounded-lg bg-surface p-1.5 text-ink-500 transition-colors hover:bg-surface-hover hover:text-ink-200"
                                 aria-label="Manage post"
                               >
                                 <MoreHorizontal size={16} />
                               </button>
                               {menuOpenId === item.source_id ? (
-                                <div className="absolute right-0 top-full z-20 mt-1 w-[140px] overflow-hidden rounded-xl border border-border-strong bg-[#0e1016] shadow-xl backdrop-blur-xl">
+                                <div className="absolute right-0 top-full z-20 mt-1 w-[140px] overflow-hidden rounded-xl border border-border-strong bg-glass-strong shadow-xl backdrop-blur-xl">
                                   {pinable ? (
                                     <button
                                       type="button"
@@ -552,7 +552,7 @@ export function BranchFeed({
         ) : (
           <Reveal delay={160}>
             <div className="mt-10 flex flex-col items-center gap-4 py-16 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
                 <MessageSquare className="h-7 w-7 text-accent-300" />
               </div>
               <div>
@@ -572,7 +572,7 @@ export function BranchFeed({
             <button
               type="button"
               onClick={handleLoadMore}
-              className="rounded-full border border-border-strong bg-white/[0.03] px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
+              className="rounded-full border border-border-strong bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
             >
               Load More
             </button>

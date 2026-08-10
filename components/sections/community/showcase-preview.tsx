@@ -71,7 +71,7 @@ export function ShowcasePreview() {
               <Reveal key={item.title} delay={i * 100} className="h-full">
                 <Link
                   href="/showcase"
-                  className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-7 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))]"
+                  className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-border-strong card-surface p-7 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm"
                 >
                   <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
@@ -80,7 +80,7 @@ export function ShowcasePreview() {
                       <div className="relative flex h-12 w-12 items-center justify-center rounded-[1rem] border border-accent-400/25 bg-accent/[0.08] text-accent-300 transition-all duration-500 ease-premium group-hover:-translate-y-1 group-hover:shadow-glow-sm">
                         <Icon size={20} strokeWidth={1.75} />
                       </div>
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-ink-500">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface px-3 py-1 text-[11px] font-medium text-ink-500">
                         <span className="flex h-1.5 w-1.5 rounded-full bg-accent-400" />
                         Coming soon
                       </span>

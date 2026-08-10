@@ -17,7 +17,7 @@ const STATUS_CONFIG: Record<
   },
   ENDED: {
     label: "Ended",
-    className: "border-ink-700/50 bg-white/[0.03] text-ink-500",
+    className: "border-ink-700/50 bg-surface text-ink-500",
   },
 };
 

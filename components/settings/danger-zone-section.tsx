@@ -44,7 +44,7 @@ export function DangerZoneSection() {
 
       <SettingsPanel>
         <div className="flex items-center gap-4 p-6 sm:p-7">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border-strong/[0.1] bg-surface">
             <ShieldOff size={18} className="text-ink-300" />
           </div>
           <div className="flex flex-1 flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -65,7 +65,7 @@ export function DangerZoneSection() {
 
       <SettingsPanel>
         <div className="flex items-center gap-4 p-6 sm:p-7">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border-strong/[0.1] bg-surface">
             <LogOut size={18} className="text-ink-300" />
           </div>
           <div className="flex flex-1 flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">

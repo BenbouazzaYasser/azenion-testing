@@ -40,7 +40,7 @@ interface BranchManageClientProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
+  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -276,7 +276,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
 
         {showForm ? (
           <Reveal delay={80}>
-            <div className="mt-8 overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-8 shadow-card backdrop-blur-xl">
+            <div className="mt-8 overflow-hidden rounded-2xl border border-border-strong card-surface p-8 shadow-card backdrop-blur-xl">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-ink-50">
                   {editingId ? "Edit Branch" : "Create Branch"}
@@ -284,7 +284,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-white/[0.06] hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                  className="rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                 >
                   <X size={18} />
                 </button>
@@ -444,7 +444,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
         <div className="mt-10 grid gap-5">
           {branches.length === 0 ? (
             <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
                 <Building2 className="h-6 w-6 text-accent-300" />
               </div>
               <div>
@@ -455,7 +455,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
           ) : (
             branches.map((branch, i) => (
               <Reveal key={branch.id} delay={i * 80}>
-                <div className="group relative flex items-start gap-5 overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+                <div className="group relative flex items-start gap-5 overflow-hidden rounded-2xl border border-border-strong card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08] p-2.5">
                     {branch.logo_url ? (
                       <img src={branch.logo_url} alt="" className="h-full w-full rounded-lg object-cover" />
@@ -472,7 +472,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                         <button
                           type="button"
                           onClick={() => openEdit(branch)}
-                          className="rounded-lg border border-border-strong bg-white/[0.03] p-2 text-ink-400 transition-colors hover:bg-white/[0.06] hover:text-accent-400"
+                          className="rounded-lg border border-border-strong bg-surface p-2 text-ink-400 transition-colors hover:bg-surface-hover hover:text-accent-400"
                           aria-label={`Edit ${branch.name}`}
                         >
                           <Pencil size={14} />
@@ -530,7 +530,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                             setAssignQuery("");
                             setError(null);
                           }}
-                          className="ml-auto inline-flex items-center gap-1 rounded-lg border border-border-strong bg-white/[0.03] px-2 py-1 text-xs text-ink-400 transition-colors hover:bg-white/[0.06] hover:text-accent-400"
+                          className="ml-auto inline-flex items-center gap-1 rounded-lg border border-border-strong bg-surface px-2 py-1 text-xs text-ink-400 transition-colors hover:bg-surface-hover hover:text-accent-400"
                         >
                           <UserPlus size={12} />
                           {assignFor === branch.id ? "Close" : "Assign"}
@@ -581,7 +581,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                             />
                             <UserPlus size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-600" />
                           </div>
-                          <div className="mt-2 max-h-52 space-y-1 overflow-y-auto rounded-xl border border-border-strong bg-white/[0.02] p-1.5">
+                          <div className="mt-2 max-h-52 space-y-1 overflow-y-auto rounded-xl border border-border-strong bg-surface p-1.5">
                             {matchingProfiles(branch).length === 0 ? (
                               <p className="px-3 py-2 text-xs text-ink-600">
                                 {profiles.length === 0
@@ -596,7 +596,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                                   onClick={() => {
                                     setAssignConfirm(assignConfirm === p.id ? null : p.id);
                                   }}
-                                  className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm text-ink-300 transition-colors hover:bg-white/[0.04]"
+                                  className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm text-ink-300 transition-colors hover:bg-surface-hover"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10">
@@ -640,7 +640,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                   </div>
 
                   {showDelete === branch.id ? (
-                    <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-[rgba(5,5,7,0.92)] backdrop-blur-sm">
+                    <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-void-950/92 backdrop-blur-sm">
                       <div className="flex flex-col items-center gap-4 px-6 py-8 text-center">
                         <AlertTriangle size={24} className="text-red-400" />
                         <div>

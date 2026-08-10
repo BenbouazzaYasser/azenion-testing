@@ -10,7 +10,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { signIn } from "@/actions/auth.actions";
 
 const INPUT_CLASS =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
+  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
 
 export function LoginCard({ next }: { next?: string }) {
   const [identifier, setIdentifier] = useState("");
@@ -44,7 +44,7 @@ export function LoginCard({ next }: { next?: string }) {
 
       <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
         <Reveal>
-          <div className="group overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:shadow-glow-sm sm:px-12 sm:py-9">
+          <div className="group overflow-hidden rounded-[2rem] border border-border-strong card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:shadow-glow-sm sm:px-12 sm:py-9">
             <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative text-center">
@@ -112,7 +112,7 @@ export function LoginCard({ next }: { next?: string }) {
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-4 w-4 rounded border-border-strong bg-white/[0.03] text-accent-400 accent-accent-400 transition-colors focus:ring-accent-400/30"
+                    className="h-4 w-4 rounded border-border-strong bg-surface text-accent-400 accent-accent-400 transition-colors focus:ring-accent-400/30"
                   />
                   <span className="text-sm text-ink-400">Remember me</span>
                 </label>
@@ -138,7 +138,7 @@ export function LoginCard({ next }: { next?: string }) {
 
             <div className="relative mt-6">
               <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent" />
-              <span className="relative mx-auto flex w-10 justify-center bg-[#050507] text-xs uppercase tracking-[0.12em] text-ink-600">
+              <span className="relative mx-auto flex w-10 justify-center bg-void-950 text-xs uppercase tracking-[0.12em] text-ink-600">
                 or
               </span>
             </div>
@@ -148,7 +148,7 @@ export function LoginCard({ next }: { next?: string }) {
                 type="button"
                 disabled
                 aria-disabled="true"
-                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
+                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
               >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -166,7 +166,7 @@ export function LoginCard({ next }: { next?: string }) {
                 type="button"
                 disabled
                 aria-disabled="true"
-                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
+                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
               >
                 <Github size={19} />
                 Continue with GitHub

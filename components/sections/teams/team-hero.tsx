@@ -60,7 +60,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
   }
 
   return (
-    <section className="relative pt-[88px] sm:pt-[104px] lg:pt-[120px]">
+    <section className="section-cosmic relative pt-[88px] sm:pt-[104px] lg:pt-[120px]">
       {team.banner_url ? (
         <div className="absolute inset-0">
           <img
@@ -84,7 +84,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
               <TeamCategoryBadge key={cat.id} name={cat.name} />
             ))}
             {catOverflow > 0 ? (
-              <span className="inline-flex rounded-full border border-ink-700/50 bg-white/[0.03] px-2.5 py-0.5 text-[11px] font-medium text-ink-500">
+              <span className="inline-flex rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-0.5 text-[11px] font-medium text-white/55">
                 +{catOverflow}
               </span>
             ) : null}
@@ -129,7 +129,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
                 )}
               </div>
               {isOwner ? (
-                <Button size="sm" variant="secondary" onClick={handleReactivate} disabled={isPending}>
+                <Button size="sm" variant="secondary" onClick={handleReactivate} disabled={isPending} className="border-white/10 bg-white/[0.04] text-white/85 hover:border-accent/40 hover:bg-white/[0.06] hover:text-white">
                   {isPending ? "Reactivating..." : "Reactivate team"}
                 </Button>
               ) : null}
@@ -138,23 +138,23 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
         ) : null}
 
         <Reveal delay={80}>
-          <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
+          <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-[3.4rem] lg:text-[4rem]">
             {team.name}
           </h1>
         </Reveal>
 
         {team.description ? (
           <Reveal delay={160}>
-            <p className="mx-auto mt-6 max-w-2xl text-balance text-[1.05rem] leading-relaxed text-ink-400 sm:text-[1.1rem] sm:leading-8">
+            <p className="mx-auto mt-6 max-w-2xl text-balance text-[1.05rem] leading-relaxed text-white/60 sm:text-[1.1rem] sm:leading-8">
               {team.description}
             </p>
           </Reveal>
         ) : null}
 
         <Reveal delay={200}>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/55">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border-strong bg-white/[0.03]">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/[0.03]">
                 {team.owner.avatar_url ? (
                   <img
                     src={team.owner.avatar_url}
@@ -169,14 +169,14 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
                 {team.owner.full_name || `@${team.owner.username}`}
               </span>
             </div>
-            <span className="hidden text-ink-600 sm:inline">·</span>
+            <span className="hidden text-white/30 sm:inline">·</span>
             <span className="inline-flex items-center gap-1.5">
               <Users size={14} className="text-accent-400" />
               {team.memberCount} {team.memberCount === 1 ? "member" : "members"}
             </span>
             {team.created_at ? (
               <>
-                <span className="hidden text-ink-600 sm:inline">·</span>
+                <span className="hidden text-white/30 sm:inline">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar size={14} className="text-accent-400" />
                   Created {formatDate(team.created_at)}
@@ -196,10 +196,11 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
               isOwner={isOwner}
               requestStatus={requestStatus}
               onGoToSettings={() => router.push(`/teams/${team.slug}/settings`)}
+              className="border-white/10 bg-white/[0.04] text-white/85 hover:border-accent/40 hover:bg-white/[0.06] hover:text-white"
             />
             {isMember ? (
               <Link href={`/teams/${team.slug}/settings`}>
-                <Button size="lg" variant="secondary">
+                <Button size="lg" variant="secondary" className="border-white/10 bg-white/[0.04] text-white/85 hover:border-accent/40 hover:bg-white/[0.06] hover:text-white">
                   <Settings size={15} />
                   Settings
                 </Button>
@@ -210,10 +211,10 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
 
         <Reveal delay={320}>
           <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
-            <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
+            <span className="flex h-8 w-5 items-start justify-center rounded-full border border-white/10 p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
-            <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
+            <span className="text-xs font-medium uppercase tracking-[0.14em] text-white/35">
               Scroll to explore
             </span>
           </div>

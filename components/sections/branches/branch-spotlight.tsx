@@ -19,11 +19,11 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
   const order = String(index + 1).padStart(2, "0");
 
   return (
-    <article className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.02] p-6 backdrop-blur-xl transition-all duration-700 ease-premium hover:border-[rgba(40,40,255,0.4)] hover:bg-white/[0.04] sm:p-10 lg:p-12">
+    <article className="group relative overflow-hidden rounded-[2rem] border border-border-strong card-surface p-6 backdrop-blur-xl transition-all duration-700 ease-premium hover:border-[rgba(40,40,255,0.4)] sm:p-10 lg:p-12">
       {/* Background index numeral */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute -right-4 -top-10 select-none text-[10rem] font-bold leading-none text-white/[0.03] sm:text-[13rem]"
+        className="pointer-events-none absolute -right-4 -top-10 select-none text-[10rem] font-bold leading-none text-ink-500/[0.08] sm:text-[13rem]"
       >
         {order}
       </span>
@@ -52,7 +52,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
             <div>
               <Badge>Active branch</Badge>
               {[branch.city, branch.country].some(Boolean) ? (
-                <div className="mt-2 flex items-center gap-1.5 text-xs text-white/45">
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-ink-500">
                   <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
                   {[branch.city, branch.country].filter(Boolean).join(", ")}
                 </div>
@@ -60,21 +60,21 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
             </div>
           </div>
 
-          <h3 className="text-2xl font-semibold text-white sm:text-3xl">{branch.shortName}</h3>
-          <p className="mt-1 text-sm text-white/50">{branch.name}</p>
-          <p className="mt-5 text-sm leading-relaxed text-white/60 sm:text-base">
+          <h3 className="text-2xl font-semibold text-ink-50 sm:text-3xl">{branch.shortName}</h3>
+          <p className="mt-1 text-sm text-ink-400">{branch.name}</p>
+          <p className="mt-5 text-sm leading-relaxed text-ink-400 sm:text-base">
             {branch.description}
           </p>
 
-          <div className="mt-6 flex items-center gap-6 border-t border-white/10 pt-6">
+          <div className="mt-6 flex items-center gap-6 border-t border-border-strong pt-6">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-[rgb(40,40,255)]" aria-hidden="true" />
-              <span className="text-sm text-white/70">{branch.memberCount} Member{branch.memberCount !== 1 ? 's' : ''}</span>
+              <span className="text-sm text-ink-300">{branch.memberCount} Member{branch.memberCount !== 1 ? 's' : ''}</span>
             </div>
             {branch.founded ? (
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-[rgb(40,40,255)]" aria-hidden="true" />
-                <span className="text-sm text-white/40">Since {branch.founded}</span>
+                <span className="text-sm text-ink-600">Since {branch.founded}</span>
               </div>
             ) : null}
           </div>
@@ -91,7 +91,6 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
                 <Button
                   asChild
                   variant="secondary"
-                  className="border-white/10 bg-white/[0.03] text-white/80 hover:border-accent/40 hover:bg-white/[0.06] hover:text-white"
                 >
                   <Link href={`/branches/${branch.slug}`}>Explore branch hub</Link>
                 </Button>
@@ -102,7 +101,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
                   {branch.joinCta.label}
                 </span>
                 {branch.joinCta.helperText && (
-                  <p className="mt-3 text-xs text-white/35">{branch.joinCta.helperText}</p>
+                  <p className="mt-3 text-xs text-ink-600">{branch.joinCta.helperText}</p>
                 )}
               </div>
             )}
@@ -111,29 +110,29 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
 
         {/* Detail column */}
         <div className={`flex flex-col gap-6 ${reversed ? "lg:order-1" : "lg:order-2"}`}>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-white/45">
+          <div className="rounded-2xl border border-border-strong bg-surface p-6">
+            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-ink-500">
               <Calendar className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
               Upcoming events
             </div>
             <ul className="flex flex-col gap-3">
               {branch.upcomingEvents.map((event) => (
                 <li key={event.id}>
-                  <p className="text-sm font-medium text-white/85">{event.title}</p>
+                  <p className="text-sm font-medium text-ink-200">{event.title}</p>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-white/45">
+          <div className="rounded-2xl border border-border-strong bg-surface p-6">
+            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-ink-500">
               <Sparkles className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
               Branch highlights
             </div>
             <ul className="flex flex-col gap-3">
               {branch.highlights.map((highlight) => (
-                <li key={highlight.id} className="text-sm text-white/65">
-                  <span className="font-medium text-white/85">{highlight.label}.</span>{" "}
+                <li key={highlight.id} className="text-sm text-ink-400">
+                  <span className="font-medium text-ink-200">{highlight.label}.</span>{" "}
                   {highlight.description}
                 </li>
               ))}

@@ -40,11 +40,11 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2
               id="branches-showcase-heading"
-              className="text-3xl font-semibold text-white sm:text-4xl"
+              className="text-3xl font-semibold text-ink-50 sm:text-4xl"
             >
               Meet the branches
             </h2>
-            <p className="mt-4 text-white/55">
+            <p className="mt-4 text-ink-400">
               Each branch runs its own events, mentorship, and build culture — all connected back
               to the same Limitless Network.
             </p>
@@ -54,7 +54,7 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
         <Reveal delay={80}>
           <div className="relative mx-auto mb-12 max-w-md">
             <Search
-              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40"
+              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-600"
               aria-hidden="true"
             />
             <input
@@ -64,9 +64,9 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
               placeholder="Search branches..."
               aria-label="Search branches"
               className={cn(
-                "w-full rounded-full border border-white/10 bg-white/[0.03] px-11 py-3 text-sm text-white",
-                "placeholder:text-white/40 outline-none backdrop-blur-xl transition-colors",
-                "focus:border-[rgb(40,40,255)]/60 focus:bg-white/[0.06] focus:shadow-[0_0_0_1px_rgba(40,40,255,0.25)]",
+                "w-full rounded-full border border-border-strong bg-surface px-11 py-3 text-sm text-ink-50",
+                "placeholder:text-ink-600 outline-none backdrop-blur-xl transition-colors",
+                "focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-[0_0_0_1px_rgba(40,40,255,0.25)]",
               )}
             />
           </div>
@@ -75,14 +75,14 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
         {filtered.length === 0 ? (
           <Reveal delay={160}>
             <div className="flex flex-col items-center gap-4 py-20 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
                 <Landmark className="h-7 w-7 text-accent-300" aria-hidden="true" />
               </div>
               <div>
-                <p className="text-base font-medium text-ink-200">
+                <p className="text-base font-medium text-ink-50">
                   {query.trim() ? "No branches match your search" : "No branches yet"}
                 </p>
-                <p className="mt-1.5 text-sm text-ink-600">
+                <p className="mt-1.5 text-sm text-ink-500">
                   {query.trim()
                     ? "Try a different name or location."
                     : "Branches are being launched campus by campus. Check back soon."}

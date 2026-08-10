@@ -88,7 +88,7 @@ export function Roadmap() {
                   <div className="flex gap-5">
                     <span
                       className={cn(
-                        "relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border bg-[#0a0b10] shadow-glow-sm",
+                        "relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border bg-void-900 shadow-glow-sm",
                         item.status === "done"
                           ? "border-emerald-500/40 text-emerald-400"
                           : item.status === "next"
@@ -98,7 +98,7 @@ export function Roadmap() {
                     >
                       <Icon size={22} strokeWidth={1.75} />
                     </span>
-                    <div className="min-w-0 flex-1 rounded-[1.5rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
+                    <div className="min-w-0 flex-1 rounded-[1.5rem] border border-border-strong card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <h3 className="text-lg font-semibold text-ink-50">{item.title}</h3>
                         <span
@@ -108,7 +108,7 @@ export function Roadmap() {
                               ? "border-emerald-500/25 bg-emerald-500/[0.07] text-emerald-400"
                               : item.status === "next"
                                 ? "border-accent/25 bg-accent/[0.08] text-accent-300"
-                                : "border-border-strong bg-white/[0.03] text-ink-500"
+                                : "border-border-strong bg-surface text-ink-500"
                           )}
                         >
                           {item.status === "done" ? <CheckCircle2 size={10} /> : null}

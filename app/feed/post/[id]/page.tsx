@@ -69,7 +69,7 @@ async function FeedPost({ id }: { id: string }) {
       <PostViewTracker postId={item.id} />
       <FeedCard item={item} currentUserId={userId} />
 
-      <section className="rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 shadow-card backdrop-blur-xl sm:p-6">
+      <section className="rounded-2xl border border-border-strong card-surface-soft p-5 shadow-card backdrop-blur-xl sm:p-6">
         <h2 className="mb-3 text-sm font-semibold tracking-tight text-ink-200">
           Comments
         </h2>

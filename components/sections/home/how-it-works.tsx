@@ -69,7 +69,7 @@ export function HowItWorks() {
                 <Reveal delay={i * 120}>
                   <div className="flex gap-5 lg:flex-col lg:items-center lg:text-center">
                     <div className="relative z-10 shrink-0">
-                      <div className="animate-pulse-glow flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-400/30 bg-[#0a0b10] text-accent-300 shadow-glow-sm">
+                      <div className="animate-pulse-glow flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-400/30 bg-void-900 text-accent-300 shadow-glow-sm">
                         <Icon size={24} strokeWidth={1.75} />
                       </div>
                       <span

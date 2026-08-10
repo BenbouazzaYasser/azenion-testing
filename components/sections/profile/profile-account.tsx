@@ -105,7 +105,7 @@ export function ProfileAccount({
                 <div className="flex items-center gap-2.5 text-sm">
                   <UserCircle size={14} className="shrink-0 text-ink-600" />
                   <span className="text-ink-400">User ID:</span>
-                  <code className="rounded-md border border-border bg-white/[0.03] px-2 py-0.5 text-xs text-ink-200">
+                  <code className="rounded-md border border-border bg-surface px-2 py-0.5 text-xs text-ink-200">
                     {profileUserId.slice(0, 12)}...
                   </code>
                 </div>
@@ -133,7 +133,7 @@ export function ProfileAccount({
             <div className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-start">
-            <span className="bg-[#050507] pr-4 text-xs font-medium uppercase tracking-widest text-ink-500">
+            <span className="bg-void-950 pr-4 text-xs font-medium uppercase tracking-widest text-ink-500">
               Danger Zone
             </span>
           </div>

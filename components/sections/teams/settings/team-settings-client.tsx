@@ -129,7 +129,7 @@ export function TeamSettingsClient(props: TeamSettingsClientProps) {
           </p>
         </div>
 
-        <div className="mt-10 flex flex-wrap gap-2 rounded-2xl border border-border-strong bg-white/[0.02] p-2 shadow-card backdrop-blur-xl">
+        <div className="mt-10 flex flex-wrap gap-2 rounded-2xl border border-border-strong bg-surface p-2 shadow-card backdrop-blur-xl">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -141,7 +141,7 @@ export function TeamSettingsClient(props: TeamSettingsClientProps) {
                 className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-300 ${
                   active
                     ? "bg-accent text-white shadow-glow-sm"
-                    : "text-ink-400 hover:bg-white/[0.04] hover:text-ink-50"
+                    : "text-ink-400 hover:bg-surface-hover hover:text-ink-50"
                 }`}
               >
                 <Icon size={15} />

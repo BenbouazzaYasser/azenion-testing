@@ -421,6 +421,39 @@ export async function createProjectUpdate(formData: FormData) {
       return { error: error.message };
     }
 
+    // Fetch project + team names for the activity
+    const { data: project } = await supabase
+      .from("projects")
+      .select("name, slug, team_id")
+      .eq("id", parsed.data.project_id)
+      .single();
+
+    let teamName = "";
+    let teamSlug = "";
+    if (project?.team_id) {
+      const { data: team } = await supabase
+        .from("teams")
+        .select("name, slug")
+        .eq("id", project.team_id)
+        .single();
+      teamName = team?.name ?? "";
+      teamSlug = team?.slug ?? "";
+    }
+
+    // Log activity
+    await supabase.from("activities").insert({
+      user_id: user.id,
+      type: "created_project_update",
+      metadata: {
+        project_id: parsed.data.project_id,
+        project_name: project?.name ?? "",
+        project_slug: project?.slug ?? "",
+        team_id: project?.team_id ?? null,
+        team_name: teamName,
+        team_slug: teamSlug,
+      },
+    });
+
     // Verify persistence by immediately fetching the newest update
     const { data: verify } = await supabase
       .from("project_updates")

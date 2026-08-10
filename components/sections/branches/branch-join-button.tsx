@@ -13,6 +13,8 @@ interface BranchJoinButtonProps {
   isMember: boolean;
   label: string;
   helperText?: string;
+  /** Renders on dark cosmic backgrounds (branch detail hero). */
+  cosmic?: boolean;
 }
 
 export function BranchJoinButton({
@@ -20,6 +22,7 @@ export function BranchJoinButton({
   isMember,
   label,
   helperText,
+  cosmic = false,
 }: BranchJoinButtonProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -70,6 +73,11 @@ export function BranchJoinButton({
           variant="secondary"
           onClick={handleLeave}
           disabled={isLoading}
+          className={
+            cosmic
+              ? "border-white/10 bg-white/[0.04] text-white/85 hover:border-accent/40 hover:bg-white/[0.06] hover:text-white"
+              : undefined
+          }
         >
           {isLoading ? (
             <Loader2 size={16} className="animate-spin" />
@@ -79,7 +87,7 @@ export function BranchJoinButton({
           Leave Branch
         </Button>
         {helperText && (
-          <p className="mt-3 text-xs text-white/35">{helperText}</p>
+          <p className={`mt-3 text-xs ${cosmic ? "text-white/35" : "text-ink-600"}`}>{helperText}</p>
         )}
       </div>
     );
@@ -100,7 +108,7 @@ export function BranchJoinButton({
         {label}
       </Button>
       {helperText && (
-        <p className="mt-3 text-xs text-white/35">{helperText}</p>
+        <p className={`mt-3 text-xs ${cosmic ? "text-white/35" : "text-ink-600"}`}>{helperText}</p>
       )}
       {error && (
         <p className="mt-2 text-xs text-red-400">{error}</p>

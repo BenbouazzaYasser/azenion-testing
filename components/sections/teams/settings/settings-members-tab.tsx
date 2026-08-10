@@ -69,14 +69,14 @@ export function SettingsMembersTab({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-border-strong bg-white/[0.02] p-6 shadow-card backdrop-blur-xl sm:p-8">
+      <div className="rounded-2xl border border-border-strong bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
         <h3 className="text-lg font-semibold text-ink-50">Members</h3>
         <p className="mt-1 text-sm text-ink-400">
           {members.length} total · {roles.length} roles
         </p>
         {!canManageRoles ? (
           <div className="mt-4">
-            <div className="rounded-xl border border-border bg-white/[0.02] px-4 py-3 text-sm text-ink-500">
+            <div className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink-500">
               <Lock size={13} className="mr-1.5 inline -translate-y-px" />
               Only the team owner can assign roles to members.
             </div>
@@ -94,7 +94,7 @@ export function SettingsMembersTab({
         return (
           <div
             key={member.id}
-            className="flex flex-col gap-4 rounded-2xl border border-border-strong bg-white/[0.02] p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-start sm:justify-between sm:p-6"
+            className="flex flex-col gap-4 rounded-2xl border border-border-strong bg-surface p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-start sm:justify-between sm:p-6"
           >
             <div className="flex min-w-0 items-start gap-4">
               {member.avatar_url ? (

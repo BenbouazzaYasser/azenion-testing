@@ -101,7 +101,7 @@ export function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                     aria-label={label}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-border-strong bg-white/[0.03] text-ink-400 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-accent-400 hover:shadow-glow-sm"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-border-strong bg-surface text-ink-400 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-accent-400 hover:shadow-glow-sm"
                   >
                     <Icon size={16} />
                   </a>
@@ -118,9 +118,9 @@ export function Footer() {
                     href={channel.href}
                     target={channel.href.startsWith("http") ? "_blank" : undefined}
                     rel={channel.href.startsWith("http") ? "noreferrer noopener" : undefined}
-                    className="group flex items-center gap-3 rounded-xl border border-border-strong bg-white/[0.02] px-4 py-3 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:bg-white/[0.04] hover:shadow-glow-sm"
+                    className="group flex items-center gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:bg-surface-hover hover:shadow-glow-sm"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border-strong bg-white/[0.03] text-accent-400 transition-all duration-300 group-hover:border-accent-400/30 group-hover:bg-accent/[0.06]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border-strong bg-surface text-accent-400 transition-all duration-300 group-hover:border-accent-400/30 group-hover:bg-accent/[0.06]">
                       <Icon size={14} />
                     </div>
                     <div className="min-w-0">

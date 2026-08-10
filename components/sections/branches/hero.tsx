@@ -37,7 +37,7 @@ export function BranchesHero({ branchCount, memberCount }: BranchesHeroProps) {
         <Reveal delay={100}>
           <h1
             id="branches-hero-heading"
-            className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-6xl"
+            className="text-balance text-4xl font-semibold tracking-tight text-ink-50 sm:text-6xl"
           >
             Every branch is its own hub.
             <br className="hidden sm:block" /> Together, they&apos;re infinite.
@@ -45,7 +45,7 @@ export function BranchesHero({ branchCount, memberCount }: BranchesHeroProps) {
         </Reveal>
 
         <Reveal delay={200}>
-          <p className="mt-6 max-w-xl text-balance text-base text-white/60 sm:text-lg">
+          <p className="mt-6 max-w-xl text-balance text-base text-ink-400 sm:text-lg">
             Azenion runs on campus branches — local communities of builders, engineers, and
             innovators who bring the Limitless Network to life where they study. Find yours below.
           </p>
@@ -66,7 +66,7 @@ export function BranchesHero({ branchCount, memberCount }: BranchesHeroProps) {
         </Reveal>
 
         <Reveal delay={400}>
-          <p className="mt-6 text-xs uppercase tracking-[0.2em] text-white/35">
+          <p className="mt-6 text-xs uppercase tracking-[0.2em] text-ink-600">
             {branchCount} active branches · {memberCount}+ members and counting
           </p>
         </Reveal>

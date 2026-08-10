@@ -16,7 +16,7 @@ const CATEGORIES = [
 ];
 
 const inputClass =
-  "w-full rounded-full border border-border-strong bg-white/[0.03] px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-all duration-300 focus:border-accent-400/60 focus:bg-white/[0.05] focus:ring-2 focus:ring-accent-400/30";
+  "w-full rounded-full border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-all duration-300 focus:border-accent-400/60 focus:bg-surface-hover focus:ring-2 focus:ring-accent-400/30";
 
 export function CoursesBrowser() {
   const [query, setQuery] = useState("");
@@ -53,7 +53,7 @@ export function CoursesBrowser() {
         </Reveal>
 
         <Reveal delay={160}>
-          <div className="relative mt-14 overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] shadow-card backdrop-blur-xl">
+          <div className="relative mt-14 overflow-hidden rounded-2xl border border-border-strong card-surface-soft shadow-card backdrop-blur-xl">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(244,245,248,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(244,245,248,0.04)_1px,transparent_1px)] bg-[size:32px_32px]"
@@ -64,7 +64,7 @@ export function CoursesBrowser() {
             />
 
             <div className="relative flex flex-col items-center px-8 py-20 text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
                 <GraduationCap size={32} />
               </div>
               <h3

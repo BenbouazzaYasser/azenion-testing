@@ -59,7 +59,7 @@ export function TeamCard({ team, index }: TeamCardProps) {
   return (
     <Reveal delay={index * 60}>
       <Link href={`/teams/${team.slug}`} className="group block h-full focus-visible:outline-none">
-        <div className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm hover:bg-[linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.03))] group-focus-visible:ring-2 group-focus-visible:ring-accent-400/60">
+        <div className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm group-focus-visible:ring-2 group-focus-visible:ring-accent-400/60">
           <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
           <div className="relative flex flex-1 flex-col p-6 sm:p-8">
@@ -107,7 +107,7 @@ export function TeamCard({ team, index }: TeamCardProps) {
                   <TeamCategoryBadge key={cat.id} name={cat.name} />
                 ))}
                 {catOverflow > 0 ? (
-                  <span className="inline-flex rounded-full border border-ink-700/50 bg-white/[0.03] px-2.5 py-0.5 text-[11px] font-medium text-ink-500">
+                  <span className="inline-flex rounded-full border border-ink-700/50 bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-500">
                     +{catOverflow}
                   </span>
                 ) : null}
@@ -132,7 +132,7 @@ export function TeamCard({ team, index }: TeamCardProps) {
                   </span>
                 ))}
                 {techOverflow > 0 ? (
-                  <span className="inline-flex rounded-full border border-ink-700/50 bg-white/[0.03] px-2.5 py-0.5 text-[11px] font-medium text-ink-500">
+                  <span className="inline-flex rounded-full border border-ink-700/50 bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-500">
                     +{techOverflow}
                   </span>
                 ) : null}
@@ -152,7 +152,7 @@ export function TeamCard({ team, index }: TeamCardProps) {
                   </span>
                 ))}
                 {roleOverflow > 0 ? (
-                  <span className="inline-flex rounded-full border border-ink-700/50 bg-white/[0.03] px-2.5 py-0.5 text-[11px] font-medium text-ink-500">
+                  <span className="inline-flex rounded-full border border-ink-700/50 bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-500">
                     +{roleOverflow}
                   </span>
                 ) : null}

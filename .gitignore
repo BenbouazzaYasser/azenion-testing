@@ -22,3 +22,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# build output for prod (separate from dev .next)
+/.next-prod/

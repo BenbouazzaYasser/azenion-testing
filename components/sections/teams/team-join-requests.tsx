@@ -84,7 +84,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
 
             return (
               <Reveal key={request.id} delay={i * 60}>
-                <div className="flex flex-col gap-4 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                <div className="flex flex-col gap-4 rounded-2xl border border-border-strong card-surface p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6">
                   <div className="flex min-w-0 items-start gap-4">
                     {request.avatar_url ? (
                       <img
@@ -111,7 +111,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
                       </div>
 
                       {request.message ? (
-                        <div className="mt-3 flex items-start gap-2 rounded-xl border border-border bg-white/[0.02] px-3.5 py-2.5 text-sm text-ink-300">
+                        <div className="mt-3 flex items-start gap-2 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-ink-300">
                           <MessageSquareText size={14} className="mt-0.5 shrink-0 text-accent-400" />
                           <p className="line-clamp-2">{request.message}</p>
                         </div>

@@ -194,7 +194,7 @@ export function ChatConversation({
             type="button"
             onClick={mobileConversations.open}
             aria-label="Open conversations"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
           >
             <Menu size={18} />
           </button>
@@ -204,7 +204,7 @@ export function ChatConversation({
           <img
             src={participant.avatar_url}
             alt=""
-            className="h-10 w-10 shrink-0 rounded-full border border-white/[0.12] object-cover shadow-[0_0_20px_-8px_rgba(109,109,255,0.5)]"
+            className="h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.12] object-cover shadow-[0_0_20px_-8px_rgba(109,109,255,0.5)]"
           />
         ) : (
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent-400/25 bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white">
@@ -236,7 +236,7 @@ export function ChatConversation({
               aria-hidden
               className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[120px]"
             />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300 shadow-input">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300 shadow-input">
               <MessageSquare size={26} />
             </div>
             <h2 className="mt-5 text-lg font-semibold text-ink-50">No messages yet</h2>
@@ -288,7 +288,7 @@ export function ChatConversation({
         </div>
       </div>
 
-      <div className="relative z-10 shrink-0 border-t border-border/60 bg-[linear-gradient(180deg,rgba(5,5,7,0.30),rgba(5,5,7,0.88))] px-3 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4 sm:pt-3">
+      <div className="relative z-10 shrink-0 border-t border-border/60 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4 sm:pt-3">
         <form
           className="flex items-center gap-3"
           onSubmit={(e) => {
@@ -302,7 +302,7 @@ export function ChatConversation({
             placeholder="Type a message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="min-w-0 flex-1 rounded-2xl border border-border-strong bg-white/[0.03] px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/60 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
+            className="min-w-0 flex-1 rounded-2xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/60 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
           />
           <Button
             type="submit"

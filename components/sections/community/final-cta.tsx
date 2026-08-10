@@ -9,7 +9,7 @@ export function CommunityCta() {
     <section className="relative py-20 sm:py-24 lg:py-32" aria-labelledby="community-cta-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <Reveal>
-          <div className="relative overflow-hidden rounded-[2.5rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] px-8 py-16 text-center shadow-card backdrop-blur-xl sm:px-16 sm:py-24">
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-border-strong card-surface px-8 py-16 text-center shadow-card backdrop-blur-xl sm:px-16 sm:py-24">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(71,71,255,0.18),transparent_60%)]"

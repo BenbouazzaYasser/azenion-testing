@@ -34,7 +34,7 @@ function TeamPreviewCard({
   logoPreview: string | null;
 }) {
   return (
-    <div className="group overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] shadow-card backdrop-blur-xl transition-all duration-500 ease-premium">
+    <div className="group overflow-hidden rounded-[2rem] border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium">
       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative p-6 sm:p-8">
@@ -48,11 +48,11 @@ function TeamPreviewCard({
           </div>
         </div>
 
-        <h3 className="mt-5 truncate text-xl font-semibold text-white sm:text-2xl">
+        <h3 className="mt-5 truncate text-xl font-semibold text-ink-50 sm:text-2xl">
           {name || "Your Team Name"}
         </h3>
 
-        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-white/60">
+        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-ink-400">
           {description || "Your team description will appear here."}
         </p>
       </div>
@@ -124,7 +124,7 @@ export function CreateTeamForm() {
   }
 
   const inputClass =
-    "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
+    "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
 
   const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -138,7 +138,7 @@ export function CreateTeamForm() {
             <Reveal>
               <form
                 onSubmit={handleSubmit}
-                className="overflow-hidden rounded-[2rem] border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl sm:p-8"
+                className="overflow-hidden rounded-[2rem] border border-border-strong card-surface p-6 shadow-card backdrop-blur-xl sm:p-8"
               >
                 <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)]" />
 
@@ -201,7 +201,7 @@ export function CreateTeamForm() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex w-full items-center gap-3 rounded-xl border border-dashed border-border-strong bg-white/[0.02] px-5 py-8 text-ink-500 transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.03] hover:text-ink-300"
+                      className="flex w-full items-center gap-3 rounded-xl border border-dashed border-border-strong bg-surface px-5 py-8 text-ink-500 transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.03] hover:text-ink-300"
                     >
                       <ImagePlus size={24} />
                       <span className="text-sm">
@@ -237,7 +237,7 @@ export function CreateTeamForm() {
                       {(["public", "private"] as const).map((opt) => (
                         <label
                           key={opt}
-                          className="flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-white/[0.02] px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
+                          className="flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
                         >
                           <input
                             type="radio"

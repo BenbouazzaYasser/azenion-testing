@@ -46,7 +46,7 @@ const NEXT_STEP: Record<StepKey, OnboardingStep> = {
 };
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
+  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 interface OnboardingModalProps {
   data: OnboardingData;
@@ -144,7 +144,7 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
                 aria-modal="true"
                 aria-label={`Onboarding ${STEP_ORDER[stepIndex] ?? "done"} step`}
                 tabIndex={-1}
-                className="relative z-10 flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-3xl border border-border-strong bg-[linear-gradient(135deg,rgba(17,18,25,0.98),rgba(9,9,13,0.98))] shadow-dialog backdrop-blur-2xl outline-none transition-all duration-200 ease-premium"
+                className="relative z-10 flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-3xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl outline-none transition-all duration-200 ease-premium"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.96)",
@@ -155,7 +155,7 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-accent/25 bg-accent/[0.08] text-accent-300">
                     <Sparkles size={16} />
                   </div>
-                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-surface">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-accent-400 to-accent transition-[width] duration-500 ease-premium"
                       style={{ width: `${progress}%` }}
@@ -167,7 +167,7 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
                       onClick={dismiss}
                       disabled={busy}
                       aria-label="Close onboarding"
-                      className="-mr-1 -mt-1 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-white/[0.06] hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:pointer-events-none disabled:opacity-50"
+                      className="-mr-1 -mt-1 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:pointer-events-none disabled:opacity-50"
                     >
                       <X size={16} />
                     </button>
@@ -443,7 +443,7 @@ function BranchStep({
 
       <div className="mt-6 space-y-2.5">
         {data.branches.length === 0 ? (
-          <div className="rounded-xl border border-border bg-white/[0.02] px-4 py-5 text-center text-sm text-ink-500">
+          <div className="rounded-xl border border-border bg-surface px-4 py-5 text-center text-sm text-ink-500">
             No branches are live yet. You can join later from the Branches page.
           </div>
         ) : (
@@ -456,10 +456,10 @@ function BranchStep({
                   "flex items-center gap-3 rounded-xl border p-3 transition-colors",
                   b.recommended
                     ? "border-accent/30 bg-accent/[0.05]"
-                    : "border-border-strong bg-white/[0.02]",
+                    : "border-border-strong bg-surface",
                 )}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/[0.1] bg-accent/[0.08]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-strong/[0.1] bg-accent/[0.08]">
                   {b.logo_url ? (
                     <img src={b.logo_url} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -548,7 +548,7 @@ function TeamStep({
 
       <div className="mt-6 space-y-2.5">
         {data.teams.length === 0 ? (
-          <div className="rounded-xl border border-border bg-white/[0.02] px-4 py-6 text-center text-sm text-ink-500">
+          <div className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-sm text-ink-500">
             No active teams yet. You can browse teams anytime.
           </div>
         ) : (
@@ -557,9 +557,9 @@ function TeamStep({
             return (
               <div
                 key={t.id}
-                className="flex items-center gap-3 rounded-xl border border-border-strong bg-white/[0.02] p-3"
+                className="flex items-center gap-3 rounded-xl border border-border-strong bg-surface p-3"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/[0.1] bg-surface-500/[0.12]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-strong/[0.1] bg-surface-500/[0.12]">
                   {t.logo_url ? (
                     <img src={t.logo_url} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -631,7 +631,7 @@ function ProjectStep({
 
       <div className="mt-6 space-y-2.5">
         {data.projects.length === 0 ? (
-          <div className="rounded-xl border border-border bg-white/[0.02] px-4 py-6 text-center text-sm text-ink-500">
+          <div className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-sm text-ink-500">
             Featured projects are on the way.
           </div>
         ) : (
@@ -669,9 +669,9 @@ function ProjectRow({
         onViewed();
         router.push(`/projects/${project.slug}`);
       }}
-      className="flex w-full items-center gap-3 rounded-xl border border-border-strong bg-white/[0.02] p-3 text-left transition-colors hover:border-accent-400/30 hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+      className="flex w-full items-center gap-3 rounded-xl border border-border-strong bg-surface p-3 text-left transition-colors hover:border-accent-400/30 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.1] bg-accent/[0.08]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-strong/[0.1] bg-accent/[0.08]">
         {project.logo_url ? (
           <img src={project.logo_url} alt="" className="h-full w-full object-cover" />
         ) : (

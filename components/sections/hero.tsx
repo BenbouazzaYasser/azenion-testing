@@ -60,7 +60,7 @@ export function Hero() {
                 aria-hidden
                 className="absolute -inset-x-4 -inset-y-6 rounded-[2rem] bg-accent-400/[0.14] blur-[60px]"
               />
-              <div className="relative rounded-2xl border border-border/50 bg-gradient-to-b from-white/[0.05] to-white/[0.015] p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35),0_0_0_1px_rgba(255,255,255,0.03)] backdrop-blur-xl">
+              <div className="relative rounded-2xl border border-border/50 bg-surface/70 p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] backdrop-blur-xl">
                 <p className="text-sm font-medium text-ink-50">Quick overview</p>
                 <p className="mt-2 text-sm leading-6 text-ink-400">
                   Azenion connects learners, builders, and innovators in one global

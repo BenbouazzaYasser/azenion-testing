@@ -98,7 +98,7 @@ const MAX_BODY_LENGTH = 5000;
 const MAX_PREVIEW_HEIGHT = 320;
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input disabled:cursor-not-allowed disabled:opacity-50";
 
 function autosize(el: HTMLTextAreaElement) {
   el.style.height = "auto";
@@ -384,7 +384,7 @@ export function EntityUpdatesFeed({
 
         {canPostPermission ? (
           <Reveal delay={120}>
-            <div className="mt-8 rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 shadow-card backdrop-blur-xl sm:p-6">
+            <div className="mt-8 rounded-2xl border border-border-strong card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
               <div className="flex items-center gap-2">
                 <Sparkles size={16} className="shrink-0 text-accent-400" />
                 <h3 className="text-sm font-medium text-ink-300">
@@ -451,7 +451,7 @@ export function EntityUpdatesFeed({
                       <div
                         key={`${src}-${i}`}
                         className={cn(
-                          "group relative overflow-hidden rounded-xl border border-border-strong bg-white/[0.03]",
+                          "group relative overflow-hidden rounded-xl border border-border-strong bg-surface",
                           previews.length === 1 ? "aspect-[16/10]" : "aspect-[4/3]",
                         )}
                       >
@@ -476,7 +476,7 @@ export function EntityUpdatesFeed({
               </div>
 
               {uploadStep && uploadStep.total > 1 && submitting ? (
-                <div className="mt-4 h-0.5 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className="mt-4 h-0.5 overflow-hidden rounded-full bg-surface">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-accent-400 to-accent transition-[width] duration-300 ease-premium"
                     style={{ width: `${uploadProgress * 100}%` }}
@@ -503,7 +503,7 @@ export function EntityUpdatesFeed({
                   <ImagePlus size={16} />
                   Add images
                   {previews.length > 0 ? (
-                    <span className="rounded-full bg-white/[0.05] px-1.5 py-0.5 text-[0.68rem] font-medium text-ink-400">
+                    <span className="rounded-full bg-surface px-1.5 py-0.5 text-[0.68rem] font-medium text-ink-400">
                       {previews.length}/{MAX_IMAGES}
                     </span>
                   ) : null}
@@ -542,7 +542,7 @@ export function EntityUpdatesFeed({
             {updates.map((update, i) => (
               <Reveal key={update.id} delay={Math.min(i, 4) * 60}>
                 {editingId === update.id ? (
-                  <div className="rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-5 shadow-card backdrop-blur-xl sm:p-6">
+                  <div className="rounded-2xl border border-border-strong card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
                     <h3 className="text-base font-medium text-ink-200">Edit update</h3>
                     <div className="mt-4 space-y-4">
                       <input
@@ -599,14 +599,14 @@ export function EntityUpdatesFeed({
                             onClick={() =>
                               setMenuOpenId(menuOpenId === update.id ? null : update.id)
                             }
-                            className="rounded-lg bg-white/[0.04] p-1.5 text-ink-500 transition-colors hover:bg-white/[0.08] hover:text-ink-200"
+                            className="rounded-lg bg-surface p-1.5 text-ink-500 transition-colors hover:bg-surface-hover hover:text-ink-200"
                             aria-label="Manage update"
                           >
                             <MoreHorizontal size={16} />
                           </button>
 
                           {menuOpenId === update.id ? (
-                            <div className="absolute right-0 top-full z-20 mt-1 w-[140px] overflow-hidden rounded-xl border border-border-strong bg-[#0e1016] shadow-xl backdrop-blur-xl">
+                            <div className="absolute right-0 top-full z-20 mt-1 w-[140px] overflow-hidden rounded-xl border border-border-strong bg-glass-strong shadow-xl backdrop-blur-xl">
                               {canPin ? (
                                 <button
                                   type="button"
@@ -650,7 +650,7 @@ export function EntityUpdatesFeed({
         ) : (
           <Reveal delay={160}>
             <div className="mt-10 flex flex-col items-center gap-4 py-16 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-white/[0.03] text-accent-300">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
                 <MessageSquare className="h-7 w-7 text-accent-300" />
               </div>
               <div>

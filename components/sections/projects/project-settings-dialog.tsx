@@ -67,9 +67,9 @@ interface ProjectSettingsDialogProps {
 }
 
 const cardClass =
-  "rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 shadow-card backdrop-blur-xl sm:p-8";
+  "rounded-2xl border border-border-strong card-surface p-6 shadow-card backdrop-blur-xl sm:p-8";
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-white/[0.06] focus:shadow-input";
+  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 const sectionTitleClass = "text-lg font-semibold text-ink-50";
 
@@ -265,7 +265,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
               <div
                 ref={dialogFocusRef}
                 tabIndex={-1}
-                className="relative z-10 flex max-h-[90vh] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl border border-border-strong bg-[linear-gradient(135deg,rgba(20,20,28,0.98),rgba(8,8,12,0.98))] shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
+                className="relative z-10 flex max-h-[90vh] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.95)",
@@ -283,7 +283,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
                       setOpen(false);
                     }}
                     aria-label="Close"
-                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-white/[0.06] hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -454,7 +454,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
                               className={`relative flex cursor-pointer flex-col gap-3 rounded-xl border p-5 transition-all duration-300 ease-premium focus-within:outline-none focus-within:ring-2 focus-within:ring-accent-400 ${
                                 selected
                                   ? "border-accent-400/40 bg-accent/[0.04]"
-                                  : "border-border-strong bg-white/[0.02] hover:border-accent-400/30 hover:bg-white/[0.04]"
+                                  : "border-border-strong bg-surface hover:border-accent-400/30 hover:bg-surface-hover"
                               }`}
                             >
                               <input
@@ -483,7 +483,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
                       <p className="mt-1 text-sm text-ink-400">The team this project belongs to.</p>
                       <div className="mt-6">
                         {project.team ? (
-                          <div className="flex items-center justify-between rounded-xl border border-border-strong bg-white/[0.02] px-5 py-4">
+                          <div className="flex items-center justify-between rounded-xl border border-border-strong bg-surface px-5 py-4">
                             <div className="flex items-center gap-3">
                               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08]">
                                 <Building2 size={18} className="text-accent-400" />
@@ -562,10 +562,10 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
                           {eligibleMembers.map((member) => (
                             <div
                               key={member.id}
-                              className="flex items-center justify-between gap-3 rounded-xl border border-border-strong bg-white/[0.02] px-4 py-3"
+                              className="flex items-center justify-between gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3"
                             >
                               <div className="flex items-center gap-3 min-w-0">
-                                <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/[0.1]">
+                                <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-border-strong/[0.1]">
                                   {member.avatar_url ? (
                                     <img src={member.avatar_url} alt="" className="h-full w-full object-cover" />
                                   ) : (
@@ -635,7 +635,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
 
                 {/* ── Sticky footer with Save ── */}
                 {hasChanges ? (
-                  <div className="flex items-center justify-between border-t border-border bg-[rgba(8,8,12,0.95)] px-8 py-4">
+                  <div className="flex items-center justify-between border-t border-border bg-void-950/95 px-8 py-4">
                     <span className="flex items-center gap-2 text-sm text-amber-400">
                       <span className="h-2 w-2 rounded-full bg-amber-400" />
                       Unsaved changes

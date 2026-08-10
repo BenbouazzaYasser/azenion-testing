@@ -10,7 +10,7 @@ interface TechTagInputProps {
 }
 
 const inputBase =
-  "rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus-within:border-accent-400/60 focus-within:bg-white/[0.06] focus-within:shadow-input";
+  "rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus-within:border-accent-400/60 focus-within:bg-surface focus-within:shadow-input";
 
 export function TechTagInput({ tags, onChange, disabled }: TechTagInputProps) {
   const [input, setInput] = useState("");
