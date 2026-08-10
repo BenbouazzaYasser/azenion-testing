@@ -126,7 +126,7 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6 sm:pt-5">
       <div
         className={cn(
-          "w-full xl:w-fit rounded-full border border-border-strong/[0.08] transition-[background-color,box-shadow] duration-700 ease-premium will-change-transform backdrop-blur-2xl",
+          "w-full xl:w-fit rounded-full border navbar-border transition-[background-color,box-shadow] duration-700 ease-premium will-change-transform backdrop-blur-2xl",
           isScrolled || isMenuOpen
             ? "bg-glass-nav shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)]"
             : "bg-[rgba(10,11,16,0.18)] shadow-[0_8px_30px_-25px_rgba(255,255,255,0.05)]"
@@ -310,7 +310,7 @@ export function Navbar() {
                     onClick={() => setIsAvatarOpen((v) => !v)}
                     aria-haspopup="menu"
                     aria-expanded={isAvatarOpen}
-                    className="h-10 w-10 overflow-hidden rounded-full border border-border-strong/[0.12] transition-all duration-300 hover:scale-105 hover:border-accent-400/40 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="h-10 w-10 overflow-hidden rounded-full border navbar-element-border transition-all duration-300 hover:scale-105 hover:border-accent-400/40 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -321,7 +321,7 @@ export function Navbar() {
                     )}
                   </button>
                   {isAvatarOpen ? (
-                    <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                    <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border navbar-panel-border bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                       <div
                         aria-hidden
                         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
@@ -506,7 +506,7 @@ export function Navbar() {
         ref={drawerRef}
         aria-hidden={!isMenuOpen}
         className={cn(
-          "absolute left-4 right-4 top-[78px] grid overflow-hidden rounded-[1.5rem] border border-border-strong/[0.08] bg-glass-nav shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)] backdrop-blur-2xl transition-all duration-[400ms] ease-premium xl:hidden",
+          "absolute left-4 right-4 top-[78px] grid overflow-hidden rounded-[1.5rem] border navbar-border bg-glass-nav shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)] backdrop-blur-2xl transition-all duration-[400ms] ease-premium xl:hidden",
           isMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         )}
       >

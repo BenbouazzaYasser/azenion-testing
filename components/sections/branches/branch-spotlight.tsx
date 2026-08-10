@@ -38,16 +38,22 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
         {/* Identity column */}
         <div className={`flex flex-col ${reversed ? "lg:order-2" : "lg:order-1"}`}>
           <div className="mb-6 flex items-center gap-4">
-            <div className="animate-pulse-glow flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[rgba(40,40,255,0.35)] bg-[rgb(40,40,255)]/10 p-2.5">
-              <svg viewBox="0 0 512 512" className="h-full w-full" aria-hidden="true">
-                <defs>
-                  <linearGradient id={"infinity-grad-".concat(branch.slug)} x1="106.74" y1="349.27" x2="405.26" y2="162.73" gradientUnits="userSpaceOnUse">
-                    <stop offset="0.5" stopColor="#0033ff" stopOpacity="1" />
-                    <stop offset="1" stopColor="#00ff00" stopOpacity="1" />
-                  </linearGradient>
-                </defs>
-                <path d="M96 256C96 170 192 170 256 256C320 342 416 342 416 256C416 170 320 170 256 256C192 342 96 342 96 256Z" fill="none" stroke={"url(#infinity-grad-".concat(branch.slug, ")")} strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+            <div className="animate-pulse-glow flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[rgba(40,40,255,0.35)] bg-[rgb(40,40,255)]/10">
+              {branch.logo_url ? (
+                <img src={branch.logo_url} alt={`${branch.shortName} logo`} className="h-full w-full object-cover" />
+              ) : (
+                <div className="p-2.5">
+                  <svg viewBox="0 0 512 512" className="h-full w-full" aria-hidden="true">
+                    <defs>
+                      <linearGradient id={"infinity-grad-".concat(branch.slug)} x1="106.74" y1="349.27" x2="405.26" y2="162.73" gradientUnits="userSpaceOnUse">
+                        <stop offset="0.5" stopColor="#0033ff" stopOpacity="1" />
+                        <stop offset="1" stopColor="#00ff00" stopOpacity="1" />
+                      </linearGradient>
+                    </defs>
+                    <path d="M96 256C96 170 192 170 256 256C320 342 416 342 416 256C416 170 320 170 256 256C192 342 96 342 96 256Z" fill="none" stroke={"url(#infinity-grad-".concat(branch.slug, ")")} strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              )}
             </div>
             <div>
               <Badge>Active branch</Badge>

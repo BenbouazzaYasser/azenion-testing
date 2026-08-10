@@ -45,7 +45,7 @@ export function BranchPageHero({
   const canManage = isPlatformAdmin || isBranchLeader;
 
   return (
-    <section className="section-cosmic relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
+    <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
       {branch.logo_url ? (
         <div className="absolute inset-0">
           <img
@@ -53,7 +53,7 @@ export function BranchPageHero({
             alt=""
             className="h-full w-full object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-[#050507]/80 backdrop-blur-sm" />
+          <div className="branch-hero-scrim absolute inset-0 backdrop-blur-sm" />
         </div>
       ) : null}
       <BackgroundInfinity variant="teams" />
@@ -63,7 +63,7 @@ export function BranchPageHero({
           <div className="mb-9 flex justify-center sm:mb-10">
             <div className="relative">
               <div className="absolute -inset-3 rounded-[2.25rem] bg-accent/10 blur-2xl" />
-              <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/15 bg-white/[0.06] shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_20px_60px_-20px_rgba(40,40,255,0.35)] backdrop-blur-xl sm:h-28 sm:w-28 sm:rounded-[2rem] lg:h-32 lg:w-32">
+              <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.75rem] border branch-hero-frame shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_20px_60px_-20px_rgba(40,40,255,0.35)] backdrop-blur-xl sm:h-28 sm:w-28 sm:rounded-[2rem] lg:h-32 lg:w-32">
                 {branch.logo_url ? (
                   <img
                     src={branch.logo_url}
@@ -85,13 +85,13 @@ export function BranchPageHero({
               Active Branch
             </div>
             {isBranchLeader ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08] px-3 py-1.5 text-[12px] font-medium text-emerald-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08] px-3 py-1.5 text-[12px] font-medium text-emerald-300">
                 <ShieldCheck size={12} />
                 Branch Leader
               </span>
             ) : null}
             {branch.city ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-white/[0.03] px-3 py-1.5 text-[12px] font-medium text-white/55">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface px-3 py-1.5 text-[12px] font-medium text-ink-400">
                 <MapPin size={12} className="text-accent-400" />
                 {branch.city}
               </span>
@@ -100,7 +100,7 @@ export function BranchPageHero({
         </Reveal>
 
         <Reveal delay={80}>
-          <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-[3.4rem] lg:text-[4rem]">
+          <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
             {branch.name}
           </h1>
         </Reveal>
@@ -113,21 +113,21 @@ export function BranchPageHero({
 
         {branch.description ? (
           <Reveal delay={160}>
-            <p className="mx-auto mt-6 max-w-2xl text-balance text-[1.05rem] leading-relaxed text-white/55 sm:text-[1.1rem] sm:leading-8">
+            <p className="mx-auto mt-6 max-w-2xl text-balance text-[1.05rem] leading-relaxed text-ink-400 sm:text-[1.1rem] sm:leading-8">
               {branch.description}
             </p>
           </Reveal>
         ) : null}
 
         <Reveal delay={200}>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/55">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
             <span className="inline-flex items-center gap-1.5">
               <Users size={14} className="text-accent-400" />
               {branch.memberCount} {branch.memberCount === 1 ? "member" : "members"}
             </span>
             {branch.created_at ? (
               <>
-                <span className="hidden text-white/30 sm:inline">·</span>
+                <span className="hidden text-ink-600 sm:inline">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar size={14} className="text-accent-400" />
                   Founded {formatDate(branch.created_at)}
@@ -147,19 +147,19 @@ export function BranchPageHero({
                       key={m.id}
                       src={m.avatar_url}
                       alt=""
-                      className="h-9 w-9 rounded-full border-2 border-[#050507] object-cover"
+                      className="h-9 w-9 rounded-full border-2 border-void-950 object-cover"
                     />
                   ) : (
                     <span
                       key={m.id}
-                      className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#050507] bg-gradient-to-br from-accent-500 to-accent-400 text-xs font-semibold text-white"
+                      className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-void-950 bg-gradient-to-br from-accent-500 to-accent-400 text-xs font-semibold text-white"
                     >
                       {(m.full_name?.[0] || m.username?.[0] || "L").toUpperCase()}
                     </span>
                   )
                 )}
               </div>
-              <span className="text-xs text-white/55">
+              <span className="text-xs text-ink-400">
                 Led by {leaderProfiles.slice(0, 3).map((m) => m.full_name || `@${m.username}`).join(", ")}
                 {leaderProfiles.length > 3 ? ` +${leaderProfiles.length - 3}` : ""}
               </span>
@@ -197,7 +197,7 @@ export function BranchPageHero({
             <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
-            <span className="text-xs font-medium uppercase tracking-[0.14em] text-white/30">
+            <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
               Scroll to explore
             </span>
           </div>

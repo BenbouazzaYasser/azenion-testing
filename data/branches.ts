@@ -59,6 +59,8 @@ export interface Branch {
    * first two characters of `shortName` if omitted).
    */
   accentGlyph?: string;
+  /** Branch logo URL from the database (falls back to the default mark). */
+  logo_url?: string | null;
 }
 
 /** Shape of a row from the `public.branches` table. */
@@ -91,6 +93,7 @@ export function mapBranchRow(row: BranchRow): Branch {
     memberCount: 0,
     founded: row.created_at ? String(new Date(row.created_at).getUTCFullYear()) : undefined,
     status: "active",
+    logo_url: row.logo_url,
     highlights: [],
     upcomingEvents: [],
     joinCta: {

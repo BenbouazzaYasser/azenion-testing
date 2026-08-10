@@ -206,12 +206,12 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
           type="button"
           onClick={openPalette}
           aria-label="Search Azenion (Ctrl+K)"
-          className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-border-strong/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+          className="group relative flex h-10 w-10 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
           <Search size={18} aria-hidden />
           <span
             role="tooltip"
-            className="pointer-events-none absolute left-1/2 top-full z-50 mt-3 -translate-x-1/2 whitespace-nowrap rounded-lg border border-border-strong/[0.1] bg-glass px-2.5 py-1.5 text-xs font-medium text-ink-200 opacity-0 shadow-dropdown backdrop-blur-xl transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
+            className="pointer-events-none absolute left-1/2 top-full z-50 mt-3 -translate-x-1/2 whitespace-nowrap rounded-lg border navbar-panel-border bg-glass px-2.5 py-1.5 text-xs font-medium text-ink-200 opacity-0 shadow-dropdown backdrop-blur-xl transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
           >
             Search
             <span className="ml-1.5 rounded border border-border-strong/[0.1] bg-surface px-1 py-0.5 text-[10px] font-medium text-ink-400">
@@ -251,7 +251,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                 ref={panelRef}
                 onKeyDown={handlePanelKeyDown}
                 className={cn(
-                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-[rgba(10,11,16,0.9)] shadow-dialog backdrop-blur-2xl backdrop-saturate-150 transition-all duration-200 ease-premium",
+                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border navbar-panel-border bg-[rgba(10,11,16,0.9)] shadow-dialog backdrop-blur-2xl backdrop-saturate-150 transition-all duration-200 ease-premium",
                 )}
                 style={{
                   opacity: mounted ? 1 : 0,
