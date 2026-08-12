@@ -9,6 +9,7 @@ const get = (k) => (env.match(new RegExp("^" + k + "=(.*)$", "m")) || [])[1]?.tr
 export const URL = get("NEXT_PUBLIC_SUPABASE_URL");
 export const ANON = get("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 export const SVC = get("SUPABASE_SERVICE_ROLE_KEY");
+export const QA_TEST_PASSWORD = get("QA_TEST_PASSWORD");
 
 export const admin = createClient(URL, SVC, { auth: { autoRefreshToken: false, persistSession: false } });
 
@@ -23,15 +24,13 @@ export const anon = createClient(URL, ANON, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const PASSWORD = "SecTest123!";
-
 export async function createTestUser(prefix) {
   const stamp = `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
   const email = `${prefix}_${stamp}@qa.azenion.test`;
   const username = `${prefix}_${stamp}`.slice(0, 20);
   const { data, error } = await admin.auth.admin.createUser({
     email,
-    password: PASSWORD,
+    password: QA_TEST_PASSWORD,
     email_confirm: true,
     user_metadata: { username, full_name: `QA ${prefix}` },
     app_metadata: { provider: "email" },
@@ -51,7 +50,7 @@ export async function createTestUser(prefix) {
   // sign in to get a token
   const { data: sess, error: serr } = await userClient("").auth.signInWithPassword({
     email,
-    password: PASSWORD,
+    password: QA_TEST_PASSWORD,
   });
   if (serr) {
     // try admin generate link

@@ -18,10 +18,14 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
+.env
+.env*
 
 # typescript
 *.tsbuildinfo
 
 # build output for prod (separate from dev .next)
 /.next-prod/
+
+# Supabase CLI cache (contains production metadata)
+supabase/.temp/
