@@ -161,23 +161,22 @@ export function MessageBubble({
                     >
                       {edited_at && <span className="opacity-80">edited&nbsp;&bull;&nbsp;</span>}
                       {formatTime(created_at)}
-                      {isOwn && status && (
-                        <MessageStatus
-                          status={status}
-                          avatarUrl={statusAvatarUrl}
-                          avatarName={statusAvatarName}
-                          ring={false}
-                          className={cn(
-                            "text-white/70",
-                            status === "seen" && "h-3 w-3",
-                          )}
-                        />
-                      )}
                     </span>
                   )}
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {isOwn && status && !isEditing && (
+          <div className="mt-[5px] flex justify-end pr-1">
+            <MessageStatus
+              status={status}
+              avatarUrl={statusAvatarUrl}
+              avatarName={statusAvatarName}
+              className={cn(status === "seen" ? "" : "text-ink-400")}
+            />
           </div>
         )}
 

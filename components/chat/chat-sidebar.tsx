@@ -419,19 +419,21 @@ function ConversationRow({
               <span>@{conv.other_user.username}</span>
             ) : null}
           </p>
-          <p className="mt-0.5 truncate text-xs text-ink-500">
+          <p className="mt-0.5 flex items-center text-xs text-ink-500">
             {lastStatus && (
               <>
                 <MessageStatus
                   status={lastStatus}
                   avatarUrl={conv.other_user?.avatar_url ?? null}
                   avatarName={name}
-                  className="mr-1.5 inline-block align-[-2px] text-ink-500"
+                  className="mr-1.5 shrink-0"
                 />
-                <span className="font-medium text-ink-400">You: </span>
+                <span className="shrink-0 font-medium text-ink-400">You: </span>
               </>
             )}
-            {conv.last_message?.content ?? "No messages yet"}
+            <span className="min-w-0 truncate">
+              {conv.last_message?.content ?? "No messages yet"}
+            </span>
           </p>
         </div>
       </Link>
