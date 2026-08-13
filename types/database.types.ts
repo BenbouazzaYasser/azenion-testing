@@ -339,6 +339,8 @@ export type Database = {
           user_id: string
           joined_at: string | null
           last_read_at: string | null
+          archived_at: string | null
+          deleted_at: string | null
         }
         Insert: {
           id?: string
@@ -346,6 +348,8 @@ export type Database = {
           user_id: string
           joined_at?: string | null
           last_read_at?: string | null
+          archived_at?: string | null
+          deleted_at?: string | null
         }
         Update: {
           id?: string
@@ -353,6 +357,8 @@ export type Database = {
           user_id?: string
           joined_at?: string | null
           last_read_at?: string | null
+          archived_at?: string | null
+          deleted_at?: string | null
         }
         Relationships: [
           {

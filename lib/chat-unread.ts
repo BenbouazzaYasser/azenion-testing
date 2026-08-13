@@ -128,6 +128,17 @@ export function setActiveConversation(conversationId: string | null) {
   if (changed) notify();
 }
 
+/**
+ * Clears the unread count for a single conversation. Used by the sidebar's
+ * "Mark as seen" action so the dot disappears immediately without waiting for
+ * a server round-trip.
+ */
+export function clearConversationUnread(conversationId: string) {
+  if ((unreadMap[conversationId] ?? 0) === 0) return;
+  unreadMap = { ...unreadMap, [conversationId]: 0 };
+  notify();
+}
+
 export function useChatUnread(userId: string | null): ChatUnreadMap {
   const [map, setMap] = useState<ChatUnreadMap>(() => (userId ? { ...unreadMap } : {}));
 

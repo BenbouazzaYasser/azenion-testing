@@ -34,13 +34,22 @@ export interface ConversationWithMeta {
   unread_count: number;
 }
 
-export async function getConversations(userId: string): Promise<ConversationWithMeta[]> {
+export async function getConversations(
+  userId: string,
+  options: { archived?: boolean } = {},
+): Promise<ConversationWithMeta[]> {
   const supabase = createClient();
 
-  const { data: memberships } = await supabase
+  const membershipQuery = supabase
     .from("conversation_members")
     .select("conversation_id")
     .eq("user_id", userId);
+
+  const scopedQuery = options.archived
+    ? membershipQuery.not("archived_at", "is", null).is("deleted_at", null)
+    : membershipQuery.is("archived_at", null).is("deleted_at", null);
+
+  const { data: memberships } = await scopedQuery;
 
   if (!memberships || memberships.length === 0) return [];
 

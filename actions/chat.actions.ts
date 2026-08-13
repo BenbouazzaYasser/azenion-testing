@@ -163,6 +163,83 @@ export async function getConversationRecipientReadAt(
   return (data?.last_read_at as string | null) ?? null;
 }
 
+export async function archiveConversation(conversationId: string) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase
+    .from("conversation_members")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("conversation_id", conversationId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/chat", "layout");
+  return { success: true };
+}
+
+export async function unarchiveConversation(conversationId: string) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase
+    .from("conversation_members")
+    .update({ archived_at: null })
+    .eq("conversation_id", conversationId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/chat", "layout");
+  return { success: true };
+}
+
+export async function deleteConversation(conversationId: string) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  // Soft delete: scoped to the current user's membership row. The shared
+  // conversation and messages are preserved for the other participant.
+  const { error } = await supabase
+    .from("conversation_members")
+    .update({ deleted_at: new Date().toISOString(), archived_at: null })
+    .eq("conversation_id", conversationId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/chat", "layout");
+  return { success: true };
+}
+
 export async function getChatUnreadCounts(): Promise<
   { conversation_id: string; unread_count: number }[]
 > {

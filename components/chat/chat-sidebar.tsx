@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Search, MessageSquare, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { formatDistanceToNow } from "@/lib/date";
 import { searchUsers } from "@/actions/chat.actions";
-import { useChatUnread } from "@/lib/chat-unread";
+import { useChatUnread, clearConversationUnread } from "@/lib/chat-unread";
+import { ConversationMenu } from "@/components/chat/conversation-menu";
 
 interface Conversation {
   id: string;
@@ -38,6 +39,9 @@ interface ChatSidebarProps {
 
 export function ChatSidebar({ conversations, currentUserId, onNavigate, className }: ChatSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [convList, setConvList] = useState(conversations);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<
     { id: string; full_name: string | null; username: string; avatar_url: string | null }[]
@@ -47,6 +51,26 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
   const searchRef = useRef<HTMLDivElement>(null);
 
   const unreadByConv = useChatUnread(currentUserId);
+
+  // Re-sync whenever the server passes a fresh list (e.g. after a refresh),
+  // and close any open menu when the route changes.
+  useEffect(() => {
+    setConvList(conversations);
+  }, [conversations]);
+
+  useEffect(() => {
+    setOpenMenuId(null);
+  }, [pathname]);
+
+  const handleConversationRemoved = useCallback(
+    (id: string) => {
+      setConvList((prev) => prev.filter((c) => c.id !== id));
+      setOpenMenuId((cur) => (cur === id ? null : cur));
+      clearConversationUnread(id);
+      router.refresh();
+    },
+    [router],
+  );
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -148,7 +172,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
             )}
           </div>
 
-          {conversations.length === 0 ? (
+          {convList.length === 0 ? (
             <div className="flex flex-col items-center px-4 py-10 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
                 <MessageSquare size={22} />
@@ -160,7 +184,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
             </div>
           ) : (
             <div className="flex flex-col gap-1.5">
-              {conversations.map((conv) => {
+              {convList.map((conv) => {
                 const isActive = pathname === `/chat/${conv.id}`;
                 const isOwnLast = conv.last_message?.sender_id === currentUserId;
                 const unread = (unreadByConv[conv.id] ?? 0) > 0;
@@ -168,77 +192,90 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                 const initial = conv.other_user?.full_name?.[0] ?? conv.other_user?.username[0]?.toUpperCase() ?? "?";
 
                 return (
-                  <Link
-                    key={conv.id}
-                    href={`/chat/${conv.id}`}
-                    aria-current={isActive ? "page" : undefined}
-                    onClick={onNavigate}
-                    className={cn(
-                      "group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-3 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
-                      isActive
-                        ? "border border-accent-400/40 bg-[linear-gradient(135deg,rgba(40,40,255,0.16),rgba(40,40,255,0.05))] shadow-glow-sm"
-                        : "border border-transparent hover:border-border hover:bg-surface/50 hover:shadow-card",
-                    )}
-                  >
-                    {isActive && (
-                      <span
-                        aria-hidden
-                        className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-accent-400 to-accent-glow"
-                      />
-                    )}
+                  <div key={conv.id} className="group relative">
+                    <Link
+                      href={`/chat/${conv.id}`}
+                      aria-current={isActive ? "page" : undefined}
+                      onClick={() => {
+                        setOpenMenuId(null);
+                        onNavigate?.();
+                      }}
+                      className={cn(
+                        "flex items-center gap-3 overflow-hidden rounded-xl py-3 pl-3 pr-11 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+                        isActive
+                          ? "border border-accent-400/40 bg-[linear-gradient(135deg,rgba(40,40,255,0.16),rgba(40,40,255,0.05))] shadow-glow-sm"
+                          : "border border-transparent hover:border-border hover:bg-surface/50 hover:shadow-card",
+                      )}
+                    >
+                      {isActive && (
+                        <span
+                          aria-hidden
+                          className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-accent-400 to-accent-glow"
+                        />
+                      )}
 
-                    {conv.other_user?.avatar_url ? (
-                      <img
-                        src={conv.other_user.avatar_url}
-                        alt=""
-                        className={cn(
-                          "h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.12] object-cover transition-all duration-300",
-                          isActive && "border-accent-400/50 shadow-glow-sm",
-                        )}
-                      />
-                    ) : (
-                      <span
-                        className={cn(
-                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
-                          isActive && "border-accent-400/60 shadow-glow-sm",
-                        )}
-                      >
-                        {initial}
-                      </span>
-                    )}
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className={cn("truncate text-sm text-ink-50", isActive ? "font-semibold" : "font-medium")}>
-                          {name}
-                          {conv.other_user?.username && conv.other_user?.full_name ? (
-                            <span className="ml-1.5 text-xs font-normal text-ink-500">
-                              @{conv.other_user.username}
-                            </span>
-                          ) : null}
-                        </p>
-                        <span className="flex shrink-0 items-center gap-1.5">
-                          {unread && (
-                            <span
-                              aria-hidden
-                              className="h-2 w-2 rounded-full bg-accent-400 shadow-glow-sm animate-pulse-glow"
-                            />
+                      {conv.other_user?.avatar_url ? (
+                        <img
+                          src={conv.other_user.avatar_url}
+                          alt=""
+                          className={cn(
+                            "h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.12] object-cover transition-all duration-300",
+                            isActive && "border-accent-400/50 shadow-glow-sm",
                           )}
-                          {conv.last_message?.created_at && (
-                            <span className="shrink-0 text-[10px] font-medium tracking-wide text-ink-600 transition-colors duration-200 group-hover:text-ink-500">
-                              {formatDistanceToNow(new Date(conv.last_message.created_at))}
-                            </span>
+                        />
+                      ) : (
+                        <span
+                          className={cn(
+                            "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
+                            isActive && "border-accent-400/60 shadow-glow-sm",
                           )}
+                        >
+                          {initial}
                         </span>
+                      )}
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className={cn("truncate text-sm text-ink-50", isActive ? "font-semibold" : "font-medium")}>
+                            {name}
+                            {conv.other_user?.username && conv.other_user?.full_name ? (
+                              <span className="ml-1.5 text-xs font-normal text-ink-500">
+                                @{conv.other_user.username}
+                              </span>
+                            ) : null}
+                          </p>
+                          <span className="flex shrink-0 items-center gap-1.5">
+                            {unread && (
+                              <span
+                                aria-hidden
+                                className="h-2 w-2 rounded-full bg-accent-400 shadow-glow-sm animate-pulse-glow"
+                              />
+                            )}
+                            {conv.last_message?.created_at && (
+                              <span className="shrink-0 text-[10px] font-medium tracking-wide text-ink-600 transition-colors duration-200 group-hover:text-ink-500">
+                                {formatDistanceToNow(new Date(conv.last_message.created_at))}
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 truncate text-xs text-ink-500">
+                          {isOwnLast && (
+                            <span className="font-medium text-ink-400">You: </span>
+                          )}
+                          {conv.last_message?.content ?? "No messages yet"}
+                        </p>
                       </div>
-                      <p className="mt-0.5 truncate text-xs text-ink-500">
-                        {isOwnLast && (
-                          <span className="font-medium text-ink-400">You: </span>
-                        )}
-                        {conv.last_message?.content ?? "No messages yet"}
-                      </p>
-                    </div>
-                  </Link>
+                    </Link>
+
+                    <ConversationMenu
+                      conversationId={conv.id}
+                      conversationName={name}
+                      hasUnread={unread}
+                      open={openMenuId === conv.id}
+                      onOpenChange={(o) => setOpenMenuId(o ? conv.id : null)}
+                      onRemoved={handleConversationRemoved}
+                    />
+                  </div>
                 );
               })}
             </div>
