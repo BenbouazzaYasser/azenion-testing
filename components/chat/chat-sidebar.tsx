@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { searchUsers, getArchivedConversations } from "@/actions/chat.actions";
 import { useChatUnread, clearConversationUnread } from "@/lib/chat-unread";
 import { ConversationMenu } from "@/components/chat/conversation-menu";
+import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
 
 interface Conversation {
   id: string;
@@ -24,7 +25,9 @@ interface Conversation {
     content: string;
     created_at: string | null;
     sender_id: string;
+    received_at: string | null;
   } | null;
+  other_last_read_at: string | null;
   updated_at: string | null;
   unread_count?: number;
 }
@@ -335,6 +338,19 @@ function ConversationRow({
   onNavigate,
 }: ConversationRowProps) {
   const isOwnLast = conv.last_message?.sender_id === currentUserId;
+  const lastTs = conv.last_message?.created_at
+    ? new Date(conv.last_message.created_at).getTime()
+    : null;
+  const otherReadTs = conv.other_last_read_at ? new Date(conv.other_last_read_at).getTime() : null;
+  const isSeen =
+    isOwnLast && lastTs !== null && otherReadTs !== null && otherReadTs >= lastTs;
+  const lastStatus: MessageStatusKind | null = isOwnLast && conv.last_message
+    ? isSeen
+      ? "seen"
+      : conv.last_message.received_at
+        ? "received"
+        : "sent"
+    : null;
   const name = conv.other_user?.full_name ?? conv.other_user?.username ?? "Unknown";
   const initial =
     conv.other_user?.full_name?.[0] ?? conv.other_user?.username[0]?.toUpperCase() ?? "?";
@@ -383,11 +399,6 @@ function ConversationRow({
           <div className="flex items-center justify-between gap-2">
             <p className={cn("truncate text-sm text-ink-50", isActive ? "font-semibold" : "font-medium")}>
               {name}
-              {conv.other_user?.username && conv.other_user?.full_name ? (
-                <span className="ml-1.5 text-xs font-normal text-ink-500">
-                  @{conv.other_user.username}
-                </span>
-              ) : null}
             </p>
             <span className="flex shrink-0 items-center gap-1.5">
               {unread && (
@@ -403,8 +414,23 @@ function ConversationRow({
               )}
             </span>
           </div>
+          <p className="mt-[3px] truncate text-xs text-ink-600">
+            {conv.other_user?.username ? (
+              <span>@{conv.other_user.username}</span>
+            ) : null}
+          </p>
           <p className="mt-0.5 truncate text-xs text-ink-500">
-            {isOwnLast && <span className="font-medium text-ink-400">You: </span>}
+            {lastStatus && (
+              <>
+                <MessageStatus
+                  status={lastStatus}
+                  avatarUrl={conv.other_user?.avatar_url ?? null}
+                  avatarName={name}
+                  className="mr-1.5 inline-block align-[-2px] text-ink-500"
+                />
+                <span className="font-medium text-ink-400">You: </span>
+              </>
+            )}
             {conv.last_message?.content ?? "No messages yet"}
           </p>
         </div>

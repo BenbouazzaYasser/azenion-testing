@@ -9,6 +9,7 @@ export interface MessageWithSender {
   image_url: string | null;
   created_at: string | null;
   edited_at: string | null;
+  received_at: string | null;
   sender: {
     id: string;
     full_name: string | null;
@@ -29,7 +30,9 @@ export interface ConversationWithMeta {
     content: string;
     created_at: string | null;
     sender_id: string;
+    received_at: string | null;
   } | null;
+  other_last_read_at: string | null;
   updated_at: string | null;
   unread_count: number;
 }
@@ -66,7 +69,7 @@ export async function getConversations(
   const membersPromises = conversationIds.map(async (cid) => {
     const { data: members } = await supabase
       .from("conversation_members")
-      .select("user_id")
+      .select("user_id, last_read_at")
       .eq("conversation_id", cid);
     return { conversation_id: cid, members: members ?? [] };
   });
@@ -74,7 +77,7 @@ export async function getConversations(
   const membersResults = await Promise.all(membersPromises);
   const membersByConv = Object.fromEntries(
     membersResults.map((r) => [r.conversation_id, r.members]),
-  ) as Record<string, { user_id: string }[]>;
+  ) as Record<string, { user_id: string; last_read_at: string | null }[]>;
 
   const allUserIds = [
     ...new Set(membersResults.flatMap((r) => r.members.map((m) => m.user_id))),
@@ -92,7 +95,7 @@ export async function getConversations(
   const messagesPromises = conversationIds.map(async (cid) => {
     const { data: messages } = await supabase
       .from("messages")
-      .select("content, created_at, sender_id")
+      .select("content, created_at, sender_id, received_at")
       .eq("conversation_id", cid)
       .order("created_at", { ascending: false })
       .limit(1);
@@ -102,7 +105,10 @@ export async function getConversations(
   const messagesResults = await Promise.all(messagesPromises);
   const lastMessageByConv = Object.fromEntries(
     messagesResults.map((r) => [r.conversation_id, r.lastMessage]),
-  ) as Record<string, { content: string; created_at: string | null; sender_id: string } | null>;
+  ) as Record<
+    string,
+    { content: string; created_at: string | null; sender_id: string; received_at: string | null } | null
+  >;
 
   const { data: unreadRows } = await supabase.rpc("get_unread_counts", {
     p_user_id: userId,
@@ -134,9 +140,11 @@ export async function getConversations(
             content: lastMsg.content,
             created_at: lastMsg.created_at,
             sender_id: lastMsg.sender_id,
+            received_at: lastMsg.received_at,
           }
         : null,
       updated_at: conv.updated_at,
+      other_last_read_at: otherMember?.last_read_at ?? null,
       unread_count: unreadByConv[conv.id] ?? 0,
     };
   });
@@ -147,7 +155,7 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
 
   const { data: messages } = await supabase
     .from("messages")
-    .select("id, conversation_id, sender_id, content, image_url, created_at, edited_at")
+    .select("id, conversation_id, sender_id, content, image_url, created_at, edited_at, received_at")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
 

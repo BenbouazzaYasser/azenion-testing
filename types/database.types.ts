@@ -386,6 +386,7 @@ export type Database = {
           image_url: string | null
           created_at: string | null
           edited_at: string | null
+          received_at: string | null
         }
         Insert: {
           id?: string
@@ -395,6 +396,7 @@ export type Database = {
           image_url?: string | null
           created_at?: string | null
           edited_at?: string | null
+          received_at?: string | null
         }
         Update: {
           id?: string
@@ -404,6 +406,7 @@ export type Database = {
           image_url?: string | null
           created_at?: string | null
           edited_at?: string | null
+          received_at?: string | null
         }
         Relationships: [
           {
@@ -771,6 +774,10 @@ export type Database = {
           conversation_id: string
           unread_count: number
         }[]
+      }
+      mark_messages_received: {
+        Args: { p_conversation_id: string }
+        Returns: number
       }
       join_branch: { Args: { p_branch_id: string }; Returns: undefined }
       join_project: { Args: { p_project_id: string }; Returns: undefined }

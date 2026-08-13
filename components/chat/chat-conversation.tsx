@@ -11,9 +11,11 @@ import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import {
   sendMessage,
   markConversationRead,
+  markMessagesReceived,
   getConversationRecipientReadAt,
 } from "@/actions/chat.actions";
 import { setActiveConversation } from "@/lib/chat-unread";
+import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
 import { formatDate } from "@/lib/date";
 import { useMobileConversations } from "@/components/chat/mobile-conversations-context";
 
@@ -25,6 +27,7 @@ interface Message {
   image_url: string | null;
   created_at: string | null;
   edited_at: string | null;
+  received_at: string | null;
   sender: {
     id: string;
     full_name: string | null;
@@ -74,6 +77,7 @@ export function ChatConversation({
 
   useEffect(() => {
     void markConversationRead(conversationId);
+    void markMessagesReceived(conversationId);
     setActiveConversation(conversationId);
     setOtherLastReadAt(null);
     void getConversationRecipientReadAt(conversationId).then(setOtherLastReadAt);
@@ -123,10 +127,36 @@ export function ChatConversation({
             .eq("id", newMsg.sender_id)
             .single();
 
+          void markMessagesReceived(conversationId);
+
           setMessages((prev) => [
             ...prev,
             { ...newMsg, sender: profile },
           ]);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const row = payload.new as Message;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === row.id
+                ? {
+                    ...m,
+                    content: row.content,
+                    edited_at: row.edited_at,
+                    received_at: row.received_at,
+                  }
+                : m,
+            ),
+          );
         },
       )
       .subscribe();
@@ -163,16 +193,13 @@ export function ChatConversation({
 
   const otherReadTs = otherLastReadAt ? new Date(otherLastReadAt).getTime() : null;
 
-  const lastReadOwnIndex = useMemo(() => {
-    if (otherReadTs == null) return -1;
-    let anchor = -1;
-    messages.forEach((msg, i) => {
-      if (msg.sender_id !== currentUserId) return;
-      const ts = msg.created_at ? new Date(msg.created_at).getTime() : null;
-      if (ts != null && ts <= otherReadTs) anchor = i;
-    });
-    return anchor;
-  }, [messages, otherReadTs, currentUserId]);
+  function getMessageStatus(msg: Message): MessageStatusKind | null {
+    if (msg.sender_id !== currentUserId) return null;
+    const ts = msg.created_at ? new Date(msg.created_at).getTime() : null;
+    if (ts !== null && otherReadTs !== null && ts <= otherReadTs) return "seen";
+    if (msg.received_at) return "received";
+    return "sent";
+  }
 
   const handleSend = async () => {
     if (!input.trim() || isSending) return;
@@ -196,6 +223,7 @@ export function ChatConversation({
       image_url: null,
       created_at: new Date().toISOString(),
       edited_at: null,
+      received_at: null,
       sender: profile,
     };
 
@@ -321,48 +349,31 @@ export function ChatConversation({
                 )}
 
                 <div className={getMessageSpacing(i, isGrouped)}>
-                  <div className={cn(i === lastReadOwnIndex && "flex flex-col items-end")}>
-                    <MessageBubble
-                      id={msg.id}
-                      content={msg.content}
-                      created_at={msg.created_at}
-                      edited_at={msg.edited_at}
-                      sender_id={msg.sender_id}
-                      sender_name={msg.sender?.full_name ?? msg.sender?.username ?? null}
-                      sender_avatar={msg.sender?.avatar_url ?? null}
-                      isOwn={msg.sender_id === currentUserId}
-                      isGrouped={isGrouped}
-                      showAvatar={showAvatar}
-                      active={msg.id === activeMessageId}
-                      showActions={actionsMessageId === msg.id}
-                      onSelect={(id) => {
-                        setActiveMessageId(id);
-                        setActionsMessageId(null);
-                      }}
-                      onToggleActions={(id) => {
-                        setActionsMessageId((prev) => (prev === id ? null : id));
-                        setActiveMessageId(id);
-                      }}
-                    />
-                    {i === lastReadOwnIndex && participant ? (
-                      <span
-                        aria-hidden
-                        className="mt-[0.375rem] flex h-4 w-4 shrink-0 items-center justify-center rounded-full ring-2 ring-void-950"
-                      >
-                        {participant.avatar_url ? (
-                          <img
-                            src={participant.avatar_url}
-                            alt=""
-                            className="h-full w-full rounded-full object-cover"
-                          />
-                        ) : (
-                          <span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-[7px] font-semibold leading-none text-white">
-                            {participantInitial}
-                          </span>
-                        )}
-                      </span>
-                    ) : null}
-                  </div>
+                  <MessageBubble
+                    id={msg.id}
+                    content={msg.content}
+                    created_at={msg.created_at}
+                    edited_at={msg.edited_at}
+                    sender_id={msg.sender_id}
+                    sender_name={msg.sender?.full_name ?? msg.sender?.username ?? null}
+                    sender_avatar={msg.sender?.avatar_url ?? null}
+                    isOwn={msg.sender_id === currentUserId}
+                    isGrouped={isGrouped}
+                    showAvatar={showAvatar}
+                    status={getMessageStatus(msg)}
+                    statusAvatarUrl={participant?.avatar_url ?? null}
+                    statusAvatarName={participantName}
+                    active={msg.id === activeMessageId}
+                    showActions={actionsMessageId === msg.id}
+                    onSelect={(id) => {
+                      setActiveMessageId(id);
+                      setActionsMessageId(null);
+                    }}
+                    onToggleActions={(id) => {
+                      setActionsMessageId((prev) => (prev === id ? null : id));
+                      setActiveMessageId(id);
+                    }}
+                  />
                 </div>
               </Fragment>
             );

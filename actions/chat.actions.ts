@@ -118,6 +118,28 @@ export async function getOrCreateConversation(otherUserId: string) {
   return { conversation_id: conversationId };
 }
 
+export async function markMessagesReceived(conversationId: string) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { error } = await supabase.rpc("mark_messages_received", {
+    p_conversation_id: conversationId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
 export async function markConversationRead(conversationId: string) {
   const supabase = createClient();
 

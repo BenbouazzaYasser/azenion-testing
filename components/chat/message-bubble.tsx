@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatTime } from "@/lib/date";
 import { editMessage, deleteMessage } from "@/actions/chat.actions";
+import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
 
 interface MessageBubbleProps {
   id: string;
@@ -18,6 +19,9 @@ interface MessageBubbleProps {
   isOwn: boolean;
   isGrouped?: boolean;
   showAvatar?: boolean;
+  status?: MessageStatusKind | null;
+  statusAvatarUrl?: string | null;
+  statusAvatarName?: string | null;
   active?: boolean;
   showActions?: boolean;
   onSelect?: (id: string) => void;
@@ -35,6 +39,9 @@ export function MessageBubble({
   isOwn,
   isGrouped = false,
   showAvatar = true,
+  status = null,
+  statusAvatarUrl = null,
+  statusAvatarName = null,
   active = false,
   showActions = false,
   onSelect,
@@ -148,12 +155,24 @@ export function MessageBubble({
                   {created_at && (
                     <span
                       className={cn(
-                        "text-[10px] font-medium leading-none tracking-wide",
+                        "flex items-center gap-1 text-[10px] font-medium leading-none tracking-wide",
                         isOwn ? "text-white/70" : "text-ink-500",
                       )}
                     >
                       {edited_at && <span className="opacity-80">edited&nbsp;&bull;&nbsp;</span>}
                       {formatTime(created_at)}
+                      {isOwn && status && (
+                        <MessageStatus
+                          status={status}
+                          avatarUrl={statusAvatarUrl}
+                          avatarName={statusAvatarName}
+                          ring={false}
+                          className={cn(
+                            "text-white/70",
+                            status === "seen" && "h-3 w-3",
+                          )}
+                        />
+                      )}
                     </span>
                   )}
                 </div>
