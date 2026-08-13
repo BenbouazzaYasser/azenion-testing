@@ -101,6 +101,7 @@ export function InfinityHeroArt({ className, idPrefix = "hero", variant = "hero"
       viewBox="0 0 800 520"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      overflow="visible"
       className={className}
       role="img"
       aria-label="A giant infinity symbol formed from glowing light and cosmic dust"

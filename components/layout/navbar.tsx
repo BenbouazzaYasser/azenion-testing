@@ -13,6 +13,7 @@ import { signOut } from "@/actions/auth.actions";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { GlobalSearch } from "@/components/search/global-search";
 import { useChatUnread } from "@/lib/chat-unread";
+import { LightModeButton } from "@/components/theme/light-mode-button";
 
 interface MenuLinkProps {
   href: string;
@@ -55,6 +56,7 @@ export function Navbar() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [pendingNext, setPendingNext] = useState<string | null>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
@@ -121,9 +123,19 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isAvatarOpen]);
 
+  // If we were bounced to /login?next=..., keep the intended page highlighted.
+  useEffect(() => {
+    let next: string | null = null;
+    try {
+      const raw = new URLSearchParams(window.location.search).get("next");
+      if (raw && raw.startsWith("/")) next = raw;
+    } catch {}
+    setPendingNext(next);
+  }, [pathname]);
+
   const isActive = (href: string) => {
-    if (href === "/") return pathname === "/";
-    return pathname.startsWith(href);
+    if (href === "/") return pathname === "/" && !pendingNext;
+    return pathname.startsWith(href) || (pendingNext?.startsWith(href) ?? false);
   };
 
   return (
@@ -147,11 +159,11 @@ export function Navbar() {
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
                   const navLinkClass = cn(
-                    "relative inline-flex items-center rounded-full px-4 py-2 text-[13.5px] font-medium leading-none transition-all duration-300 whitespace-nowrap",
+                    "relative inline-flex items-center rounded-full border border-transparent px-4 py-2 text-[13.5px] font-medium leading-none transition-all duration-300 whitespace-nowrap",
                     "hover:bg-surface-hover hover:text-ink-50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                     active
-                      ? "bg-surface text-ink-50 ring-1 ring-white/10 shadow-[0_0_18px_-6px_rgba(90,120,255,0.4)]"
+                      ? "border-accent bg-surface text-ink-50 shadow-[0_0_18px_-6px_rgba(40,40,255,0.4)]"
                       : "text-ink-400"
                   );
 
@@ -482,10 +494,26 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" asChild>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  asChild
+                  className={cn(
+                    pathname === "/login" &&
+                      "border-accent-400/60 bg-surface-hover text-ink-50"
+                  )}
+                >
                   <Link href="/login">Log in</Link>
                 </Button>
-                <Button variant="primary" size="sm" asChild>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  asChild
+                  className={cn(
+                    pathname === "/join" &&
+                      "ring-1 ring-accent-300/60 ring-offset-2 ring-offset-void-950"
+                  )}
+                >
                   <Link href="/join">Join Azenion</Link>
                 </Button>
               </>
@@ -497,6 +525,8 @@ export function Navbar() {
             <div className="xl:hidden">
               <GlobalSearch variant="mobile" />
             </div>
+
+            <LightModeButton />
 
             <button
               type="button"

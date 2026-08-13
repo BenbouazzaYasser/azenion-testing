@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import styles from "./page-atmosphere.module.css";
 
 interface NodeSpec {
@@ -22,7 +22,9 @@ interface NodeSpec {
   pulseDelay: number;
 }
 
-const NODE_COUNT = 55;
+const NODE_COUNT = 80;
+
+const MIN_NODE_DIST = 5.5;
 
 const REPEL_RADIUS = 300;
 const REPEL_MAX = 26;
@@ -51,9 +53,28 @@ function mulberry32(seed: number) {
   };
 }
 
-function buildNodes(): NodeSpec[] {
-  const rand = mulberry32(0x5eed);
+function buildNodes(seed: number): NodeSpec[] {
+  const rand = mulberry32(seed);
   const nodes: NodeSpec[] = [];
+  const placed: { x: number; y: number }[] = [];
+
+  const placePosition = (): { x: number; y: number } => {
+    for (let attempt = 0; attempt < 80; attempt++) {
+      const x = rand() * 100;
+      const y = rand() * 100;
+      let farEnough = true;
+      for (const p of placed) {
+        const dx = p.x - x;
+        const dy = p.y - y;
+        if (Math.sqrt(dx * dx + dy * dy) < MIN_NODE_DIST) {
+          farEnough = false;
+          break;
+        }
+      }
+      if (farEnough) return { x, y };
+    }
+    return { x: rand() * 100, y: rand() * 100 };
+  };
 
   for (let i = 0; i < NODE_COUNT; i++) {
     const isLarge = rand() < 0.2;
@@ -79,9 +100,12 @@ function buildNodes(): NodeSpec[] {
     const haloSize = Math.max(28, size * 6);
     const haloBg = `radial-gradient(circle, rgba(${r}, ${g}, ${b}, 0.5) 0%, rgba(${r}, ${g}, ${b}, 0.16) 45%, rgba(${r}, ${g}, ${b}, 0) 72%)`;
 
+    const { x: left, y: top } = placePosition();
+    placed.push({ x: left, y: top });
+
     nodes.push({
-      left: Math.round(rand() * 100),
-      top: Math.round(rand() * 100),
+      left,
+      top,
       size,
       background,
       haloBg,
@@ -102,8 +126,6 @@ function buildNodes(): NodeSpec[] {
   return nodes;
 }
 
-const NODES = buildNodes();
-
 function easeInOutSine(t: number) {
   return 0.5 - 0.5 * Math.cos(Math.PI * t);
 }
@@ -119,6 +141,12 @@ interface RepelState {
 }
 
 export function AtmosphereNodes() {
+  const [nodes, setNodes] = useState<NodeSpec[]>(() => buildNodes(0x5eed));
+
+  useEffect(() => {
+    setNodes(buildNodes(Math.floor(Math.random() * 2_147_483_647)));
+  }, []);
+
   const layerRef = useRef<HTMLDivElement | null>(null);
   const nodeRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const coreRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -126,9 +154,9 @@ export function AtmosphereNodes() {
   const cursorRef = useRef({ x: -9999, y: -9999 });
   const layerRectRef = useRef({ left: 0, top: 0, width: 0, height: 0 });
   const repelRef = useRef<RepelState[]>(
-    NODES.map(() => ({ x: 0, y: 0 }))
+    nodes.map(() => ({ x: 0, y: 0 }))
   );
-  const glowRef = useRef<number[]>(NODES.map(() => 0));
+  const glowRef = useRef<number[]>(nodes.map(() => 0));
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
@@ -165,8 +193,8 @@ export function AtmosphereNodes() {
       const cursorX = cursorRef.current.x - left;
       const cursorY = cursorRef.current.y - top;
 
-      for (let i = 0; i < NODES.length; i++) {
-        const node = NODES[i]!;
+      for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i]!;
         const el = nodeRefs.current[i];
         const core = coreRefs.current[i];
         const halo = haloRefs.current[i];
@@ -239,11 +267,11 @@ export function AtmosphereNodes() {
       window.removeEventListener("scroll", measureLayer);
       window.removeEventListener("resize", measureLayer);
     };
-  }, []);
+  }, [nodes]);
 
   return (
     <div ref={layerRef} aria-hidden className={styles.layer}>
-      {NODES.map((node, i) => {
+      {nodes.map((node, i) => {
         const anchorStyle = {
           left: `${node.left}%`,
           top: `${node.top}%`,

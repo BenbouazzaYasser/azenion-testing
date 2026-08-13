@@ -215,7 +215,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
           >
             Search
             <span className="ml-1.5 rounded border border-border-strong/[0.1] bg-surface px-1 py-0.5 text-[10px] font-medium text-ink-400">
-              ⌘K
+              Ctrl K
             </span>
           </span>
         </button>
@@ -251,7 +251,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                 ref={panelRef}
                 onKeyDown={handlePanelKeyDown}
                 className={cn(
-                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border navbar-panel-border bg-[rgba(10,11,16,0.9)] shadow-dialog backdrop-blur-2xl backdrop-saturate-150 transition-all duration-200 ease-premium",
+                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border navbar-panel-border bg-[rgb(var(--glass-panel)/0.9)] shadow-dialog backdrop-blur-2xl backdrop-saturate-150 transition-all duration-200 ease-premium",
                 )}
                 style={{
                   opacity: mounted ? 1 : 0,

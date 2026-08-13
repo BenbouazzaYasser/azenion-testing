@@ -311,7 +311,7 @@ export function ChatConversation({
         </div>
 
         <div className="ml-auto hidden shrink-0 items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1 sm:flex">
-          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent-400" />
+          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
           <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">
             Private
           </span>

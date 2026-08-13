@@ -34,7 +34,15 @@ export default async function HomePage() {
   const admin = createAdminClient();
   const supabase = createClient();
 
-  const [{ data: teamRows }, { data: projectRows }, { data: sessionRows }] = await Promise.all([
+  const [
+    { data: teamRows },
+    { data: projectRows },
+    { data: sessionRows },
+    { count: countMembers },
+    { count: countTeams },
+    { count: countProjects },
+    { count: countBranches },
+  ] = await Promise.all([
     admin
       .from("teams")
       .select(`
@@ -75,6 +83,10 @@ export default async function HomePage() {
       .order("created_at", { ascending: false })
       .limit(4),
     admin.rpc("get_live_sessions"),
+    admin.from("profiles").select("id", { count: "exact", head: true }),
+    admin.from("teams").select("id", { count: "exact", head: true }),
+    admin.from("projects").select("id", { count: "exact", head: true }),
+    admin.from("branches").select("id", { count: "exact", head: true }),
   ]);
 
   const teamIds = (teamRows ?? []).map((t) => t.id);
@@ -84,10 +96,6 @@ export default async function HomePage() {
     { data: memberRows },
     { data: projectCountRows },
     { data: projectMemberRows },
-    { count: countMembers },
-    { count: countTeams },
-    { count: countProjects },
-    { count: countBranches },
   ] = await Promise.all([
     teamIds.length > 0
       ? admin.from("team_members").select("team_id").in("team_id", teamIds)
@@ -98,10 +106,6 @@ export default async function HomePage() {
     projectIds.length > 0
       ? admin.from("project_members").select("project_id").in("project_id", projectIds)
       : { data: [] },
-    admin.from("profiles").select("id", { count: "exact", head: true }),
-    admin.from("teams").select("id", { count: "exact", head: true }),
-    admin.from("projects").select("id", { count: "exact", head: true }),
-    admin.from("branches").select("id", { count: "exact", head: true }),
   ]);
 
   const memberCountMap = new Map<string, number>();

@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { CursorGlow } from "@/components/graphics/cursor-glow";
 import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
-import { ThemeProvider, type Theme } from "@/components/theme/theme-provider";
-
-const VALID_THEMES: Theme[] = ["system", "light", "dark"];
+import { AuthProvider } from "@/components/auth/auth-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 export const metadata: Metadata = {
   title: "Azenion — Infinite minds. Limitless impact.",
@@ -25,11 +23,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieTheme = cookies().get("azenion-theme")?.value as Theme | undefined;
-  const initialTheme: Theme = VALID_THEMES.includes(cookieTheme as Theme)
-    ? (cookieTheme as Theme)
-    : "system";
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -57,9 +50,11 @@ export default function RootLayout({
             duration: 4000,
           }}
         />
-        <ThemeProvider initialTheme={initialTheme}>
-          <OnboardingProvider />
-          {children}
+        <ThemeProvider>
+          <AuthProvider>
+            <OnboardingProvider />
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

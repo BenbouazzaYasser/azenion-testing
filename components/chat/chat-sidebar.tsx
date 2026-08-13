@@ -151,7 +151,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
           </div>
 
           {showSearch && (
-            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl border border-border-strong bg-[rgba(10,11,16,0.96)] shadow-dropdown backdrop-blur-2xl">
+            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl border border-border-strong bg-glass-strong shadow-dropdown backdrop-blur-2xl">
               {searchResults.length === 0 ? (
                 <p className="px-4 py-3 text-sm text-ink-600">No users found.</p>
               ) : (

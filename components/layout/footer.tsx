@@ -22,7 +22,7 @@ export function Footer() {
   return (
     <footer className="relative border-t border-border-strong">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.08),transparent_70%)]" />
+      <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_80%_100%_at_50%_0%,rgba(40,40,255,0.08),transparent_70%)]" />
 
       <div className="relative mx-auto max-w-[1320px] px-5 py-14 sm:px-8 lg:px-12 lg:py-16">
         <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr_1fr_1.2fr]">

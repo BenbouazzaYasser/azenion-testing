@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
 export function createClient() {
   const cookieStore = cookies();
@@ -23,6 +24,9 @@ export function createClient() {
             // already handled in middleware.ts, so this is safe to skip.
           }
         },
+      },
+      global: {
+        fetch: fetchWithTimeout,
       },
     },
   );

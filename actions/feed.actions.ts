@@ -285,26 +285,29 @@ async function enrichPosts(
   for (const p of interactive) likeCounts[keyOf(p)] = 0;
   for (const p of interactive) commentCounts[keyOf(p)] = 0;
 
-  if (interactiveIds.length > 0) {
-    const [likesRes, commentsRes] = await Promise.all([
-      supabase.from("update_likes").select("target_type, target_id, user_id").in("target_id", interactiveIds),
-      supabase.from("update_comments").select("target_type, target_id").in("target_id", interactiveIds),
-    ]);
-    for (const like of likesRes.data ?? []) {
-      const key = `${like.target_type}-${like.target_id}`;
-      if (likeCounts[key] !== undefined) {
-        likeCounts[key]++;
-        if (userId && like.user_id === userId) userLiked.add(key);
-      }
+  const [likesRes, commentsRes] =
+    interactiveIds.length > 0
+      ? await Promise.all([
+          supabase.from("update_likes").select("target_type, target_id, user_id").in("target_id", interactiveIds),
+          supabase.from("update_comments").select("target_type, target_id").in("target_id", interactiveIds),
+        ])
+      : [{ data: [] as { target_type: string; target_id: string; user_id: string }[] }, { data: [] as { target_type: string; target_id: string }[] }];
+  for (const like of likesRes.data ?? []) {
+    const key = `${like.target_type}-${like.target_id}`;
+    if (likeCounts[key] !== undefined) {
+      likeCounts[key]++;
+      if (userId && like.user_id === userId) userLiked.add(key);
     }
-    for (const comment of commentsRes.data ?? []) {
-      const key = `${comment.target_type}-${comment.target_id}`;
-      if (commentCounts[key] !== undefined) commentCounts[key]++;
-    }
+  }
+  for (const comment of commentsRes.data ?? []) {
+    const key = `${comment.target_type}-${comment.target_id}`;
+    if (commentCounts[key] !== undefined) commentCounts[key]++;
   }
 
   const likerNames = await getBatchLikerNames(
     interactive.map((p) => ({ target_type: p.source_type, target_id: p.source_id! })),
+    2,
+    likesRes.data ?? undefined,
   );
 
   const savedSet = await getSavedPostIds(
@@ -407,11 +410,14 @@ export async function getFeedItems(
   _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
-  const userId = await getSessionUserId();
 
   let query = supabase.from("posts").select("id", { count: "exact", head: true });
   if (filter && filter !== "all") query = query.eq("source_type", filter);
-  const { count: total } = await query;
+
+  const [userId, { count: total }] = await Promise.all([
+    _userId === null ? Promise.resolve(null) : getSessionUserId(),
+    query,
+  ]);
 
   const [{ data: pinRows }, { data: posts }] = await Promise.all([
     supabase.from("feed_pins").select("post_id").eq("scope", "global"),
@@ -439,7 +445,7 @@ export async function getTrendingFeedItems(
   _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
-  const userId = await getSessionUserId();
+  const userId = _userId === null ? null : await getSessionUserId();
 
   let posts: PostRow[] = [];
   try {
@@ -463,7 +469,7 @@ export async function getFeedItemById(
   _userId?: string | null,
 ): Promise<FeedItem | null> {
   const supabase = createAdminClient();
-  const userId = await getSessionUserId();
+  const userId = _userId === null ? null : await getSessionUserId();
 
   const { data: post } = await supabase
     .from("posts")
@@ -497,7 +503,7 @@ export async function getBranchFeedItems(
   _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
-  const userId = await getSessionUserId();
+  const userId = _userId === null ? null : await getSessionUserId();
 
   const { data: branchTeams } = await supabase
     .from("teams")

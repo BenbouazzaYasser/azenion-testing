@@ -38,12 +38,19 @@ export function useTheme() {
 }
 
 interface ThemeProviderProps {
-  initialTheme: Theme;
+  initialTheme?: Theme;
   children: React.ReactNode;
 }
 
 export function ThemeProvider({ initialTheme, children }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(initialTheme);
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (initialTheme) return initialTheme;
+    if (typeof window !== "undefined") {
+      const pref = document.documentElement.dataset.themePreference;
+      if (pref === "light" || pref === "dark" || pref === "system") return pref;
+    }
+    return "system";
+  });
 
   const applyTheme = useCallback((next: Theme) => {
     applyThemeToDom(next);

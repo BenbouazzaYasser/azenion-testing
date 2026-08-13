@@ -12,6 +12,24 @@ export function CursorGlow() {
   const currentRef = useRef({ x: -9999, y: -9999 });
 
   useEffect(() => {
+    const glow = glowRef.current;
+    if (!glow) return;
+
+    const applyBlend = () => {
+      const theme = document.documentElement.dataset.theme ?? "dark";
+      glow.style.mixBlendMode = theme === "light" ? "multiply" : "screen";
+    };
+
+    applyBlend();
+    const observer = new MutationObserver(applyBlend);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
@@ -76,12 +94,12 @@ export function CursorGlow() {
     <div
       ref={glowRef}
       aria-hidden
-      className="pointer-events-none fixed z-[80] h-[360px] w-[360px] rounded-full opacity-0 transition-opacity duration-700 mix-blend-screen will-change-transform"
+      className="pointer-events-none fixed z-[80] h-[360px] w-[360px] rounded-full opacity-0 transition-opacity duration-700 will-change-transform"
       style={{
         left: 0,
         top: 0,
         background:
-          "radial-gradient(circle at center, rgba(90, 120, 255, 0.1) 0%, rgba(90, 120, 255, 0.05) 40%, rgba(90, 120, 255, 0) 70%)",
+          "radial-gradient(circle at center, rgba(40, 40, 255, 0.24) 0%, rgba(40, 40, 255, 0.12) 40%, rgba(40, 40, 255, 0) 70%)",
         transform:
           "translate(var(--cursor-x, -9999px), var(--cursor-y, -9999px)) translate(-50%, -50%)",
         width: `${RADIUS}px`,

@@ -167,9 +167,9 @@ function NotificationItem({
         <span
           aria-hidden
           className={cn(
-            "mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent-400",
+            "mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent shadow-glow-sm",
             notification.created_at
-              ? "shadow-[0_0_10px_rgba(109,109,255,0.8)]"
+              ? "shadow-[0_0_10px_rgba(40,40,255,0.9)]"
               : "",
           )}
         />

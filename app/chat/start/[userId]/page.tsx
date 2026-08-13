@@ -11,7 +11,7 @@ export default async function StartConversationPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(`/login?next=${encodeURIComponent(`/chat/start/${params.userId}`)}`);
   }
 
   const result = await getOrCreateConversation(params.userId);

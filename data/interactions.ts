@@ -155,20 +155,23 @@ export async function getSavedPostIds(userId: string | null, postIds: string[]):
 export async function getBatchLikerNames(
   targets: { target_type: string; target_id: string }[],
   limit = 2,
+  preFetchedLikes?: { target_type: string; target_id: string; user_id: string }[],
 ): Promise<Record<string, string[]>> {
   if (targets.length === 0) return {};
 
   const keys = targets.map((t) => `${t.target_type}-${t.target_id}`);
   const allIds = [...new Set(targets.map((t) => t.target_id))];
 
-  const supabase = createAdminClient();
-
-  const { data: likes } = await supabase
-    .from("update_likes")
-    .select("target_type, target_id, user_id, created_at")
-    .in("target_id", allIds);
-
-  if (!likes || likes.length === 0) return {};
+  let likes = preFetchedLikes;
+  if (!likes || likes.length === 0) {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("update_likes")
+      .select("target_type, target_id, user_id, created_at")
+      .in("target_id", allIds);
+    likes = data ?? [];
+  }
+  if (likes.length === 0) return {};
 
   const userLikerMap = new Map<string, string[]>();
   for (const like of likes) {
@@ -179,6 +182,7 @@ export async function getBatchLikerNames(
   }
 
   const likerIds = [...new Set(likes.map((l) => l.user_id))];
+  const supabase = createAdminClient();
   const { data: profiles } = likerIds.length > 0
     ? await supabase
         .from("profiles")

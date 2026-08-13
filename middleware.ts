@@ -5,7 +5,13 @@ import { updateSession } from "@/lib/supabase/middleware";
 const protectedRoutes = ["/profile", "/teams/create", "/projects/create"];
 
 export async function middleware(request: NextRequest) {
+  const isProtected = protectedRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route),
+  );
+
   const response = await updateSession(request);
+
+  if (!isProtected) return response;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,10 +38,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (
-    !user &&
-    protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
-  ) {
+  if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

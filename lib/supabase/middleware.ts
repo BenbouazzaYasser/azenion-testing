@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
 export function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -21,6 +22,9 @@ export function updateSession(request: NextRequest) {
             supabaseResponse.cookies.set(name, value, options),
           );
         },
+      },
+      global: {
+        fetch: fetchWithTimeout,
       },
     },
   );
