@@ -115,14 +115,49 @@ export async function markNotificationRead(notificationId: string) {
 }
 
 /**
- * Resolves the navigable route for a notification using its target_type and
- * target_id. Returns null when there is no resolvable destination.
+ * Notification types that point at a specific feed post. For these the most
+ * relevant destination is the post itself (`/feed/post/[id]`), which exists as
+ * a dedicated page, rather than the parent entity page.
+ */
+const FEED_POST_TYPES = new Set<string>([
+  "liked_your_update",
+  "commented_on_your_update",
+  "replied_to_your_comment",
+  "liked_your_comment",
+  "mentioned_you",
+]);
+
+/**
+ * Resolves the navigable route for a notification using its type, target_type
+ * and target_id. Returns null when there is no resolvable destination so the
+ * click never lands somewhere arbitrary.
  */
 export async function resolveNotificationTarget(
+  type: string | null,
   targetType: string | null,
   targetId: string | null,
 ): Promise<string | null> {
   if (!targetType || !targetId) return null;
+
+  // Feed interactions deep-link to the specific post.
+  if (type && FEED_POST_TYPES.has(type)) {
+    return `/feed/post/${targetId}`;
+  }
+
+  // Posts on a user profile have no entity page; deep-link to the post.
+  if (targetType === "user_post") {
+    return `/feed/post/${targetId}`;
+  }
+
+  // Platform announcements live on the public board (no per-item route).
+  if (targetType === "announcement" || targetType === "platform_announcement") {
+    return "/announcements";
+  }
+
+  // Chat/message notifications deep-link to the conversation.
+  if (targetType === "chat" || targetType === "conversation" || targetType === "message") {
+    return `/chat/${targetId}`;
+  }
 
   const supabase = createAdminClient();
 

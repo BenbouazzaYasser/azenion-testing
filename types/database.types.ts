@@ -338,18 +338,21 @@ export type Database = {
           conversation_id: string
           user_id: string
           joined_at: string | null
+          last_read_at: string | null
         }
         Insert: {
           id?: string
           conversation_id: string
           user_id: string
           joined_at?: string | null
+          last_read_at?: string | null
         }
         Update: {
           id?: string
           conversation_id?: string
           user_id?: string
           joined_at?: string | null
+          last_read_at?: string | null
         }
         Relationships: [
           {
@@ -755,6 +758,13 @@ export type Database = {
       get_or_create_conversation: {
         Args: { p_user_id: string }
         Returns: string
+      }
+      get_unread_counts: {
+        Args: { p_user_id: string }
+        Returns: {
+          conversation_id: string
+          unread_count: number
+        }[]
       }
       join_branch: { Args: { p_branch_id: string }; Returns: undefined }
       join_project: { Args: { p_project_id: string }; Returns: undefined }

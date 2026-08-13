@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { signOut } from "@/actions/auth.actions";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { GlobalSearch } from "@/components/search/global-search";
+import { useChatUnread } from "@/lib/chat-unread";
 
 interface MenuLinkProps {
   href: string;
@@ -67,6 +68,9 @@ export function Navbar() {
   };
 
   const avatarLetter = profile?.full_name?.[0] ?? profile?.username?.[0] ?? "U";
+
+  const chatUnread = useChatUnread(user?.id ?? null);
+  const hasChatUnread = Object.values(chatUnread).some((c) => c > 0);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 24);
@@ -209,6 +213,12 @@ export function Navbar() {
                     <li key={link.href} className="flex">
                       <Link href={link.href} className={navLinkClass}>
                         {link.label}
+                        {link.href === "/chat" && hasChatUnread && (
+                          <span
+                            aria-hidden
+                            className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-accent-400 shadow-[0_0_10px_rgba(109,109,255,0.9)]"
+                          />
+                        )}
                       </Link>
                     </li>
                   );
@@ -525,6 +535,12 @@ export function Navbar() {
                     )}
                   >
                     {link.label}
+                    {link.href === "/chat" && hasChatUnread && (
+                      <span
+                        aria-hidden
+                        className="absolute right-4 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-accent-400 shadow-[0_0_10px_rgba(109,109,255,0.9)]"
+                      />
+                    )}
                     {active && (
                       <span className="absolute bottom-2 left-5 h-[2px] w-5 rounded-full bg-gradient-to-r from-accent-400/80 to-accent-400" />
                     )}

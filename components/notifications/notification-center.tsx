@@ -11,11 +11,13 @@ import {
   MessageCircle,
   AtSign,
   Sparkles,
+  Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { formatDistanceToNow } from "@/lib/date";
 import { useUser } from "@/hooks/use-user";
+import { subscribeToNotifications } from "@/lib/notification-realtime";
 import {
   getNotificationsAction,
   getUnreadNotificationCount,
@@ -36,6 +38,14 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   commented_on_your_update: { icon: MessageSquare, label: "commented on your update" },
   replied_to_your_comment: { icon: MessageCircle, label: "replied to your comment" },
   mentioned_you: { icon: AtSign, label: "mentioned you" },
+  announcement: {
+    icon: Megaphone,
+    label: "posted a new announcement",
+  },
+  platform_announcement: {
+    icon: Megaphone,
+    label: "posted a new announcement",
+  },
 };
 
 const DEFAULT_TYPE: TypeConfig = { icon: Sparkles, label: "sent you a notification" };
@@ -189,6 +199,13 @@ export function NotificationCenter() {
   }, [loadUnread]);
 
   useEffect(() => {
+    if (!userId) return;
+    return subscribeToNotifications(userId, () => {
+      setUnreadCount((c) => c + 1);
+    });
+  }, [userId]);
+
+  useEffect(() => {
     if (!userId) {
       setOpen(false);
       setNotifications([]);
@@ -237,7 +254,7 @@ export function NotificationCenter() {
       void markNotificationRead(n.id);
     }
 
-    const path = await resolveNotificationTarget(n.target_type, n.target_id);
+    const path = await resolveNotificationTarget(n.type, n.target_type, n.target_id);
     if (path) {
       router.push(path);
     }

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { formatDistanceToNow } from "@/lib/date";
 import { searchUsers } from "@/actions/chat.actions";
+import { useChatUnread } from "@/lib/chat-unread";
 
 interface Conversation {
   id: string;
@@ -23,6 +24,7 @@ interface Conversation {
     sender_id: string;
   } | null;
   updated_at: string | null;
+  unread_count?: number;
 }
 
 export type { Conversation };
@@ -43,6 +45,8 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
   const [isSearching, startSearchTransition] = useTransition();
   const [showSearch, setShowSearch] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  const unreadByConv = useChatUnread(currentUserId);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -159,6 +163,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
               {conversations.map((conv) => {
                 const isActive = pathname === `/chat/${conv.id}`;
                 const isOwnLast = conv.last_message?.sender_id === currentUserId;
+                const unread = (unreadByConv[conv.id] ?? 0) > 0;
                 const name = conv.other_user?.full_name ?? conv.other_user?.username ?? "Unknown";
                 const initial = conv.other_user?.full_name?.[0] ?? conv.other_user?.username[0]?.toUpperCase() ?? "?";
 
@@ -212,11 +217,19 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                             </span>
                           ) : null}
                         </p>
-                        {conv.last_message?.created_at && (
-                          <span className="shrink-0 text-[10px] font-medium tracking-wide text-ink-600 transition-colors duration-200 group-hover:text-ink-500">
-                            {formatDistanceToNow(new Date(conv.last_message.created_at))}
-                          </span>
-                        )}
+                        <span className="flex shrink-0 items-center gap-1.5">
+                          {unread && (
+                            <span
+                              aria-hidden
+                              className="h-2 w-2 rounded-full bg-accent-400 shadow-glow-sm animate-pulse-glow"
+                            />
+                          )}
+                          {conv.last_message?.created_at && (
+                            <span className="shrink-0 text-[10px] font-medium tracking-wide text-ink-600 transition-colors duration-200 group-hover:text-ink-500">
+                              {formatDistanceToNow(new Date(conv.last_message.created_at))}
+                            </span>
+                          )}
+                        </span>
                       </div>
                       <p className="mt-0.5 truncate text-xs text-ink-500">
                         {isOwnLast && (

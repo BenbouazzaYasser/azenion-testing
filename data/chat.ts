@@ -31,6 +31,7 @@ export interface ConversationWithMeta {
     sender_id: string;
   } | null;
   updated_at: string | null;
+  unread_count: number;
 }
 
 export async function getConversations(userId: string): Promise<ConversationWithMeta[]> {
@@ -94,6 +95,15 @@ export async function getConversations(userId: string): Promise<ConversationWith
     messagesResults.map((r) => [r.conversation_id, r.lastMessage]),
   ) as Record<string, { content: string; created_at: string | null; sender_id: string } | null>;
 
+  const { data: unreadRows } = await supabase.rpc("get_unread_counts", {
+    p_user_id: userId,
+  });
+  const unreadByConv = Object.fromEntries(
+    ((unreadRows ?? []) as { conversation_id: string; unread_count: number }[]).map(
+      (r) => [r.conversation_id, Number(r.unread_count)],
+    ),
+  ) as Record<string, number>;
+
   return (conversations ?? []).map((conv) => {
     const convMembers = membersByConv[conv.id] ?? [];
     const otherMember = convMembers.find((m) => m.user_id !== userId);
@@ -118,6 +128,7 @@ export async function getConversations(userId: string): Promise<ConversationWith
           }
         : null,
       updated_at: conv.updated_at,
+      unread_count: unreadByConv[conv.id] ?? 0,
     };
   });
 }
@@ -135,7 +146,7 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
 
   const senderIds = [...new Set(messages.map((m) => m.sender_id))];
 
-  const { data: profiles } = await supabase
+  const { data: profiles } = await createAdminClient()
     .from("profiles")
     .select("id, full_name, avatar_url, username")
     .in("id", senderIds);
