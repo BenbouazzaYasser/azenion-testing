@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { MoreVertical, CheckCheck, Archive, Trash2 } from "lucide-react";
+import { MoreVertical, CheckCheck, Archive, ArchiveRestore, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   archiveConversation,
   deleteConversation,
   markConversationRead,
+  unarchiveConversation,
 } from "@/actions/chat.actions";
 import { clearConversationUnread } from "@/lib/chat-unread";
 
@@ -16,9 +17,11 @@ interface ConversationMenuProps {
   conversationId: string;
   conversationName: string;
   hasUnread: boolean;
+  mode?: "inbox" | "archived";
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onRemoved: (conversationId: string) => void;
+  onRestored?: (conversationId: string) => void;
 }
 
 const MENU_WIDTH = 200;
@@ -29,9 +32,11 @@ export function ConversationMenu({
   conversationId,
   conversationName,
   hasUnread,
+  mode = "inbox",
   open,
   onOpenChange,
   onRemoved,
+  onRestored,
 }: ConversationMenuProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -165,6 +170,18 @@ export function ConversationMenu({
     });
   }
 
+  async function handleUnarchive() {
+    await runAction(async () => {
+      const result = await unarchiveConversation(conversationId);
+      if (!result.error) {
+        onRestored?.(conversationId);
+        toast.success("Conversation restored");
+        close();
+      }
+      return result;
+    });
+  }
+
   async function handleDelete() {
     await runAction(async () => {
       const result = await deleteConversation(conversationId);
@@ -212,35 +229,54 @@ export function ConversationMenu({
               className="fixed z-[90] flex w-[13rem] flex-col overflow-hidden rounded-xl border border-border-strong/70 bg-glass-strong p-1 shadow-dropdown backdrop-blur-2xl animate-dropdown-in"
               style={{ top: coords.top, left: coords.left }}
             >
-              <button
-                type="button"
-                role="menuitem"
-                disabled={!hasUnread || pending}
-                onClick={handleMarkSeen}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
-                  "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
-                  "disabled:pointer-events-none disabled:opacity-40",
-                )}
-              >
-                <CheckCheck className="h-4 w-4 shrink-0 text-accent-300" />
-                Mark as seen
-              </button>
+              {mode === "inbox" && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={!hasUnread || pending}
+                  onClick={handleMarkSeen}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
+                    "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                    "disabled:pointer-events-none disabled:opacity-40",
+                  )}
+                >
+                  <CheckCheck className="h-4 w-4 shrink-0 text-accent-300" />
+                  Mark as seen
+                </button>
+              )}
 
-              <button
-                type="button"
-                role="menuitem"
-                disabled={pending}
-                onClick={handleArchive}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
-                  "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
-                  "disabled:pointer-events-none disabled:opacity-40",
-                )}
-              >
-                <Archive className="h-4 w-4 shrink-0 text-ink-400" />
-                Archive
-              </button>
+              {mode === "archived" ? (
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={pending}
+                  onClick={handleUnarchive}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
+                    "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                    "disabled:pointer-events-none disabled:opacity-40",
+                  )}
+                >
+                  <ArchiveRestore className="h-4 w-4 shrink-0 text-ink-400" />
+                  Unarchive
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={pending}
+                  onClick={handleArchive}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
+                    "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                    "disabled:pointer-events-none disabled:opacity-40",
+                  )}
+                >
+                  <Archive className="h-4 w-4 shrink-0 text-ink-400" />
+                  Archive
+                </button>
+              )}
 
               <div aria-hidden className="mx-2 my-1 h-px bg-border-strong/40" />
 

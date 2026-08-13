@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getConversations, type ConversationWithMeta } from "@/data/chat";
 
 export async function sendMessage(conversationId: string, content: string) {
   const supabase = createClient();
@@ -258,6 +259,18 @@ export async function getChatUnreadCounts(): Promise<
   return ((data ?? []) as { conversation_id: string; unread_count: number }[]).map(
     (r) => ({ conversation_id: r.conversation_id, unread_count: Number(r.unread_count) }),
   );
+}
+
+export async function getArchivedConversations(): Promise<ConversationWithMeta[]> {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  return getConversations(user.id, { archived: true });
 }
 
 export async function searchUsers(query: string) {
