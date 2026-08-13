@@ -193,10 +193,22 @@ export function ChatConversation({
 
   const otherReadTs = otherLastReadAt ? new Date(otherLastReadAt).getTime() : null;
 
-  function getMessageStatus(msg: Message): MessageStatusKind | null {
+  const lastSeenOwnIndex = useMemo(() => {
+    if (otherReadTs == null) return -1;
+    let anchor = -1;
+    messages.forEach((msg, i) => {
+      if (msg.sender_id !== currentUserId) return;
+      const ts = msg.created_at ? new Date(msg.created_at).getTime() : null;
+      if (ts != null && ts <= otherReadTs) anchor = i;
+    });
+    return anchor;
+  }, [messages, otherReadTs, currentUserId]);
+
+  function getMessageStatus(msg: Message, index: number): MessageStatusKind | null {
     if (msg.sender_id !== currentUserId) return null;
     const ts = msg.created_at ? new Date(msg.created_at).getTime() : null;
-    if (ts !== null && otherReadTs !== null && ts <= otherReadTs) return "seen";
+    const isSeen = ts !== null && otherReadTs !== null && ts <= otherReadTs;
+    if (isSeen) return index === lastSeenOwnIndex ? "seen" : null;
     if (msg.received_at) return "received";
     return "sent";
   }
@@ -360,7 +372,7 @@ export function ChatConversation({
                     isOwn={msg.sender_id === currentUserId}
                     isGrouped={isGrouped}
                     showAvatar={showAvatar}
-                    status={getMessageStatus(msg)}
+                    status={getMessageStatus(msg, i)}
                     statusAvatarUrl={participant?.avatar_url ?? null}
                     statusAvatarName={participantName}
                     active={msg.id === activeMessageId}
