@@ -1,8 +1,31 @@
 const FETCH_TIMEOUT_MS = 5000;
+const FETCH_UPLOAD_TIMEOUT_MS = 300_000;
 const COOLDOWN_MS = 15_000;
 
 let backendDown = false;
 let retryAfter = 0;
+
+/**
+ * Large file uploads (e.g. videos) legitimately take longer than the 5s
+ * general request cap. Only storage object POST/PUT requests get the longer
+ * window; every other call keeps the fast-fail timeout.
+ */
+function isStorageUpload(input: RequestInfo | URL, init?: RequestInit): boolean {
+  const method = (
+    init?.method ??
+    (input instanceof Request ? input.method : undefined) ??
+    "GET"
+  ).toUpperCase();
+  if (method !== "POST" && method !== "PUT") return false;
+  const url = new URL(
+    typeof input === "string"
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input.url,
+  );
+  return url.pathname.startsWith("/storage/");
+}
 
 function abortError(message: string): Error {
   const err = new Error(message);
@@ -34,12 +57,17 @@ export function fetchWithTimeout(
     return Promise.reject(abortError("Supabase backend unreachable (cached)"));
   }
 
+  const upload = isStorageUpload(input, init);
+  const timeoutMs = upload ? FETCH_UPLOAD_TIMEOUT_MS : FETCH_TIMEOUT_MS;
+
   return new Promise<Response>((resolve, reject) => {
     const timer = setTimeout(() => {
-      backendDown = true;
-      retryAfter = Date.now() + COOLDOWN_MS;
-      reject(abortError(`Fetch timed out after ${FETCH_TIMEOUT_MS}ms`));
-    }, FETCH_TIMEOUT_MS);
+      if (!upload) {
+        backendDown = true;
+        retryAfter = Date.now() + COOLDOWN_MS;
+      }
+      reject(abortError(`Fetch timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
 
     fetch(input, init).then(
       (response) => {

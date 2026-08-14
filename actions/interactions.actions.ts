@@ -11,6 +11,10 @@ import {
   notifyMentions,
   insertNotification,
 } from "@/lib/notifications";
+import {
+  IMAGE_STORAGE_BUCKET,
+  VIDEO_STORAGE_BUCKET,
+} from "@/lib/validations/media.schema";
 
 const TARGET_TABLES: Record<string, string> = {
   project_update: "project_updates",
@@ -446,6 +450,33 @@ export async function toggleSavePost(postId: string) {
   return { saved: true };
 }
 
+/**
+ * Parses a feed post's stored media URLs into { bucket, objectPath } objects
+ * safe to remove from storage. Only public URLs under the feed buckets whose
+ * object path starts with the requesting user's id are returned — anything
+ * else (foreign URLs, other users' objects, private markers) is ignored so we
+ * never delete media that doesn't belong to this post's author.
+ */
+function resolveFeedMediaObjects(
+  userId: string,
+  values: (string | null)[] | null | undefined,
+): { bucket: string; objectPath: string }[] {
+  const storageBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/`;
+  const resolved: { bucket: string; objectPath: string }[] = [];
+  for (const value of values ?? []) {
+    if (!value || !value.startsWith(storageBase)) continue;
+    const rest = value.slice(storageBase.length);
+    const slash = rest.indexOf("/");
+    if (slash <= 0) continue;
+    const bucket = rest.slice(0, slash);
+    const objectPath = rest.slice(slash + 1);
+    if (bucket !== IMAGE_STORAGE_BUCKET && bucket !== VIDEO_STORAGE_BUCKET) continue;
+    if (!objectPath.startsWith(`${userId}/`)) continue;
+    resolved.push({ bucket, objectPath });
+  }
+  return resolved;
+}
+
 export async function deleteFeedPost(postId: string) {
   const supabase = createClient();
 
@@ -455,6 +486,18 @@ export async function deleteFeedPost(postId: string) {
 
   if (!user) return { error: "Not authenticated" };
 
+  const { data: post } = await supabase
+    .from("posts")
+    .select("images, videos")
+    .eq("id", postId)
+    .eq("author_id", user.id)
+    .maybeSingle();
+
+  const media = [
+    ...resolveFeedMediaObjects(user.id, post?.images),
+    ...resolveFeedMediaObjects(user.id, post?.videos),
+  ];
+
   const { error } = await supabase
     .from("posts")
     .delete()
@@ -462,6 +505,12 @@ export async function deleteFeedPost(postId: string) {
     .eq("author_id", user.id);
 
   if (error) return { error: error.message };
+
+  // Best-effort: remove this post's media from storage after a successful delete.
+  for (const { bucket, objectPath } of media) {
+    await supabase.storage.from(bucket).remove([objectPath]).catch(() => {});
+  }
+
   return { success: true };
 }
 

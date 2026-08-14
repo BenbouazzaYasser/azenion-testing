@@ -10,6 +10,7 @@ import {
 import {
   ALLOWED_IMAGE_TYPES,
   ALLOWED_VIDEO_TYPES,
+  extensionForMimeType,
   IMAGE_STORAGE_BUCKET,
   MAX_IMAGE_SIZE,
   MAX_VIDEO_SIZE,
@@ -689,7 +690,8 @@ export async function uploadFeedPostMedia(formData: FormData) {
     };
   }
 
-  const ext = file.name.split(".").pop() ?? (isVideo ? "mp4" : "png");
+  // Extension is derived from the validated MIME type, never from file.name.
+  const ext = extensionForMimeType(file.type) ?? (isVideo ? "mp4" : "png");
   const filePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
@@ -702,12 +704,18 @@ export async function uploadFeedPostMedia(formData: FormData) {
     data: { publicUrl },
   } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
-  const { data: existing } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from("posts")
     .select("images, videos")
     .eq("id", postId)
     .eq("author_id", user.id)
     .maybeSingle();
+
+  if (existingError) {
+    // Best-effort cleanup so a failed attach doesn't leave an orphaned upload.
+    await supabase.storage.from(bucket).remove([filePath]).catch(() => {});
+    return { error: existingError.message };
+  }
 
   const media = Array.isArray(existing?.[column]) ? existing[column] : [];
 
@@ -717,7 +725,11 @@ export async function uploadFeedPostMedia(formData: FormData) {
     .eq("id", postId)
     .eq("author_id", user.id);
 
-  if (updateError) return { error: updateError.message };
+  if (updateError) {
+    // Best-effort cleanup so a failed attach doesn't leave an orphaned upload.
+    await supabase.storage.from(bucket).remove([filePath]).catch(() => {});
+    return { error: updateError.message };
+  }
 
   return { success: true, media_url: publicUrl };
 }
