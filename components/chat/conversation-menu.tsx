@@ -2,14 +2,17 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { MoreVertical, CheckCheck, Archive, ArchiveRestore, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MoreVertical, CheckCheck, Archive, ArchiveRestore, Trash2, Ban, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   archiveConversation,
+  blockUser,
   deleteConversation,
   markConversationRead,
   unarchiveConversation,
+  unblockUser,
 } from "@/actions/chat.actions";
 import { clearConversationUnread } from "@/lib/chat-unread";
 
@@ -22,11 +25,13 @@ interface ConversationMenuProps {
   onOpenChange: (open: boolean) => void;
   onRemoved: (conversationId: string) => void;
   onRestored?: (conversationId: string) => void;
+  otherUserId?: string;
+  isBlocked?: boolean;
 }
 
 const MENU_WIDTH = 200;
 const MENU_GAP = 8;
-const MENU_EST_HEIGHT = 168;
+const MENU_EST_HEIGHT = 240;
 
 export function ConversationMenu({
   conversationId,
@@ -37,15 +42,20 @@ export function ConversationMenu({
   onOpenChange,
   onRemoved,
   onRestored,
+  otherUserId,
+  isBlocked = false,
 }: ConversationMenuProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [confirmingBlock, setConfirmingBlock] = useState(false);
   const [pending, setPending] = useState(false);
 
   const close = useCallback(() => {
     setConfirmingDelete(false);
+    setConfirmingBlock(false);
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -139,6 +149,7 @@ export function ConversationMenu({
       if (result?.error) {
         toast.error(result.error);
         setConfirmingDelete(false);
+        setConfirmingBlock(false);
         return;
       }
     } finally {
@@ -188,6 +199,33 @@ export function ConversationMenu({
       if (!result.error) {
         onRemoved(conversationId);
         toast.success("Conversation deleted");
+        close();
+      }
+      return result;
+    });
+  }
+
+  async function handleBlock() {
+    if (!otherUserId) return;
+    await runAction(async () => {
+      const result = await blockUser(otherUserId);
+      if (!result.error) {
+        setConfirmingBlock(false);
+        toast.success(`${conversationName} has been blocked`);
+        router.refresh();
+        close();
+      }
+      return result;
+    });
+  }
+
+  async function handleUnblock() {
+    if (!otherUserId) return;
+    await runAction(async () => {
+      const result = await unblockUser(otherUserId);
+      if (!result.error) {
+        toast.success(`${conversationName} has been unblocked`);
+        router.refresh();
         close();
       }
       return result;
@@ -280,6 +318,65 @@ export function ConversationMenu({
 
               <div aria-hidden className="mx-2 my-1 h-px bg-border-strong/40" />
 
+              {otherUserId &&
+                (confirmingBlock ? (
+                  <div className="rounded-lg bg-red-400/[0.07] p-1.5">
+                    <p className="px-2 pb-1.5 pt-0.5 text-xs font-medium text-ink-300">
+                      Block {conversationName}? They won&apos;t be able to message you.
+                    </p>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={pending}
+                      onClick={handleBlock}
+                      className="flex w-full items-center gap-2 rounded-md bg-red-500/15 px-2.5 py-1.5 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium hover:bg-red-500/25 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      <Ban className="h-3.5 w-3.5" />
+                      Block
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={pending}
+                      onClick={() => setConfirmingBlock(false)}
+                      className="mt-1 flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : isBlocked ? (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={pending}
+                    onClick={handleUnblock}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ease-premium",
+                      "text-accent-300 hover:bg-accent/[0.08] hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                      "disabled:pointer-events-none disabled:opacity-40",
+                    )}
+                  >
+                    <UserCheck className="h-4 w-4 shrink-0" />
+                    Unblock user
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={pending}
+                    onClick={() => {
+                      setConfirmingDelete(false);
+                      setConfirmingBlock(true);
+                    }}
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    <Ban className="h-4 w-4 shrink-0" />
+                    Block user
+                  </button>
+                ))}
+
+              <div aria-hidden className="mx-2 my-1 h-px bg-border-strong/40" />
+
               {confirmingDelete ? (
                 <div className="rounded-lg bg-red-400/[0.07] p-1.5">
                   <p className="px-2 pb-1.5 pt-0.5 text-xs font-medium text-ink-300">
@@ -310,7 +407,10 @@ export function ConversationMenu({
                   type="button"
                   role="menuitem"
                   disabled={pending}
-                  onClick={() => setConfirmingDelete(true)}
+                  onClick={() => {
+                    setConfirmingBlock(false);
+                    setConfirmingDelete(true);
+                  }}
                   className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-40"
                 >
                   <Trash2 className="h-4 w-4 shrink-0" />

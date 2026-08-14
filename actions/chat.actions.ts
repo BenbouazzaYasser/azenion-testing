@@ -20,6 +20,27 @@ export async function sendMessage(conversationId: string, content: string) {
     return { error: "Message cannot be empty" };
   }
 
+  // Block guard: if a peer in this conversation has blocked the sender, the
+  // message must not be sent. This mirrors the RLS INSERT policy (which is
+  // what actually stops direct client inserts), but also gives the UI a clean
+  // error message before the DB rejects the write.
+  const { data: members } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  const otherMember = (members ?? []).find((m) => m.user_id !== user.id);
+
+  if (otherMember) {
+    const { data: blocked } = await supabase.rpc("is_user_blocked", {
+      p_blocker_id: otherMember.user_id,
+      p_blocked_id: user.id,
+    });
+    if (blocked) {
+      return { error: "You can't send messages to this user because they blocked you." };
+    }
+  }
+
   const { data, error } = await supabase
     .from("messages")
     .insert({
@@ -254,6 +275,66 @@ export async function deleteConversation(conversationId: string) {
     .update({ deleted_at: new Date().toISOString(), archived_at: null })
     .eq("conversation_id", conversationId)
     .eq("user_id", user.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/chat", "layout");
+  return { success: true };
+}
+
+export async function blockUser(otherUserId: string) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  if (otherUserId === user.id) {
+    return { error: "You can't block yourself" };
+  }
+
+  // Idempotent: creates the block if it doesn't exist, otherwise no-ops. RLS
+  // restricts the write to the caller's own blocker_id.
+  const { error } = await supabase
+    .from("user_blocks")
+    .upsert(
+      { blocker_id: user.id, blocked_id: otherUserId },
+      { onConflict: "blocker_id,blocked_id", ignoreDuplicates: true },
+    )
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/chat", "layout");
+  return { success: true };
+}
+
+export async function unblockUser(otherUserId: string) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  // RLS only lets the caller remove their own blocks.
+  const { error } = await supabase
+    .from("user_blocks")
+    .delete()
+    .eq("blocker_id", user.id)
+    .eq("blocked_id", otherUserId);
 
   if (error) {
     return { error: error.message };

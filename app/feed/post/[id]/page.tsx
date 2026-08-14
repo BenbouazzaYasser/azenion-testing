@@ -28,12 +28,6 @@ export async function generateMetadata({ params }: FeedPostPageProps): Promise<M
 export default async function FeedPostPage({ params }: FeedPostPageProps) {
   return (
     <>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:text-white"
-      >
-        Skip to content
-      </a>
       <Navbar />
       <main id="main" className="relative min-h-screen overflow-hidden pt-52 pb-24 sm:pt-60 sm:pb-28">
         <PageAtmosphere />

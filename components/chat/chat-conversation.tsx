@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
-import { Send, MessageSquare, Users, Menu } from "lucide-react";
+import { Send, MessageSquare, Users, Menu, Ban } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
@@ -40,6 +40,8 @@ interface ChatConversationProps {
   conversationId: string;
   initialMessages: Message[];
   currentUserId: string;
+  /** True when the other participant has blocked the current user. */
+  amBlocked?: boolean;
 }
 
 function startOfDay(date: Date): number {
@@ -61,6 +63,7 @@ export function ChatConversation({
   conversationId,
   initialMessages,
   currentUserId,
+  amBlocked = false,
 }: ChatConversationProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -395,30 +398,42 @@ export function ChatConversation({
       </div>
 
       <div className="relative z-10 shrink-0 border-t border-border/60 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4 sm:pt-3">
-        <form
-          className="flex items-center gap-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }}
-        >
-          <input
-            type="text"
-            aria-label="Type a message"
-            placeholder="Type a message..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="min-w-0 flex-1 rounded-2xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/60 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
-          />
-          <Button
-            type="submit"
-            aria-label="Send message"
-            disabled={!input.trim() || isSending}
-            className="h-12 w-12 shrink-0 rounded-2xl p-0"
+        {amBlocked ? (
+          <div
+            role="status"
+            className="flex items-center justify-center gap-2.5 rounded-2xl border border-border-strong/60 bg-surface/70 px-4 py-3.5 text-center"
           >
-            <Send size={18} />
-          </Button>
-        </form>
+            <Ban size={16} className="shrink-0 text-ink-500" />
+            <p className="text-sm text-ink-400">
+              You can&apos;t send messages to @{participant?.username ?? participantName} because they blocked you.
+            </p>
+          </div>
+        ) : (
+          <form
+            className="flex items-center gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSend();
+            }}
+          >
+            <input
+              type="text"
+              aria-label="Type a message"
+              placeholder="Type a message..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="min-w-0 flex-1 rounded-2xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/60 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
+            />
+            <Button
+              type="submit"
+              aria-label="Send message"
+              disabled={!input.trim() || isSending}
+              className="h-12 w-12 shrink-0 rounded-2xl p-0"
+            >
+              <Send size={18} />
+            </Button>
+          </form>
+        )}
       </div>
     </div>
   );

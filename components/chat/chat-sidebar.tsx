@@ -30,6 +30,8 @@ interface Conversation {
   other_last_read_at: string | null;
   updated_at: string | null;
   unread_count?: number;
+  blocked_me?: boolean;
+  i_blocked?: boolean;
 }
 
 export type { Conversation };
@@ -432,7 +434,9 @@ function ConversationRow({
               </>
             )}
             <span className="min-w-0 truncate">
-              {conv.last_message?.content ?? "No messages yet"}
+              {conv.blocked_me
+                ? "You're blocked — you can't reply."
+                : (conv.last_message?.content ?? "No messages yet")}
             </span>
           </p>
         </div>
@@ -447,6 +451,8 @@ function ConversationRow({
         onOpenChange={onMenuOpenChange}
         onRemoved={onRemoved}
         onRestored={onRestored}
+        otherUserId={conv.other_user?.id ?? undefined}
+        isBlocked={conv.i_blocked ?? false}
       />
     </div>
   );

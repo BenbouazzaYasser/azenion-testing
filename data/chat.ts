@@ -35,6 +35,10 @@ export interface ConversationWithMeta {
   other_last_read_at: string | null;
   updated_at: string | null;
   unread_count: number;
+  /** True when the other participant has blocked the current user. */
+  blocked_me: boolean;
+  /** True when the current user has blocked the other participant. */
+  i_blocked: boolean;
 }
 
 export async function getConversations(
@@ -119,6 +123,19 @@ export async function getConversations(
     ),
   ) as Record<string, number>;
 
+  // Block state: users I have blocked (readable via RLS) and users who have
+  // blocked me (exposed through the self-scoped helper RPC).
+  const { data: ownBlockRows } = await supabase
+    .from("user_blocks")
+    .select("blocked_id")
+    .eq("blocker_id", userId);
+  const iBlockedIds = new Set((ownBlockRows ?? []).map((r) => r.blocked_id));
+
+  const { data: blockersOfMe } = await supabase.rpc("get_users_that_blocked_me", {
+    p_user_id: userId,
+  });
+  const blockedMeIds = new Set((blockersOfMe ?? []) as string[]);
+
   return (conversations ?? []).map((conv) => {
     const convMembers = membersByConv[conv.id] ?? [];
     const otherMember = convMembers.find((m) => m.user_id !== userId);
@@ -146,6 +163,8 @@ export async function getConversations(
       updated_at: conv.updated_at,
       other_last_read_at: otherMember?.last_read_at ?? null,
       unread_count: unreadByConv[conv.id] ?? 0,
+      blocked_me: otherMember ? blockedMeIds.has(otherMember.user_id) : false,
+      i_blocked: otherMember ? iBlockedIds.has(otherMember.user_id) : false,
     };
   });
 }
@@ -176,6 +195,47 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
     ...msg,
     sender: profileMap.get(msg.sender_id) ?? null,
   }));
+}
+
+export async function getConversationBlockState(conversationId: string): Promise<{
+  /** True when the other participant has blocked the current user. */
+  am_blocked: boolean;
+  /** True when the current user has blocked the other participant. */
+  i_blocked: boolean;
+}> {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { am_blocked: false, i_blocked: false };
+  }
+
+  const { data: members } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  const otherId = (members ?? []).find((m) => m.user_id !== user.id)?.user_id ?? null;
+
+  if (!otherId) {
+    return { am_blocked: false, i_blocked: false };
+  }
+
+  const { data: ownBlockRows } = await supabase
+    .from("user_blocks")
+    .select("blocked_id")
+    .eq("blocker_id", user.id);
+  const i_blocked = (ownBlockRows ?? []).some((b) => b.blocked_id === otherId);
+
+  const { data: am_blocked } = await supabase.rpc("is_user_blocked", {
+    p_blocker_id: otherId,
+    p_blocked_id: user.id,
+  });
+
+  return { am_blocked: !!am_blocked, i_blocked };
 }
 
 

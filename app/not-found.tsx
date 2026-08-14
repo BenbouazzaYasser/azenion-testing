@@ -6,12 +6,6 @@ import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 export default function NotFound() {
   return (
     <>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:text-white"
-      >
-        Skip to content
-      </a>
       <main id="main" className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <PageAtmosphere />
         <div className="relative mx-auto max-w-md px-5 text-center">

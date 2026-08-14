@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/navbar";
 import { ChatLayout } from "@/components/chat/chat-layout";
 import { ChatConversation } from "@/components/chat/chat-conversation";
-import { getConversations, getMessages } from "@/data/chat";
+import { getConversations, getMessages, getConversationBlockState } from "@/data/chat";
 
 interface Props {
   params: { conversationId: string };
@@ -17,9 +17,10 @@ export default async function ConversationPage({ params }: Props) {
     redirect(`/login?next=${encodeURIComponent(`/chat/${params.conversationId}`)}`);
   }
 
-  const [conversations, messages] = await Promise.all([
+  const [conversations, messages, blockState] = await Promise.all([
     getConversations(user.id),
     getMessages(params.conversationId),
+    getConversationBlockState(params.conversationId),
   ]);
 
   return (
@@ -31,6 +32,7 @@ export default async function ConversationPage({ params }: Props) {
             conversationId={params.conversationId}
             initialMessages={messages}
             currentUserId={user.id}
+            amBlocked={blockState.am_blocked}
           />
         </ChatLayout>
       </main>
