@@ -105,6 +105,29 @@
     -webkit-backdrop-filter: blur(20px) saturate(140%);
   }
 
+  /* Frosted-glass panels (dropdowns/popovers) — a translucent surface with
+     strong blur + saturation and a soft inner highlight so the panel reads as
+     a distinct piece of glass above the content behind it. Theme-adaptive via
+     --glass (near-black in dark, white in light). */
+  .glass-frost {
+    background: rgb(var(--glass) / 0.52);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    backdrop-filter: blur(32px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      inset 0 -1px 0 rgb(255 255 255 / 0.02),
+      0 24px 70px -20px rgb(0 0 0 / 0.65),
+      0 0 50px -18px rgb(40 40 255 / 0.5);
+  }
+  [data-theme="light"] .glass-frost {
+    background: rgb(var(--glass) / 0.5);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.75),
+      inset 0 -1px 0 rgb(0 0 0 / 0.03),
+      0 24px 70px -20px rgb(0 0 0 / 0.18),
+      0 0 50px -18px rgb(40 40 255 / 0.18);
+  }
+
   .glass-nav {
     background: rgb(var(--glass-nav) / 0.78);
     backdrop-filter: blur(16px);

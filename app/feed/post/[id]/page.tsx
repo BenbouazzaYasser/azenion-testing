@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { FeedCard } from "@/components/feed/feed-card";
+import { FeedPostMenu } from "@/components/feed/feed-post-menu";
 import { CommentSection } from "@/components/interactions/comment-section";
 import { PostViewTracker } from "@/components/interactions/post-view-tracker";
 import { getFeedItemById } from "@/actions/feed.actions";
@@ -61,7 +62,15 @@ async function FeedPost({ id }: { id: string }) {
   return (
     <div className="flex flex-col gap-8">
       <PostViewTracker postId={item.id} />
-      <FeedCard item={item} currentUserId={userId} />
+      <FeedCard
+        item={item}
+        currentUserId={userId}
+        postMenu={
+          item.source_type === "user_post" ? (
+            <FeedPostMenu item={item} currentUserId={userId} redirectOnDelete="/feed" />
+          ) : undefined
+        }
+      />
 
       <section className="rounded-2xl border border-border-strong card-surface-soft p-5 shadow-card backdrop-blur-xl sm:p-6">
         <h2 className="mb-3 text-sm font-semibold tracking-tight text-ink-200">

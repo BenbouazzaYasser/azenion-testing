@@ -486,11 +486,15 @@ export async function deleteFeedPost(postId: string) {
 
   if (!user) return { error: "Not authenticated" };
 
+  // Only `user_post` rows are user-owned feed posts. Source-backed posts
+  // (project/team/branch) are recreated by their sync triggers, so they can't
+  // be deleted here — the same guard that gates the UI also gates the action.
   const { data: post } = await supabase
     .from("posts")
     .select("images, videos")
     .eq("id", postId)
     .eq("author_id", user.id)
+    .eq("source_type", "user_post")
     .maybeSingle();
 
   const media = [
@@ -498,13 +502,18 @@ export async function deleteFeedPost(postId: string) {
     ...resolveFeedMediaObjects(user.id, post?.videos),
   ];
 
-  const { error } = await supabase
+  const { data: deleted, error } = await supabase
     .from("posts")
     .delete()
     .eq("id", postId)
-    .eq("author_id", user.id);
+    .eq("author_id", user.id)
+    .eq("source_type", "user_post")
+    .select("id");
 
   if (error) return { error: error.message };
+  if (!deleted || deleted.length === 0) {
+    return { error: "You can only delete your own posts." };
+  }
 
   // Best-effort: remove this post's media from storage after a successful delete.
   for (const { bucket, objectPath } of media) {

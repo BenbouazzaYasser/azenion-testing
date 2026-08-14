@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Pin, Newspaper } from "lucide-react";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { FeedCard } from "@/components/feed/feed-card";
+import { FeedPostMenu } from "@/components/feed/feed-post-menu";
 import { getFeedItems, toggleFeedPin, type FeedItemWithAuthor } from "@/actions/feed.actions";
 import { cn } from "@/lib/utils";
 
@@ -159,6 +160,23 @@ export function FeedList({
     void loadFirstPage(filterRef.current);
   };
 
+  const handlePostDeleted = (postId: string) => {
+    const next = itemsRef.current.filter((i) => i.id !== postId);
+    itemsRef.current = next;
+    totalRef.current = Math.max(0, totalRef.current - 1);
+    hasMoreRef.current = next.length < totalRef.current;
+    setItems(next);
+    setHasMore(hasMoreRef.current);
+  };
+
+  const handlePostEdited = (postId: string, title: string, body: string | null) => {
+    const next = itemsRef.current.map((i) =>
+      i.id === postId ? { ...i, title, body, updated_at: new Date().toISOString() } : i,
+    );
+    itemsRef.current = next;
+    setItems(next);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <FilterBubbles
@@ -215,6 +233,16 @@ export function FeedList({
             key={`${item.source_type}-${item.source_id}`}
             item={item}
             currentUserId={currentUserId}
+            postMenu={
+              item.source_type === "user_post" ? (
+                <FeedPostMenu
+                  item={item}
+                  currentUserId={currentUserId}
+                  onDeleted={handlePostDeleted}
+                  onEdited={handlePostEdited}
+                />
+              ) : undefined
+            }
             headerAction={
               isPlatformAdmin ? (
                 <button

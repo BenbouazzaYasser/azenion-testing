@@ -652,6 +652,71 @@ export async function createFeedPost(formData: FormData) {
   return { success: true, id: post.id };
 }
 
+const MAX_FEED_TITLE_LENGTH = 200;
+const MAX_FEED_BODY_LENGTH = 5000;
+
+/**
+ * Edits the text (title + body) of a user's own feed post. Only `user_post`
+ * rows can be edited — source-backed posts (project/team/branch) are owned by
+ * the sync triggers, so they are rejected here. Media columns (images/videos)
+ * are never touched, so an edit can't accidentally wipe or overwrite them.
+ *
+ * Authorization is enforced server-side by RLS (`author_id = auth.uid()`) and
+ * an explicit `.eq("author_id", user.id)` guard — never by the UI alone.
+ */
+export async function updateFeedPost(formData: FormData) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Not authenticated" };
+
+  const postId = formData.get("post_id") as string;
+  const title = (formData.get("title") as string) ?? "";
+  const body = (formData.get("body") as string) ?? "";
+
+  if (!postId) return { error: "Post ID is required" };
+
+  if (!title.trim() && !body.trim()) {
+    return { error: "Write something before saving." };
+  }
+  if (title.trim().length > MAX_FEED_TITLE_LENGTH) {
+    return { error: `Headline must be ${MAX_FEED_TITLE_LENGTH} characters or fewer.` };
+  }
+  if (body.trim().length > MAX_FEED_BODY_LENGTH) {
+    return { error: `Content must be ${MAX_FEED_BODY_LENGTH} characters or fewer.` };
+  }
+
+  const { data: existing } = await supabase
+    .from("posts")
+    .select("id, author_id, source_type")
+    .eq("id", postId)
+    .eq("author_id", user.id)
+    .eq("source_type", "user_post")
+    .maybeSingle();
+
+  if (!existing) {
+    return { error: "You can only edit your own posts." };
+  }
+
+  const { error } = await supabase
+    .from("posts")
+    .update({
+      title: title.trim(),
+      body: body.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", postId)
+    .eq("author_id", user.id)
+    .eq("source_type", "user_post");
+
+  if (error) return { error: error.message };
+
+  return { success: true };
+}
+
 export async function uploadFeedPostMedia(formData: FormData) {
   const supabase = createClient();
 

@@ -108,9 +108,10 @@ interface FeedCardProps {
   item: FeedItemWithAuthor;
   currentUserId: string | null;
   headerAction?: ReactNode;
+  postMenu?: ReactNode;
 }
 
-export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
+export function FeedCard({ item, currentUserId, headerAction, postMenu }: FeedCardProps) {
   const entityType = entityTypeFor(item);
   const config = ENTITY_CONFIG[entityType];
   const EntityIcon = config.icon;
@@ -136,7 +137,11 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
     <div className="group relative overflow-hidden rounded-2xl border border-border-strong card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-      <div className="relative">
+      <div className={cn("relative", postMenu && "pr-9")}>
+        {postMenu ? (
+          <div className="absolute right-0 top-0 z-20">{postMenu}</div>
+        ) : null}
+
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <div className="shrink-0">
