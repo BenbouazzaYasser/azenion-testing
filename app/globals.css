@@ -54,8 +54,8 @@
     --accent-200: 214 216 255;
     --accent-300: 165 168 255;
 
-    --border: 244 245 248;
-    --border-strong: 244 245 248;
+    --border: 165 168 255;
+    --border-strong: 109 109 255;
 
     --glass: 9 10 15;
     --glass-strong: 9 10 15;
@@ -135,21 +135,21 @@
   }
 
   .navbar-border {
-    border-color: rgb(var(--void-950) / 0.6);
+    border-color: rgb(var(--border-strong) / 0.16);
   }
   [data-theme="light"] .navbar-border {
     border-color: rgb(var(--border-strong) / 0.08);
   }
 
   .navbar-element-border {
-    border-color: rgb(var(--void-950) / 0.6);
+    border-color: rgb(var(--border-strong) / 0.2);
   }
   [data-theme="light"] .navbar-element-border {
     border-color: rgb(var(--border-strong) / 0.12);
   }
 
   .navbar-panel-border {
-    border-color: rgb(var(--void-950) / 0.6);
+    border-color: rgb(var(--border-strong) / 0.18);
   }
   [data-theme="light"] .navbar-panel-border {
     border-color: rgb(var(--border-strong) / 0.1);
@@ -273,8 +273,8 @@
   --accent-200: 47 51 184;
   --accent-300: 69 73 207;
 
-  --border: 11 12 16;
-  --border-strong: 11 12 16;
+  --border: 69 73 207;
+  --border-strong: 47 51 184;
 
   --glass: 255 255 255;
   --glass-strong: 255 255 255;

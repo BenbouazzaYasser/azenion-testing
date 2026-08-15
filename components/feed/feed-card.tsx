@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Bookmark,
   Calendar,
@@ -112,6 +112,12 @@ interface FeedCardProps {
 }
 
 export function FeedCard({ item, currentUserId, headerAction, postMenu }: FeedCardProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const entityType = entityTypeFor(item);
   const config = ENTITY_CONFIG[entityType];
   const EntityIcon = config.icon;
@@ -125,7 +131,7 @@ export function FeedCard({ item, currentUserId, headerAction, postMenu }: FeedCa
   const avatarSrc = item.entity_logo_url ?? item.author_avatar;
   const showAuthor = Boolean(item.author_name) && entityType !== "POST";
 
-  const timeAgo = item.created_at ? formatDistanceToNow(new Date(item.created_at)) : "";
+  const timeAgo = item.created_at && mounted ? formatDistanceToNow(new Date(item.created_at)) : "";
   const likedBy = likedByText(item);
 
   const eventStatus = isEvent

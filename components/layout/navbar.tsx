@@ -192,7 +192,7 @@ export function Navbar() {
                               <div className="relative overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                                 <div
                                   aria-hidden
-                                  className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
+                                  className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
                                 />
                                 <div
                                   aria-hidden
@@ -270,7 +270,7 @@ export function Navbar() {
                         <div className="relative overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                         <div
                           aria-hidden
-                          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
+                          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
                         />
                         <div
                           aria-hidden

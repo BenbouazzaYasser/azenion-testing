@@ -54,8 +54,8 @@ const config: Config = {
           700: "rgb(var(--ink-700) / <alpha-value>)",
         },
         border: {
-          DEFAULT: "rgba(var(--border) / 0.08)",
-          strong: "rgba(var(--border-strong) / 0.14)",
+          DEFAULT: "rgb(var(--border) / 0.08)",
+          strong: "rgb(var(--border-strong) / 0.14)",
         },
         // Glass overlays — dropdowns, drawers, panels, navbar pill
         glass: {
