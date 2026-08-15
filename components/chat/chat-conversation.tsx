@@ -18,6 +18,10 @@ import { setActiveConversation } from "@/lib/chat-unread";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
 import { formatDate } from "@/lib/date";
 import { useMobileConversations } from "@/components/chat/mobile-conversations-context";
+import { useCallContext } from "@/components/chat/call-provider";
+import type { CallPeer } from "@/lib/call";
+import type { ConversationPeer } from "@/data/chat";
+import { CallButtons } from "@/components/chat/call-buttons";
 
 interface Message {
   id: string;
@@ -42,6 +46,8 @@ interface ChatConversationProps {
   currentUserId: string;
   /** True when the other participant has blocked the current user. */
   amBlocked?: boolean;
+  /** The other participant (from conversation membership), null for non-1-to-1. */
+  peer: ConversationPeer | null;
 }
 
 function startOfDay(date: Date): number {
@@ -64,6 +70,7 @@ export function ChatConversation({
   initialMessages,
   currentUserId,
   amBlocked = false,
+  peer,
 }: ChatConversationProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -189,10 +196,25 @@ export function ChatConversation({
     };
   }, [conversationId, currentUserId]);
 
-  const participant = useMemo(() => {
-    const other = initialMessages.find((m) => m.sender_id !== currentUserId);
-    return other?.sender ?? null;
-  }, [initialMessages, currentUserId]);
+  // The peer comes from conversation membership (server-side), so it is always
+  // available for a valid 1-to-1 conversation, even before any messages exist.
+  const callPeer: CallPeer | null = peer;
+
+  // Calls are only possible between users who can already access the
+  // conversation (and are not blocked).
+  const callsEnabled = !amBlocked && callPeer !== null && callPeer.id !== currentUserId;
+
+  // The app-level CallProvider hosts the WebRTC/signaling state machine and the
+  // incoming-call listener; this page only advertises the conversation it is in
+  // so outgoing calls are routed to the right peer.
+  const { setContext, startCall } = useCallContext();
+
+  useEffect(() => {
+    if (callsEnabled) {
+      setContext({ conversationId, peer: callPeer! });
+    }
+    return () => setContext(null);
+  }, [callsEnabled, conversationId, callPeer, setContext]);
 
   const otherReadTs = otherLastReadAt ? new Date(otherLastReadAt).getTime() : null;
 
@@ -258,8 +280,8 @@ export function ChatConversation({
     }
   };
 
-  const participantName = participant?.full_name ?? participant?.username ?? "Conversation";
-  const participantInitial = (participant?.full_name?.[0] ?? participant?.username?.[0] ?? "?").toUpperCase();
+  const participantName = callPeer?.full_name ?? callPeer?.username ?? "Conversation";
+  const participantInitial = (callPeer?.full_name?.[0] ?? callPeer?.username?.[0] ?? "?").toUpperCase();
   const mobileConversations = useMobileConversations();
 
   return (
@@ -292,32 +314,35 @@ export function ChatConversation({
           </button>
         ) : null}
 
-        {participant?.avatar_url ? (
+        {callPeer?.avatar_url ? (
           <img
-            src={participant.avatar_url}
+            src={callPeer.avatar_url}
             alt=""
             className="h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.12] object-cover shadow-[0_0_20px_-8px_rgba(109,109,255,0.5)]"
           />
         ) : (
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent-400/25 bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white">
-            {participant ? participantInitial : <Users size={16} className="text-accent-300" />}
+            {callPeer ? participantInitial : <Users size={16} className="text-accent-300" />}
           </span>
         )}
 
         <div className="min-w-0">
           <h1 className="truncate text-sm font-semibold text-ink-50">{participantName}</h1>
-          {participant?.username ? (
-            <p className="truncate text-xs text-ink-500">@{participant.username}</p>
+          {callPeer?.username ? (
+            <p className="truncate text-xs text-ink-500">@{callPeer.username}</p>
           ) : (
             <p className="text-xs text-ink-500">Private chat</p>
           )}
         </div>
 
-        <div className="ml-auto hidden shrink-0 items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1 sm:flex">
-          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
-          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">
-            Private
-          </span>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {callsEnabled ? <CallButtons onStart={startCall} /> : null}
+          <div className="hidden shrink-0 items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1 sm:flex">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
+            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">
+              Private
+            </span>
+          </div>
         </div>
       </header>
 
@@ -376,7 +401,7 @@ export function ChatConversation({
                     isGrouped={isGrouped}
                     showAvatar={showAvatar}
                     status={getMessageStatus(msg, i)}
-                    statusAvatarUrl={participant?.avatar_url ?? null}
+                    statusAvatarUrl={callPeer?.avatar_url ?? null}
                     statusAvatarName={participantName}
                     active={msg.id === activeMessageId}
                     showActions={actionsMessageId === msg.id}
@@ -405,7 +430,7 @@ export function ChatConversation({
           >
             <Ban size={16} className="shrink-0 text-ink-500" />
             <p className="text-sm text-ink-400">
-              You can&apos;t send messages to @{participant?.username ?? participantName} because they blocked you.
+              You can&apos;t send messages to @{callPeer?.username ?? participantName} because they blocked you.
             </p>
           </div>
         ) : (
