@@ -12,6 +12,8 @@ import {
   AtSign,
   Sparkles,
   Megaphone,
+  UserPlus,
+  UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
@@ -46,6 +48,9 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
     icon: Megaphone,
     label: "posted a new announcement",
   },
+  friend_request_received: { icon: UserPlus, label: "sent you a friend request" },
+  friend_request_accepted: { icon: UserCheck, label: "accepted your friend request" },
+  new_follower: { icon: UserPlus, label: "started following you" },
 };
 
 const DEFAULT_TYPE: TypeConfig = { icon: Sparkles, label: "sent you a notification" };

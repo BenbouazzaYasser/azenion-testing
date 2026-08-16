@@ -16,6 +16,7 @@ import {
   Video,
 } from "lucide-react";
 import { globalSearch, type GlobalSearchResponse, type SearchCategory } from "@/actions/search.actions";
+import { ProfilePreviewDialog } from "@/components/search/profile-preview-dialog";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -43,6 +44,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [previewUsername, setPreviewUsername] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -153,7 +155,13 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
     }, 60);
   }
 
-  function handleSelect(href: string) {
+  function handleSelect(href: string, category?: SearchCategory) {
+    // User results pop up a profile preview instead of navigating to a separate page.
+    if (category === "Users") {
+      const username = href.replace(/^\/u\//, "");
+      setPreviewUsername(username);
+      return;
+    }
     setOpen(false);
     // If navigating to chat/start and user is not authenticated, redirect to login with next param
     if (href.startsWith("/chat/start/") && !user) {
@@ -175,7 +183,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
     } else if (e.key === "Enter") {
       e.preventDefault();
       const item = flatItems[activeIndex];
-      if (item) handleSelect(item.href);
+      if (item) handleSelect(item.href, item.category);
     }
   }
 
@@ -346,7 +354,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                             key={`${item.category}-${item.id}-${item._i}`}
                             type="button"
                             onMouseEnter={() => setActiveIndex(item._i)}
-                            onClick={() => handleSelect(item.href)}
+                            onClick={() => handleSelect(item.href, item.category)}
                             className={cn(
                               "group w-full rounded-xl px-3 py-2.5 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                               active ? "bg-surface ring-1 ring-accent-400/30 shadow-[0_0_18px_-8px_rgba(90,120,255,0.5)]" : "hover:bg-surface-hover",
@@ -404,6 +412,12 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
             document.body,
           )
         : null}
+
+      <ProfilePreviewDialog
+        open={previewUsername !== null}
+        username={previewUsername}
+        onClose={() => setPreviewUsername(null)}
+      />
     </>
   );
 }

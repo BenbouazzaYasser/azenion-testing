@@ -94,11 +94,14 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
 
   // ---- Users
   {
-    const { data } = await supabase
-      .from("profiles")
-      .select("id, username, full_name, institution, avatar_url, created_at")
-      .or(`full_name.ilike.%${q}%,username.ilike.%${q}%`)
-      .limit(80);
+    // RLS locks `profiles` to the caller's own row (00004_rls_fix), so direct
+    // reads cannot surface other members. search_users is a SECURITY DEFINER
+    // RPC (see 00076_global_user_search.sql) that searches all profiles while
+    // honoring each member's `search_visibility` privacy setting and block list.
+    const { data } = await supabase.rpc("search_users", {
+      p_query: q,
+      p_limit: 80,
+    });
     const rows = (data ?? []) as Array<{
       id: string;
       username: string;
@@ -122,7 +125,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
           id: row.id,
           title: row.full_name || `@${row.username}`,
           subtitle: row.username ? `@${row.username}` : (row.institution ?? "Azenion member"),
-          href: `/chat/start/${row.id}`,
+          href: `/u/${row.username}`,
           image: row.avatar_url,
           meta: row.institution ?? "Member",
         })),
