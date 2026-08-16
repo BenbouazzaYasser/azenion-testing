@@ -18,6 +18,7 @@ import { setActiveConversation } from "@/lib/chat-unread";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
 import { formatDate } from "@/lib/date";
 import { useMobileConversations } from "@/components/chat/mobile-conversations-context";
+import type { MessageType, PostShareMetadata } from "@/data/chat";
 
 interface Message {
   id: string;
@@ -25,6 +26,8 @@ interface Message {
   sender_id: string;
   content: string;
   image_url: string | null;
+  message_type: MessageType;
+  metadata: PostShareMetadata | null;
   created_at: string | null;
   edited_at: string | null;
   received_at: string | null;
@@ -154,6 +157,8 @@ export function ChatConversation({
                 ? {
                     ...m,
                     content: row.content,
+                    message_type: row.message_type,
+                    metadata: row.metadata,
                     edited_at: row.edited_at,
                     received_at: row.received_at,
                   }
@@ -236,6 +241,8 @@ export function ChatConversation({
       sender_id: currentUserId,
       content,
       image_url: null,
+      message_type: "text",
+      metadata: null,
       created_at: new Date().toISOString(),
       edited_at: null,
       received_at: null,
@@ -372,6 +379,8 @@ export function ChatConversation({
                     sender_id={msg.sender_id}
                     sender_name={msg.sender?.full_name ?? msg.sender?.username ?? null}
                     sender_avatar={msg.sender?.avatar_url ?? null}
+                    messageType={msg.message_type}
+                    metadata={msg.metadata}
                     isOwn={msg.sender_id === currentUserId}
                     isGrouped={isGrouped}
                     showAvatar={showAvatar}

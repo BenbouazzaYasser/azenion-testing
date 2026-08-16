@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { formatTime } from "@/lib/date";
 import { editMessage, deleteMessage } from "@/actions/chat.actions";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
+import { PostShareMessage } from "@/components/chat/post-share-message";
+import type { MessageType, PostShareMetadata } from "@/data/chat";
 
 interface MessageBubbleProps {
   id: string;
@@ -16,6 +18,8 @@ interface MessageBubbleProps {
   sender_id: string;
   sender_name: string | null;
   sender_avatar: string | null;
+  messageType?: MessageType;
+  metadata?: PostShareMetadata | null;
   isOwn: boolean;
   isGrouped?: boolean;
   showAvatar?: boolean;
@@ -36,6 +40,8 @@ export function MessageBubble({
   sender_id,
   sender_name,
   sender_avatar,
+  messageType = "text",
+  metadata = null,
   isOwn,
   isGrouped = false,
   showAvatar = true,
@@ -50,6 +56,8 @@ export function MessageBubble({
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(content);
   const [showMenu, setShowMenu] = useState(false);
+
+  const isPostShare = messageType === "post_share";
 
   const handleEdit = async () => {
     if (!editText.trim() || editText === content) {
@@ -91,7 +99,39 @@ export function MessageBubble({
       )}
 
       <div className={cn("relative max-w-[75%]", isOwn ? "items-end" : "items-start")}>
-        {isEditing ? (
+        {isPostShare ? (
+          <div
+            tabIndex={0}
+            role="group"
+            aria-label={`Shared post from ${sender_name ?? "unknown sender"}`}
+            onClick={() => onSelect?.(id)}
+            onFocus={() => onSelect?.(id)}
+            onDoubleClick={() => onToggleActions?.(id)}
+            className="cursor-pointer rounded-2xl p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+          >
+            <PostShareMessage metadata={metadata} message={content} isOwn={isOwn} />
+            <div
+              aria-hidden={!active}
+              className="grid transition-[grid-template-rows] duration-200 ease-premium"
+              style={{ gridTemplateRows: active ? "1fr" : "0fr" }}
+            >
+              <div className="min-h-0 overflow-hidden">
+                <div
+                  className={cn(
+                    "flex justify-end pt-1.5 transition-opacity duration-200",
+                    active ? "opacity-100" : "opacity-0",
+                  )}
+                >
+                  {created_at && (
+                    <span className="flex items-center gap-1 text-[10px] font-medium leading-none tracking-wide text-ink-500">
+                      {formatTime(created_at)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : isEditing ? (
           <div className="flex flex-col gap-2">
             <input
               type="text"
@@ -189,18 +229,20 @@ export function MessageBubble({
                 : "pointer-events-none -translate-y-1 scale-95 opacity-0",
             )}
           >
-            <button
-              type="button"
-              aria-label="Edit message"
-              title="Edit"
-              onClick={() => {
-                setEditText(content);
-                setIsEditing(true);
-              }}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </button>
+            {!isPostShare && (
+              <button
+                type="button"
+                aria-label="Edit message"
+                title="Edit"
+                onClick={() => {
+                  setEditText(content);
+                  setIsEditing(true);
+                }}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            )}
             <button
               type="button"
               aria-label="Delete message"

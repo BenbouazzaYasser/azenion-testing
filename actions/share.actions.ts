@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { insertNotification } from "@/lib/notifications";
@@ -71,10 +72,14 @@ export async function searchShareRecipients(
 /**
  * Shares `postId` with `recipientId`, with an optional short message.
  *
- * Authorization lives in the `share_post` RPC (00079_post_shares): the
+ * Authorization lives in the `share_post` RPC (00080_post_share_chat): the
  * recipient must exist, the post must exist and be visible to the sharer,
- * self-shares are rejected, and blocks are enforced in both directions. The
- * server action then delivers a `shared_post_with_you` notification through
+ * self-shares are rejected, blocks are enforced in both directions, and the
+ * share is delivered atomically as a structured `post_share` chat message in
+ * the sharer/recipient private conversation (conversation is created/reused
+ * by get_or_create_conversation). The RPC returns { share_id,
+ * conversation_id, message_id }; the server action never duplicates that
+ * creation. It then delivers a `shared_post_with_you` notification through
  * `insertNotification`, which applies the recipient's notification
  * preferences and de-duplicates unread (type, actor, target) notifications so
  * repeated shares never spam an inbox.
@@ -91,7 +96,7 @@ export async function sharePost(
   if (!recipientId) return { error: "Choose a member to share with." };
 
   const supabase = createClient();
-  const { data: shareId, error } = await supabase.rpc("share_post", {
+  const { data, error } = await supabase.rpc("share_post", {
     p_post_id: postId,
     p_recipient_id: recipientId,
     p_message: message?.trim() || null,
@@ -99,9 +104,17 @@ export async function sharePost(
 
   if (error) return { error: error.message };
 
-  // Notification metadata deep-links the recipient to the post permalink. The
-  // share is already committed; if the post vanished between validation and
-  // here we still deliver the notification (it will land on a not-found page).
+  const result = (data ?? {}) as {
+    share_id?: string | null;
+    conversation_id?: string | null;
+    message_id?: string | null;
+  };
+
+  // Notification metadata deep-links the recipient to the post permalink and
+  // carries the conversation id so the notification could later route to the
+  // chat. The share is already committed; if the post vanished between
+  // validation and here we still deliver the notification (it will land on a
+  // not-found page).
   const admin = createAdminClient();
   const { data: post } = await admin
     .from("posts")
@@ -116,10 +129,18 @@ export async function sharePost(
     targetType: post?.source_type ?? null,
     targetId: postId,
     metadata: {
-      share_id: shareId ?? null,
+      share_id: result.share_id ?? null,
+      conversation_id: result.conversation_id ?? null,
       message: message?.trim() ? message.trim().slice(0, MAX_SHARE_MESSAGE_LENGTH) : null,
     },
   });
+
+  // Refresh the chat sidebar and, if the thread is already open, the message
+  // list for the new post_share message.
+  if (result.conversation_id) {
+    revalidatePath(`/chat/${result.conversation_id}`);
+  }
+  revalidatePath("/chat");
 
   return { success: true };
 }

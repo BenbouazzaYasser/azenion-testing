@@ -23,6 +23,7 @@ interface Conversation {
   } | null;
   last_message: {
     content: string;
+    preview: string;
     created_at: string | null;
     sender_id: string;
     received_at: string | null;
@@ -436,7 +437,7 @@ function ConversationRow({
             <span className="min-w-0 truncate">
               {conv.blocked_me
                 ? "You're blocked — you can't reply."
-                : (conv.last_message?.content ?? "No messages yet")}
+                : (conv.last_message?.preview ?? "No messages yet")}
             </span>
           </p>
         </div>

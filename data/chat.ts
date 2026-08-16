@@ -1,12 +1,30 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export type MessageType = "text" | "post_share";
+
+export interface PostShareMetadata {
+  post_id: string;
+  source_type: string | null;
+  title: string;
+  excerpt: string | null;
+  image: string | null;
+  author: {
+    id: string | null;
+    full_name: string | null;
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
+}
+
 export interface MessageWithSender {
   id: string;
   conversation_id: string;
   sender_id: string;
   content: string;
   image_url: string | null;
+  message_type: MessageType;
+  metadata: PostShareMetadata | null;
   created_at: string | null;
   edited_at: string | null;
   received_at: string | null;
@@ -28,6 +46,10 @@ export interface ConversationWithMeta {
   } | null;
   last_message: {
     content: string;
+    message_type: MessageType;
+    /** Display text for the sidebar: content for text, the optional message
+     *  or "Shared a post" for post_share. */
+    preview: string;
     created_at: string | null;
     sender_id: string;
     received_at: string | null;
@@ -99,7 +121,7 @@ export async function getConversations(
   const messagesPromises = conversationIds.map(async (cid) => {
     const { data: messages } = await supabase
       .from("messages")
-      .select("content, created_at, sender_id, received_at")
+      .select("content, message_type, created_at, sender_id, received_at")
       .eq("conversation_id", cid)
       .order("created_at", { ascending: false })
       .limit(1);
@@ -111,7 +133,13 @@ export async function getConversations(
     messagesResults.map((r) => [r.conversation_id, r.lastMessage]),
   ) as Record<
     string,
-    { content: string; created_at: string | null; sender_id: string; received_at: string | null } | null
+    {
+      content: string;
+      message_type: MessageType;
+      created_at: string | null;
+      sender_id: string;
+      received_at: string | null;
+    } | null
   >;
 
   const { data: unreadRows } = await supabase.rpc("get_unread_counts", {
@@ -155,6 +183,11 @@ export async function getConversations(
       last_message: lastMsg
         ? {
             content: lastMsg.content,
+            message_type: lastMsg.message_type as MessageType,
+            preview:
+              lastMsg.message_type === "post_share"
+                ? lastMsg.content || "Shared a post"
+                : lastMsg.content,
             created_at: lastMsg.created_at,
             sender_id: lastMsg.sender_id,
             received_at: lastMsg.received_at,
@@ -174,7 +207,7 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
 
   const { data: messages } = await supabase
     .from("messages")
-    .select("id, conversation_id, sender_id, content, image_url, created_at, edited_at, received_at")
+    .select("id, conversation_id, sender_id, content, image_url, message_type, metadata, created_at, edited_at, received_at")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
 
