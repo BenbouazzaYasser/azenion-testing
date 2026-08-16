@@ -98,8 +98,9 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
     // reads cannot surface other members. search_users is a SECURITY DEFINER
     // RPC (see 00076_global_user_search.sql) that searches all profiles while
     // honoring each member's `search_visibility` privacy setting and block list.
+    const userQuery = q.replace(/^@/, "").trim();
     const { data } = await supabase.rpc("search_users", {
-      p_query: q,
+      p_query: userQuery,
       p_limit: 80,
     });
     const rows = (data ?? []) as Array<{
@@ -116,7 +117,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
       __q: `${r.full_name ?? ""} ${r.username}`,
       __createdAt: r.created_at,
     }));
-    const ranked = rankedSelect(packed, q);
+    const ranked = rankedSelect(packed, userQuery);
     results.push(
       ...ranked
         .slice(0, LIMITS.Users)

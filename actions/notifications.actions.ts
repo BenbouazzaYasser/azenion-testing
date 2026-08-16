@@ -125,6 +125,7 @@ const FEED_POST_TYPES = new Set<string>([
   "replied_to_your_comment",
   "liked_your_comment",
   "mentioned_you",
+  "shared_post_with_you",
 ]);
 
 /**

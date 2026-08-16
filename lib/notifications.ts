@@ -25,6 +25,7 @@ function notificationPreferenceKey(type: string): string {
       return "project_updates";
     case "liked_your_update":
     case "commented_on_your_update":
+    case "shared_post_with_you":
       return "feed_interactions";
     case "replied_to_your_comment":
     case "liked_your_comment":

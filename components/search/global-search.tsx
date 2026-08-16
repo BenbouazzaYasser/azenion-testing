@@ -19,6 +19,7 @@ import { globalSearch, type GlobalSearchResponse, type SearchCategory } from "@/
 import { ProfilePreviewDialog } from "@/components/search/profile-preview-dialog";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { openSearchHotkey, registerSearchHotkey, type SearchHotkeyInstance } from "@/lib/global-search-hotkey";
 
 const CATEGORY_HEADERS: { value: SearchCategory; label: string; icon: typeof Users }[] = [
   { value: "Users", label: "Users", icon: Users },
@@ -51,11 +52,26 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestIdRef = useRef(0);
+  const openRef = useRef(open);
+  openRef.current = open;
 
   const closePalette = useCallback(() => {
     setOpen(false);
     requestAnimationFrame(() => triggerRef.current?.focus());
   }, []);
+
+  const openPalette = useCallback(() => {
+    setOpen(true);
+    setActiveIndex(0);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 60);
+  }, []);
+
+  const hotkeyHandler = useMemo<SearchHotkeyInstance>(
+    () => ({ open: openPalette, close: closePalette, isOpen: () => openRef.current }),
+    [openPalette, closePalette],
+  );
 
   // Flat list of selectable items for keyboard navigation (stable index).
   const flatItems = useMemo(
@@ -75,10 +91,6 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
     if (!open) return;
 
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        closePalette();
-      }
       if (e.key === "Escape") {
         e.preventDefault();
         closePalette();
@@ -88,17 +100,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, closePalette]);
 
-  // Global Ctrl/Cmd+K to open from anywhere.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setOpen(true);
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
+  useEffect(() => registerSearchHotkey(hotkeyHandler), [hotkeyHandler]);
 
   useEffect(() => {
     if (!open) return;
@@ -145,14 +147,6 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
       return;
     }
     debouncedRun(value.trim());
-  }
-
-  function openPalette() {
-    setOpen(true);
-    setActiveIndex(0);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 60);
   }
 
   function handleSelect(href: string, category?: SearchCategory) {
@@ -212,7 +206,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
         <button
           ref={triggerRef}
           type="button"
-          onClick={openPalette}
+          onClick={() => openSearchHotkey(hotkeyHandler)}
           aria-label="Search Azenion (Ctrl+K)"
           className="group relative flex h-10 w-10 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
@@ -231,7 +225,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
         <button
           ref={triggerRef}
           type="button"
-          onClick={openPalette}
+          onClick={() => openSearchHotkey(hotkeyHandler)}
           aria-label="Search"
           className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-transform duration-300 hover:scale-105 hover:bg-surface-hover hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >

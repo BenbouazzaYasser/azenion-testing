@@ -11,7 +11,6 @@ import {
   MapPin,
   Pin,
   Rocket,
-  Share2,
   User,
   Users,
 } from "lucide-react";
@@ -21,6 +20,7 @@ import { ImageGallery } from "@/components/feed/image-gallery";
 import { VideoGallery } from "@/components/feed/video-gallery";
 import { LikeButton } from "@/components/interactions/like-button";
 import { CommentSection } from "@/components/interactions/comment-section";
+import { SharePostButton } from "@/components/feed/share-post-button";
 import { toggleLike } from "@/actions/interactions.actions";
 import type { FeedItemWithAuthor } from "@/actions/feed.actions";
 
@@ -333,15 +333,7 @@ export function FeedCard({ item, currentUserId, headerAction, postMenu }: FeedCa
             </div>
 
             <div className="flex min-w-0 items-center gap-4">
-              <button
-                type="button"
-                disabled
-                title="Coming Soon"
-                className="flex items-center gap-1.5 text-xs text-ink-600 transition-colors duration-300 ease-premium hover:text-ink-200 disabled:pointer-events-none disabled:opacity-50"
-              >
-                <Share2 size={14} />
-                <span className="hidden sm:inline">Share</span>
-              </button>
+              <SharePostButton postId={item.id} currentUserId={currentUserId} />
               <button
                 type="button"
                 disabled

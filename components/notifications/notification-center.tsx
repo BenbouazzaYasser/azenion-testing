@@ -14,6 +14,7 @@ import {
   Megaphone,
   UserPlus,
   UserCheck,
+  Share2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
@@ -51,6 +52,7 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
   friend_request_received: { icon: UserPlus, label: "sent you a friend request" },
   friend_request_accepted: { icon: UserCheck, label: "accepted your friend request" },
   new_follower: { icon: UserPlus, label: "started following you" },
+  shared_post_with_you: { icon: Share2, label: "shared a post with you" },
 };
 
 const DEFAULT_TYPE: TypeConfig = { icon: Sparkles, label: "sent you a notification" };
@@ -62,7 +64,9 @@ function getPreview(n: AppNotification): string | null {
       ? meta.comment_preview
       : typeof meta.preview === "string"
         ? meta.preview
-        : null;
+        : typeof meta.message === "string"
+          ? meta.message
+          : null;
   return raw ? raw.replace(/^"|"$/g, "") : null;
 }
 
