@@ -24,7 +24,7 @@ export interface AppNotification {
  * Client-provided ids are never trusted.
  */
 async function getSessionUserId(): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -79,7 +79,7 @@ export async function markNotificationsRead(_userId: string | null) {
   const userId = await getSessionUserId();
   if (!userId) return;
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from("notifications")
@@ -100,7 +100,7 @@ export async function markNotificationRead(notificationId: string) {
   const userId = await getSessionUserId();
   if (!userId) return;
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from("notifications")

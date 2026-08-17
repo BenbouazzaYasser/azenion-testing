@@ -12,12 +12,13 @@ export const metadata: Metadata = {
     "Sign in to Azenion and continue building, collaborating, and shaping the future with the Limitless Network.",
 };
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams?: { next?: string };
+  searchParams?: Promise<{ next?: string }>;
 }) {
-  const next = typeof searchParams?.next === "string" ? searchParams.next : undefined;
+  const resolved = await searchParams;
+  const next = typeof resolved?.next === "string" ? resolved.next : undefined;
 
   return (
     <>

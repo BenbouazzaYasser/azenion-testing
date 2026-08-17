@@ -20,7 +20,7 @@ const MAX_SHARE_MESSAGE_LENGTH = 500;
  * Client-provided ids are never trusted for authorization.
  */
 async function getSessionUserId(): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -44,7 +44,7 @@ export async function searchShareRecipients(
   const userId = await getSessionUserId();
   if (!userId) return [];
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_users", {
     p_query: trimmed,
     p_limit: Math.min(Math.max(limit, 1), 20),
@@ -95,7 +95,7 @@ export async function sharePost(
   if (!postId) return { error: "Post ID is required." };
   if (!recipientId) return { error: "Choose a member to share with." };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("share_post", {
     p_post_id: postId,
     p_recipient_id: recipientId,

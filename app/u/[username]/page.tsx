@@ -9,9 +9,9 @@ import { PublicProfilePosts } from "./components/public-profile-posts";
 export default async function PublicProfilePage({
   params,
 }: {
-  params: { username: string };
+  params: Promise<{ username: string }>;
 }) {
-  const { username } = params;
+  const { username } = await params;
 
   const result = await getPublicProfile(username);
 

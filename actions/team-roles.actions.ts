@@ -12,7 +12,7 @@ import {
 } from "@/lib/validations/team-roles.schema";
 
 export async function createTeamRole(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -52,7 +52,7 @@ export async function createTeamRole(formData: FormData) {
 }
 
 export async function updateTeamRole(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -91,7 +91,7 @@ export async function updateTeamRole(formData: FormData) {
 }
 
 export async function deleteTeamRole(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -125,7 +125,7 @@ export async function deleteTeamRole(formData: FormData) {
 }
 
 export async function setRolePermissions(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -166,7 +166,7 @@ export async function setRolePermissions(formData: FormData) {
 }
 
 export async function assignMemberRoles(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -214,7 +214,7 @@ export async function requireTeamPermission(
   teamId: string,
   permission: TeamPermission
 ): Promise<{ error: string } | { ok: true }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

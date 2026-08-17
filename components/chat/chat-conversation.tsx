@@ -15,10 +15,12 @@ import {
   getConversationRecipientReadAt,
 } from "@/actions/chat.actions";
 import { setActiveConversation } from "@/lib/chat-unread";
+import { waitForRealtimeAuthReady } from "@/lib/realtime-auth";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
 import { formatDate } from "@/lib/date";
 import { useMobileConversations } from "@/components/chat/mobile-conversations-context";
 import type { MessageType, PostShareMetadata } from "@/data/chat";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Message {
   id: string;
@@ -111,86 +113,95 @@ export function ChatConversation({
   }
 
   useEffect(() => {
+    let disposed = false;
+    let channel: RealtimeChannel | undefined;
+    let readChannel: RealtimeChannel | undefined;
     const supabase = createClient();
 
-    const channel = supabase
-      .channel(`chat:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        async (payload) => {
-          const newMsg = payload.new as Message;
-          if (newMsg.sender_id === currentUserId) return;
+    void (async () => {
+      await waitForRealtimeAuthReady(supabase);
+      if (disposed) return;
 
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("id, full_name, avatar_url, username")
-            .eq("id", newMsg.sender_id)
-            .single();
+      channel = supabase
+        .channel(`chat:${conversationId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            filter: `conversation_id=eq.${conversationId}`,
+          },
+          async (payload) => {
+            const newMsg = payload.new as Message;
+            if (newMsg.sender_id === currentUserId) return;
 
-          void markMessagesReceived(conversationId);
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("id, full_name, avatar_url, username")
+              .eq("id", newMsg.sender_id)
+              .single();
 
-          setMessages((prev) => [
-            ...prev,
-            { ...newMsg, sender: profile },
-          ]);
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          const row = payload.new as Message;
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === row.id
-                ? {
-                    ...m,
-                    content: row.content,
-                    message_type: row.message_type,
-                    metadata: row.metadata,
-                    edited_at: row.edited_at,
-                    received_at: row.received_at,
-                  }
-                : m,
-            ),
-          );
-        },
-      )
-      .subscribe();
+            void markMessagesReceived(conversationId);
 
-    const readChannel = supabase
-      .channel(`chat-read:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "conversation_members",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          const row = payload.new as { user_id: string; last_read_at: string | null };
-          if (row.user_id !== currentUserId) {
-            setOtherLastReadAt(row.last_read_at ?? null);
-          }
-        },
-      )
-      .subscribe();
+            setMessages((prev) => [
+              ...prev,
+              { ...newMsg, sender: profile },
+            ]);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "messages",
+            filter: `conversation_id=eq.${conversationId}`,
+          },
+          (payload) => {
+            const row = payload.new as Message;
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === row.id
+                  ? {
+                      ...m,
+                      content: row.content,
+                      message_type: row.message_type,
+                      metadata: row.metadata,
+                      edited_at: row.edited_at,
+                      received_at: row.received_at,
+                    }
+                  : m,
+              ),
+            );
+          },
+        )
+        .subscribe();
+
+      readChannel = supabase
+        .channel(`chat-read:${conversationId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "conversation_members",
+            filter: `conversation_id=eq.${conversationId}`,
+          },
+          (payload) => {
+            const row = payload.new as { user_id: string; last_read_at: string | null };
+            if (row.user_id !== currentUserId) {
+              setOtherLastReadAt(row.last_read_at ?? null);
+            }
+          },
+        )
+        .subscribe();
+    })();
 
     return () => {
-      supabase.removeChannel(channel);
-      supabase.removeChannel(readChannel);
+      disposed = true;
+      if (channel) supabase.removeChannel(channel);
+      if (readChannel) supabase.removeChannel(readChannel);
     };
   }, [conversationId, currentUserId]);
 

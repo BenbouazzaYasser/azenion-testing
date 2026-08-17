@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -135,9 +136,9 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
               ) : (
                 <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-sm text-amber-300">
                   You need to be an owner or admin of a team to create a project.{" "}
-                  <a href="/teams/create" className="underline hover:text-amber-200">
+                  <Link href="/teams/create" className="underline hover:text-amber-200">
                     Create a team
-                  </a>
+                  </Link>
                 </div>
               )}
 

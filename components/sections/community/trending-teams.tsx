@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowUpRight, Users } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
@@ -32,10 +33,10 @@ export function TrendingTeams({ teams }: TrendingTeamsProps) {
               </p>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
-              <a href="/teams">
+              <Link href="/teams">
                 Explore Teams
                 <ArrowUpRight size={16} />
-              </a>
+              </Link>
             </Button>
           </div>
         </Reveal>

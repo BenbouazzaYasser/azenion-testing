@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function LiveSessionsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

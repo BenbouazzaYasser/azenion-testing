@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowUpRight, Rocket } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
@@ -32,10 +33,10 @@ export function FeaturedProjects({ projects }: FeaturedProjectsProps) {
               </p>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
-              <a href="/projects">
+              <Link href="/projects">
                 Explore Projects
                 <ArrowUpRight size={16} />
-              </a>
+              </Link>
             </Button>
           </div>
         </Reveal>

@@ -12,11 +12,12 @@ import { getFeedItemById } from "@/actions/feed.actions";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 interface FeedPostPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: FeedPostPageProps): Promise<Metadata> {
-  const item = await getFeedItemById(params.id, null);
+  const { id } = await params;
+  const item = await getFeedItemById(id, null);
   if (!item) {
     return { title: "Post not found — Azenion" };
   }
@@ -27,6 +28,7 @@ export async function generateMetadata({ params }: FeedPostPageProps): Promise<M
 }
 
 export default async function FeedPostPage({ params }: FeedPostPageProps) {
+  const { id } = await params;
   return (
     <>
       <Navbar />
@@ -40,7 +42,7 @@ export default async function FeedPostPage({ params }: FeedPostPageProps) {
               </div>
             }
           >
-            <FeedPost id={params.id} />
+            <FeedPost id={id} />
           </Suspense>
         </div>
       </main>
@@ -50,7 +52,7 @@ export default async function FeedPostPage({ params }: FeedPostPageProps) {
 }
 
 async function FeedPost({ id }: { id: string }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

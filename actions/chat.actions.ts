@@ -2,11 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getConversations, type ConversationWithMeta } from "@/data/chat";
 
 export async function sendMessage(conversationId: string, content: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -60,7 +59,7 @@ export async function sendMessage(conversationId: string, content: string) {
 }
 
 export async function editMessage(messageId: string, content: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -88,7 +87,7 @@ export async function editMessage(messageId: string, content: string) {
 }
 
 export async function deleteMessage(messageId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -112,7 +111,7 @@ export async function deleteMessage(messageId: string) {
 }
 
 export async function getOrCreateConversation(otherUserId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -140,7 +139,7 @@ export async function getOrCreateConversation(otherUserId: string) {
 }
 
 export async function markMessagesReceived(conversationId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -162,7 +161,7 @@ export async function markMessagesReceived(conversationId: string) {
 }
 
 export async function markConversationRead(conversationId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -189,7 +188,7 @@ export async function markConversationRead(conversationId: string) {
 export async function getConversationRecipientReadAt(
   conversationId: string,
 ): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -208,7 +207,7 @@ export async function getConversationRecipientReadAt(
 }
 
 export async function archiveConversation(conversationId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -233,7 +232,7 @@ export async function archiveConversation(conversationId: string) {
 }
 
 export async function unarchiveConversation(conversationId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -258,7 +257,7 @@ export async function unarchiveConversation(conversationId: string) {
 }
 
 export async function deleteConversation(conversationId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -285,7 +284,7 @@ export async function deleteConversation(conversationId: string) {
 }
 
 export async function blockUser(otherUserId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -319,7 +318,7 @@ export async function blockUser(otherUserId: string) {
 }
 
 export async function unblockUser(otherUserId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -347,7 +346,7 @@ export async function unblockUser(otherUserId: string) {
 export async function getChatUnreadCounts(): Promise<
   { conversation_id: string; unread_count: number }[]
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -365,7 +364,7 @@ export async function getChatUnreadCounts(): Promise<
 }
 
 export async function getArchivedConversations(): Promise<ConversationWithMeta[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -377,9 +376,11 @@ export async function getArchivedConversations(): Promise<ConversationWithMeta[]
 }
 
 export async function searchUsers(query: string) {
-  if (!query.trim()) return [];
+  // A leading "@" selects a username (same handling as the global search).
+  const trimmed = query.trim().replace(/^@/, "");
+  if (!trimmed) return [];
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -387,13 +388,27 @@ export async function searchUsers(query: string) {
 
   if (!user) return [];
 
-  const supabaseAdmin = createAdminClient();
+  // search_users (00076) is a SECURITY DEFINER RPC that searches profiles
+  // while honoring each member's `search_visibility` privacy setting and both
+  // directions of user_blocks — the same privacy-aware rules the global search
+  // and share picker use. The caller id is the server-derived session id, so a
+  // caller can never search as someone else.
+  const { data, error } = await supabase.rpc("search_users", {
+    p_query: trimmed,
+    p_limit: 10,
+  });
 
-  const { data } = await supabaseAdmin
-    .from("profiles")
-    .select("id, full_name, username, avatar_url")
-    .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
-    .limit(10);
+  if (error) return [];
 
-  return data ?? [];
+  return ((data ?? []) as Array<{
+    id: string;
+    username: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  }>).map((row) => ({
+    id: row.id,
+    full_name: row.full_name,
+    username: row.username,
+    avatar_url: row.avatar_url,
+  }));
 }

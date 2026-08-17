@@ -90,7 +90,7 @@ export function normalizePrivacy(
 
 /** Loads the authenticated user's settings, falling back to defaults. */
 export async function getUserSettings(): Promise<UserSettings> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

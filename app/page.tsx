@@ -32,7 +32,7 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   const admin = createAdminClient();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [
     { data: teamRows },

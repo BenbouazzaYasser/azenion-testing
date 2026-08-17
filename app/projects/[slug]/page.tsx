@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { slug } = await params;
   const adminClient = createAdminClient();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: project } = await adminClient
     .from("projects")

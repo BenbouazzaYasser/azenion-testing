@@ -31,7 +31,7 @@ function getTargetTable(targetType: string) {
  * Client-provided ids are never trusted for authorization.
  */
 async function getSessionUserId(): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -60,7 +60,7 @@ async function isTargetVisible(
 }
 
 export async function toggleLike(targetType: string, targetId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const supabaseAdmin = createAdminClient();
 
   const {
@@ -116,7 +116,7 @@ export async function toggleLike(targetType: string, targetId: string) {
 }
 
 export async function toggleCommentLike(commentId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const supabaseAdmin = createAdminClient();
 
   const {
@@ -188,7 +188,7 @@ export async function toggleCommentLike(commentId: string) {
  * (`record_post_view` RPC). Best-effort: never fails the surrounding render.
  */
 export async function recordPostView(postId: string, sessionToken: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const supabaseAdmin = createAdminClient();
 
   let viewerId: string | null = null;
@@ -218,7 +218,7 @@ export async function createComment(
   body: string,
   parentCommentId?: string | null,
 ) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const supabaseAdmin = createAdminClient();
 
   const {
@@ -297,7 +297,7 @@ export async function createComment(
 }
 
 export async function updateComment(commentId: string, body: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -418,7 +418,7 @@ export async function getCommentsAction(
 }
 
 export async function toggleSavePost(postId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -478,7 +478,7 @@ function resolveFeedMediaObjects(
 }
 
 export async function deleteFeedPost(postId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -524,7 +524,7 @@ export async function deleteFeedPost(postId: string) {
 }
 
 export async function deleteComment(commentId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
