@@ -81,9 +81,10 @@ export async function restartOnboarding() {
 }
 
 /**
- * Lightweight profile update used by the onboarding PROFILE step. Only the
- * optional fields are touched (bio + institution) so onboarding never forces
- * the user to fill username / full name.
+ * Lightweight profile update used by onboarding steps. Only the fields
+ * present in the FormData are touched (bio / institution / full_name), so the
+ * profile and branch steps can each update their own field without clobbering
+ * the other. Onboarding never forces the user to fill username / full name.
  */
 export async function saveOnboardingProfile(formData: FormData) {
   const supabase = await createClient();
@@ -93,19 +94,25 @@ export async function saveOnboardingProfile(formData: FormData) {
 
   if (!user) return { error: "Not authenticated" };
 
-  const bioRaw = (formData.get("bio") as string) ?? "";
-  const institutionRaw = (formData.get("institution") as string) ?? "";
-  const fullNameRaw = (formData.get("full_name") as string) ?? "";
+  const patch: { bio?: string | null; institution?: string | null; full_name?: string } = {};
 
-  const bio = bioRaw.trim().slice(0, 500) || null;
-  const institution = institutionRaw.trim().slice(0, 100) || null;
-  const full_name = fullNameRaw.trim().slice(0, 100) || null;
+  if (formData.has("bio")) {
+    const bioRaw = (formData.get("bio") as string) ?? "";
+    patch.bio = bioRaw.trim().slice(0, 500) || null;
+  }
 
-  const patch: { bio: string | null; institution: string | null; full_name?: string } = {
-    bio,
-    institution,
-  };
-  if (full_name) patch.full_name = full_name;
+  if (formData.has("institution")) {
+    const institutionRaw = (formData.get("institution") as string) ?? "";
+    patch.institution = institutionRaw.trim().slice(0, 100) || null;
+  }
+
+  if (formData.has("full_name")) {
+    const fullNameRaw = (formData.get("full_name") as string) ?? "";
+    const full_name = fullNameRaw.trim().slice(0, 100) || null;
+    if (full_name) patch.full_name = full_name;
+  }
+
+  if (Object.keys(patch).length === 0) return { error: "Nothing to update" };
 
   const { error } = await supabase
     .from("profiles")

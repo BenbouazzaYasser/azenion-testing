@@ -146,7 +146,7 @@ export async function loadOnboardingData(userId: string): Promise<OnboardingData
         Number(b.recommended) - Number(a.recommended) ||
         b.member_count - a.member_count,
     );
-    branchList = branchList.slice(0, 4);
+    branchList = branchList.slice(0, 100);
   }
 
   // ── Featured + newest projects ───────────────────────────────────────────

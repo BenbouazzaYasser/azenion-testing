@@ -9,7 +9,9 @@ import {
   Camera,
   Check,
   PartyPopper,
+  Plus,
   Rocket,
+  Search,
   Sparkles,
   TrendingUp,
   Users,
@@ -272,14 +274,12 @@ function ProfileStep({
 }) {
   const { profile } = data;
   const [bio, setBio] = useState(profile.bio ?? "");
-  const [institution, setInstitution] = useState(profile.institution ?? "");
   const [avatar, setAvatar] = useState(profile.avatar_url ?? "");
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const hasAvatar = Boolean(avatar);
   const hasBio = Boolean(bio.trim());
-  const hasInstitution = Boolean(institution.trim());
-  const complete = hasAvatar && hasBio && hasInstitution;
+  const complete = hasAvatar && hasBio;
 
   async function handleAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -310,7 +310,6 @@ function ProfileStep({
     onError(null);
     const fd = new FormData();
     fd.set("bio", bio);
-    fd.set("institution", institution);
     const result = await saveOnboardingProfile(fd);
     onBusy(false);
     if (result && "error" in result && result.error) {
@@ -358,16 +357,6 @@ function ProfileStep({
           onChange={handleAvatar}
         />
         <div className="w-full space-y-3 sm:pt-2">
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium text-ink-200">Institution</span>
-            <input
-              value={institution}
-              onChange={(e) => setInstitution(e.target.value)}
-              maxLength={100}
-              placeholder="Your school or university"
-              className={inputClass}
-            />
-          </label>
           <label className="block space-y-1.5">
             <span className="text-sm font-medium text-ink-200">Bio</span>
             <textarea
@@ -418,6 +407,10 @@ function BranchStep({
   const [joined, setJoined] = useState<string | null>(
     data.currentBranch?.id ?? null,
   );
+  const [query, setQuery] = useState("");
+  const [showOther, setShowOther] = useState(false);
+  const [institution, setInstitution] = useState("");
+  const [institutionSaved, setInstitutionSaved] = useState(false);
 
   async function join(branch: OnboardingBranchOption) {
     onBusy(true);
@@ -431,23 +424,70 @@ function BranchStep({
     setJoined(branch.id);
   }
 
+  async function saveInstitution() {
+    const value = institution.trim();
+    if (!value) return;
+    onBusy(true);
+    onError(null);
+    const fd = new FormData();
+    fd.set("institution", value);
+    const result = await saveOnboardingProfile(fd);
+    onBusy(false);
+    if (result && "error" in result && result.error) {
+      onError(result.error);
+      return;
+    }
+    setInstitutionSaved(true);
+  }
+
+  const q = query.trim().toLowerCase();
+  const visibleBranches = q
+    ? data.branches.filter(
+        (b) =>
+          b.name.toLowerCase().includes(q) ||
+          (b.institution ?? "").toLowerCase().includes(q),
+      )
+    : data.branches;
+
+  const hasChoice = Boolean(joined) || institutionSaved;
+
   return (
     <div>
       <h2 className="text-xl font-semibold tracking-tight text-ink-50">
         Find your branch
       </h2>
       <p className="mt-1.5 text-sm text-ink-400">
-        Branches are campus hubs in the network. We picked a good match for
-        you — one click to join.
+        Branches are campus hubs in the network. Search for yours, or add your
+        institution if it isn&apos;t listed.
       </p>
 
-      <div className="mt-6 space-y-2.5">
+      <div className="mt-6 space-y-3">
+        <div className="relative">
+          <Search
+            size={16}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-500"
+          />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search your school or university"
+            className={cn(inputClass, "pl-11")}
+          />
+        </div>
+
         {data.branches.length === 0 ? (
           <div className="rounded-xl border border-border bg-surface px-4 py-5 text-center text-sm text-ink-500">
-            No branches are live yet. You can join later from the Branches page.
+            No branches are live yet. If your institution isn&apos;t listed
+            below, you can add it.
+          </div>
+        ) : visibleBranches.length === 0 ? (
+          <div className="rounded-xl border border-border bg-surface px-4 py-5 text-center text-sm text-ink-500">
+            No branches match &quot;{query}&quot;. If your institution
+            isn&apos;t listed, add it below.
           </div>
         ) : (
-          data.branches.map((b) => {
+          visibleBranches.map((b) => {
             const isJoined = joined === b.id;
             return (
               <div
@@ -477,6 +517,7 @@ function BranchStep({
                     ) : null}
                   </p>
                   <p className="truncate text-xs text-ink-500">
+                    {b.institution ? `${b.institution} \u2022 ` : ""}
                     {b.member_count} {b.member_count === 1 ? "member" : "members"}
                   </p>
                 </div>
@@ -492,18 +533,65 @@ function BranchStep({
             );
           })
         )}
+
+        <div className="rounded-xl border border-dashed border-border-strong bg-surface/60 p-4">
+          {showOther ? (
+            <div className="space-y-3">
+              <label className="block space-y-1.5">
+                <span className="text-sm font-medium text-ink-200">
+                  Your institution
+                </span>
+                <input
+                  value={institution}
+                  onChange={(e) => setInstitution(e.target.value)}
+                  maxLength={100}
+                  placeholder="Your school or university"
+                  className={inputClass}
+                />
+              </label>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={saveInstitution}
+                  disabled={busy || !institution.trim()}
+                >
+                  {institutionSaved ? "Saved" : "Save"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowOther(false)}
+                  disabled={busy}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowOther(true)}
+              disabled={busy}
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm font-medium text-accent-300 transition-colors hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+            >
+              <Plus size={15} />
+              My institution isn&apos;t listed
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="mt-6 flex items-center justify-between gap-3 border-t border-border pt-5">
         <Button variant="ghost" size="sm" onClick={onNext} disabled={busy}>
-          {joined ? "Continue" : "Skip for now"}
+          Skip for now
         </Button>
-        {data.branches.length > 0 ? null : (
+        {hasChoice ? (
           <Button variant="primary" size="sm" onClick={onNext} disabled={busy}>
             Continue
             <ArrowRight size={15} />
           </Button>
-        )}
+        ) : null}
       </div>
     </div>
   );
