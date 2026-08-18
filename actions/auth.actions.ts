@@ -62,6 +62,24 @@ export async function signIn(formData: FormData) {
   redirect("/");
 }
 
+export async function signInWithGoogle(next?: string) {
+  const supabase = await createClient();
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://azenion.com";
+  const safeNext = sanitizeNextPath(next) ?? "/";
+  const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent(safeNext)}`;
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo },
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+  return { url: data.url };
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
