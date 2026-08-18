@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { sanitizeNextPath } from "@/lib/auth-redirect";
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
@@ -53,8 +54,9 @@ export async function signIn(formData: FormData) {
 
   revalidatePath("/", "layout");
 
-  const next = formData.get("next");
-  if (typeof next === "string" && next.startsWith("/") && !next.startsWith("//") && next !== "/login" && next !== "/join") {
+  const rawNext = formData.get("next");
+  const next = typeof rawNext === "string" ? sanitizeNextPath(rawNext) : null;
+  if (next && next !== "/login" && next !== "/join") {
     redirect(next);
   }
   redirect("/");

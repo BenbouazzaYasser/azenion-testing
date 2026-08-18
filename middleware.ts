@@ -39,8 +39,11 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    const url = new URL("/login", request.url);
+    const next = request.nextUrl.pathname + request.nextUrl.search;
+    if (next && next !== "/") {
+      url.searchParams.set("next", next);
+    }
     return NextResponse.redirect(url);
   }
 
