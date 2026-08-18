@@ -49,7 +49,7 @@ export function ThemeProvider({ initialTheme, children }: ThemeProviderProps) {
       const pref = document.documentElement.dataset.themePreference;
       if (pref === "light" || pref === "dark" || pref === "system") return pref;
     }
-    return "system";
+    return "dark";
   });
 
   const applyTheme = useCallback((next: Theme) => {
