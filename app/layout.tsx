@@ -6,6 +6,7 @@ import { OnboardingProvider } from "@/components/onboarding/onboarding-provider"
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { CallProvider } from "@/components/chat/call-provider";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Azenion — Infinite minds. Limitless impact.",
@@ -57,6 +58,7 @@ export default function RootLayout({
             <CallProvider>{children}</CallProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
