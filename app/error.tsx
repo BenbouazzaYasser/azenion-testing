@@ -19,7 +19,10 @@ export default function Error({ error, reset }: ErrorProps) {
 
   return (
     <>
-      <main id="main" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <main
+        id="main"
+        className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[radial-gradient_at_50%_0%_rgba(40,40,255,0.03),var(--void-950)]"
+      >
         <PageAtmosphere />
         <div className="relative mx-auto max-w-md px-5 text-center">
           <div className="mb-6">

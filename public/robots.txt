@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://azenion.com/sitemap.xml

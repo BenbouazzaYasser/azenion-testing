@@ -28,15 +28,15 @@ export interface Team {
   name: string;
   tagline: string;
   status: string;
-  memberCount: number;
+  memberCount?: number;
   about: string;
   aboutAdditional: string[];
   roles: TeamRole[];
   projects: TeamProject[];
-  members: TeamMember[];
+  members?: TeamMember[];
   values: TeamValue[];
-  joinCtaLabel: string;
-  joinCtaHref: string;
+  joinCtaLabel?: string;
+  joinCtaHref?: string;
 }
 
 export const teams: Team[] = [
@@ -45,7 +45,6 @@ export const teams: Team[] = [
     name: "Azenion Core Team",
     tagline: "Building the platform, growing the community",
     status: "Recruiting",
-    memberCount: 3,
     about:
       "The Azenion Core Team is responsible for designing, developing and growing the Azenion ecosystem. Members collaborate on the platform itself, organize initiatives, improve the community experience and shape the future of The Limitless Network.",
     aboutAdditional: [
@@ -107,9 +106,6 @@ export const teams: Team[] = [
         status: "Ongoing",
       },
     ],
-    members: [
-      { id: "ziyad", name: "Ziyad", role: "Founder" },
-    ],
     values: [
       {
         id: "collaboration",
@@ -142,8 +138,6 @@ export const teams: Team[] = [
           "We grow by teaching each other, sharing knowledge, and staying curious.",
       },
     ],
-    joinCtaLabel: "Request to Join",
-    joinCtaHref: "/teams",
   },
 ];
 
