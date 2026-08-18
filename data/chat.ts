@@ -230,11 +230,23 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
   }));
 }
 
+export interface ConversationPeer {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  username: string;
+}
+
 export async function getConversationBlockState(conversationId: string): Promise<{
   /** True when the other participant has blocked the current user. */
   am_blocked: boolean;
   /** True when the current user has blocked the other participant. */
   i_blocked: boolean;
+  /**
+   * The other participant, derived from conversation membership so it is
+   * always available for a valid 1-to-1 conversation (even with no messages).
+   */
+  peer: ConversationPeer | null;
 }> {
   const supabase = await createClient();
 
@@ -243,7 +255,7 @@ export async function getConversationBlockState(conversationId: string): Promise
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { am_blocked: false, i_blocked: false };
+    return { am_blocked: false, i_blocked: false, peer: null };
   }
 
   const { data: members } = await supabase
@@ -254,7 +266,7 @@ export async function getConversationBlockState(conversationId: string): Promise
   const otherId = (members ?? []).find((m) => m.user_id !== user.id)?.user_id ?? null;
 
   if (!otherId) {
-    return { am_blocked: false, i_blocked: false };
+    return { am_blocked: false, i_blocked: false, peer: null };
   }
 
   const { data: ownBlockRows } = await supabase
@@ -268,7 +280,25 @@ export async function getConversationBlockState(conversationId: string): Promise
     p_blocked_id: user.id,
   });
 
-  return { am_blocked: !!am_blocked, i_blocked };
+  // Calls stay restricted to 1-to-1 conversations.
+  let peer: ConversationPeer | null = null;
+  if ((members ?? []).length === 2) {
+    const { data: profile } = await createAdminClient()
+      .from("profiles")
+      .select("id, full_name, avatar_url, username")
+      .eq("id", otherId)
+      .maybeSingle();
+    if (profile) {
+      peer = {
+        id: profile.id,
+        full_name: profile.full_name,
+        avatar_url: profile.avatar_url,
+        username: profile.username,
+      };
+    }
+  }
+
+  return { am_blocked: !!am_blocked, i_blocked, peer };
 }
 
 

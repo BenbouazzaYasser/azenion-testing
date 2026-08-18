@@ -5,6 +5,7 @@ import { CursorGlow } from "@/components/graphics/cursor-glow";
 import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { CallProvider } from "@/components/chat/call-provider";
 
 export const metadata: Metadata = {
   title: "Azenion — Infinite minds. Limitless impact.",
@@ -53,7 +54,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <OnboardingProvider />
-            {children}
+            <CallProvider>{children}</CallProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -34,6 +34,7 @@ export default async function ConversationPage({ params }: Props) {
             initialMessages={messages}
             currentUserId={user.id}
             amBlocked={blockState.am_blocked}
+            peer={blockState.peer}
           />
         </ChatLayout>
       </main>
