@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE } from "./urls";
 
 export const MAX_BRANCH_ASSET_SIZE = 2 * 1024 * 1024;
 export const ALLOWED_BRANCH_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
@@ -134,6 +135,7 @@ export const createBranchEventSchema = z.object({
   registration_url: z
     .string()
     .max(500, "Registration URL must be 500 characters or less")
+    .refine(isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE)
     .nullable()
     .optional(),
   visibility: z.enum(["public", "members"]).default("public"),
@@ -177,6 +179,7 @@ export const updateBranchEventSchema = z.object({
   registration_url: z
     .string()
     .max(500, "Registration URL must be 500 characters or less")
+    .refine(isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE)
     .nullable()
     .optional(),
   visibility: z.enum(["public", "members"]).optional(),
@@ -199,6 +202,7 @@ export const createBranchHighlightSchema = z.object({
   link_url: z
     .string()
     .max(500, "Link must be 500 characters or less")
+    .refine(isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE)
     .nullable()
     .optional(),
   sort_order: z
@@ -227,6 +231,7 @@ export const updateBranchHighlightSchema = z.object({
   link_url: z
     .string()
     .max(500, "Link must be 500 characters or less")
+    .refine(isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE)
     .nullable()
     .optional(),
   sort_order: z.number().int().optional(),

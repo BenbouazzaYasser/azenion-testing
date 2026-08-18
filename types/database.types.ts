@@ -732,6 +732,13 @@ export type Database = {
       }
     }
     Functions: {
+      can_access_private_media: {
+        Args: {
+          p_path: string
+          p_user_id?: string
+        }
+        Returns: boolean
+      }
       create_project: {
         Args: {
           p_description?: string

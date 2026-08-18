@@ -215,15 +215,11 @@ export async function getPublicProfile(username: string): Promise<
 
   const resultObj = (result ?? {}) as Record<string, unknown>;
 
-  if (!resultObj || !resultObj.id) {
-    return { error: "User not found." };
-  }
-
   if (resultObj.hidden === true) {
     return {
       data: {
         profile: {
-          id: String(resultObj.id),
+          id: String(resultObj.id ?? ""),
           username: String(resultObj.username ?? ""),
           full_name: String(resultObj.full_name ?? ""),
           bio: null,
@@ -249,6 +245,10 @@ export async function getPublicProfile(username: string): Promise<
         posts: [],
       },
     };
+  }
+
+  if (!resultObj || !resultObj.id) {
+    return { error: "User not found." };
   }
 
   const {

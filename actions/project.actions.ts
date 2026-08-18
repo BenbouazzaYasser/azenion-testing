@@ -17,6 +17,7 @@ import {
   privateMarkerFor,
   isProjectMediaPrivate,
 } from "@/lib/media";
+import { isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE } from "@/lib/validations/urls";
 
 export async function createProject(formData: FormData) {
   const supabase = await createClient();
@@ -187,6 +188,13 @@ export async function updateProjectSettings(formData: FormData) {
   const technologiesRaw = formData.get("technologies") as string | null;
   const recruitmentRaw = formData.get("recruitment") as string | null;
   const categoryIdsRaw = formData.get("category_ids") as string | null;
+
+  if (website && !isAllowedSchemeUrl(website)) {
+    return { error: `Website ${SAFE_HTTP_URL_MESSAGE.toLowerCase()}` };
+  }
+  if (githubUrl && !isAllowedSchemeUrl(githubUrl)) {
+    return { error: `GitHub URL ${SAFE_HTTP_URL_MESSAGE.toLowerCase()}` };
+  }
 
   if (name) updates.name = name;
   if (slug) updates.slug = slug;

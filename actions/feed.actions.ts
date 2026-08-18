@@ -362,10 +362,10 @@ async function enrichPosts(
     const key = keyOf(post);
 
     const [resolvedEntityLogo, resolvedBranchLogo, resolvedImages, resolvedVideos] = await Promise.all([
-      resolveMediaValue(entityLogo),
-      resolveMediaValue(branch?.logo_url ?? null),
-      resolveMediaValue(Array.isArray(post.images) ? post.images.filter(Boolean) : []),
-      resolveMediaValue(Array.isArray(post.videos) ? post.videos.filter(Boolean) : []),
+      resolveMediaValue(entityLogo, undefined, undefined, userId),
+      resolveMediaValue(branch?.logo_url ?? null, undefined, undefined, userId),
+      resolveMediaValue(Array.isArray(post.images) ? post.images.filter(Boolean) : [], undefined, undefined, userId),
+      resolveMediaValue(Array.isArray(post.videos) ? post.videos.filter(Boolean) : [], undefined, undefined, userId),
     ]);
 
     return {

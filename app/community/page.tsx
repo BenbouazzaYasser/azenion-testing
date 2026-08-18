@@ -132,7 +132,7 @@ export default async function CommunityPage() {
           `)
           .order("created_at", { ascending: false })
           .limit(5),
-    admin.rpc("get_live_sessions"),
+    supabase.rpc("get_live_sessions"),
     admin
       .from("platform_announcements")
       .select("id, emoji, title, category, description, badge, details")
