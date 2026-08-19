@@ -92,21 +92,26 @@ export async function getConversations(
 
   if (!conversations) return [];
 
-  const membersPromises = conversationIds.map(async (cid) => {
-    const { data: members } = await supabase
-      .from("conversation_members")
-      .select("user_id, last_read_at")
-      .eq("conversation_id", cid);
-    return { conversation_id: cid, members: members ?? [] };
-  });
+  // Batch membership for every conversation in ONE query instead of N
+  // (per-conversation round-trips) — the previous N+1 pattern scaled
+  // linearly with the number of conversations and dominated chat TTFB.
+  const { data: memberRows } = await supabase
+    .from("conversation_members")
+    .select("conversation_id, user_id, last_read_at")
+    .in("conversation_id", conversationIds);
 
-  const membersResults = await Promise.all(membersPromises);
-  const membersByConv = Object.fromEntries(
-    membersResults.map((r) => [r.conversation_id, r.members]),
-  ) as Record<string, { user_id: string; last_read_at: string | null }[]>;
+  const membersByConv = new Map<
+    string,
+    { user_id: string; last_read_at: string | null }[]
+  >();
+  for (const row of memberRows ?? []) {
+    const list = membersByConv.get(row.conversation_id) ?? [];
+    list.push({ user_id: row.user_id, last_read_at: row.last_read_at });
+    membersByConv.set(row.conversation_id, list);
+  }
 
   const allUserIds = [
-    ...new Set(membersResults.flatMap((r) => r.members.map((m) => m.user_id))),
+    ...new Set((memberRows ?? []).map((m) => m.user_id)),
   ];
 
   const { data: profiles } = await createAdminClient()
@@ -165,7 +170,7 @@ export async function getConversations(
   const blockedMeIds = new Set((blockersOfMe ?? []) as string[]);
 
   return (conversations ?? []).map((conv) => {
-    const convMembers = membersByConv[conv.id] ?? [];
+    const convMembers = membersByConv.get(conv.id) ?? [];
     const otherMember = convMembers.find((m) => m.user_id !== userId);
     const otherProfile = otherMember ? profileMap.get(otherMember.user_id) : null;
     const lastMsg = lastMessageByConv[conv.id];
