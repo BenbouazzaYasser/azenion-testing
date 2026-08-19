@@ -9,6 +9,7 @@ import {
   Monitor,
   TriangleAlert,
   Settings2,
+  Bookmark,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,10 +20,11 @@ import { ProfileSection } from "./profile-section";
 import { NotificationsSection } from "./notifications-section";
 import { PrivacySection } from "./privacy-section";
 import { AppearanceSection } from "./appearance-section";
+import { ActivitiesSection } from "./activities-section";
 import { DangerZoneSection } from "./danger-zone-section";
 import type { UserSettings } from "@/lib/settings-data";
 
-type SectionId = "account" | "profile" | "notifications" | "privacy" | "appearance" | "danger";
+type SectionId = "account" | "profile" | "notifications" | "privacy" | "appearance" | "activities" | "danger";
 
 interface SettingsPageProps {
   account: {
@@ -58,6 +60,7 @@ const SECTIONS: {
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "privacy", label: "Privacy", icon: Shield },
   { id: "appearance", label: "Appearance", icon: Monitor },
+  { id: "activities", label: "Activities", icon: Bookmark },
   { id: "danger", label: "Danger Zone", icon: TriangleAlert },
 ];
 
@@ -67,6 +70,7 @@ const SECTION_DESCRIPTIONS: Record<SectionId, string> = {
   notifications: "Choose what you hear about.",
   privacy: "Control how you appear across the network.",
   appearance: "Set the look and feel.",
+  activities: "Your saved items and activity.",
   danger: "Irreversible actions.",
 };
 
@@ -220,6 +224,9 @@ export function SettingsPage({ account, profile, branch, settings }: SettingsPag
           </div>
           <div className={cn(active !== "appearance" && "hidden")}>
             <AppearanceSection />
+          </div>
+          <div className={cn(active !== "activities" && "hidden")}>
+            <ActivitiesSection />
           </div>
           <div className={cn(active !== "danger" && "hidden")}>
             <DangerZoneSection />

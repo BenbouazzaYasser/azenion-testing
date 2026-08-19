@@ -15,6 +15,7 @@ import {
   IMAGE_STORAGE_BUCKET,
   VIDEO_STORAGE_BUCKET,
 } from "@/lib/validations/media.schema";
+import { resolveMediaValue } from "@/lib/media";
 
 const TARGET_TABLES: Record<string, string> = {
   project_update: "project_updates",
@@ -448,6 +449,81 @@ export async function toggleSavePost(postId: string) {
 
   if (error) return { error: error.message };
   return { saved: true };
+}
+
+export interface SavedPostItem {
+  id: string;
+  title: string;
+  body: string | null;
+  source_type: string;
+  saved_at: string;
+  created_at: string | null;
+  author_name: string | null;
+  author_username: string | null;
+  image: string | null;
+}
+
+/**
+ * Returns the authenticated user's saved posts, newest save first. Enriched
+ * with the post headline, author, and a thumbnail so the settings dialog can
+ * render a readable list without round-tripping through the feed pipeline.
+ */
+export async function getSavedPosts(): Promise<SavedPostItem[]> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data: saved } = await supabase
+    .from("saved_posts")
+    .select("post_id, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  const postIds = (saved ?? []).map((s) => s.post_id);
+  if (postIds.length === 0) return [];
+
+  const admin = createAdminClient();
+  const { data: posts } = await admin
+    .from("posts")
+    .select("id, title, body, images, source_type, author_id, created_at")
+    .in("id", postIds);
+
+  const authorIds = [
+    ...new Set((posts ?? []).map((p) => p.author_id).filter((id): id is string => Boolean(id))),
+  ];
+  const { data: profiles } = authorIds.length > 0
+    ? await admin.from("profiles").select("id, full_name, username").in("id", authorIds)
+    : { data: [] as { id: string; full_name: string | null; username: string }[] };
+
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+  const savedAtMap = new Map((saved ?? []).map((s) => [s.post_id, s.created_at ?? ""]));
+
+  return await Promise.all(
+    (posts ?? []).map(async (post) => {
+      const profile = post.author_id ? profileMap.get(post.author_id) : null;
+      const [image] = (await resolveMediaValue(
+        Array.isArray(post.images) ? post.images.filter(Boolean) : [],
+        undefined,
+        admin,
+      )) as string[];
+      return {
+        id: post.id,
+        title: post.title,
+        body: post.body,
+        source_type: post.source_type,
+        saved_at: savedAtMap.get(post.id) ?? "",
+        created_at: post.created_at,
+        author_name: profile?.full_name ?? profile?.username ?? null,
+        author_username: profile?.username ?? null,
+        image: image ?? null,
+      };
+    }),
+  );
 }
 
 /**

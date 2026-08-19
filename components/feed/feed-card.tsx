@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { memo, useEffect, useState, type ReactNode } from "react";
 import {
   Bookmark,
   Calendar,
@@ -111,7 +111,16 @@ interface FeedCardProps {
   postMenu?: ReactNode;
 }
 
-export function FeedCard({ item, currentUserId, headerAction, postMenu }: FeedCardProps) {
+// Memoized so cards only re-render when their own props change (e.g. a new
+// page of items). Without this, any parent state change (filter, load-more,
+// pin toggle) re-rendered every card in the feed, each mounting heavy
+// children (CommentSection, galleries, popovers) — a main-thread/INP sink.
+export const FeedCard = memo(function FeedCard({
+  item,
+  currentUserId,
+  headerAction,
+  postMenu,
+}: FeedCardProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -155,6 +164,8 @@ export function FeedCard({ item, currentUserId, headerAction, postMenu }: FeedCa
                 <img
                   src={avatarSrc}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="h-10 w-10 rounded-full border border-border-strong/[0.12] object-cover"
                 />
               ) : (
@@ -229,6 +240,8 @@ export function FeedCard({ item, currentUserId, headerAction, postMenu }: FeedCa
               <img
                 src={item.author_avatar}
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="h-5 w-5 rounded-full border border-border-strong/[0.1] object-cover"
               />
             ) : (
@@ -349,4 +362,4 @@ export function FeedCard({ item, currentUserId, headerAction, postMenu }: FeedCa
       </div>
     </div>
   );
-}
+});

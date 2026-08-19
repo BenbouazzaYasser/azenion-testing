@@ -90,6 +90,28 @@
     @apply bg-accent/30 text-ink-50;
   }
 
+  /* Neutralize Chrome autofill: it paints a light/white highlight over dark
+     inputs on focus. Pin the background to the surface color and freeze the
+     transition so there's no white flash when clicking into a field.
+     `!important` is required so the cover survives the focus utilities
+     (focus:shadow-input / focus:ring-2 set box-shadow in the utilities layer,
+     which would otherwise override this base-layer cover and let the white
+     autofill background flash through). */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: rgb(var(--ink-50)) !important;
+    -webkit-box-shadow: 0 0 0 1000px rgb(var(--surface)) inset !important;
+    transition: background-color 9999999s ease-in-out 0s;
+    caret-color: rgb(var(--ink-50)) !important;
+  }
+
   /* Keyboard-visible focus ring everywhere, invisible for mouse users */
   :focus-visible {
     outline: 2px solid rgb(40 40 255 / 0.8);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pin, Newspaper } from "lucide-react";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { FeedCard } from "@/components/feed/feed-card";
@@ -35,6 +35,72 @@ interface FeedListProps {
   currentUserId: string | null;
   isPlatformAdmin?: boolean;
 }
+
+// Memoized per-row wrapper. It stabilizes the per-item `postMenu`/`headerAction`
+// ReactNode props (which are recreated on every FeedList render) via useMemo, so
+// React.memo on FeedCard actually works: interacting with one card no longer
+// re-renders every other card in the feed (big INP/main-thread win on long lists).
+const FeedCardRow = memo(function FeedCardRow({
+  item,
+  currentUserId,
+  isPlatformAdmin,
+  pinPendingId,
+  onTogglePin,
+  onPostDeleted,
+  onPostEdited,
+}: {
+  item: FeedItemWithAuthor;
+  currentUserId: string | null;
+  isPlatformAdmin: boolean;
+  pinPendingId: string | null;
+  onTogglePin: (item: FeedItemWithAuthor) => void;
+  onPostDeleted: (postId: string) => void;
+  onPostEdited: (postId: string, title: string, body: string | null) => void;
+}) {
+  const postMenu = useMemo(
+    () =>
+      item.source_type === "user_post" ? (
+        <FeedPostMenu
+          item={item}
+          currentUserId={currentUserId}
+          onDeleted={onPostDeleted}
+          onEdited={onPostEdited}
+        />
+      ) : undefined,
+    [item, currentUserId, onPostDeleted, onPostEdited],
+  );
+
+  const headerAction = useMemo(
+    () =>
+      isPlatformAdmin ? (
+        <button
+          type="button"
+          onClick={() => onTogglePin(item)}
+          disabled={pinPendingId === item.id}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
+            item.is_pinned
+              ? "bg-accent/[0.12] text-accent-300 hover:bg-accent/[0.16]"
+              : "bg-surface text-ink-500 hover:bg-surface-hover hover:text-ink-200",
+          )}
+          aria-label={item.is_pinned ? "Unpin from global feed" : "Pin to global feed"}
+        >
+          <Pin size={13} className={item.is_pinned ? "fill-accent-400 text-accent-400" : ""} />
+          {item.is_pinned ? "Unpin" : "Pin"}
+        </button>
+      ) : undefined,
+    [item, isPlatformAdmin, pinPendingId, onTogglePin],
+  );
+
+  return (
+    <FeedCard
+      item={item}
+      currentUserId={currentUserId}
+      postMenu={postMenu}
+      headerAction={headerAction}
+    />
+  );
+});
 
 export function FeedList({
   initialItems,
@@ -144,38 +210,41 @@ export function FeedList({
     }
   };
 
-  const handleToggleGlobalPin = async (item: FeedItemWithAuthor) => {
-    if (pinPendingId) return;
-    setPinPendingId(item.id);
-    setError(null);
-    const fd = new FormData();
-    fd.set("post_id", item.id);
-    fd.set("scope", "global");
-    const result = await toggleFeedPin(fd);
-    setPinPendingId(null);
-    if (result && "error" in result && result.error) {
-      setError(result.error);
-      return;
-    }
-    void loadFirstPage(filterRef.current);
-  };
+  const handleToggleGlobalPin = useCallback(
+    async (item: FeedItemWithAuthor) => {
+      if (pinPendingId) return;
+      setPinPendingId(item.id);
+      setError(null);
+      const fd = new FormData();
+      fd.set("post_id", item.id);
+      fd.set("scope", "global");
+      const result = await toggleFeedPin(fd);
+      setPinPendingId(null);
+      if (result && "error" in result && result.error) {
+        setError(result.error);
+        return;
+      }
+      void loadFirstPage(filterRef.current);
+    },
+    [pinPendingId, loadFirstPage],
+  );
 
-  const handlePostDeleted = (postId: string) => {
+  const handlePostDeleted = useCallback((postId: string) => {
     const next = itemsRef.current.filter((i) => i.id !== postId);
     itemsRef.current = next;
     totalRef.current = Math.max(0, totalRef.current - 1);
     hasMoreRef.current = next.length < totalRef.current;
     setItems(next);
     setHasMore(hasMoreRef.current);
-  };
+  }, []);
 
-  const handlePostEdited = (postId: string, title: string, body: string | null) => {
+  const handlePostEdited = useCallback((postId: string, title: string, body: string | null) => {
     const next = itemsRef.current.map((i) =>
       i.id === postId ? { ...i, title, body, updated_at: new Date().toISOString() } : i,
     );
     itemsRef.current = next;
     setItems(next);
-  };
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -229,39 +298,15 @@ export function FeedList({
         )}
 
         {items.map((item) => (
-          <FeedCard
+          <FeedCardRow
             key={`${item.source_type}-${item.source_id}`}
             item={item}
             currentUserId={currentUserId}
-            postMenu={
-              item.source_type === "user_post" ? (
-                <FeedPostMenu
-                  item={item}
-                  currentUserId={currentUserId}
-                  onDeleted={handlePostDeleted}
-                  onEdited={handlePostEdited}
-                />
-              ) : undefined
-            }
-            headerAction={
-              isPlatformAdmin ? (
-                <button
-                  type="button"
-                  onClick={() => void handleToggleGlobalPin(item)}
-                  disabled={pinPendingId === item.id}
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
-                    item.is_pinned
-                      ? "bg-accent/[0.12] text-accent-300 hover:bg-accent/[0.16]"
-                      : "bg-surface text-ink-500 hover:bg-surface-hover hover:text-ink-200",
-                  )}
-                  aria-label={item.is_pinned ? "Unpin from global feed" : "Pin to global feed"}
-                >
-                  <Pin size={13} className={item.is_pinned ? "fill-accent-400 text-accent-400" : ""} />
-                  {item.is_pinned ? "Unpin" : "Pin"}
-                </button>
-              ) : undefined
-            }
+            isPlatformAdmin={isPlatformAdmin}
+            pinPendingId={pinPendingId}
+            onTogglePin={handleToggleGlobalPin}
+            onPostDeleted={handlePostDeleted}
+            onPostEdited={handlePostEdited}
           />
         ))}
 
