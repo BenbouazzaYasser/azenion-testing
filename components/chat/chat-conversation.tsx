@@ -24,6 +24,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useCallContext } from "@/components/chat/call-provider";
 import type { CallPeer } from "@/lib/call";
 import { CallButtons } from "@/components/chat/call-buttons";
+import { ProfilePopover } from "@/components/chat/profile-popover";
 
 interface Message {
   id: string;
@@ -319,7 +320,7 @@ export function ChatConversation({
         <div className="absolute -right-20 bottom-20 h-80 w-80 rounded-full bg-accent-glow/[0.05] blur-[130px]" />
       </div>
 
-      <header className="relative z-10 flex shrink-0 items-center gap-3 border-b border-border bg-void-900/50 px-4 py-3 backdrop-blur-xl sm:px-6">
+      <header className="relative z-10 flex shrink-0 items-center gap-3 border-b border-border-strong/60 bg-void-900 px-4 py-3.5 sm:px-6">
         {mobileConversations ? (
           <button
             type="button"
@@ -332,31 +333,65 @@ export function ChatConversation({
         ) : null}
 
         {callPeer?.avatar_url ? (
-          <img
-            src={callPeer.avatar_url}
-            alt=""
-            className="h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.12] object-cover shadow-[0_0_20px_-8px_rgba(109,109,255,0.5)]"
-          />
+          <ProfilePopover
+            user={{
+              id: callPeer.id,
+              full_name: callPeer.full_name,
+              username: callPeer.username,
+              avatar_url: callPeer.avatar_url,
+            }}
+          >
+            <span className="relative shrink-0">
+              <img
+                src={callPeer.avatar_url}
+                alt=""
+                className="h-10 w-10 rounded-full border border-border-strong/[0.12] object-cover"
+              />
+              <span
+                aria-hidden
+                className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-void-900 bg-emerald-400"
+              />
+            </span>
+          </ProfilePopover>
+        ) : callPeer ? (
+          <ProfilePopover
+            user={{
+              id: callPeer.id,
+              full_name: callPeer.full_name,
+              username: callPeer.username,
+              avatar_url: null,
+            }}
+          >
+            <span className="relative shrink-0">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent-400/25 bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white">
+                {participantInitial}
+              </span>
+              <span
+                aria-hidden
+                className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-void-900 bg-emerald-400"
+              />
+            </span>
+          </ProfilePopover>
         ) : (
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent-400/25 bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white">
-            {callPeer ? participantInitial : <Users size={16} className="text-accent-300" />}
+            <Users size={16} className="text-accent-300" />
           </span>
         )}
 
         <div className="min-w-0">
           <h1 className="truncate text-sm font-semibold text-ink-50">{participantName}</h1>
           {callPeer?.username ? (
-            <p className="truncate text-xs text-ink-500">@{callPeer.username}</p>
+            <p className="mt-0.5 truncate text-xs text-ink-500">@{callPeer.username}</p>
           ) : (
-            <p className="text-xs text-ink-500">Private chat</p>
+            <p className="mt-0.5 text-xs text-ink-500">Private chat</p>
           )}
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {callsEnabled ? <CallButtons onStart={startCall} /> : null}
-          <div className="hidden shrink-0 items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1 sm:flex">
-            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
-            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">
+          <div className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border-strong bg-surface/70 px-2.5 py-1 sm:flex">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-ink-400">
               Private
             </span>
           </div>
@@ -370,7 +405,7 @@ export function ChatConversation({
               aria-hidden
               className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[120px]"
             />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300 shadow-input">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300 shadow-card">
               <MessageSquare size={26} />
             </div>
             <h2 className="mt-5 text-lg font-semibold text-ink-50">No messages yet</h2>
@@ -396,12 +431,12 @@ export function ChatConversation({
             return (
               <Fragment key={msg.id}>
                 {showDivider && (
-                  <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
-                    <span aria-hidden className="h-px flex-1 bg-border" />
-                    <span className="rounded-full border border-border bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-500 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 py-3" role="separator" aria-label={label ?? undefined}>
+                    <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-transparent via-border-strong/50 to-border-strong/50" />
+                    <span className="rounded-full border border-border-strong bg-surface px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-500 shadow-card">
                       {label}
                     </span>
-                    <span aria-hidden className="h-px flex-1 bg-border" />
+                    <span aria-hidden className="h-px flex-1 bg-gradient-to-l from-transparent via-border-strong/50 to-border-strong/50" />
                   </div>
                 )}
 
@@ -413,6 +448,7 @@ export function ChatConversation({
                     edited_at={msg.edited_at}
                     sender_id={msg.sender_id}
                     sender_name={msg.sender?.full_name ?? msg.sender?.username ?? null}
+                    sender_username={msg.sender?.username ?? null}
                     sender_avatar={msg.sender?.avatar_url ?? null}
                     messageType={msg.message_type}
                     metadata={msg.metadata}
@@ -441,11 +477,11 @@ export function ChatConversation({
         </div>
       </div>
 
-      <div className="relative z-10 shrink-0 border-t border-border/60 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4 sm:pt-3">
+      <div className="relative z-10 shrink-0 border-t border-border-strong/60 bg-surface px-3 pb-3 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
         {amBlocked ? (
           <div
             role="status"
-            className="flex items-center justify-center gap-2.5 rounded-2xl border border-border-strong/60 bg-surface/70 px-4 py-3.5 text-center"
+            className="flex items-center justify-center gap-2.5 rounded-2xl border border-border-strong bg-surface/70 px-4 py-3.5 text-center shadow-card"
           >
             <Ban size={16} className="shrink-0 text-ink-500" />
             <p className="text-sm text-ink-400">
@@ -454,25 +490,27 @@ export function ChatConversation({
           </div>
         ) : (
           <form
-            className="flex items-center gap-3"
+            className="flex items-center gap-2.5"
             onSubmit={(e) => {
               e.preventDefault();
               handleSend();
             }}
           >
-            <input
-              type="text"
-              aria-label="Type a message"
-              placeholder="Type a message..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="min-w-0 flex-1 rounded-2xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/60 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
-            />
+            <div className="relative flex min-w-0 flex-1 items-center rounded-2xl border border-border-strong bg-surface/70 px-4 py-3 shadow-card transition-all duration-300 ease-premium focus-within:border-accent-400/60 focus-within:bg-accent/[0.03] focus-within:ring-2 focus-within:ring-accent-400/20">
+              <input
+                type="text"
+                aria-label="Type a message"
+                placeholder="Type a message..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="min-w-0 flex-1 bg-transparent text-sm text-ink-50 placeholder:text-ink-600 focus:outline-none"
+              />
+            </div>
             <Button
               type="submit"
               aria-label="Send message"
               disabled={!input.trim() || isSending}
-              className="h-12 w-12 shrink-0 rounded-2xl p-0"
+              className="h-12 w-12 shrink-0 rounded-2xl p-0 shadow-card"
             >
               <Send size={18} />
             </Button>

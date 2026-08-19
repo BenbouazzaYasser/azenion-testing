@@ -264,7 +264,7 @@ export function ConversationMenu({
               aria-label={`Conversation options for ${conversationName}`}
               tabIndex={-1}
               onKeyDown={handleMenuKeyDown}
-              className="fixed z-[90] flex w-[13rem] flex-col overflow-hidden rounded-xl border border-border-strong/70 bg-glass-strong p-1 shadow-dropdown backdrop-blur-2xl animate-dropdown-in"
+              className="fixed z-[90] flex w-[13rem] flex-col overflow-hidden rounded-2xl bg-glass-strong p-1 shadow-dropdown animate-dropdown-in"
               style={{ top: coords.top, left: coords.left }}
             >
               {mode === "inbox" && (

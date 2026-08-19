@@ -25,8 +25,16 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
   }, [pathname]);
 
   useEffect(() => {
-    if (!open) return;
+    // Lock page scroll for the whole chat layout so the conversation area
+    // scrolls internally instead of changing the window document height.
     document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
     const frame = requestAnimationFrame(() => setMounted(true));
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
@@ -34,7 +42,6 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       cancelAnimationFrame(frame);
-      document.body.style.overflow = "";
       document.removeEventListener("keydown", handleKeyDown);
       setMounted(false);
     };
@@ -44,13 +51,13 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
 
   return (
     <MobileConversationsContext.Provider value={{ open: () => setOpen(true) }}>
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-[1200px]">
-        <aside className="hidden w-[360px] shrink-0 md:block">
-          <ChatSidebar conversations={conversations} currentUserId={currentUserId} />
-        </aside>
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-[1200px] flex-1 p-3 sm:p-5">
+        <div className="relative flex min-h-0 w-full overflow-hidden rounded-[2rem] border border-border-strong card-surface shadow-card backdrop-blur-xl">
+          <aside className="hidden w-[360px] shrink-0 md:block">
+            <ChatSidebar conversations={conversations} currentUserId={currentUserId} />
+          </aside>
 
-        <div className="relative flex min-h-0 flex-1 flex-col border-l border-border-strong">
-          {children}
+          <div className="relative flex min-h-0 flex-1 flex-col">{children}</div>
         </div>
       </div>
 
@@ -71,7 +78,7 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
           <div
             ref={dialogFocusRef}
             tabIndex={-1}
-            className="absolute inset-y-0 left-0 flex w-[85%] max-w-[330px] flex-col overflow-hidden border-r border-border-strong bg-glass shadow-dropdown backdrop-blur-2xl transition-all duration-300 ease-premium focus:outline-none"
+            className="absolute inset-y-0 left-0 flex w-[85%] max-w-[330px] flex-col overflow-hidden rounded-r-2xl border-r border-border-strong bg-glass shadow-dropdown transition-all duration-300 ease-premium focus:outline-none"
             style={{
               opacity: mounted ? 1 : 0,
               transform: mounted ? "translateX(0)" : "translateX(-100%)",

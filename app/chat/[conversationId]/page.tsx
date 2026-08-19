@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/navbar";
 import { ChatLayout } from "@/components/chat/chat-layout";
 import { ChatConversation } from "@/components/chat/chat-conversation";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { getConversations, getMessages, getConversationBlockState } from "@/data/chat";
 
 interface Props {
@@ -27,7 +28,8 @@ export default async function ConversationPage({ params }: Props) {
   return (
     <>
       <Navbar />
-      <main className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
+      <main className="relative flex h-screen max-h-screen flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
+        <PageAtmosphere />
         <ChatLayout conversations={conversations} currentUserId={user.id}>
           <ChatConversation
             conversationId={conversationId}

@@ -2,7 +2,6 @@
 
 import { memo, useEffect, useState, type ReactNode } from "react";
 import {
-  Bookmark,
   Calendar,
   GitBranch,
   Globe,
@@ -21,6 +20,7 @@ import { VideoGallery } from "@/components/feed/video-gallery";
 import { LikeButton } from "@/components/interactions/like-button";
 import { CommentSection } from "@/components/interactions/comment-section";
 import { SharePostButton } from "@/components/feed/share-post-button";
+import { SaveButton } from "@/components/interactions/save-button";
 import { toggleLike } from "@/actions/interactions.actions";
 import type { FeedItemWithAuthor } from "@/actions/feed.actions";
 
@@ -347,15 +347,11 @@ export const FeedCard = memo(function FeedCard({
 
             <div className="flex min-w-0 items-center gap-4">
               <SharePostButton postId={item.id} currentUserId={currentUserId} />
-              <button
-                type="button"
-                disabled
-                title="Coming Soon"
-                className="flex items-center gap-1.5 text-xs text-ink-600 transition-colors duration-300 ease-premium hover:text-ink-200 disabled:pointer-events-none disabled:opacity-50"
-              >
-                <Bookmark size={14} />
-                <span className="hidden sm:inline">Save</span>
-              </button>
+              <SaveButton
+                postId={item.id}
+                initialSaved={item.saved_by_user}
+                currentUserId={currentUserId}
+              />
             </div>
           </div>
         ) : null}
