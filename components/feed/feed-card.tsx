@@ -21,6 +21,7 @@ import { LikeButton } from "@/components/interactions/like-button";
 import { CommentSection } from "@/components/interactions/comment-section";
 import { SharePostButton } from "@/components/feed/share-post-button";
 import { SaveButton } from "@/components/interactions/save-button";
+import { ProfilePopover } from "@/components/chat/profile-popover";
 import { toggleLike } from "@/actions/interactions.actions";
 import type { FeedItemWithAuthor } from "@/actions/feed.actions";
 
@@ -236,7 +237,30 @@ export const FeedCard = memo(function FeedCard({
 
         {showAuthor ? (
           <div className="mt-3 flex items-center gap-2">
-            {item.author_avatar ? (
+            {item.author_id ? (
+              <ProfilePopover
+                user={{
+                  id: item.author_id,
+                  full_name: item.author_name ?? null,
+                  username: item.author_username ?? "",
+                  avatar_url: item.author_avatar ?? null,
+                }}
+              >
+                {item.author_avatar ? (
+                  <img
+                    src={item.author_avatar}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="h-5 w-5 rounded-full border border-border-strong/[0.1] object-cover"
+                  />
+                ) : (
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-ink-400">
+                    {initialFor(item.author_name)}
+                  </span>
+                )}
+              </ProfilePopover>
+            ) : item.author_avatar ? (
               <img
                 src={item.author_avatar}
                 alt=""

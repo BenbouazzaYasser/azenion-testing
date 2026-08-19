@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect, useCallback } from "react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Search, MessageSquare, Plus, Archive, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { toast } from "sonner";
-import { searchUsers, getArchivedConversations } from "@/actions/chat.actions";
+import { searchUsers, getArchivedConversations, getOrCreateConversation } from "@/actions/chat.actions";
 import { useChatUnread, clearConversationUnread } from "@/lib/chat-unread";
 import { ConversationRow, type Conversation } from "@/components/chat/conversation-row";
 
@@ -108,6 +107,22 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
     });
   };
 
+  const handleStartConversation = useCallback(
+    async (otherUserId: string) => {
+      setShowSearch(false);
+      setSearchQuery("");
+      setSearchResults([]);
+      onNavigate?.();
+      const result = await getOrCreateConversation(otherUserId);
+      if ("conversation_id" in result && result.conversation_id) {
+        router.push(`/chat/${result.conversation_id}`);
+      } else {
+        toast.error(result.error ?? "Could not open conversation");
+      }
+    },
+    [router, onNavigate],
+  );
+
   return (
     <div
       className={cn(
@@ -143,16 +158,11 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                 <p className="px-4 py-3 text-sm text-ink-600">No users found.</p>
               ) : (
                 searchResults.map((user) => (
-                <Link
+                <button
                   key={user.id}
-                  href={`/chat/start/${user.id}`}
-                  onClick={() => {
-                    setShowSearch(false);
-                    setSearchQuery("");
-                    setSearchResults([]);
-                    onNavigate?.();
-                  }}
-                  className="flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-premium hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
+                  type="button"
+                  onClick={() => void handleStartConversation(user.id)}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-all duration-200 ease-premium hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
                 >
                   {user.avatar_url ? (
                     <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.12] object-cover" />
@@ -170,7 +180,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                     </p>
                   </div>
                   <Plus size={14} className="ml-auto shrink-0 text-ink-400" />
-                </Link>
+                </button>
                 ))
               )}
             </div>

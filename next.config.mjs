@@ -11,8 +11,14 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  devIndicators: false,
+  poweredByHeader: false,
+  compress: true,
   images: {
     formats: ["image/avif", "image/webp"],
+  },
+  experimental: {
+    optimizePackageImports: ["@supabase/supabase-js", "sonner"],
   },
   distDir: process.env.NEXT_PROD_DIST ? process.env.NEXT_PROD_DIST : ".next",
   async headers() {
