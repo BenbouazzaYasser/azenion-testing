@@ -182,6 +182,65 @@ export type Database = {
           },
         ]
       }
+      courses: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          category: string
+          content_type: string
+          file_url: string
+          file_path: string
+          thumbnail: string | null
+          duration: string | null
+          difficulty: string | null
+          tags: string[] | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          category: string
+          content_type: string
+          file_url: string
+          file_path: string
+          thumbnail?: string | null
+          duration?: string | null
+          difficulty?: string | null
+          tags?: string[] | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          category?: string
+          content_type?: string
+          file_url?: string
+          file_path?: string
+          thumbnail?: string | null
+          duration?: string | null
+          difficulty?: string | null
+          tags?: string[] | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -781,6 +840,10 @@ export type Database = {
           conversation_id: string
           unread_count: number
         }[]
+      }
+      is_course_manager: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       mark_messages_received: {
         Args: { p_conversation_id: string }

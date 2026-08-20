@@ -27,6 +27,26 @@ export type UserBranch = {
   role: string;
 };
 
+export async function getUserRoles(userId: string): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("user_roles")
+    .select("roles(name)")
+    .eq("user_id", userId);
+
+  if (!data) return [];
+
+  const roles = (data as Array<{ roles: { name: string }[] | { name: string } | null }>)
+    .flatMap((row) => {
+      const r = row.roles;
+      if (!r) return [];
+      return Array.isArray(r) ? r.map((x) => x.name) : [r.name];
+    })
+    .filter((name): name is string => Boolean(name));
+
+  return [...new Set(roles)].sort();
+}
+
 export async function getCurrentUser(): Promise<User | null> {
   const supabase = await createClient();
   const {
