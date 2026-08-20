@@ -162,6 +162,7 @@ export type PublicProfileData = {
     skills: string[];
     institution: string | null;
     created_at: string;
+    roles: string[];
   } | null;
   relationship: {
     is_viewer: boolean;
@@ -229,6 +230,7 @@ export async function getPublicProfile(username: string): Promise<
           skills: [],
           institution: null,
           created_at: new Date().toISOString(),
+          roles: [],
         },
         relationship: {
           is_viewer: false,
@@ -326,6 +328,7 @@ export async function getPublicProfile(username: string): Promise<
         skills: Array.isArray(resultObj.skills) ? (resultObj.skills as string[]) : [],
         institution: typeof resultObj.institution === "string" ? resultObj.institution : null,
         created_at: String(resultObj.created_at ?? new Date().toISOString()),
+        roles: Array.isArray(resultObj.roles) ? (resultObj.roles as string[]) : [],
       },
       relationship: {
         is_viewer: isViewer,

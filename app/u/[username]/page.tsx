@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getPublicProfile } from "@/actions/social.actions";
 import { cardBase, sectionCardClass } from "@/components/sections/profile/card-classes";
 import { PublicProfileHeader } from "./components/public-profile-header";
+import { ProfileRoles } from "@/components/sections/profile/profile-roles";
 import { RelationshipActions } from "./components/relationship-actions";
 import { PublicProfileTimeline } from "./components/public-profile-timeline";
 import { PublicProfilePosts } from "./components/public-profile-posts";
@@ -42,6 +43,7 @@ export default async function PublicProfilePage({
   return (
     <div className="flex flex-col gap-6">
       <PublicProfileHeader profile={profile} cardClass={cardBase} />
+      <ProfileRoles roles={profile.roles} cardClass={sectionCardClass} />
 
       {hidden ? (
         <div className={`${sectionCardClass} text-center`}>
