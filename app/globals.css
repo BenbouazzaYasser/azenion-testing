@@ -1,0 +1,428 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Brand wordmark typeface.
+  Proxima Nova is a licensed, commercial font — it cannot be bundled here.
+  Drop the licensed .woff2 files into /public/fonts/ (see public/fonts/README.md)
+  and this @font-face will pick them up automatically. Until then, the
+  fallback chain below (var(--font-inter), then system sans) keeps the
+  wordmark looking correct and on-brand.
+*/
+@font-face {
+  font-family: "Proxima Nova";
+  src:
+    url("/fonts/ProximaNova-Semibold.woff2") format("woff2"),
+    url("/fonts/ProximaNova-Semibold.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Proxima Nova";
+  src:
+    url("/fonts/ProximaNova-Bold.woff2") format("woff2"),
+    url("/fonts/ProximaNova-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --font-inter: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    --void-950: 9 13 22;
+    --void-900: 14 20 32;
+    --void-800: 20 27 42;
+
+    --surface: 15 23 42;
+    --surface-hover: 23 32 54;
+
+    --ink-50: 244 245 248;
+    --ink-100: 222 224 233;
+    --ink-200: 199 201 214;
+    --ink-300: 169 172 186;
+    --ink-400: 139 141 154;
+    --ink-500: 110 113 128;
+    --ink-600: 91 93 107;
+    --ink-700: 64 66 78;
+
+    --accent-200: 214 216 255;
+    --accent-300: 165 168 255;
+
+    --border: 255 255 255;
+    --border-strong: 255 255 255;
+
+    --glass: 13 19 32;
+    --glass-strong: 13 19 32;
+    --glass-panel: 11 16 28;
+    --glass-nav: 8 12 20;
+
+    --panel-a: 24 32 50;
+    --panel-b: 11 16 28;
+    --composer-a: 9 13 22;
+    --composer-b: 10 15 26;
+
+    --scrim: 9 13 22;
+    --cosmic: 9 13 22;
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-void-950 text-ink-50 antialiased;
+    background-image:
+      radial-gradient(ellipse 1100px 650px at 12% -5%, rgba(92, 50, 200, 0.14), transparent 58%),
+      radial-gradient(ellipse 1000px 620px at 88% 12%, rgba(40, 40, 255, 0.13), transparent 55%),
+      radial-gradient(ellipse 900px 600px at 50% 115%, rgba(76, 46, 190, 0.10), transparent 60%);
+    background-repeat: no-repeat;
+  }
+
+  ::selection {
+    @apply bg-accent/30 text-ink-50;
+  }
+
+  /* Neutralize Chrome autofill: it paints a light/white highlight over dark
+     inputs on focus. Pin the background to the surface color and freeze the
+     transition so there's no white flash when clicking into a field.
+     `!important` is required so the cover survives the focus utilities
+     (focus:shadow-input / focus:ring-2 set box-shadow in the utilities layer,
+     which would otherwise override this base-layer cover and let the white
+     autofill background flash through). */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: rgb(var(--ink-50)) !important;
+    -webkit-box-shadow: 0 0 0 1000px rgb(var(--surface)) inset !important;
+    transition: background-color 9999999s ease-in-out 0s;
+    caret-color: rgb(var(--ink-50)) !important;
+  }
+
+  /* Keyboard-visible focus ring everywhere, invisible for mouse users */
+  :focus-visible {
+    outline: 2px solid rgb(40 40 255 / 0.8);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgb(var(--glass));
+  }
+
+  /* Opaque panels (dropdowns/popovers) — solid surface, no frosted glass. */
+  .glass-frost {
+    background: rgb(var(--glass));
+    box-shadow: 0 24px 70px -20px rgb(0 0 0 / 0.6);
+  }
+  [data-theme="light"] .glass-frost {
+    background: rgb(var(--glass));
+    box-shadow: 0 24px 70px -20px rgb(0 0 0 / 0.18);
+  }
+
+  .glass-nav {
+    background: rgb(var(--glass-nav));
+  }
+
+  /* Chat message bubbles — dark by default, theme-adaptive. */
+  .msg-bubble-own {
+    border-color: rgb(109 109 255 / 0.3);
+    background-color: rgb(32 32 150);
+    color: #ffffff;
+  }
+  .msg-bubble-other {
+    border-color: rgb(var(--border-strong) / 0.4);
+    background-color: rgb(var(--surface));
+    color: rgb(var(--ink-50));
+  }
+  .msg-bubble-own .msg-bubble-time {
+    color: rgb(255 255 255 / 0.7);
+  }
+  .msg-bubble-other .msg-bubble-time {
+    color: rgb(var(--ink-500));
+  }
+
+  .navbar-border {
+    border-color: rgb(var(--border-strong) / 0.16);
+  }
+  [data-theme="light"] .navbar-border {
+    border-color: rgb(var(--border-strong) / 0.08);
+  }
+
+  .navbar-element-border {
+    border-color: rgb(var(--border-strong) / 0.2);
+  }
+  [data-theme="light"] .navbar-element-border {
+    border-color: rgb(var(--border-strong) / 0.12);
+  }
+
+  .navbar-panel-border {
+    border-color: rgb(var(--border-strong) / 0.18);
+  }
+  [data-theme="light"] .navbar-panel-border {
+    border-color: rgb(var(--border-strong) / 0.1);
+  }
+
+  /* Branch hub hero — dark cosmic by default, adaptive in light mode. */
+  .branch-hero-scrim {
+    background-color: rgb(var(--cosmic));
+  }
+  [data-theme="light"] .branch-hero-scrim {
+    background-color: rgb(var(--void-950));
+  }
+
+  .branch-hero-frame {
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgb(20 28 46);
+  }
+  [data-theme="light"] .branch-hero-frame {
+    border-color: rgba(11, 12, 16, 0.16);
+    background-color: rgb(var(--surface));
+  }
+
+  .branch-hero-helper {
+    color: rgba(255, 255, 255, 0.35);
+  }
+  [data-theme="light"] .branch-hero-helper {
+    color: rgb(var(--ink-500));
+  }
+
+  .panel-gradient {
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--panel-a) / 0.98),
+      rgb(var(--panel-b) / 0.98)
+    );
+  }
+
+  .gradient-composer {
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--composer-a)),
+      rgb(var(--composer-b))
+    );
+  }
+
+  .card-surface {
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--surface-hover)),
+      rgb(var(--surface))
+    );
+  }
+  .card-surface:hover {
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--surface-hover)),
+      rgb(var(--surface-hover))
+    );
+  }
+  .card-surface-soft {
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--surface)),
+      rgb(var(--surface))
+    );
+  }
+  .card-surface-soft:hover {
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--surface-hover)),
+      rgb(var(--surface-hover))
+    );
+  }
+
+  .section-cosmic {
+    background-color: transparent;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Appearance (theme) support.
+   The brand is a dark, layered-gloss aesthetic. The base `:root` is dark.
+   The `data-theme` attribute (set by components/theme/theme-provider.tsx,
+   "system" | "light" | "dark") drives `color-scheme` and the page canvas.
+   Signature dark-glass panels are intentionally theme-independent so the
+   brand look stays coherent in both light and dark modes.
+--------------------------------------------------------------------------- */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --void-950: 239 241 248;
+  --void-900: 231 233 242;
+  --void-800: 225 228 238;
+  --surface: 255 255 255;
+  --surface-hover: 246 247 251;
+
+  --ink-50: 13 15 22;
+  --ink-100: 31 33 44;
+  --ink-200: 42 44 56;
+  --ink-300: 64 66 79;
+  --ink-400: 90 92 105;
+  --ink-500: 110 112 123;
+  --ink-600: 139 141 151;
+  --ink-700: 201 203 212;
+
+  --accent-200: 47 51 184;
+  --accent-300: 69 73 207;
+
+  --border: 69 73 207;
+  --border-strong: 47 51 184;
+
+  --glass: 255 255 255;
+  --glass-strong: 255 255 255;
+  --glass-panel: 255 255 255;
+  --glass-nav: 255 255 255;
+
+  --panel-a: 255 255 255;
+  --panel-b: 242 243 248;
+  --composer-a: 242 243 248;
+  --composer-b: 240 241 246;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+[data-theme="light"] .card-surface {
+  background-image: linear-gradient(135deg, #ffffff, #ffffff);
+}
+[data-theme="light"] .card-surface:hover {
+  background-image: linear-gradient(135deg, #f7f8fc, #f7f8fc);
+}
+[data-theme="light"] .card-surface-soft {
+  background-image: linear-gradient(135deg, #ffffff, #ffffff);
+}
+[data-theme="light"] .card-surface-soft:hover {
+  background-image: linear-gradient(135deg, #f7f8fc, #f7f8fc);
+}
+
+[data-theme="light"] .section-cosmic {
+  background-color: rgb(var(--cosmic));
+}
+
+[data-theme="light"] [data-sonner-toast] {
+  background: rgb(var(--surface) / 0.96) !important;
+  border-color: rgba(11, 12, 16, 0.12) !important;
+  color: rgb(var(--ink-50)) !important;
+  box-shadow:
+    0 8px 24px rgba(11, 12, 16, 0.08),
+    0 2px 8px rgba(11, 12, 16, 0.06) !important;
+}
+[data-theme="light"] [data-sonner-toast] [data-description] {
+  color: rgb(var(--ink-400)) !important;
+}
+[data-theme="light"] [data-sonner-toast] [data-close-button] {
+  background: rgb(var(--surface-hover)) !important;
+  color: rgb(var(--ink-300)) !important;
+}
+
+[data-theme="light"] .text-rose-300 { color: #e11d48; }
+[data-theme="light"] .text-red-300 { color: #dc2626; }
+[data-theme="light"] .text-amber-300 { color: #d97706; }
+[data-theme="light"] .text-orange-300 { color: #ea580c; }
+[data-theme="light"] .text-emerald-300 { color: #059669; }
+[data-theme="light"] .text-blue-300 { color: #2563eb; }
+[data-theme="light"] .text-purple-300 { color: #9333ea; }
+[data-theme="light"] .text-pink-300 { color: #db2777; }
+[data-theme="light"] .text-cyan-300 { color: #0891b2; }
+[data-theme="light"] .text-green-300 { color: #16a34a; }
+[data-theme="light"] .text-indigo-300 { color: #4f46e5; }
+
+[data-theme="light"] .section-cosmic .text-rose-300 { color: #fda4af; }
+[data-theme="light"] .section-cosmic .text-red-300 { color: #fca5a5; }
+[data-theme="light"] .section-cosmic .text-amber-300 { color: #fcd34d; }
+[data-theme="light"] .section-cosmic .text-orange-300 { color: #fdba74; }
+[data-theme="light"] .section-cosmic .text-emerald-300 { color: #6ee7b7; }
+[data-theme="light"] .section-cosmic .text-blue-300 { color: #93c5fd; }
+[data-theme="light"] .section-cosmic .text-purple-300 { color: #d8b4fe; }
+[data-theme="light"] .section-cosmic .text-pink-300 { color: #f9a8d4; }
+[data-theme="light"] .section-cosmic .text-cyan-300 { color: #67e8f9; }
+[data-theme="light"] .section-cosmic .text-green-300 { color: #86efac; }
+[data-theme="light"] .section-cosmic .text-indigo-300 { color: #a5b4fc; }
+
+/* Chat bubbles in light mode — solid accent for own, white for others. */
+[data-theme="light"] .msg-bubble-own {
+  border-color: rgba(40, 40, 255, 0.28);
+  background-color: #e8e9ff;
+  color: rgb(var(--ink-50));
+}
+[data-theme="light"] .msg-bubble-other {
+  border-color: rgba(11, 12, 16, 0.1);
+  background-color: rgb(var(--surface));
+  color: rgb(var(--ink-50));
+}
+[data-theme="light"] .msg-bubble-own .msg-bubble-time {
+  color: rgb(var(--ink-500));
+}
+
+/* Branch hub hero CTA — solid, unlayered so it overrides the button variant's
+   own border/background/text utilities (the variant stays theme-agnostic). */
+.branch-hero-cta {
+  border-color: rgba(255, 255, 255, 0.1);
+  background-color: rgb(20 28 46);
+  color: rgba(255, 255, 255, 0.85);
+}
+.branch-hero-cta:hover {
+  border-color: rgba(40, 40, 255, 0.4);
+  background-color: rgb(28 37 60);
+  color: #ffffff;
+}
+[data-theme="light"] .branch-hero-cta {
+  border-color: rgba(11, 12, 16, 0.18);
+  background-color: rgb(var(--surface));
+  color: rgb(var(--ink-50));
+}
+[data-theme="light"] .branch-hero-cta:hover {
+  border-color: rgba(40, 40, 255, 0.6);
+  background-color: rgb(var(--surface-hover));
+  color: rgb(var(--ink-50));
+}
+
+/* ---------------------------------------------------------------------------
+   No-glass / no-glow cleanup
+   The brand removed frosted transparency and hover glow effects. These rules
+   neutralise any remaining inline backdrop-blur utilities and arbitrary
+   box-shadow glows so nothing renders translucent or glowing.
+--------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+[class*="shadow-["] {
+  box-shadow: none !important;
+}

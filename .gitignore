@@ -1,0 +1,34 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env*
+
+# typescript
+*.tsbuildinfo
+
+# build output for prod (separate from dev .next)
+/.next-prod/
+
+# Supabase CLI cache (contains production metadata)
+supabase/.temp/
+
+# disposable QA scripts (tracked qa_*.mjs stay committed; new ones are ignored)
+/qa_*.mjs
