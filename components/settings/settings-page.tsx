@@ -22,7 +22,7 @@ import { PrivacySection } from "./privacy-section";
 import { AppearanceSection } from "./appearance-section";
 import { ActivitiesSection } from "./activities-section";
 import { DangerZoneSection } from "./danger-zone-section";
-import type { UserSettings } from "@/lib/settings-data";
+import type { DeletionStatus, UserSettings } from "@/lib/settings-data";
 
 type SectionId = "account" | "profile" | "notifications" | "privacy" | "appearance" | "activities" | "danger";
 
@@ -48,6 +48,7 @@ interface SettingsPageProps {
   };
   branch: { name: string; slug: string } | null;
   settings: UserSettings;
+  deletion: DeletionStatus;
 }
 
 const SECTIONS: {
@@ -74,7 +75,7 @@ const SECTION_DESCRIPTIONS: Record<SectionId, string> = {
   danger: "Irreversible actions.",
 };
 
-export function SettingsPage({ account, profile, branch, settings }: SettingsPageProps) {
+export function SettingsPage({ account, profile, branch, settings, deletion }: SettingsPageProps) {
   const [active, setActive] = useState<SectionId>("account");
   const [dirty, setDirty] = useState(false);
   const [pendingTarget, setPendingTarget] = useState<SectionId | null>(null);
@@ -229,7 +230,10 @@ export function SettingsPage({ account, profile, branch, settings }: SettingsPag
             <ActivitiesSection />
           </div>
           <div className={cn(active !== "danger" && "hidden")}>
-            <DangerZoneSection />
+            <DangerZoneSection
+              username={account?.username ?? ""}
+              deletion={deletion}
+            />
           </div>
         </div>
       </div>

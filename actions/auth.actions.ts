@@ -54,12 +54,17 @@ export async function signIn(formData: FormData) {
 
   revalidatePath("/", "layout");
 
+  // The server writes the session cookie, but the browser-side supabase-js
+  // context is not notified of the new session. The `refresh_auth` flag tells
+  // AuthProvider to re-read the session from cookies on the redirected page so
+  // the UI reflects the login immediately instead of after a stale state.
   const rawNext = formData.get("next");
   const next = typeof rawNext === "string" ? sanitizeNextPath(rawNext) : null;
   if (next && next !== "/login" && next !== "/join") {
-    redirect(next);
+    const sep = next.includes("?") ? "&" : "?";
+    redirect(`${next}${sep}refresh_auth=1`);
   }
-  redirect("/");
+  redirect("/?refresh_auth=1");
 }
 
 export async function signInWithGoogle(next?: string) {
@@ -84,5 +89,5 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/?refresh_auth=1");
 }
