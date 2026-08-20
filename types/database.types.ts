@@ -851,6 +851,10 @@ export type Database = {
           unread_count: number
         }[]
       }
+      is_course_manager: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       mark_messages_received: {
         Args: { p_conversation_id: string }
         Returns: number

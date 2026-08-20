@@ -10,6 +10,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * / text/plain makes the browser show the raw code). This proxy reads the bytes
  * from the `course-files` bucket and re-serves them with the right header based
  * on the file extension — fixing both existing and future uploads.
+<<<<<<< HEAD
+=======
+ *
+ * Security: uploaded HTML/CSS is untrusted. A `Content-Security-Policy: sandbox`
+ * header is added to every response so that even if an HTML course file is
+ * rendered inline on the Azenion origin it runs fully sandboxed — no scripts,
+ * no same-origin access. (Inert for PDF/zip responses.)
+>>>>>>> 1602953abf04ad8ff52e495c6074a1ca86fa00d5
  */
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -79,6 +87,10 @@ export async function GET(
     status: 200,
     headers: {
       "Content-Type": contentType,
+<<<<<<< HEAD
+=======
+      "Content-Security-Policy": "sandbox",
+>>>>>>> 1602953abf04ad8ff52e495c6074a1ca86fa00d5
       "Content-Disposition": `inline; filename="course.${ext}"`,
       "Cache-Control": "public, max-age=3600",
     },

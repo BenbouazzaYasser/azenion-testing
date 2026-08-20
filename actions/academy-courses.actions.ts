@@ -31,9 +31,15 @@ function fileExtension(fileName: string): string {
   return fileName.split(".").pop()?.toLowerCase() ?? "";
 }
 
+<<<<<<< HEAD
 async function isCoreTeamMember(): Promise<boolean> {
   const supabase = await createClient();
   const { data } = await supabase.rpc("is_core_team_member");
+=======
+async function isCourseManager(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("is_course_manager");
+>>>>>>> 1602953abf04ad8ff52e495c6074a1ca86fa00d5
   return data === true;
 }
 
@@ -57,8 +63,13 @@ export async function createCourse(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
+<<<<<<< HEAD
   if (!(await isCoreTeamMember())) {
     return { error: "Only core team members or creators can upload courses" };
+=======
+  if (!(await isCourseManager())) {
+    return { error: "Only course managers or creators can upload courses" };
+>>>>>>> 1602953abf04ad8ff52e495c6074a1ca86fa00d5
   }
 
   const raw = {
@@ -185,8 +196,13 @@ export async function deleteCourse(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
+<<<<<<< HEAD
   if (!(await isCoreTeamMember())) {
     return { error: "Only core team members or creators can delete courses" };
+=======
+  if (!(await isCourseManager())) {
+    return { error: "Only course managers or creators can delete courses" };
+>>>>>>> 1602953abf04ad8ff52e495c6074a1ca86fa00d5
   }
 
   const id = (formData.get("id") as string) ?? "";
@@ -233,8 +249,13 @@ export async function updateCourse(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
+<<<<<<< HEAD
   if (!(await isCoreTeamMember())) {
     return { error: "Only core team members or creators can edit courses" };
+=======
+  if (!(await isCourseManager())) {
+    return { error: "Only course managers or creators can edit courses" };
+>>>>>>> 1602953abf04ad8ff52e495c6074a1ca86fa00d5
   }
 
   const parsed = courseSchema.safeParse({
