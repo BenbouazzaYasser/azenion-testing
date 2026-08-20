@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser, getOrCreateProfile, getUserBranch } from "@/lib/profile-data";
-import { getUserSettings } from "@/lib/settings-data";
+import { getDeletionStatus, getUserSettings } from "@/lib/settings-data";
+import { runDeletionSweep } from "@/actions/settings.actions";
 import { SettingsPage } from "@/components/settings/settings-page";
 
 export const metadata: Metadata = {
@@ -19,10 +20,13 @@ export default async function SettingsRoute() {
     redirect("/profile");
   }
 
-  const [branch, settings] = await Promise.all([
+  const [branch, settings, deletion] = await Promise.all([
     getUserBranch(user.id),
     getUserSettings(),
+    getDeletionStatus(),
   ]);
+
+  await runDeletionSweep();
 
   return (
     <SettingsPage
@@ -47,6 +51,7 @@ export default async function SettingsRoute() {
       }}
       branch={branch}
       settings={settings}
+      deletion={deletion}
     />
   );
 }

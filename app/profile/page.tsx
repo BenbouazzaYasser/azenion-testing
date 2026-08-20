@@ -16,6 +16,7 @@ import {
   getUserActivities,
   getUserInvitations,
 } from "@/lib/profile-data";
+import { getDeletionStatus } from "@/lib/settings-data";
 
 export const metadata: Metadata = {
   title: "Profile | Azenion",
@@ -27,13 +28,14 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
-  const [profile, branch, teams, projects, activities, invitations] = await Promise.all([
+  const [profile, branch, teams, projects, activities, invitations, deletion] = await Promise.all([
     getOrCreateProfile(user),
     getUserBranch(user.id),
     getUserTeams(user.id),
     getUserProjects(user.id),
     getUserActivities(user.id),
     getUserInvitations(),
+    getDeletionStatus(),
   ]);
 
   const headerProps = {
@@ -69,6 +71,8 @@ export default async function ProfilePage() {
         emailVerified={!!user.email_confirmed_at}
         createdAt={user.created_at}
         lastSignInAt={user.last_sign_in_at ?? null}
+        username={headerProps.username}
+        deletion={deletion}
         cardClass={sectionCardClass}
       />
     </>
