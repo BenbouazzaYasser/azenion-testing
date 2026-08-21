@@ -161,7 +161,6 @@ export type PublicProfileData = {
     linkedin_url: string | null;
     skills: string[];
     institution: string | null;
-    roles: string[];
     created_at: string;
     roles: string[];
   } | null;
@@ -230,7 +229,6 @@ export async function getPublicProfile(username: string): Promise<
           linkedin_url: null,
           skills: [],
           institution: null,
-          roles: [],
           created_at: new Date().toISOString(),
           roles: [],
         },
@@ -329,7 +327,6 @@ export async function getPublicProfile(username: string): Promise<
           typeof resultObj.linkedin_url === "string" ? resultObj.linkedin_url : null,
         skills: Array.isArray(resultObj.skills) ? (resultObj.skills as string[]) : [],
         institution: typeof resultObj.institution === "string" ? resultObj.institution : null,
-        roles: Array.isArray(resultObj.roles) ? (resultObj.roles as string[]) : [],
         created_at: String(resultObj.created_at ?? new Date().toISOString()),
         roles: Array.isArray(resultObj.roles) ? (resultObj.roles as string[]) : [],
       },

@@ -104,8 +104,4 @@ grant execute on function public.get_public_profile(text)
 comment on function public.get_public_profile(text) is
   'Public profile data for /u/[username]. Resolves by username, returns only '
   'non-private columns, honors show_profile_publicly / show_activity, hides '
-<<<<<<< HEAD
   'blocked users, includes platform roles, and the last 30 days of activities.';
-=======
-  'blocked users, includes platform roles, and the last 30 days of activities.';
->>>>>>> 1602953abf04ad8ff52e495c6074a1ca86fa00d5

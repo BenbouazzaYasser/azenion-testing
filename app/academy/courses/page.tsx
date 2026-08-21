@@ -27,13 +27,8 @@ export default async function CoursesPage() {
 
   let canManage = false;
   if (user) {
-<<<<<<< HEAD
-    const { data: isCoreTeam } = await supabase.rpc("is_core_team_member");
-    canManage = isCoreTeam === true;
-=======
     const { data: isManager } = await supabase.rpc("is_course_manager");
     canManage = isManager === true;
->>>>>>> 1602953abf04ad8ff52e495c6074a1ca86fa00d5
   }
 
   const { data: courseRows } = await supabase

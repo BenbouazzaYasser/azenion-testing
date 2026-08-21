@@ -804,10 +804,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_core_team_member: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
       create_project: {
         Args: {
           p_description?: string
