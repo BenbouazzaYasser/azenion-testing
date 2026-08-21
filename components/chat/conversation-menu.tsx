@@ -247,10 +247,10 @@ export function ConversationMenu({
         }}
         className={cn(
           "absolute right-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-ink-500 transition-all duration-200 ease-premium",
-          "hover:bg-surface-hover hover:text-ink-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+          "focus-visible:ring-2 focus-visible:ring-accent-400/60",
           open
             ? "bg-surface-hover text-ink-100"
-            : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 max-sm:opacity-70",
+            : "opacity-70",
         )}
       >
         <MoreVertical className="h-4 w-4" />
@@ -275,7 +275,7 @@ export function ConversationMenu({
                   onClick={handleMarkSeen}
                   className={cn(
                     "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
-                    "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                    "focus-visible:ring-2 focus-visible:ring-accent-400/60",
                     "disabled:pointer-events-none disabled:opacity-40",
                   )}
                 >
@@ -292,7 +292,7 @@ export function ConversationMenu({
                   onClick={handleUnarchive}
                   className={cn(
                     "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
-                    "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                    "focus-visible:ring-2 focus-visible:ring-accent-400/60",
                     "disabled:pointer-events-none disabled:opacity-40",
                   )}
                 >
@@ -307,7 +307,7 @@ export function ConversationMenu({
                   onClick={handleArchive}
                   className={cn(
                     "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
-                    "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                    "focus-visible:ring-2 focus-visible:ring-accent-400/60",
                     "disabled:pointer-events-none disabled:opacity-40",
                   )}
                 >
@@ -329,7 +329,7 @@ export function ConversationMenu({
                       role="menuitem"
                       disabled={pending}
                       onClick={handleBlock}
-                      className="flex w-full items-center gap-2 rounded-md bg-red-500/15 px-2.5 py-1.5 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium hover:bg-red-500/25 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-50"
+                      className="flex w-full items-center gap-2 rounded-md bg-red-500/15 px-2.5 py-1.5 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-50"
                     >
                       <Ban className="h-3.5 w-3.5" />
                       Block
@@ -339,7 +339,7 @@ export function ConversationMenu({
                       role="menuitem"
                       disabled={pending}
                       onClick={() => setConfirmingBlock(false)}
-                      className="mt-1 flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-50"
+                      className="mt-1 flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium text-ink-400 transition-colors duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-50"
                     >
                       Cancel
                     </button>
@@ -352,7 +352,7 @@ export function ConversationMenu({
                     onClick={handleUnblock}
                     className={cn(
                       "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 ease-premium",
-                      "text-accent-300 hover:bg-accent/[0.08] hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                      "text-accent-300focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
                       "disabled:pointer-events-none disabled:opacity-40",
                     )}
                   >
@@ -368,7 +368,7 @@ export function ConversationMenu({
                       setConfirmingDelete(false);
                       setConfirmingBlock(true);
                     }}
-                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-40"
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-40"
                   >
                     <Ban className="h-4 w-4 shrink-0" />
                     Block user
@@ -387,7 +387,7 @@ export function ConversationMenu({
                     role="menuitem"
                     disabled={pending}
                     onClick={handleDelete}
-                    className="flex w-full items-center gap-2 rounded-md bg-red-500/15 px-2.5 py-1.5 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium hover:bg-red-500/25 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-50"
+                    className="flex w-full items-center gap-2 rounded-md bg-red-500/15 px-2.5 py-1.5 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-50"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Delete
@@ -397,7 +397,7 @@ export function ConversationMenu({
                     role="menuitem"
                     disabled={pending}
                     onClick={() => setConfirmingDelete(false)}
-                    className="mt-1 flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-50"
+                    className="mt-1 flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium text-ink-400 transition-colors duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -411,7 +411,7 @@ export function ConversationMenu({
                     setConfirmingBlock(false);
                     setConfirmingDelete(true);
                   }}
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-40"
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-red-400 transition-colors duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60 disabled:pointer-events-none disabled:opacity-40"
                 >
                   <Trash2 className="h-4 w-4 shrink-0" />
                   Delete

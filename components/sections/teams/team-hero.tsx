@@ -68,7 +68,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
             alt=""
             className="h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-[#050507]/70 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-void-950/70 backdrop-blur-sm" />
         </div>
       ) : null}
       <BackgroundInfinity variant="teams" />

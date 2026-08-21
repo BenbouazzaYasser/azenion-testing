@@ -57,12 +57,12 @@ const config: Config = {
           DEFAULT: "rgb(var(--border) / 0.08)",
           strong: "rgb(var(--border-strong) / 0.14)",
         },
-        // Glass overlays — dropdowns, drawers, panels, navbar pill
+        // Glass overlays — dropdowns, drawers, panels, navbar pill (opaque)
         glass: {
-          DEFAULT: "rgba(var(--glass) / 0.82)",
-          strong: "rgba(var(--glass-strong) / 0.94)",
-          panel: "rgba(var(--glass-panel) / 0.72)",
-          nav: "rgba(var(--glass-nav) / 0.78)",
+          DEFAULT: "rgba(var(--glass) / 1)",
+          strong: "rgba(var(--glass-strong) / 1)",
+          panel: "rgba(var(--glass-panel) / 1)",
+          nav: "rgba(var(--glass-nav) / 1)",
         },
         // Modal backdrop — always dark, matches the brand's night scrim
         scrim: "rgb(var(--scrim) / <alpha-value>)",
@@ -86,17 +86,13 @@ const config: Config = {
         "grain": "url('/noise.svg')",
       },
       boxShadow: {
-        glow: "0 0 60px -15px rgba(40,40,255,0.55)",
-        "glow-sm": "0 0 24px -8px rgba(40,40,255,0.45)",
+        glow: "none",
+        "glow-sm": "none",
         card: "0 1px 0 0 rgba(244,245,248,0.06) inset",
-        "card-hover":
-          "0 0 0 1px rgba(109,109,255,0.12) inset, 0 10px 30px -12px rgba(0,0,0,0.4)",
-        "card-active":
-          "0 0 0 1px rgba(109,109,255,0.18) inset, 0 2px 10px -4px rgba(0,0,0,0.45)",
-        dialog:
-          "0 0 0 1px rgba(255,255,255,0.04) inset, 0 30px 80px -20px rgba(40,40,255,0.15)",
-        dropdown:
-          "0 24px 70px -20px rgba(0,0,0,0.65), 0 0 50px -18px rgba(40,40,255,0.5)",
+        "card-hover": "0 8px 24px -12px rgba(0,0,0,0.4)",
+        "card-active": "0 2px 8px -4px rgba(0,0,0,0.45)",
+        dialog: "0 30px 80px -20px rgba(0,0,0,0.6)",
+        dropdown: "0 24px 70px -20px rgba(0,0,0,0.6)",
         input: "0 0 0 1px rgba(109,109,255,0.15)",
         "input-error": "0 0 0 1px rgba(239,68,68,0.3)",
       },

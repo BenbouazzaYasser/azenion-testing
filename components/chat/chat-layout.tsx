@@ -92,7 +92,7 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
                 aria-label="Close conversations"
                 className={cn(
                   "-mr-1.5 -mt-1.5 rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium",
-                  "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+                  "focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                 )}
               >
                 <X className="h-5 w-5" />

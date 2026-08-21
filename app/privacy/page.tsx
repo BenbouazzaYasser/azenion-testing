@@ -66,7 +66,7 @@ const SECTIONS = [
       "Account data is retained while your account is active.",
       "Call signaling records are deleted automatically shortly after a call ends.",
       "Anonymous analytics are retained by our hosting provider in aggregate form.",
-      "When account deletion becomes available (see Section 6), we will remove or anonymize your personal data in line with this policy.",
+      "When you request account deletion (see Section 6), your personal data is scheduled for removal after a 30-day appeal window, during which you may change your mind and keep your account.",
     ],
   },
   {
@@ -75,7 +75,7 @@ const SECTIONS = [
     bodyList: [
       "Access and correction — you can view and edit most of your profile and account information directly from your account settings.",
       "Content control — you can delete individual posts and other content you have created.",
-      "Account deletion — full self-service account deletion is not yet available on the platform; we are building it and will announce it when it ships. Until then, please contact us and we will assist you with any deletion request.",
+      "Account deletion — you can request account deletion from Settings → Danger Zone. Your account is scheduled for permanent deletion after a 30-day appeal window; you can cancel the request at any time before the scheduled date. After the window passes, your account and associated data are permanently removed.",
       "Depending on where you live, you may also have the right to request a copy of your data, request its deletion, or object to or restrict certain processing. To exercise any of these rights, contact us using the details in Section 9.",
     ],
   },

@@ -148,7 +148,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full rounded-2xl border border-border-strong bg-surface/70 py-2.5 pl-10 pr-3 text-sm text-ink-50 placeholder:text-ink-600 transition-colors duration-200 ease-premium hover:border-border focus:border-accent-400/50 focus:outline-none"
+              className="w-full rounded-2xl border border-border-strong bg-surface/70 py-2.5 pl-10 pr-3 text-sm text-ink-50 placeholder:text-ink-600 transition-colors duration-200 ease-premium focus:border-accent-400/50 focus:outline-none"
             />
           </div>
 
@@ -162,7 +162,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   key={user.id}
                   type="button"
                   onClick={() => void handleStartConversation(user.id)}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-all duration-200 ease-premium hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-all duration-200 ease-premium focus-visible:bg-surface focus-visible:outline-none"
                 >
                   {user.avatar_url ? (
                     <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.12] object-cover" />
@@ -196,7 +196,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                 <button
                   type="button"
                   onClick={handleCloseArchived}
-                  className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+                  className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-ink-400 transition-colors duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                   Inbox
@@ -217,7 +217,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   aria-label="View archived conversations"
                   className={cn(
                     "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
-                    "border-border-strong text-ink-400 hover:border-accent-400/50 hover:bg-surface-hover hover:text-ink-100",
+                    "border-border-strong text-ink-400",
                   )}
                 >
                   <Archive className="h-3 w-3" />

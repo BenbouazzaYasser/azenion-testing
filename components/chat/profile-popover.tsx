@@ -151,18 +151,9 @@ export function ProfilePopover({
               aria-label={`${displayName} profile`}
               tabIndex={-1}
               style={panelStyle}
-              className="overflow-hidden rounded-2xl bg-glass shadow-dropdown animate-dropdown-in"
+              className="overflow-hidden rounded-2xl border border-border/50 bg-surface p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] animate-dropdown-in"
             >
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -top-12 right-0 h-28 w-28 rounded-full bg-accent/20 blur-[56px]"
-              />
-
-              <div className="relative flex items-center gap-3 px-4 pb-3 pt-4">
+              <div className="relative flex items-center gap-3 pb-3 pt-1">
                 <div className="relative shrink-0">
                   <div aria-hidden className="absolute -inset-1.5 rounded-full bg-accent/25 blur-lg" />
                   <div className="relative h-12 w-12 overflow-hidden rounded-full border border-border-strong/[0.14]">
@@ -181,7 +172,7 @@ export function ProfilePopover({
                 </div>
               </div>
 
-              <div className="relative px-3 pb-3">
+              <div className="relative pt-2">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -195,7 +186,7 @@ export function ProfilePopover({
                       }
                     });
                   }}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-accent-400/25 bg-accent/[0.1] px-3 py-2 text-xs font-medium text-accent-300 transition-all duration-200 ease-premium hover:bg-accent/[0.16] hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-accent-400/25 bg-accent/[0.1] px-3 py-2 text-xs font-medium text-accent-300 transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
                 >
                   <MessageSquare size={14} />
                   Start chat

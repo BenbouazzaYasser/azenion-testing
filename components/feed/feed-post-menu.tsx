@@ -183,7 +183,7 @@ export function FeedPostMenu({
               aria-label="Post options"
               tabIndex={-1}
               onKeyDown={handleMenuKeyDown}
-              className="fixed z-[90] flex w-[11.5rem] flex-col overflow-hidden rounded-2xl border border-accent-400/40 bg-glass/55 p-1.5 shadow-dropdown ring-1 ring-accent-400/20 backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in"
+              className="fixed z-[90] flex w-[11.5rem] flex-col overflow-hidden rounded-2xl border border-accent-400/40 bg-glass p-1.5 shadow-dropdown ring-1 ring-accent-400/20 backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in"
               style={{ top: coords.top, left: coords.left }}
             >
               <div

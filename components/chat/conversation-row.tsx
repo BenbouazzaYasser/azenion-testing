@@ -91,7 +91,7 @@ export function ConversationRow({
           "relative flex items-center gap-3 overflow-hidden rounded-2xl p-3 pl-3.5 pr-11 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
           isActive
             ? "border border-accent-400/30 bg-[linear-gradient(135deg,rgba(40,40,255,0.12),rgba(40,40,255,0.04))] shadow-card"
-            : "border border-transparent hover:border-border hover:bg-surface/60 hover:shadow-card",
+            : "border border-transparent",
         )}
       >
         {isActive && (
@@ -141,7 +141,7 @@ export function ConversationRow({
             </p>
             <span className="flex shrink-0 items-center gap-2">
               {conv.last_message?.created_at && (
-                <span className="shrink-0 text-[10px] font-medium tracking-wide text-ink-600 transition-colors duration-200 group-hover:text-ink-500">
+                <span className="shrink-0 text-[10px] font-medium tracking-wide text-ink-600 transition-colors duration-200">
                   {formatDistanceToNow(new Date(conv.last_message.created_at))}
                 </span>
               )}

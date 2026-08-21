@@ -58,9 +58,9 @@ export function PostShareMessage({ metadata, message, isOwn }: PostShareMessageP
   const card = (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border bg-surface/70 backdrop-blur-xl transition-colors duration-200",
+        "overflow-hidden rounded-xl border bg-surface backdrop-blur-xl transition-colors duration-200",
         permalink
-          ? "border-border-strong/70 hover:border-accent-400/50"
+          ? "border-border-strong/70 "
           : "border-border-strong/40",
       )}
     >

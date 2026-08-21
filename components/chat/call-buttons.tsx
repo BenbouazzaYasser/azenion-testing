@@ -18,7 +18,7 @@ export function CallButtons({ disabled = false, onStart }: CallButtonsProps) {
   const base =
     "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
   const baseState =
-    "border-border-strong/[0.14] bg-surface/70 text-ink-300 hover:scale-105 hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 hover:shadow-glow-sm active:scale-[0.97]";
+    "border-border-strong/[0.14] bg-surface/70 text-ink-300 active:scale-[0.97]";
   const disabledState = "pointer-events-none border-border-strong/[0.08] text-ink-700";
 
   return (

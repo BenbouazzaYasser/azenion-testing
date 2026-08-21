@@ -246,6 +246,8 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          deletion_requested_at: string | null
+          deletion_scheduled_at: string | null
           full_name: string
           github_url: string | null
           id: string
@@ -259,6 +261,8 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          deletion_requested_at?: string | null
+          deletion_scheduled_at?: string | null
           full_name: string
           github_url?: string | null
           id: string
@@ -272,6 +276,8 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          deletion_requested_at?: string | null
+          deletion_scheduled_at?: string | null
           full_name?: string
           github_url?: string | null
           id?: string

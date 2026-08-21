@@ -81,7 +81,7 @@ export function IncomingCallOverlay({ kind, peer, onAccept, onDecline }: Incomin
               type="button"
               onClick={onDecline}
               aria-label="Decline call"
-              className="flex h-14 w-14 items-center justify-center rounded-full border border-red-500/40 bg-red-500/15 text-red-400 transition-all duration-300 ease-premium hover:scale-105 hover:bg-red-500/25 hover:shadow-[0_0_24px_-6px_rgba(248,113,113,0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 active:scale-[0.97]"
+              className="flex h-14 w-14 items-center justify-center rounded-full border border-red-500/40 bg-red-500/15 text-red-400 transition-all duration-300 ease-premium focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 active:scale-[0.97]"
             >
               <PhoneOff size={20} />
             </button>
@@ -90,7 +90,7 @@ export function IncomingCallOverlay({ kind, peer, onAccept, onDecline }: Incomin
               type="button"
               onClick={onAccept}
               aria-label="Accept call"
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-glow-sm transition-all duration-300 ease-premium hover:scale-105 hover:bg-emerald-400 hover:shadow-[0_0_24px_-4px_rgba(52,211,153,0.7)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 active:scale-[0.97]"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-glow-sm transition-all duration-300 ease-premium focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 active:scale-[0.97]"
             >
               <Phone size={20} className={cn(isVideo && "rotate-[135deg]")} />
             </button>

@@ -303,18 +303,9 @@ export function NotificationCenter() {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-2xl border navbar-panel-border bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
+          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-2xl border border-border/50 bg-surface p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
         >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -top-14 right-0 h-32 w-32 rounded-full bg-accent/20 blur-[64px]"
-          />
-
-          <div className="relative flex items-center justify-between gap-3 px-4 pb-3 pt-4">
+          <div className="relative flex items-center justify-between gap-3 pb-3 pt-1">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-ink-50">Notifications</h2>
               {unreadCount > 0 && (
@@ -375,7 +366,7 @@ export function NotificationCenter() {
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col p-2.5 pb-3">
+              <div className="flex flex-col pb-1">
                 {notifications.map((n) => (
                   <NotificationItem
                     key={n.id}
@@ -391,7 +382,7 @@ export function NotificationCenter() {
             aria-hidden
             className="relative mx-4 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
           />
-          <p className="relative px-4 py-2.5 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-ink-600">
+          <p className="relative pt-1 pb-1 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-ink-600">
             Azenion
           </p>
         </div>

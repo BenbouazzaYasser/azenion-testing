@@ -326,7 +326,7 @@ export function ChatConversation({
             type="button"
             onClick={mobileConversations.open}
             aria-label="Open conversations"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] text-ink-400 transition-all duration-300 ease-premium focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
           >
             <Menu size={18} />
           </button>

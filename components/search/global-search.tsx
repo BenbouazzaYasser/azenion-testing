@@ -253,23 +253,14 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                 ref={panelRef}
                 onKeyDown={handlePanelKeyDown}
                 className={cn(
-                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border navbar-panel-border bg-[rgb(var(--glass-panel)/0.9)] shadow-dialog backdrop-blur-2xl backdrop-saturate-150 transition-all duration-200 ease-premium",
+                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border/50 bg-surface p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] transition-all duration-200 ease-premium",
                 )}
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "translateY(0)" : "translateY(-8px)",
                 }}
               >
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
-                />
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute -top-20 right-8 h-40 w-40 rounded-full bg-accent/30 blur-[80px]"
-                />
-
-                <div className="relative flex items-center gap-3 border-b border-border-strong/[0.08] px-4 py-3.5">
+                <div className="relative flex items-center gap-3 border-b border-border-strong/[0.08] pb-3 pt-1">
                   <div className="text-ink-400">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-5 w-5">
                       <circle cx="11" cy="11" r="8" />
@@ -297,7 +288,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                   )}
                 </div>
 
-                <div className="max-h-[calc(80vh-72px)] min-h-0 overflow-y-auto overscroll-contain px-2 py-2">
+                <div className="max-h-[calc(80vh-72px)] min-h-0 overflow-y-auto overscroll-contain py-1">
                   {query && !loading && data && data.results.length === 0 ? (
                     <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
                       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-ink-500">

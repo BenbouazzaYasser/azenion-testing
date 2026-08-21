@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { CursorGlow } from "@/components/graphics/cursor-glow";
-import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { CallProvider } from "@/components/chat/call-provider";
@@ -39,12 +37,11 @@ export default function RootLayout({
           aria-hidden
           className="pointer-events-none fixed inset-0 z-[60] bg-grain opacity-[0.025] mix-blend-overlay"
         />
-        <CursorGlow />
         <Toaster
           position="bottom-center"
           toastOptions={{
             style: {
-              background: "rgba(14,16,22,0.92)",
+              background: "rgba(20,28,46,0.96)",
               border: "1px solid rgba(244,245,248,0.14)",
               color: "#F4F5F8",
               backdropFilter: "blur(20px)",
@@ -54,9 +51,8 @@ export default function RootLayout({
         />
         <ThemeProvider>
           <AuthProvider>
-            <OnboardingProvider />
             <CallProvider>{children}</CallProvider>
-          </AuthProvider>
+            </AuthProvider>
         </ThemeProvider>
         <Analytics />
       </body>

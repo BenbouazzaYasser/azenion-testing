@@ -62,9 +62,9 @@ export function ActiveCallOverlay({
   const controlBase =
     "flex h-12 w-12 items-center justify-center rounded-full border transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 active:scale-[0.97] sm:h-14 sm:w-14";
   const toggleOn =
-    "border-border-strong/[0.2] bg-void-900/80 text-ink-100 backdrop-blur-xl hover:scale-105 hover:border-accent-400/50 hover:text-accent-300 hover:shadow-glow-sm";
+    "border-border-strong/[0.2] bg-void-900/80 text-ink-100 backdrop-blur-xl";
   const toggleOff =
-    "border-red-500/40 bg-red-500/80 text-white backdrop-blur-xl hover:scale-105 hover:bg-red-500 hover:shadow-[0_0_24px_-6px_rgba(248,113,113,0.6)]";
+    "border-red-500/40 bg-red-500/80 text-white backdrop-blur-xl";
 
   return (
     <div className="fixed inset-0 z-[200] overflow-hidden bg-void-950/95 backdrop-blur-md">
@@ -138,7 +138,7 @@ export function ActiveCallOverlay({
               aria-label="End call"
               className={cn(
                 controlBase,
-                "border-red-500/50 bg-red-500 text-white shadow-glow-sm hover:scale-105 hover:bg-red-500 hover:shadow-[0_0_30px_-6px_rgba(248,113,113,0.8)]",
+                "border-red-500/50 bg-red-500 text-white shadow-glow-sm",
               )}
             >
               <PhoneOff size={22} />
@@ -224,7 +224,7 @@ export function ActiveCallOverlay({
                 aria-label="Cancel call"
                 className={cn(
                   controlBase,
-                  "border-red-500/50 bg-red-500 text-white shadow-glow-sm hover:scale-105 hover:bg-red-500 hover:shadow-[0_0_30px_-6px_rgba(248,113,113,0.8)]",
+                  "border-red-500/50 bg-red-500 text-white shadow-glow-sm",
                 )}
               >
                 <PhoneOff size={22} />
@@ -236,7 +236,7 @@ export function ActiveCallOverlay({
                 aria-label="End call"
                 className={cn(
                   controlBase,
-                  "border-red-500/50 bg-red-500 text-white shadow-glow-sm hover:scale-105 hover:bg-red-500 hover:shadow-[0_0_30px_-6px_rgba(248,113,113,0.8)]",
+                  "border-red-500/50 bg-red-500 text-white shadow-glow-sm",
                 )}
               >
                 <PhoneOff size={22} />
