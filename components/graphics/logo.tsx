@@ -33,6 +33,7 @@ export function Logo({ withWordmark = true, wordmarkClassName, className, markSi
         height={markSize}
         priority
         className="shrink-0"
+        suppressHydrationWarning
       />
       {withWordmark && (
         <span

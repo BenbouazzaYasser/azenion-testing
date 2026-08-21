@@ -187,7 +187,7 @@ export function Navbar() {
                           {isDropdownOpen ? (
                             <div className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2">
                               <div aria-hidden className="absolute -top-3 left-0 right-0 h-3" />
-                              <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-surface p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] animate-dropdown-in">
+                               <div className="relative overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card animate-dropdown-in">
                                 <p className="pb-2 text-sm font-medium text-ink-50">{link.label}</p>
                                 {link.children.map((child) => (
                                   <MenuLink
@@ -253,7 +253,7 @@ export function Navbar() {
                           aria-hidden
                           className="absolute -top-3 left-0 right-0 h-3"
                         />
-                        <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-surface p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] animate-dropdown-in">
+                        <div className="relative overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card animate-dropdown-in">
 
                         <div className="relative flex items-center gap-3.5 pb-4 pt-1">
                           <div className="relative shrink-0">
@@ -321,7 +321,7 @@ export function Navbar() {
                     )}
                   </button>
                   {isAvatarOpen ? (
-                    <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border border-border/50 bg-surface p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] animate-dropdown-in">
+                      <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card animate-dropdown-in">
                       <div className="relative flex items-center gap-3.5 pb-4 pt-1">
                         <div className="relative shrink-0">
                           <div

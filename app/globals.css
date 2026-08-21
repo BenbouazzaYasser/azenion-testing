@@ -80,6 +80,9 @@
 
   body {
     @apply bg-void-950 text-ink-50 antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     background-image:
       radial-gradient(ellipse 1100px 650px at 12% -5%, rgba(92, 50, 200, 0.14), transparent 58%),
       radial-gradient(ellipse 1000px 620px at 88% 12%, rgba(40, 40, 255, 0.13), transparent 55%),

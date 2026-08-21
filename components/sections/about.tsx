@@ -34,7 +34,7 @@ export function About() {
               </p>
             </div>
 
-            <div className="flex flex-col justify-between rounded-[1.4rem] border border-border/80 bg-void-950/70 p-6 sm:p-7">
+            <div className="flex flex-col justify-between rounded-[1.4rem] border border-border-strong card-surface-soft p-6 shadow-card sm:p-7">
               <div>
                 <p className="text-sm font-medium uppercase tracking-[0.16em] text-ink-600">
                   Why join

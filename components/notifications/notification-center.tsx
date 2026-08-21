@@ -303,7 +303,7 @@ export function NotificationCenter() {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-2xl border border-border/50 bg-surface p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
+          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
         >
           <div className="relative flex items-center justify-between gap-3 pb-3 pt-1">
             <div className="flex items-center gap-2">
