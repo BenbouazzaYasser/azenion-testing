@@ -253,7 +253,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                 ref={panelRef}
                 onKeyDown={handlePanelKeyDown}
                 className={cn(
-                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border/50 bg-surface p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] transition-all duration-200 ease-premium",
+                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card transition-all duration-200 ease-premium",
                 )}
                 style={{
                   opacity: mounted ? 1 : 0,

@@ -320,7 +320,7 @@ export function ChatConversation({
         <div className="absolute -right-20 bottom-20 h-80 w-80 rounded-full bg-accent-glow/[0.05] blur-[130px]" />
       </div>
 
-      <header className="relative z-10 flex shrink-0 items-center gap-3 border-b border-border-strong/60 bg-void-900 px-4 py-3.5 sm:px-6">
+      <header className="relative z-10 flex shrink-0 items-center gap-3 border-b border-border-strong/[0.12] bg-void-900 px-4 py-3.5 sm:px-6">
         {mobileConversations ? (
           <button
             type="button"
@@ -477,7 +477,7 @@ export function ChatConversation({
         </div>
       </div>
 
-      <div className="relative z-10 shrink-0 border-t border-border-strong/60 bg-surface px-3 pb-3 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
+      <div className="relative z-10 shrink-0 border-t border-border-strong/[0.12] bg-surface px-3 pb-3 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
         {amBlocked ? (
           <div
             role="status"

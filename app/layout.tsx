@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -16,6 +16,13 @@ export const metadata: Metadata = {
     description: "A global network connecting ambitious minds through learning, collaboration and innovation.",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#090d16",
 };
 
 export default function RootLayout({

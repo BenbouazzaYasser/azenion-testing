@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { searchUsers, getArchivedConversations, getOrCreateConversation } from "@/actions/chat.actions";
 import { useChatUnread, clearConversationUnread } from "@/lib/chat-unread";
 import { ConversationRow, type Conversation } from "@/components/chat/conversation-row";
+import { ProfilePopover } from "@/components/chat/profile-popover";
 
 export type { Conversation };
 
@@ -126,11 +127,11 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col border-r border-border-strong/80 bg-[linear-gradient(180deg,rgb(var(--void-900)/0.55),rgb(var(--void-900)/0.2))]",
+        "flex h-full min-h-0 flex-col border-r border-border-strong/[0.14] bg-[linear-gradient(180deg,rgb(var(--void-900)/0.55),rgb(var(--void-900)/0.2))]",
         className,
       )}
     >
-      <div className="shrink-0 border-b border-border-strong/80 px-4 pb-4 pt-5">
+      <div className="shrink-0 border-b border-border-strong/[0.14] px-4 pb-4 pt-5">
         <div className="mb-4 flex items-center justify-between px-1">
           <h1 className="text-base font-semibold tracking-tight text-ink-50">Messages</h1>
           {view === "inbox" && convList.length > 0 ? (
@@ -164,13 +165,22 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   onClick={() => void handleStartConversation(user.id)}
                   className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-all duration-200 ease-premium focus-visible:bg-surface focus-visible:outline-none"
                 >
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.12] object-cover" />
-                  ) : (
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
-                      {user.full_name?.[0] ?? user.username[0]?.toUpperCase() ?? "U"}
-                    </span>
-                  )}
+                  <ProfilePopover
+                    user={{
+                      id: user.id,
+                      full_name: user.full_name,
+                      username: user.username,
+                      avatar_url: user.avatar_url,
+                    }}
+                  >
+                    {user.avatar_url ? (
+                      <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.12] object-cover" />
+                    ) : (
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+                        {user.full_name?.[0] ?? user.username[0]?.toUpperCase() ?? "U"}
+                      </span>
+                    )}
+                  </ProfilePopover>
                   <div className="min-w-0">
                     <p className="truncate font-medium text-ink-50">
                       {user.full_name ?? user.username}

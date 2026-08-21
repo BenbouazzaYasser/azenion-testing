@@ -91,7 +91,7 @@ export function ConversationRow({
           "relative flex items-center gap-3 overflow-hidden rounded-2xl p-3 pl-3.5 pr-11 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
           isActive
             ? "border border-accent-400/30 bg-[linear-gradient(135deg,rgba(40,40,255,0.12),rgba(40,40,255,0.04))] shadow-card"
-            : "border border-transparent",
+            : "border border-border-strong/[0.12] hover:border-border-strong/60",
         )}
       >
         {isActive && (
@@ -102,7 +102,7 @@ export function ConversationRow({
         )}
 
         {conv.other_user?.avatar_url ? (
-          <ProfilePopover user={popoverUser!}>
+          <ProfilePopover user={popoverUser!} triggerClassName="z-20">
             <img
               src={conv.other_user.avatar_url}
               alt=""
@@ -113,7 +113,7 @@ export function ConversationRow({
             />
           </ProfilePopover>
         ) : popoverUser ? (
-          <ProfilePopover user={popoverUser}>
+          <ProfilePopover user={popoverUser} triggerClassName="z-20">
             <span
               className={cn(
                 "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",

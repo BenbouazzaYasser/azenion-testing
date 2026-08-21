@@ -4,7 +4,14 @@ import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, ty
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, User, X, Loader2 } from "lucide-react";
+import { getPublicProfile } from "@/actions/social.actions";
+import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
+import { PublicProfileHeader } from "@/app/u/[username]/components/public-profile-header";
+import { RelationshipActions } from "@/app/u/[username]/components/relationship-actions";
+import { PublicProfileTimeline } from "@/app/u/[username]/components/public-profile-timeline";
+import { PublicProfilePosts } from "@/app/u/[username]/components/public-profile-posts";
+import { sectionCardClass } from "@/components/sections/profile/card-classes";
 import { cn } from "@/lib/utils";
 import { getOrCreateConversation } from "@/actions/chat.actions";
 
@@ -13,6 +20,8 @@ export interface ProfilePopoverUser {
   full_name: string | null;
   username: string;
   avatar_url: string | null;
+  role?: string;
+  badge?: string;
 }
 
 interface ProfilePopoverProps {
@@ -44,8 +53,12 @@ export function ProfilePopover({
 }: ProfilePopoverProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [fullProfile, setFullProfile] = useState<Awaited<ReturnType<typeof getPublicProfile>> | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const initial = (user.full_name?.[0] ?? user.username[0] ?? "U").toUpperCase();
@@ -111,6 +124,57 @@ export function ProfilePopover({
     };
   }, [open]);
 
+  // Full-screen profile preview: close on Escape, trap Tab inside the dialog,
+  // move focus in on open and restore it to the previously focused element.
+  useEffect(() => {
+    if (!previewOpen) return;
+
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    previewRef.current?.focus();
+
+    function getFocusable() {
+      if (!previewRef.current) return [];
+      return Array.from(
+        previewRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+    }
+
+    function handleKeyDown(e: globalThis.KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setPreviewOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      const current = document.activeElement;
+      const contained = previewRef.current?.contains(current) ?? false;
+      if (!contained) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && current === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && current === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [previewOpen]);
+
   const panelStyle: CSSProperties | undefined =
     open && pos
       ? {
@@ -166,13 +230,39 @@ export function ProfilePopover({
                     )}
                   </div>
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-ink-50">{displayName}</p>
                   <p className="truncate text-xs text-ink-500">@{user.username}</p>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <span className="inline-flex items-center rounded-full border border-accent-400/30 bg-accent/[0.1] px-2 py-0.5 text-[10px] font-semibold text-accent-300">
+                      {user.role ?? "Member"}
+                    </span>
+                    {user.badge && (
+                      <span className="inline-flex items-center rounded-full border border-border-strong bg-surface/80 px-2 py-0.5 text-[10px] font-medium text-ink-400">
+                        {user.badge}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="relative pt-2">
+              <div className="relative pt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    setOpen(false);
+                    setLoadingProfile(true);
+                    const res = await getPublicProfile(user.username);
+                    setFullProfile(res);
+                    setLoadingProfile(false);
+                    setPreviewOpen(true);
+                  }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border-strong/[0.18] bg-surface/80 px-3 py-2 text-xs font-medium text-ink-300 transition-all duration-200 ease-premium hover:border-border-strong/65 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+                >
+                  {loadingProfile ? <Loader2 size={14} className="animate-spin" /> : <User size={14} />}
+                  View profile
+                </button>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -186,7 +276,7 @@ export function ProfilePopover({
                       }
                     });
                   }}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-accent-400/25 bg-accent/[0.1] px-3 py-2 text-xs font-medium text-accent-300 transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-accent-400/25 bg-accent/[0.1] px-3 py-2 text-xs font-medium text-accent-300 transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
                 >
                   <MessageSquare size={14} />
                   Start chat
@@ -196,6 +286,66 @@ export function ProfilePopover({
             document.body,
           )
         : null}
+
+      {previewOpen &&
+        createPortal(
+          <div
+            ref={previewRef}
+            tabIndex={-1}
+            className="fixed inset-0 z-[250] flex items-center justify-center px-4 py-6 sm:py-10 outline-none"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${displayName}'s profile`}
+          >
+            <button
+              type="button"
+              aria-label="Close"
+              className="absolute inset-0 bg-void-950/80 backdrop-blur-sm"
+              onClick={() => setPreviewOpen(false)}
+            />
+            <div
+              tabIndex={-1}
+              className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem] border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+            >
+              <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border-strong/[0.12] px-5 py-3 sm:px-6">
+                <p className="text-sm font-semibold text-ink-100">{displayName}&apos;s Profile</p>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => setPreviewOpen(false)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong/[0.08] bg-surface text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              <div className={cn("min-h-0 flex-1 overflow-y-auto", SCROLLBAR_CLASSES)}>
+                <div className="flex flex-col gap-5 p-5 sm:gap-6 sm:p-6">
+                {(!fullProfile || "error" in fullProfile) ? (
+                  <div className="py-12 text-center text-sm text-ink-400">
+                    {fullProfile && "error" in fullProfile ? fullProfile.error : "Failed to load profile"}
+                  </div>
+                ) : (() => {
+                  const data = "data" in fullProfile ? fullProfile.data : null;
+                  const p = data?.profile;
+                  if (!p || !data) {
+                    return <div className="py-12 text-center text-sm text-ink-400">Profile not found</div>;
+                  }
+                  return (
+                    <>
+                      <PublicProfileHeader profile={p} cardClass={sectionCardClass} />
+                      <RelationshipActions profileId={p.id} relationship={data.relationship} cardClass={sectionCardClass} />
+                      <PublicProfileTimeline activities={data.activities} cardClass={sectionCardClass} />
+                      <PublicProfilePosts posts={data.posts} cardClass={sectionCardClass} />
+                    </>
+                  );
+                })()}
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
