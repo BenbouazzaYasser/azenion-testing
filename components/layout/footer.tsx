@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, MessageCircle, Linkedin, Github, Instagram, Twitter } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Logo } from "@/components/graphics/logo";
 import { CONTACT } from "@/data/contact";
 
@@ -18,7 +19,9 @@ const CHANNEL_ICONS: Record<string, typeof Mail> = {
   GitHub: Github,
 };
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("footer");
+
   return (
     <footer className="relative border-t border-border-strong">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
@@ -29,27 +32,24 @@ export function Footer() {
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-400">
-              United by purpose.
+              {t("tagline")}
               <br />
-              <span className="text-accent-400">Driven by impact.</span>
+              <span className="text-accent-400">{t("taglineAccent")}</span>
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-ink-400">
-              A global network where ambitious minds connect, collaborate,
-              and create the future together.
-            </p>
+            <p className="mt-4 text-sm leading-relaxed text-ink-400">{t("description")}</p>
           </div>
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
-              Quick Links
+              {t("quickLinks")}
             </h3>
             <ul className="mt-5 space-y-3">
               {[
-                { label: "Teams", href: "/teams" },
-                { label: "Projects", href: "/projects" },
-                { label: "Branches", href: "/branches" },
-                { label: "Feed", href: "/feed" },
-                { label: "Chat", href: "/chat" },
+                { label: t("teams"), href: "/teams" },
+                { label: t("projects"), href: "/projects" },
+                { label: t("branches"), href: "/branches" },
+                { label: t("feed"), href: "/feed" },
+                { label: t("chat"), href: "/chat" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -65,14 +65,14 @@ export function Footer() {
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
-              Legal
+              {t("legal")}
             </h3>
             <ul className="mt-5 space-y-3">
               {[
-                { label: "About", href: "/about" },
-                { label: "Contact", href: "/contact" },
-                { label: "Terms of Service", href: "/terms" },
-                { label: "Privacy Policy", href: "/privacy" },
+                { label: t("about"), href: "/about" },
+                { label: t("contact"), href: "/contact" },
+                { label: t("terms"), href: "/terms" },
+                { label: t("privacy"), href: "/privacy" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -88,7 +88,7 @@ export function Footer() {
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
-              Connect
+              {t("connect")}
             </h3>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -142,10 +142,10 @@ export function Footer() {
       <div className="relative border-t border-border-strong">
         <div className="mx-auto max-w-[1320px] px-5 py-6 sm:px-8 lg:px-12">
           <p className="text-center text-xs text-ink-600 sm:text-left">
-            &copy; {new Date().getFullYear()} Azenion. All rights reserved.
+            {t("copyright", { year: new Date().getFullYear() })}
           </p>
           <p className="mt-2 text-center text-xs text-ink-600/80 sm:text-left">
-            Founded by Ziyad
+            {t("foundedBy")}
           </p>
         </div>
       </div>

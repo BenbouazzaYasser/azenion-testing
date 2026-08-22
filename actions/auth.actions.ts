@@ -2,10 +2,40 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sanitizeNextPath } from "@/lib/auth-redirect";
+import {
+  LOCALE_COOKIE,
+  LOCALE_COOKIE_MAX_AGE,
+  isLocale,
+} from "@/i18n/config";
+
+/**
+ * Syncs the NEXT_LOCALE cookie with the user's stored language preference.
+ * Called right after a successful sign-in so the persisted preference takes
+ * precedence over any browser/device detection on this device.
+ */
+async function syncLocaleCookie(supabase: Awaited<ReturnType<typeof createClient>>) {
+  try {
+    const { data } = await supabase
+      .from("user_settings")
+      .select("language")
+      .maybeSingle();
+    if (data && isLocale(data.language)) {
+      const cookieStore = await cookies();
+      cookieStore.set(LOCALE_COOKIE, data.language, {
+        path: "/",
+        maxAge: LOCALE_COOKIE_MAX_AGE,
+        sameSite: "lax",
+      });
+    }
+  } catch {
+    // Language sync must never block authentication.
+  }
+}
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
@@ -51,6 +81,8 @@ export async function signIn(formData: FormData) {
   if (error) {
     return { error: error.message };
   }
+
+  await syncLocaleCookie(supabase);
 
   revalidatePath("/", "layout");
 

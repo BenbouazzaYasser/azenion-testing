@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Film, ImagePlus, Loader2, Send, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -66,10 +67,11 @@ function formatVideoDuration(seconds: number): string {
 export function FeedComposer({
   onPosted,
   maxMedia = 6,
-  placeholder = "Share an update with Azenion\u2026",
+  placeholder,
   disabled = false,
   className,
 }: FeedComposerProps) {
+  const t = useTranslations("feed.composer");
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
@@ -126,16 +128,16 @@ export function FeedComposer({
     for (const file of Array.from(selected)) {
       const isVideo = isVideoMimeType(file.type);
       if (!isVideo && !ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        message = `"${file.name}" isn't a supported image or video. Use PNG, JPEG, WebP, MP4, WebM, or MOV.`;
+        message = t("unsupportedFile", { name: file.name });
         continue;
       }
       if (isVideo) {
         if (file.size > MAX_VIDEO_SIZE) {
-          message = `"${file.name}" exceeds the 50MB video limit.`;
+          message = t("videoTooLarge", { name: file.name });
           continue;
         }
       } else if (file.size > MAX_IMAGE_SIZE) {
-        message = `"${file.name}" exceeds the 2MB image limit.`;
+        message = t("imageTooLarge", { name: file.name });
         continue;
       }
       valid.push({
@@ -148,7 +150,7 @@ export function FeedComposer({
 
     const remaining = maxMedia - media.length;
     if (valid.length > remaining) {
-      message = message ?? `You can attach up to ${maxMedia} images or videos.`;
+      message = message ?? t("tooManyFiles", { count: maxMedia });
     }
     const accepted = valid.slice(0, Math.max(remaining, 0));
 
@@ -179,7 +181,7 @@ export function FeedComposer({
       }
       const postId = "id" in created ? created.id : null;
       if (!postId) {
-        setError("Something went wrong while posting. Please try again.");
+        setError(t("postFailed"));
         return;
       }
 
@@ -201,7 +203,7 @@ export function FeedComposer({
       onPosted?.(postId);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(err instanceof Error ? err.message : t("unexpectedError"));
     } finally {
       setSubmitting(false);
       setUploadStep(null);
@@ -209,7 +211,8 @@ export function FeedComposer({
   }
 
   const canPost = Boolean(title.trim() || body.trim()) && !disabled;
-  const kindLabel = (kind: FeedMediaKind) => (kind === "video" ? "video" : "image");
+  const kindLabel = (kind: FeedMediaKind) =>
+    kind === "video" ? t("kindVideo") : t("kindImage");
 
   return (
     <div
@@ -220,9 +223,7 @@ export function FeedComposer({
     >
       <div className="flex items-center gap-2">
         <Sparkles size={16} className="shrink-0 text-accent-400" />
-        <h3 className="text-sm font-medium text-ink-300">
-          Share something with Azenion
-        </h3>
+        <h3 className="text-sm font-medium text-ink-300">{t("heading")}</h3>
       </div>
 
       {error ? (
@@ -232,7 +233,7 @@ export function FeedComposer({
             <button
               type="button"
               onClick={() => setError(null)}
-              aria-label="Dismiss error"
+              aria-label={t("dismissError")}
               className="shrink-0 text-rose-400/70 transition-colors hover:text-rose-300"
             >
               <X size={14} />
@@ -246,7 +247,7 @@ export function FeedComposer({
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Headline (optional)\u2026"
+          placeholder={t("headlinePlaceholder")}
           maxLength={MAX_TITLE_LENGTH}
           disabled={submitting || disabled}
           className={inputClass}
@@ -260,7 +261,7 @@ export function FeedComposer({
               setBody(e.target.value);
               autosize(e.target);
             }}
-            placeholder={placeholder}
+            placeholder={placeholder ?? t("placeholder")}
             rows={3}
             maxLength={MAX_BODY_LENGTH}
             disabled={submitting || disabled}
@@ -324,7 +325,7 @@ export function FeedComposer({
                   type="button"
                   onClick={() => removeMedia(i)}
                   disabled={submitting || disabled}
-                  aria-label={`Remove ${kindLabel(item.kind)} ${i + 1}`}
+                  aria-label={t("removeMedia", { kind: kindLabel(item.kind), index: i + 1 })}
                   className="absolute right-2 top-2 rounded-full border border-white/20 bg-black/60 p-1.5 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
                 >
                   <X size={14} />
@@ -358,10 +359,10 @@ export function FeedComposer({
           onClick={() => fileInputRef.current?.click()}
           disabled={submitting || disabled || media.length >= maxMedia}
           className="inline-flex h-9 items-center gap-1.5 text-sm text-ink-400 transition-colors hover:text-accent-400 disabled:pointer-events-none disabled:opacity-40"
-          title="Images (PNG, JPEG, WebP up to 2MB) or videos (MP4, WebM, MOV up to 50MB)"
+          title={t("addMediaTitle")}
         >
           <ImagePlus size={16} />
-          Add media
+          {t("addMedia")}
           {media.length > 0 ? (
             <span className="rounded-full bg-surface px-1.5 py-0.5 text-[0.68rem] font-medium text-ink-400">
               {media.length}/{maxMedia}
@@ -381,14 +382,14 @@ export function FeedComposer({
               <Loader2 size={14} className="animate-spin" />
               {uploadStep
                 ? uploadStep.total > 1
-                  ? `Uploading ${uploadStep.index}/${uploadStep.total}`
-                  : "Uploading media\u2026"
-                : "Posting\u2026"}
+                  ? t("uploadingProgress", { current: uploadStep.index, total: uploadStep.total })
+                  : t("uploadingMedia")
+                : t("posting")}
             </>
           ) : (
             <>
               <Send size={14} />
-              Post
+              {t("post")}
             </>
           )}
         </Button>

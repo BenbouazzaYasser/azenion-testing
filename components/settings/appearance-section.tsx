@@ -3,16 +3,18 @@
 import { useEffect, useState } from "react";
 import { Monitor, SunMedium, Moon, CheckCircle2 } from "lucide-react";
 import { useTheme, type Theme } from "@/components/theme/theme-provider";
+import { useTranslations } from "next-intl";
 import { SettingsPanel, SaveIndicator, type SaveState } from "./settings-panel";
 import { cn } from "@/lib/utils";
 
-const OPTIONS: { value: Theme; label: string; description: string; icon: typeof Monitor }[] = [
-  { value: "system", label: "System", description: "Follow your device setting", icon: Monitor },
-  { value: "light", label: "Light", description: "Light canvas", icon: SunMedium },
-  { value: "dark", label: "Dark", description: "The Azenion signature", icon: Moon },
+const OPTIONS: { value: Theme; labelKey: string; descriptionKey: string; icon: typeof Monitor }[] = [
+  { value: "system", labelKey: "system.label", descriptionKey: "system.description", icon: Monitor },
+  { value: "light", labelKey: "light.label", descriptionKey: "light.description", icon: SunMedium },
+  { value: "dark", labelKey: "dark.label", descriptionKey: "dark.description", icon: Moon },
 ];
 
 export function AppearanceSection() {
+  const t = useTranslations("settings.appearance");
   const { theme, setTheme } = useTheme();
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
@@ -55,8 +57,8 @@ export function AppearanceSection() {
               >
                 <option.icon size={18} />
               </span>
-              <span className="mt-3 block text-sm font-medium text-ink-50">{option.label}</span>
-              <span className="mt-0.5 block text-xs text-ink-500">{option.description}</span>
+              <span className="mt-3 block text-sm font-medium text-ink-50">{t(option.labelKey)}</span>
+              <span className="mt-0.5 block text-xs text-ink-500">{t(option.descriptionKey)}</span>
             </button>
           );
         })}
@@ -65,10 +67,8 @@ export function AppearanceSection() {
       <SettingsPanel>
         <div className="flex items-center justify-between gap-3 p-5">
           <div>
-            <h3 className="text-sm font-medium text-ink-50">Appearance</h3>
-            <p className="mt-0.5 text-xs text-ink-500">
-              Your theme applies instantly and syncs across your devices.
-            </p>
+            <h3 className="text-sm font-medium text-ink-50">{t("panelTitle")}</h3>
+            <p className="mt-0.5 text-xs text-ink-500">{t("panelDescription")}</p>
           </div>
           <SaveIndicator state={saveState} />
         </div>

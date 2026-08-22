@@ -1,0 +1,241 @@
+{
+  "common": {
+    "loading": "Chargement…",
+    "close": "Fermer",
+    "or": "ou",
+    "comingSoon": "Bientôt disponible",
+    "saved": "Enregistré",
+    "saving": "Enregistrement…"
+  },
+  "nav": {
+    "primaryAriaLabel": "Navigation principale",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "home": "Accueil",
+    "teams": "Équipes",
+    "projects": "Projets",
+    "branches": "Branches",
+    "chat": "Messagerie",
+    "community": {
+      "label": "Communauté",
+      "feed": { "label": "Fil d'actualité", "description": "L'actualité du réseau" },
+      "showcase": { "label": "Vitrine", "description": "À la une de la communauté" },
+      "announcements": { "label": "Annonces", "description": "Nouveautés et étapes clés de la plateforme" }
+    },
+    "academy": {
+      "label": "Académie",
+      "courses": { "label": "Cours", "description": "Parcours d'apprentissage à votre rythme" },
+      "liveSessions": { "label": "Sessions en direct", "description": "Ateliers et conférences" },
+      "labs": { "label": "Laboratoires", "description": "Expérimenter et construire" }
+    },
+    "admin": {
+      "trigger": "Admin",
+      "title": "Administrateur",
+      "subtitle": "Accès complet à la plateforme",
+      "section": "Gestion",
+      "manageBranches": { "label": "Gérer les branches", "description": "Créer et organiser les communautés" }
+    },
+    "user": {
+      "fallbackName": "Utilisateur",
+      "workspaceSection": "Espace de travail",
+      "myBranches": { "label": "Mes branches", "description": "Vos communautés" },
+      "myTeams": { "label": "Mes équipes", "description": "Consultez et gérez vos équipes" },
+      "myProjects": { "label": "Mes projets", "description": "Poursuivez vos réalisations" },
+      "accountSection": "Compte",
+      "profile": { "label": "Profil", "description": "Gérez votre compte" },
+      "settings": { "label": "Paramètres", "description": "Préférences et sécurité" },
+      "dangerSection": "Zone de danger",
+      "signOut": "Se déconnecter",
+      "signOutDescription": "Terminer cette session"
+    },
+    "logIn": "Se connecter",
+    "joinAzenion": "Rejoindre Azenion"
+  },
+  "footer": {
+    "tagline": "Réunis par un même idéal.",
+    "taglineAccent": "Portés par l'impact.",
+    "description": "Un réseau mondial où les esprits ambitieux se connectent, collaborent et construisent ensemble le futur.",
+    "quickLinks": "Liens rapides",
+    "legal": "Mentions légales",
+    "connect": "Nous suivre",
+    "teams": "Équipes",
+    "projects": "Projets",
+    "branches": "Branches",
+    "feed": "Fil d'actualité",
+    "chat": "Messagerie",
+    "about": "À propos",
+    "contact": "Contact",
+    "terms": "Conditions d'utilisation",
+    "privacy": "Politique de confidentialité",
+    "copyright": "© {year} Azenion. Tous droits réservés.",
+    "foundedBy": "Fondé par Ziyad"
+  },
+  "login": {
+    "title": "Bon retour parmi nous",
+    "subtitle": "Continuez à créer, à collaborer et à façonner l'avenir avec Azenion.",
+    "emailOrUsername": "Email ou nom d'utilisateur",
+    "identifierPlaceholder": "vous@exemple.com ou votre nom d'utilisateur",
+    "password": "Mot de passe",
+    "rememberMe": "Rester connecté",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "signIn": "Se connecter",
+    "signingIn": "Connexion...",
+    "continueWithGoogle": "Continuer avec Google",
+    "redirectingToGoogle": "Redirection vers Google...",
+    "continueWithGithub": "Continuer avec GitHub",
+    "googleError": "Impossible de démarrer la connexion avec Google",
+    "newToAzenion": "Nouveau sur Azenion ?",
+    "createAccount": "Créer un compte"
+  },
+  "join": {
+    "title": "Rejoindre Azenion",
+    "subtitle": "Rejoignez The Limitless Network et commencez à construire aux côtés d'étudiants, d'innovateurs et de créateurs ambitieux.",
+    "fullName": "Nom complet",
+    "fullNamePlaceholder": "John Doe",
+    "username": "Nom d'utilisateur",
+    "usernamePlaceholder": "johndoe",
+    "emailAddress": "Adresse email",
+    "emailPlaceholder": "john@exemple.com",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "showConfirmPassword": "Afficher la confirmation du mot de passe",
+    "hideConfirmPassword": "Masquer la confirmation du mot de passe",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "createAccount": "Créer un compte",
+    "creatingAccount": "Création du compte...",
+    "checkEmailTitle": "Vérifiez votre boîte mail",
+    "checkEmailBody": "Nous avons envoyé un lien de confirmation à <em>{email}</em>. Cliquez dessus pour activer votre compte.",
+    "goToSignIn": "Aller à la connexion",
+    "alreadyMember": "Déjà membre ?",
+    "signInLink": "Se connecter",
+    "continueWithGoogle": "Continuer avec Google",
+    "redirectingToGoogle": "Redirection vers Google...",
+    "continueWithGithub": "Continuer avec GitHub",
+    "googleError": "Impossible de démarrer la connexion avec Google",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Le centre de vos préférences et de la gestion de votre compte.",
+    "unsavedChangesBadge": "Modifications non enregistrées",
+    "navAriaLabel": "Sections des paramètres",
+    "sections": {
+      "account": { "label": "Compte", "description": "Email, mot de passe et sécurité." },
+      "profile": { "label": "Profil", "description": "Votre identité publique et vos informations." },
+      "notifications": { "label": "Notifications", "description": "Choisissez ce que vous souhaitez recevoir." },
+      "privacy": { "label": "Confidentialité", "description": "Contrôlez votre visibilité sur le réseau." },
+      "appearance": { "label": "Apparence", "description": "Réglez l'apparence de l'interface." },
+      "language": { "label": "Langue", "description": "Choisissez la langue de l'interface." },
+      "activities": { "label": "Activités", "description": "Vos éléments enregistrés et votre activité." },
+      "danger": { "label": "Zone de danger", "description": "Actions irréversibles." }
+    },
+    "appearance": {
+      "system": { "label": "Système", "description": "Suit le réglage de votre appareil" },
+      "light": { "label": "Clair", "description": "Toile claire" },
+      "dark": { "label": "Sombre", "description": "La signature Azenion" },
+      "panelTitle": "Apparence",
+      "panelDescription": "Votre thème s'applique instantanément et se synchronise sur vos appareils."
+    },
+    "language": {
+      "english": "English",
+      "french": "Français",
+      "panelTitle": "Langue",
+      "panelDescription": "Votre langue s'applique instantanément et se synchronise sur vos appareils."
+    },
+    "overlay": {
+      "ariaLabel": "Modifications non enregistrées",
+      "title": "Modifications non enregistrées",
+      "description": "Vos modifications risquent de ne pas être enregistrées.",
+      "goBack": "Retour",
+      "discardAndContinue": "Abandonner et continuer"
+    }
+  },
+  "academy": {
+    "hero": {
+      "scrollHint": "Faites défiler pour explorer"
+    },
+    "features": {
+      "eyebrow": "Explorer l'Académie",
+      "headingPlain": "Trois façons de",
+      "headingAccent": "progresser.",
+      "courses": {
+        "title": "Cours",
+        "description": "Apprenez à votre rythme grâce à des parcours structurés et des contenus créés par la communauté.",
+        "action": "Explorer les cours"
+      },
+      "liveSessions": {
+        "title": "Sessions en direct",
+        "description": "Participez à des ateliers, des conférences et des sessions animées par la communauté, en ligne ou en présentiel.",
+        "action": "Explorer les sessions"
+      },
+      "labs": {
+        "title": "Laboratoires",
+        "description": "Construisez, expérimentez, collaborez et innovez avec les autres membres dans un espace partagé.",
+        "action": "Bientôt disponible",
+        "badge": "Bientôt disponible"
+      }
+    },
+    "closing": {
+      "headingPlain": "Façonner",
+      "headingAccent": "l'Académie.",
+      "body": "Les meilleures sessions viennent de la communauté. Demandez ce que vous souhaitez apprendre et grandissez avec Azenion.",
+      "joinAzenion": "Rejoindre Azenion",
+      "exploreBranches": "Explorer les branches"
+    }
+  },
+  "feed": {
+    "composer": {
+      "heading": "Partagez quelque chose avec Azenion",
+      "placeholder": "Partagez une actualité avec Azenion\u2026",
+      "headlinePlaceholder": "Titre (facultatif)\u2026",
+      "post": "Publier",
+      "posting": "Publication en cours\u2026",
+      "uploadingMedia": "Téléversement des médias\u2026",
+      "uploadingProgress": "Téléversement {current}/{total}",
+      "addMedia": "Ajouter un média",
+      "addMediaTitle": "Images (PNG, JPEG, WebP jusqu'à 2 Mo) ou vidéos (MP4, WebM, MOV jusqu'à 50 Mo)",
+      "dismissError": "Ignorer l'erreur",
+      "removeMedia": "Retirer le média {index} ({kind})",
+      "kindVideo": "vidéo",
+      "kindImage": "image",
+      "unsupportedFile": "« {name} » n'est pas un format image ou vidéo pris en charge. Utilisez PNG, JPEG, WebP, MP4, WebM ou MOV.",
+      "videoTooLarge": "« {name} » dépasse la limite de 50 Mo pour les vidéos.",
+      "imageTooLarge": "« {name} » dépasse la limite de 2 Mo pour les images.",
+      "tooManyFiles": "Vous pouvez joindre jusqu'à {count} images ou vidéos.",
+      "postFailed": "Une erreur est survenue lors de la publication. Veuillez réessayer.",
+      "unexpectedError": "Une erreur inattendue s'est produite"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unreadAria": "Notifications ({count} non lues)",
+    "markAllRead": "Tout marquer comme lu",
+    "emptyTitle": "Vous êtes à jour",
+    "emptyBody": "Les mentions j'aime, commentaires et citations de vos communautés apparaîtront ici.",
+    "someone": "Quelqu'un",
+    "types": {
+      "default": "vous a envoyé une notification",
+      "liked_your_update": "a aimé votre publication",
+      "liked_your_comment": "a aimé votre commentaire",
+      "commented_on_your_update": "a commenté votre publication",
+      "replied_to_your_comment": "a répondu à votre commentaire",
+      "mentioned_you": "vous a mentionné",
+      "announcement": "a publié une nouvelle annonce",
+      "platform_announcement": "a publié une nouvelle annonce",
+      "friend_request_received": "vous a envoyé une demande d'ami",
+      "friend_request_accepted": "a accepté votre demande d'ami",
+      "new_follower": "a commencé à vous suivre",
+      "shared_post_with_you": "a partagé une publication avec vous"
+    }
+  },
+  "errors": {
+    "notFoundTitle": "Page introuvable",
+    "notFoundBody": "Désolé, nous n'avons pas trouvé la page que vous cherchez. Elle a peut-être été déplacée ou n'existe plus.",
+    "backHome": "Retour à l'accueil",
+    "errorTitle": "Une erreur est survenue",
+    "errorBody": "Une erreur inattendue s'est produite. Veuillez réessayer ou revenir à l'accueil.",
+    "tryAgain": "Réessayer"
+  }
+}

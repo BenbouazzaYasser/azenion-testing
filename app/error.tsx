@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { RefreshCw, Home } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Logo } from "@/components/graphics/logo";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ interface ErrorProps {
 }
 
 export default function Error({ error, reset }: ErrorProps) {
+  const t = useTranslations("errors");
+
   useEffect(() => {
     console.error("Route error:", error);
   }, [error]);
@@ -29,11 +32,9 @@ export default function Error({ error, reset }: ErrorProps) {
             <Logo withWordmark={true} markSize={48} className="mx-auto" />
           </div>
           <h1 className="mb-3 text-3xl font-semibold tracking-tight text-ink-50 sm:text-4xl">
-            Something went wrong
+            {t("errorTitle")}
           </h1>
-          <p className="mb-8 text-base leading-relaxed text-ink-400">
-            We encountered an unexpected error. Please try again or go back to the homepage.
-          </p>
+          <p className="mb-8 text-base leading-relaxed text-ink-400">{t("errorBody")}</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button
               onClick={reset}
@@ -41,14 +42,14 @@ export default function Error({ error, reset }: ErrorProps) {
               size="lg"
             >
               <RefreshCw size={16} className="mr-2" />
-              Try again
+              {t("tryAgain")}
             </Button>
             <Link
               href="/"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-border-strong/[0.12] bg-surface px-5 py-3 text-sm font-medium text-ink-200 transition-all duration-200 hover:border-accent-400/40 hover:bg-accent/[0.08] hover:text-accent-200 hover:shadow-[0_0_20px_-5px_rgba(40,40,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
             >
               <Home size={16} />
-              Back home
+              {t("backHome")}
             </Link>
           </div>
         </div>

@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -25,13 +27,17 @@ export const viewport: Viewport = {
   themeColor: "#090d16",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Resolved from the NEXT_LOCALE cookie (explicit choice / persisted
+  // preference), falling back to the browser language on first visit.
+  const locale = await getLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -56,11 +62,13 @@ export default function RootLayout({
             duration: 4000,
           }}
         />
-        <ThemeProvider>
-          <AuthProvider>
-            <CallProvider>{children}</CallProvider>
+        <NextIntlClientProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <CallProvider>{children}</CallProvider>
             </AuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
         <Analytics />
       </body>
     </html>

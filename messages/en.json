@@ -1,0 +1,241 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "close": "Close",
+    "or": "or",
+    "comingSoon": "Coming soon",
+    "saved": "Saved",
+    "saving": "Saving…"
+  },
+  "nav": {
+    "primaryAriaLabel": "Primary navigation",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "home": "Home",
+    "teams": "Teams",
+    "projects": "Projects",
+    "branches": "Branches",
+    "chat": "Chat",
+    "community": {
+      "label": "Community",
+      "feed": { "label": "Feed", "description": "Updates across the network" },
+      "showcase": { "label": "Showcase", "description": "Community highlights" },
+      "announcements": { "label": "Announcements", "description": "Platform updates and milestones" }
+    },
+    "academy": {
+      "label": "Academy",
+      "courses": { "label": "Courses", "description": "Self-paced learning paths" },
+      "liveSessions": { "label": "Live Sessions", "description": "Workshops and lectures" },
+      "labs": { "label": "Labs", "description": "Build and experiment" }
+    },
+    "admin": {
+      "trigger": "Admin",
+      "title": "Administrator",
+      "subtitle": "Full platform access",
+      "section": "Management",
+      "manageBranches": { "label": "Manage Branches", "description": "Create and organize communities" }
+    },
+    "user": {
+      "fallbackName": "User",
+      "workspaceSection": "Workspace",
+      "myBranches": { "label": "My Branches", "description": "Your communities" },
+      "myTeams": { "label": "My Teams", "description": "View and manage your teams" },
+      "myProjects": { "label": "My Projects", "description": "Continue building" },
+      "accountSection": "Account",
+      "profile": { "label": "Profile", "description": "Manage your account" },
+      "settings": { "label": "Settings", "description": "Preferences and security" },
+      "dangerSection": "Danger Zone",
+      "signOut": "Sign Out",
+      "signOutDescription": "End this session"
+    },
+    "logIn": "Log in",
+    "joinAzenion": "Join Azenion"
+  },
+  "footer": {
+    "tagline": "United by purpose.",
+    "taglineAccent": "Driven by impact.",
+    "description": "A global network where ambitious minds connect, collaborate, and create the future together.",
+    "quickLinks": "Quick Links",
+    "legal": "Legal",
+    "connect": "Connect",
+    "teams": "Teams",
+    "projects": "Projects",
+    "branches": "Branches",
+    "feed": "Feed",
+    "chat": "Chat",
+    "about": "About",
+    "contact": "Contact",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "copyright": "© {year} Azenion. All rights reserved.",
+    "foundedBy": "Founded by Ziyad"
+  },
+  "login": {
+    "title": "Welcome Back",
+    "subtitle": "Continue building, collaborating and shaping the future with Azenion.",
+    "emailOrUsername": "Email or Username",
+    "identifierPlaceholder": "you@example.com or your username",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "signIn": "Sign In",
+    "signingIn": "Signing In...",
+    "continueWithGoogle": "Continue with Google",
+    "redirectingToGoogle": "Redirecting to Google...",
+    "continueWithGithub": "Continue with GitHub",
+    "googleError": "Unable to start Google sign in",
+    "newToAzenion": "New to Azenion?",
+    "createAccount": "Create an Account"
+  },
+  "join": {
+    "title": "Join Azenion",
+    "subtitle": "Become part of The Limitless Network and start building alongside ambitious students, innovators and creators.",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "username": "Username",
+    "usernamePlaceholder": "johndoe",
+    "emailAddress": "Email Address",
+    "emailPlaceholder": "john@example.com",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "showConfirmPassword": "Show confirm password",
+    "hideConfirmPassword": "Hide confirm password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "createAccount": "Create Account",
+    "creatingAccount": "Creating Account...",
+    "checkEmailTitle": "Check Your Email",
+    "checkEmailBody": "We sent a confirmation link to <em>{email}</em>. Click it to activate your account.",
+    "goToSignIn": "Go to Sign In",
+    "alreadyMember": "Already a member?",
+    "signInLink": "Sign In",
+    "continueWithGoogle": "Continue with Google",
+    "redirectingToGoogle": "Redirecting to Google...",
+    "continueWithGithub": "Continue with GitHub",
+    "googleError": "Unable to start Google sign in",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "The central place for your preferences and account management.",
+    "unsavedChangesBadge": "Unsaved changes",
+    "navAriaLabel": "Settings sections",
+    "sections": {
+      "account": { "label": "Account", "description": "Email, password and security." },
+      "profile": { "label": "Profile", "description": "Your public identity and information." },
+      "notifications": { "label": "Notifications", "description": "Choose what you hear about." },
+      "privacy": { "label": "Privacy", "description": "Control how you appear across the network." },
+      "appearance": { "label": "Appearance", "description": "Set the look and feel." },
+      "language": { "label": "Language", "description": "Choose your interface language." },
+      "activities": { "label": "Activities", "description": "Your saved items and activity." },
+      "danger": { "label": "Danger Zone", "description": "Irreversible actions." }
+    },
+    "appearance": {
+      "system": { "label": "System", "description": "Follow your device setting" },
+      "light": { "label": "Light", "description": "Light canvas" },
+      "dark": { "label": "Dark", "description": "The Azenion signature" },
+      "panelTitle": "Appearance",
+      "panelDescription": "Your theme applies instantly and syncs across your devices."
+    },
+    "language": {
+      "english": "English",
+      "french": "Français",
+      "panelTitle": "Language",
+      "panelDescription": "Your language applies instantly and syncs across your devices."
+    },
+    "overlay": {
+      "ariaLabel": "Unsaved changes",
+      "title": "Unsaved changes",
+      "description": "Your changes may not be saved.",
+      "goBack": "Go back",
+      "discardAndContinue": "Discard and continue"
+    }
+  },
+  "academy": {
+    "hero": {
+      "scrollHint": "Scroll to explore"
+    },
+    "features": {
+      "eyebrow": "Explore the Academy",
+      "headingPlain": "Three ways to",
+      "headingAccent": "level up.",
+      "courses": {
+        "title": "Courses",
+        "description": "Learn at your own pace through curated learning paths and community-created content.",
+        "action": "Explore Courses"
+      },
+      "liveSessions": {
+        "title": "Live Sessions",
+        "description": "Attend workshops, lectures and community-led sessions online or in person.",
+        "action": "Explore Sessions"
+      },
+      "labs": {
+        "title": "Labs",
+        "description": "Build, experiment, collaborate and innovate with other members in a shared space.",
+        "action": "Coming Soon",
+        "badge": "Coming Soon"
+      }
+    },
+    "closing": {
+      "headingPlain": "Shape",
+      "headingAccent": "the Academy.",
+      "body": "The best sessions come from the community. Request what you want to learn, and grow with Azenion.",
+      "joinAzenion": "Join Azenion",
+      "exploreBranches": "Explore Branches"
+    }
+  },
+  "feed": {
+    "composer": {
+      "heading": "Share something with Azenion",
+      "placeholder": "Share an update with Azenion\u2026",
+      "headlinePlaceholder": "Headline (optional)\u2026",
+      "post": "Post",
+      "posting": "Posting\u2026",
+      "uploadingMedia": "Uploading media\u2026",
+      "uploadingProgress": "Uploading {current}/{total}",
+      "addMedia": "Add media",
+      "addMediaTitle": "Images (PNG, JPEG, WebP up to 2MB) or videos (MP4, WebM, MOV up to 50MB)",
+      "dismissError": "Dismiss error",
+      "removeMedia": "Remove {kind} {index}",
+      "kindVideo": "video",
+      "kindImage": "image",
+      "unsupportedFile": "\"{name}\" isn't a supported image or video. Use PNG, JPEG, WebP, MP4, WebM, or MOV.",
+      "videoTooLarge": "\"{name}\" exceeds the 50MB video limit.",
+      "imageTooLarge": "\"{name}\" exceeds the 2MB image limit.",
+      "tooManyFiles": "You can attach up to {count} images or videos.",
+      "postFailed": "Something went wrong while posting. Please try again.",
+      "unexpectedError": "An unexpected error occurred"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unreadAria": "Notifications ({count} unread)",
+    "markAllRead": "Mark all read",
+    "emptyTitle": "You're all caught up",
+    "emptyBody": "Likes, comments and mentions from your communities will show up here.",
+    "someone": "Someone",
+    "types": {
+      "default": "sent you a notification",
+      "liked_your_update": "liked your update",
+      "liked_your_comment": "liked your comment",
+      "commented_on_your_update": "commented on your update",
+      "replied_to_your_comment": "replied to your comment",
+      "mentioned_you": "mentioned you",
+      "announcement": "posted a new announcement",
+      "platform_announcement": "posted a new announcement",
+      "friend_request_received": "sent you a friend request",
+      "friend_request_accepted": "accepted your friend request",
+      "new_follower": "started following you",
+      "shared_post_with_you": "shared a post with you"
+    }
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "Sorry, we couldn't find the page you're looking for. It might have been moved or doesn't exist.",
+    "backHome": "Back home",
+    "errorTitle": "Something went wrong",
+    "errorBody": "We encountered an unexpected error. Please try again or go back to the homepage.",
+    "tryAgain": "Try again"
+  }
+}

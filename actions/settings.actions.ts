@@ -1,8 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/actions/auth.actions";
+import {
+  LOCALE_COOKIE,
+  LOCALE_COOKIE_MAX_AGE,
+  isLocale,
+} from "@/i18n/config";
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_PRIVACY_SETTINGS,
@@ -93,6 +99,51 @@ export async function updateSettings(input: UpdateSettingsInput) {
       privacy: normalizePrivacy(nextPrivacy as unknown as Record<string, unknown>),
     },
   };
+}
+
+/**
+ * Persists the interface language and applies it immediately.
+ * - Always writes the NEXT_LOCALE cookie so the whole UI (server + client)
+ *   re-renders in the chosen language on the following refresh.
+ * - When authenticated, also stores the preference in user_settings so it
+ *   survives sessions and devices. The cookie is written even if the
+ *   database write fails, so switching never appears broken to the user.
+ */
+export async function updateLanguage(language: string) {
+  if (!isLocale(language)) {
+    return { error: "Invalid language" };
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set(LOCALE_COOKIE, language, {
+    path: "/",
+    maxAge: LOCALE_COOKIE_MAX_AGE,
+    sameSite: "lax",
+  });
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let persisted = false;
+  if (user) {
+    const { error } = await supabase
+      .from("user_settings")
+      .upsert(
+        {
+          user_id: user.id,
+          language,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+    persisted = !error;
+  }
+
+  // Re-render every server component with the new locale.
+  revalidatePath("/", "layout");
+  return { success: true, persisted };
 }
 
 export async function changeEmail(formData: FormData) {

@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { formatDistanceToNow } from "@/lib/date";
+import { useTranslations } from "next-intl";
 import { useUser } from "@/hooks/use-user";
 import { subscribeToNotifications } from "@/lib/notification-realtime";
 import {
@@ -32,30 +33,25 @@ import {
 
 interface TypeConfig {
   icon: typeof Bell;
-  label: string;
 }
 
+// Labels are resolved from the "notifications.types" message namespace so
+// notification copy follows the active language.
 const TYPE_CONFIG: Record<string, TypeConfig> = {
-  liked_your_update: { icon: Heart, label: "liked your update" },
-  liked_your_comment: { icon: Heart, label: "liked your comment" },
-  commented_on_your_update: { icon: MessageSquare, label: "commented on your update" },
-  replied_to_your_comment: { icon: MessageCircle, label: "replied to your comment" },
-  mentioned_you: { icon: AtSign, label: "mentioned you" },
-  announcement: {
-    icon: Megaphone,
-    label: "posted a new announcement",
-  },
-  platform_announcement: {
-    icon: Megaphone,
-    label: "posted a new announcement",
-  },
-  friend_request_received: { icon: UserPlus, label: "sent you a friend request" },
-  friend_request_accepted: { icon: UserCheck, label: "accepted your friend request" },
-  new_follower: { icon: UserPlus, label: "started following you" },
-  shared_post_with_you: { icon: Share2, label: "shared a post with you" },
+  liked_your_update: { icon: Heart },
+  liked_your_comment: { icon: Heart },
+  commented_on_your_update: { icon: MessageSquare },
+  replied_to_your_comment: { icon: MessageCircle },
+  mentioned_you: { icon: AtSign },
+  announcement: { icon: Megaphone },
+  platform_announcement: { icon: Megaphone },
+  friend_request_received: { icon: UserPlus },
+  friend_request_accepted: { icon: UserCheck },
+  new_follower: { icon: UserPlus },
+  shared_post_with_you: { icon: Share2 },
 };
 
-const DEFAULT_TYPE: TypeConfig = { icon: Sparkles, label: "sent you a notification" };
+const DEFAULT_TYPE: TypeConfig = { icon: Sparkles };
 
 function getPreview(n: AppNotification): string | null {
   const meta = n.metadata ?? {};
@@ -108,11 +104,16 @@ function NotificationItem({
   notification: AppNotification;
   onOpen: (n: AppNotification) => void;
 }) {
+  const tTypes = useTranslations("notifications.types");
+  const tNotifications = useTranslations("notifications");
   const unread = !notification.read;
   const config = TYPE_CONFIG[notification.type] ?? DEFAULT_TYPE;
+  const label = config === DEFAULT_TYPE
+    ? tTypes("default")
+    : tTypes(notification.type);
   const preview = getPreview(notification);
   const actorName =
-    notification.actor?.full_name ?? notification.actor?.username ?? "Someone";
+    notification.actor?.full_name ?? notification.actor?.username ?? tNotifications("someone");
 
   return (
     <button
@@ -150,7 +151,7 @@ function NotificationItem({
               unread ? "text-ink-300" : "text-ink-500",
             )}
           >
-            {config.label}
+            {label}
           </span>
         </p>
 
@@ -189,6 +190,7 @@ function NotificationItem({
 
 export function NotificationCenter() {
   const { user } = useUser();
+  const t = useTranslations("notifications");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -285,8 +287,8 @@ export function NotificationCenter() {
         aria-expanded={open}
         aria-label={
           unreadCount > 0
-            ? `Notifications (${unreadCount} unread)`
-            : "Notifications"
+            ? t("unreadAria", { count: unreadCount })
+            : t("title")
         }
         onClick={handleOpen}
         className="relative flex h-11 w-11 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
@@ -302,12 +304,12 @@ export function NotificationCenter() {
       {open ? (
         <div
           role="dialog"
-          aria-label="Notifications"
+          aria-label={t("title")}
           className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
         >
           <div className="relative flex items-center justify-between gap-3 pb-3 pt-1">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-ink-50">Notifications</h2>
+              <h2 className="text-sm font-semibold text-ink-50">{t("title")}</h2>
               {unreadCount > 0 && (
                 <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent/[0.16] px-1.5 text-[11px] font-semibold tabular-nums text-accent-300 ring-1 ring-accent-400/30">
                   {unreadCount}
@@ -321,7 +323,7 @@ export function NotificationCenter() {
                 className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium text-accent-400 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 hover:text-accent-300"
               >
                 <CheckCheck size={13} />
-                Mark all read
+                {t("markAllRead")}
               </button>
             ) : null}
           </div>
@@ -358,11 +360,10 @@ export function NotificationCenter() {
                   <BellOff size={24} />
                 </div>
                 <p className="mt-4 text-sm font-medium text-ink-200">
-                  You&apos;re all caught up
+                  {t("emptyTitle")}
                 </p>
                 <p className="mt-1 max-w-[16rem] text-xs leading-relaxed text-ink-600">
-                  Likes, comments and mentions from your communities will show up
-                  here.
+                  {t("emptyBody")}
                 </p>
               </div>
             ) : (

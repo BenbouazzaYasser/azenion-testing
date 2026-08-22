@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ const INPUT_CLASS =
   "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
 
 export function JoinCard() {
+  const t = useTranslations("join");
+  const tCommon = useTranslations("common");
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -30,7 +33,7 @@ export function JoinCard() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t("passwordsDoNotMatch"));
       return;
     }
 
@@ -64,9 +67,9 @@ export function JoinCard() {
         window.location.href = result.url;
         return;
       }
-      setError(result?.error ?? "Unable to start Google sign in");
+      setError(result?.error ?? t("googleError"));
     } catch {
-      setError("Unable to start Google sign in");
+      setError(t("googleError"));
     }
     setGoogleLoading(false);
   }
@@ -81,13 +84,16 @@ export function JoinCard() {
             <div className="overflow-hidden rounded-[2rem] border border-border-strong card-surface px-6 py-16 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:px-12 sm:py-20">
               <div className="relative text-center">
                 <h1 className="text-balance text-[1.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2rem]">
-                  Check Your Email
+                  {t("checkEmailTitle")}
                 </h1>
                 <p className="mt-4 text-[0.95rem] leading-relaxed text-ink-400">
-                  We sent a confirmation link to <span className="text-ink-200">{email}</span>. Click it to activate your account.
+                  {t.rich("checkEmailBody", {
+                    email,
+                    em: (chunks) => <span className="text-ink-200">{chunks}</span>,
+                  })}
                 </p>
                 <Button variant="primary" size="lg" className="mt-6" asChild>
-                  <Link href="/login">Go to Sign In</Link>
+                  <Link href="/login">{t("goToSignIn")}</Link>
                 </Button>
               </div>
             </div>
@@ -114,23 +120,23 @@ export function JoinCard() {
               </div>
 
               <h1 className="mt-6 text-balance text-[1.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2rem]">
-                Join Azenion
+                {t("title")}
               </h1>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-400">
-                Become part of The Limitless Network and start building alongside ambitious students, innovators and creators.
+                {t("subtitle")}
               </p>
             </div>
 
             <form className="relative mt-6 flex flex-col gap-5" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="join-name" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Full Name
+                  {t("fullName")}
                 </label>
                 <input
                   id="join-name"
                   name="full_name"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder={t("fullNamePlaceholder")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={INPUT_CLASS}
@@ -140,13 +146,13 @@ export function JoinCard() {
 
               <div>
                 <label htmlFor="join-username" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Username
+                  {t("username")}
                 </label>
                 <input
                   id="join-username"
                   name="username"
                   type="text"
-                  placeholder="johndoe"
+                  placeholder={t("usernamePlaceholder")}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className={INPUT_CLASS}
@@ -156,13 +162,13 @@ export function JoinCard() {
 
               <div>
                 <label htmlFor="join-email" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Email Address
+                  {t("emailAddress")}
                 </label>
                 <input
                   id="join-email"
                   name="email"
                   type="email"
-                  placeholder="john@example.com"
+                  placeholder={t("emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={INPUT_CLASS}
@@ -172,7 +178,7 @@ export function JoinCard() {
 
               <div>
                 <label htmlFor="join-password" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Password
+                  {t("password")}
                 </label>
                 <div className="relative">
                   <input
@@ -189,7 +195,7 @@ export function JoinCard() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 transition-colors hover:text-ink-400"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? t("hidePassword") : t("showPassword")}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
@@ -198,7 +204,7 @@ export function JoinCard() {
 
               <div>
                 <label htmlFor="join-confirm" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Confirm Password
+                  {t("confirmPassword")}
                 </label>
                 <div className="relative">
                   <input
@@ -214,7 +220,7 @@ export function JoinCard() {
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 transition-colors hover:text-ink-400"
-                    aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+                    aria-label={showConfirm ? t("hideConfirmPassword") : t("showConfirmPassword")}
                   >
                     {showConfirm ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
@@ -231,10 +237,10 @@ export function JoinCard() {
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 size={18} className="animate-spin" />
-                    Creating Account...
+                    {t("creatingAccount")}
                   </span>
                 ) : (
-                  "Create Account"
+                  t("createAccount")
                 )}
               </Button>
             </form>
@@ -242,7 +248,7 @@ export function JoinCard() {
             <div className="relative mt-6">
               <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent" />
               <span className="relative mx-auto flex w-10 justify-center bg-void-950 text-xs uppercase tracking-[0.12em] text-ink-600">
-                or
+                {tCommon("or")}
               </span>
             </div>
 
@@ -263,7 +269,7 @@ export function JoinCard() {
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                   </svg>
                 )}
-                {googleLoading ? "Redirecting to Google..." : "Continue with Google"}
+                {googleLoading ? t("redirectingToGoogle") : t("continueWithGoogle")}
               </button>
 
               <button
@@ -273,21 +279,21 @@ export function JoinCard() {
                 className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
               >
                 <Github size={19} />
-                Continue with GitHub
+                {t("continueWithGithub")}
                 <span className="absolute right-4 text-[10px] font-medium uppercase tracking-wide text-ink-600">
-                  Coming soon
+                  {tCommon("comingSoon")}
                 </span>
               </button>
             </div>
 
             <div className="relative mt-6 border-t border-border-strong pt-8 text-center">
               <p className="text-sm text-ink-400">
-                Already a member?{" "}
+                {t("alreadyMember")}{" "}
                 <Link
                   href="/login"
                   className="font-medium text-accent-400 transition-colors hover:text-accent-300"
                 >
-                  Sign In
+                  {t("signInLink")}
                 </Link>
               </p>
             </div>

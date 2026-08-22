@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Menu, X, User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical, Newspaper, Megaphone, Sparkles } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,29 @@ function MenuLink({ href, icon, title, description, onNavigate }: MenuLinkProps)
 }
 
 
+// Maps NAV_LINKS hrefs to message keys so navigation stays data-driven
+// while labels/descriptions come from the active dictionary.
+const TOP_LEVEL_KEYS: Record<string, string> = {
+  "/": "home",
+  "/teams": "teams",
+  "/projects": "projects",
+  "/branches": "branches",
+  "/community": "community.label",
+  "/chat": "chat",
+  "/academy": "academy.label",
+};
+
+const CHILD_KEYS: Record<string, string> = {
+  "/feed": "community.feed",
+  "/showcase": "community.showcase",
+  "/announcements": "community.announcements",
+  "/academy/courses": "academy.courses",
+  "/academy/live-sessions": "academy.liveSessions",
+  "/academy/labs": "academy.labs",
+};
+
 export function Navbar() {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const { user, profile, loading, isAdmin } = useUser();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -154,7 +177,7 @@ export function Navbar() {
           </div>
 
           <div className="hidden xl:flex xl:ml-4">
-            <nav aria-label="Primary" className="flex items-center">
+            <nav aria-label={t("primaryAriaLabel")} className="flex items-center">
               <ul className="flex items-center gap-4">
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
@@ -181,24 +204,27 @@ export function Navbar() {
                           }}
                         >
                           <Link href={link.href} className={navLinkClass} aria-haspopup="true" aria-expanded={isDropdownOpen}>
-                            {link.label}
+                            {t(TOP_LEVEL_KEYS[link.href] ?? link.label)}
                             <ChevronDown size={12} className="ml-1 opacity-60" />
                           </Link>
                           {isDropdownOpen ? (
                             <div className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2">
                               <div aria-hidden className="absolute -top-3 left-0 right-0 h-3" />
                               <div className="relative overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card animate-dropdown-in">
-                                <p className="pb-2 text-sm font-medium text-ink-50">{link.label}</p>
-                                {link.children.map((child) => (
-                                  <MenuLink
-                                    key={child.href}
-                                    href={child.href}
-                                    icon={CHILD_ICONS[child.href]}
-                                    title={child.label}
-                                    description={child.description}
-                                    onNavigate={() => setOpenDropdown(null)}
-                                  />
-                                ))}
+                                <p className="pb-2 text-sm font-medium text-ink-50">{t(TOP_LEVEL_KEYS[link.href] ?? link.label)}</p>
+                                {link.children.map((child) => {
+                                  const childKey = CHILD_KEYS[child.href] ?? "";
+                                  return (
+                                    <MenuLink
+                                      key={child.href}
+                                      href={child.href}
+                                      icon={CHILD_ICONS[child.href]}
+                                      title={t(`${childKey}.label`)}
+                                      description={child.description ? t(`${childKey}.description`) : undefined}
+                                      onNavigate={() => setOpenDropdown(null)}
+                                    />
+                                  );
+                                })}
                               </div>
                             </div>
                           ) : null}
@@ -210,7 +236,7 @@ export function Navbar() {
                   return (
                     <li key={link.href} className="flex">
                       <Link href={link.href} className={navLinkClass}>
-                        {link.label}
+                        {t(TOP_LEVEL_KEYS[link.href] ?? link.label)}
                         {link.href === "/chat" && hasChatUnread && (
                           <span
                             aria-hidden
@@ -244,7 +270,7 @@ export function Navbar() {
                       onClick={() => setIsAdminOpen((v) => !v)}
                     >
                       <Shield size={14} />
-                      Admin
+                      {t("admin.trigger")}
                       <ChevronDown size={12} className="ml-0.5" />
                     </Button>
                     {isAdminOpen ? (
@@ -266,10 +292,10 @@ export function Navbar() {
                           </div>
                           <div className="min-w-0">
                             <p className="truncate text-[15px] font-semibold leading-tight text-ink-50">
-                              Administrator
+                              {t("admin.title")}
                             </p>
                             <p className="mt-0.5 truncate text-xs text-accent-300/80">
-                              Full platform access
+                              {t("admin.subtitle")}
                             </p>
                           </div>
                         </div>
@@ -287,13 +313,13 @@ export function Navbar() {
 
                         <div className="pt-2 pb-1">
                           <p className="pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
-                            Management
+                            {t("admin.section")}
                           </p>
                           <MenuLink
                             href="/branches/manage"
                             icon={<Building2 size={16} />}
-                            title="Manage Branches"
-                            description="Create and organize communities"
+                            title={t("admin.manageBranches.label")}
+                            description={t("admin.manageBranches.description")}
                             onNavigate={() => setIsAdminOpen(false)}
                           />
                         </div>
@@ -343,7 +369,7 @@ export function Navbar() {
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-[15px] font-semibold leading-tight text-ink-50">
-                            {profile?.full_name || profile?.username || "User"}
+                            {profile?.full_name || profile?.username || t("user.fallbackName")}
                           </p>
                           <p className="mt-0.5 truncate text-xs text-ink-500">
                             {profile?.username
@@ -366,27 +392,27 @@ export function Navbar() {
 
                       <div className="pt-2 pb-1">
                         <p className="pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
-                          Workspace
+                          {t("user.workspaceSection")}
                         </p>
                         <MenuLink
                           href="/profile/my-branches"
                           icon={<Building2 size={16} />}
-                          title="My Branches"
-                          description="Your communities"
+                          title={t("user.myBranches.label")}
+                          description={t("user.myBranches.description")}
                           onNavigate={() => setIsAvatarOpen(false)}
                         />
                         <MenuLink
                           href="/profile/my-teams"
                           icon={<Users size={16} />}
-                          title="My Teams"
-                          description="View and manage your teams"
+                          title={t("user.myTeams.label")}
+                          description={t("user.myTeams.description")}
                           onNavigate={() => setIsAvatarOpen(false)}
                         />
                         <MenuLink
                           href="/profile/my-projects"
                           icon={<Rocket size={16} />}
-                          title="My Projects"
-                          description="Continue building"
+                          title={t("user.myProjects.label")}
+                          description={t("user.myProjects.description")}
                           onNavigate={() => setIsAvatarOpen(false)}
                         />
                       </div>
@@ -404,20 +430,20 @@ export function Navbar() {
 
                       <div className="pt-2 pb-1">
                         <p className="pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
-                          Account
+                          {t("user.accountSection")}
                         </p>
                         <MenuLink
                           href="/profile"
                           icon={<User size={16} />}
-                          title="Profile"
-                          description="Manage your account"
+                          title={t("user.profile.label")}
+                          description={t("user.profile.description")}
                           onNavigate={() => setIsAvatarOpen(false)}
                         />
                         <MenuLink
                           href="/settings"
                           icon={<Settings size={16} />}
-                          title="Settings"
-                          description="Preferences and security"
+                          title={t("user.settings.label")}
+                          description={t("user.settings.description")}
                           onNavigate={() => setIsAvatarOpen(false)}
                         />
                       </div>
@@ -435,7 +461,7 @@ export function Navbar() {
 
                       <div className="px-2.5 pb-3 pt-2">
                         <p className="pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
-                          Danger Zone
+                          {t("user.dangerSection")}
                         </p>
                         <form action={signOut}>
                           <button
@@ -447,10 +473,10 @@ export function Navbar() {
                             </span>
                             <span className="min-w-0">
                               <span className="block text-[13.5px] font-medium text-ink-200 transition-colors duration-200 group-hover:text-red-300">
-                                Sign Out
+                                {t("user.signOut")}
                               </span>
                               <span className="block truncate text-xs text-ink-600 transition-colors duration-200 group-hover:text-red-400/70">
-                                End this session
+                                {t("user.signOutDescription")}
                               </span>
                             </span>
                           </button>
@@ -471,7 +497,7 @@ export function Navbar() {
                       "border-accent-400/60 bg-surface-hover text-ink-50"
                   )}
                 >
-                  <Link href="/login">Log in</Link>
+                  <Link href="/login">{t("logIn")}</Link>
                 </Button>
                 <Button
                   variant="primary"
@@ -482,7 +508,7 @@ export function Navbar() {
                       "ring-1 ring-accent-300/60 ring-offset-2 ring-offset-void-950"
                   )}
                 >
-                  <Link href="/join">Join Azenion</Link>
+                  <Link href="/join">{t("joinAzenion")}</Link>
                 </Button>
               </>
             )}
@@ -500,7 +526,7 @@ export function Navbar() {
               type="button"
               ref={toggleRef}
               onClick={() => setIsMenuOpen((v) => !v)}
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-label={isMenuOpen ? t("closeMenu") : t("openMenu")}
               aria-expanded={isMenuOpen}
               className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-all duration-300 hover:scale-105 hover:bg-surface-hover hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
             >
@@ -532,7 +558,7 @@ export function Navbar() {
                       active ? "text-ink-50" : "text-ink-400 hover:text-ink-200"
                     )}
                   >
-                    {link.label}
+                    {t(TOP_LEVEL_KEYS[link.href] ?? link.label)}
                     {link.href === "/chat" && hasChatUnread && (
                       <span
                         aria-hidden
@@ -558,7 +584,7 @@ export function Navbar() {
                           )}
                         >
                           {CHILD_ICONS[child.href]}
-                          {child.label}
+                          {t(`${CHILD_KEYS[child.href] ?? ""}.label`)}
                         </Link>
                       ))}
                     </div>
@@ -573,7 +599,7 @@ export function Navbar() {
                     <Button variant="ghost" asChild>
                       <Link href="/branches/manage" onClick={() => setIsMenuOpen(false)}>
                         <Shield size={14} />
-                        Manage Branches
+                        {t("admin.manageBranches.label")}
                       </Link>
                     </Button>
                   ) : null}
@@ -589,7 +615,7 @@ export function Navbar() {
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-ink-50">
-                        {profile?.full_name || profile?.username || "User"}
+                        {profile?.full_name || profile?.username || t("user.fallbackName")}
                       </p>
                       <p className="truncate text-xs text-ink-500">
                         {profile?.username ? `@${profile.username}` : ""}
@@ -599,38 +625,38 @@ export function Navbar() {
                   <Button variant="secondary" asChild>
                     <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
                       <User size={14} />
-                      Profile
+                      {t("user.profile.label")}
                     </Link>
                   </Button>
                   <Button variant="ghost" asChild>
                     <Link href="/profile/my-branches" onClick={() => setIsMenuOpen(false)}>
                       <Building2 size={14} />
-                      My Branches
+                      {t("user.myBranches.label")}
                     </Link>
                   </Button>
                   <Button variant="ghost" asChild>
                     <Link href="/profile/my-teams" onClick={() => setIsMenuOpen(false)}>
                       <Users size={14} />
-                      My Teams
+                      {t("user.myTeams.label")}
                     </Link>
                   </Button>
                   <Button variant="ghost" asChild>
                     <Link href="/profile/my-projects" onClick={() => setIsMenuOpen(false)}>
                       <Rocket size={14} />
-                      My Projects
+                      {t("user.myProjects.label")}
                     </Link>
                   </Button>
                   <Button variant="ghost" asChild>
                     <Link href="/settings" onClick={() => setIsMenuOpen(false)}>
                       <Settings size={14} />
-                      Settings
+                      {t("user.settings.label")}
                     </Link>
                   </Button>
                   <div className="border-t border-border pt-3">
                     <form action={signOut}>
                       <Button type="submit" variant="ghost" className="w-full justify-start text-red-400 hover:text-red-300">
                         <LogOut size={14} />
-                        Sign Out
+                        {t("user.signOut")}
                       </Button>
                     </form>
                   </div>
@@ -638,10 +664,10 @@ export function Navbar() {
               ) : (
                 <>
                   <Button variant="secondary" asChild>
-                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>Log in</Link>
+                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>{t("logIn")}</Link>
                   </Button>
                   <Button variant="primary" asChild>
-                    <Link href="/join" onClick={() => setIsMenuOpen(false)}>Join Azenion</Link>
+                    <Link href="/join" onClick={() => setIsMenuOpen(false)}>{t("joinAzenion")}</Link>
                   </Button>
                 </>
               )}

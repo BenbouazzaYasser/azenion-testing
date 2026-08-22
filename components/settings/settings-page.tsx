@@ -7,11 +7,13 @@ import {
   Bell,
   Shield,
   Monitor,
+  Languages,
   TriangleAlert,
   Settings2,
   Bookmark,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
@@ -20,11 +22,20 @@ import { ProfileSection } from "./profile-section";
 import { NotificationsSection } from "./notifications-section";
 import { PrivacySection } from "./privacy-section";
 import { AppearanceSection } from "./appearance-section";
+import { LanguageSection } from "./language-section";
 import { ActivitiesSection } from "./activities-section";
 import { DangerZoneSection } from "./danger-zone-section";
 import type { DeletionStatus, UserSettings } from "@/lib/settings-data";
 
-type SectionId = "account" | "profile" | "notifications" | "privacy" | "appearance" | "activities" | "danger";
+type SectionId =
+  | "account"
+  | "profile"
+  | "notifications"
+  | "privacy"
+  | "appearance"
+  | "language"
+  | "activities"
+  | "danger";
 
 interface SettingsPageProps {
   account: {
@@ -53,29 +64,20 @@ interface SettingsPageProps {
 
 const SECTIONS: {
   id: SectionId;
-  label: string;
   icon: typeof User;
 }[] = [
-  { id: "account", label: "Account", icon: User },
-  { id: "profile", label: "Profile", icon: UserRound },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "privacy", label: "Privacy", icon: Shield },
-  { id: "appearance", label: "Appearance", icon: Monitor },
-  { id: "activities", label: "Activities", icon: Bookmark },
-  { id: "danger", label: "Danger Zone", icon: TriangleAlert },
+  { id: "account", icon: User },
+  { id: "profile", icon: UserRound },
+  { id: "notifications", icon: Bell },
+  { id: "privacy", icon: Shield },
+  { id: "appearance", icon: Monitor },
+  { id: "language", icon: Languages },
+  { id: "activities", icon: Bookmark },
+  { id: "danger", icon: TriangleAlert },
 ];
 
-const SECTION_DESCRIPTIONS: Record<SectionId, string> = {
-  account: "Email, password and security.",
-  profile: "Your public identity and information.",
-  notifications: "Choose what you hear about.",
-  privacy: "Control how you appear across the network.",
-  appearance: "Set the look and feel.",
-  activities: "Your saved items and activity.",
-  danger: "Irreversible actions.",
-};
-
 export function SettingsPage({ account, profile, branch, settings, deletion }: SettingsPageProps) {
+  const t = useTranslations("settings");
   const [active, setActive] = useState<SectionId>("account");
   const [dirty, setDirty] = useState(false);
   const [pendingTarget, setPendingTarget] = useState<SectionId | null>(null);
@@ -137,22 +139,20 @@ export function SettingsPage({ account, profile, branch, settings, deletion }: S
             <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08] text-accent-300">
               <Settings2 size={20} />
             </span>
-            Settings
+            {t("title")}
           </h1>
-          <p className="mt-2 text-sm text-ink-500">
-            The central place for your preferences and account management.
-          </p>
+          <p className="mt-2 text-sm text-ink-500">{t("subtitle")}</p>
         </div>
         {dirty ? (
           <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-300 sm:inline-flex">
-            Unsaved changes
+            {t("unsavedChangesBadge")}
           </span>
         ) : null}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[250px_1fr]">
         <nav
-          aria-label="Settings sections"
+          aria-label={t("navAriaLabel")}
           className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto"
         >
           <ul className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0">
@@ -185,7 +185,7 @@ export function SettingsPage({ account, profile, branch, settings, deletion }: S
                     >
                       <section.icon size={15} />
                     </span>
-                    {section.label}
+                    {t(`sections.${section.id}.label`)}
                   </button>
                 </li>
               );
@@ -199,9 +199,9 @@ export function SettingsPage({ account, profile, branch, settings, deletion }: S
             tabIndex={-1}
             className="mb-1 text-2xl font-semibold text-ink-50 outline-none"
           >
-            {SECTIONS.find((s) => s.id === active)?.label}
+            {t(`sections.${active}.label`)}
           </h2>
-          <p className="mb-5 text-sm text-ink-500">{SECTION_DESCRIPTIONS[active]}</p>
+          <p className="mb-5 text-sm text-ink-500">{t(`sections.${active}.description`)}</p>
 
           <div className={cn(active !== "account" && "hidden")}>
             <AccountSection
@@ -225,6 +225,9 @@ export function SettingsPage({ account, profile, branch, settings, deletion }: S
           </div>
           <div className={cn(active !== "appearance" && "hidden")}>
             <AppearanceSection />
+          </div>
+          <div className={cn(active !== "language" && "hidden")}>
+            <LanguageSection />
           </div>
           <div className={cn(active !== "activities" && "hidden")}>
             <ActivitiesSection />
@@ -252,6 +255,7 @@ function ConfirmOverlay({
   onStay: () => void;
   onDiscard: () => void;
 }) {
+  const t = useTranslations("settings.overlay");
   const [mounted, setMounted] = useState(false);
   const confirmFocusRef = useDialogFocus<HTMLDivElement>(true);
   useEffect(() => {
@@ -269,10 +273,10 @@ function ConfirmOverlay({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4" role="alertdialog" aria-modal="true" aria-label="Unsaved changes">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4" role="alertdialog" aria-modal="true" aria-label={t("ariaLabel")}>
       <button
         type="button"
-        aria-label="Close"
+        aria-label={t("title")}
         className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-200"
         style={{ opacity: mounted ? 1 : 0 }}
         onClick={onStay}
@@ -285,13 +289,13 @@ function ConfirmOverlay({
       >
         <div className="flex items-start justify-between border-b border-border px-6 py-5">
           <div>
-            <h3 className="text-base font-semibold text-ink-50">Unsaved changes</h3>
-            <p className="mt-1 text-sm text-ink-400">Your changes may not be saved.</p>
+            <h3 className="text-base font-semibold text-ink-50">{t("title")}</h3>
+            <p className="mt-1 text-sm text-ink-400">{t("description")}</p>
           </div>
           <button
             type="button"
             onClick={onStay}
-            aria-label="Close"
+            aria-label={t("goBack")}
             className="rounded-full p-2 text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50"
           >
             <X size={16} />
@@ -299,10 +303,10 @@ function ConfirmOverlay({
         </div>
         <div className="flex items-center justify-end gap-3 px-6 py-5">
           <Button variant="secondary" size="sm" onClick={onStay}>
-            Go back
+            {t("goBack")}
           </Button>
           <Button variant="primary" size="sm" onClick={onDiscard}>
-            Discard and continue
+            {t("discardAndContinue")}
           </Button>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ const INPUT_CLASS =
   "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
 
 export function LoginCard({ next }: { next?: string }) {
+  const t = useTranslations("login");
+  const tCommon = useTranslations("common");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -50,9 +53,9 @@ export function LoginCard({ next }: { next?: string }) {
         window.location.href = result.url;
         return;
       }
-      setError(result?.error ?? "Unable to start Google sign in");
+      setError(result?.error ?? t("googleError"));
     } catch {
-      setError("Unable to start Google sign in");
+      setError(t("googleError"));
     }
     setGoogleLoading(false);
   }
@@ -74,23 +77,23 @@ export function LoginCard({ next }: { next?: string }) {
               </div>
 
               <h1 className="mt-6 text-balance text-[1.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2rem]">
-                Welcome Back
+                {t("title")}
               </h1>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-400">
-                Continue building, collaborating and shaping the future with Azenion.
+                {t("subtitle")}
               </p>
             </div>
 
             <form className="relative mt-6 flex flex-col gap-5" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="login-identifier" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Email or Username
+                  {t("emailOrUsername")}
                 </label>
                 <input
                   id="login-identifier"
                   name="identifier"
                   type="text"
-                  placeholder="you@example.com or your username"
+                  placeholder={t("identifierPlaceholder")}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   className={INPUT_CLASS}
@@ -101,7 +104,7 @@ export function LoginCard({ next }: { next?: string }) {
 
               <div>
                 <label htmlFor="login-password" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Password
+                  {t("password")}
                 </label>
                 <div className="relative">
                   <input
@@ -118,7 +121,7 @@ export function LoginCard({ next }: { next?: string }) {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 transition-colors hover:text-ink-400"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? t("hidePassword") : t("showPassword")}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
@@ -133,7 +136,7 @@ export function LoginCard({ next }: { next?: string }) {
                     onChange={(e) => setRemember(e.target.checked)}
                     className="h-4 w-4 rounded border-border-strong bg-surface text-accent-400 accent-accent-400 transition-colors focus:ring-accent-400/30"
                   />
-                  <span className="text-sm text-ink-400">Remember me</span>
+                  <span className="text-sm text-ink-400">{t("rememberMe")}</span>
                 </label>
               </div>
 
@@ -147,10 +150,10 @@ export function LoginCard({ next }: { next?: string }) {
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 size={18} className="animate-spin" />
-                    Signing In...
+                    {t("signingIn")}
                   </span>
                 ) : (
-                  "Sign In"
+                  t("signIn")
                 )}
               </Button>
             </form>
@@ -158,7 +161,7 @@ export function LoginCard({ next }: { next?: string }) {
             <div className="relative mt-6">
               <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent" />
               <span className="relative mx-auto flex w-10 justify-center bg-void-950 text-xs uppercase tracking-[0.12em] text-ink-600">
-                or
+                {tCommon("or")}
               </span>
             </div>
 
@@ -179,7 +182,7 @@ export function LoginCard({ next }: { next?: string }) {
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                   </svg>
                 )}
-                {googleLoading ? "Redirecting to Google..." : "Continue with Google"}
+                {googleLoading ? t("redirectingToGoogle") : t("continueWithGoogle")}
               </button>
 
               <button
@@ -189,21 +192,21 @@ export function LoginCard({ next }: { next?: string }) {
                 className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
               >
                 <Github size={19} />
-                Continue with GitHub
+                {t("continueWithGithub")}
                 <span className="absolute right-4 text-[10px] font-medium uppercase tracking-wide text-ink-600">
-                  Coming soon
+                  {tCommon("comingSoon")}
                 </span>
               </button>
             </div>
 
             <div className="relative mt-6 border-t border-border-strong pt-8 text-center">
               <p className="text-sm text-ink-400">
-                New to Azenion?{" "}
+                {t("newToAzenion")}{" "}
                 <Link
                   href="/join"
                   className="font-medium text-accent-400 transition-colors hover:text-accent-300"
                 >
-                  Create an Account
+                  {t("createAccount")}
                 </Link>
               </p>
             </div>

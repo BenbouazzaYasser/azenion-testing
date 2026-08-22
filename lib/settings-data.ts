@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Locale } from "@/i18n/config";
 
 export type Theme = "system" | "light" | "dark";
 
@@ -23,6 +24,8 @@ export interface UserSettings {
   theme: Theme;
   notifications: NotificationSettings;
   privacy: PrivacySettings;
+  /** Explicit interface language; null = not chosen yet (browser language applies). */
+  language: Locale | null;
 }
 
 export interface DeletionStatus {
@@ -51,16 +54,22 @@ export const DEFAULT_SETTINGS: UserSettings = {
   theme: "system",
   notifications: { ...DEFAULT_NOTIFICATION_SETTINGS },
   privacy: { ...DEFAULT_PRIVACY_SETTINGS },
+  language: null,
 };
 
 interface SettingsRow {
   theme: string;
   notifications: Record<string, unknown> | null;
   privacy: Record<string, unknown> | null;
+  language?: string | null;
 }
 
 function asTheme(value: unknown): Theme {
   return value === "light" || value === "dark" ? value : "system";
+}
+
+function asLanguage(value: unknown): Locale | null {
+  return value === "fr" || value === "en" ? value : null;
 }
 
 export function normalizeNotifications(
@@ -104,7 +113,7 @@ export async function getUserSettings(): Promise<UserSettings> {
 
   const { data } = await supabase
     .from("user_settings")
-    .select("theme, notifications, privacy")
+    .select("theme, notifications, privacy, language")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -113,6 +122,7 @@ export async function getUserSettings(): Promise<UserSettings> {
     theme: asTheme(row?.theme),
     notifications: normalizeNotifications(row?.notifications ?? null),
     privacy: normalizePrivacy(row?.privacy ?? null),
+    language: asLanguage(row?.language),
   };
 }
 

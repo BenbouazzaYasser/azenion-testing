@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 import { sendWelcomeEmail } from "@/actions/email-welcome.actions";
 import { createClient } from "@/lib/supabase/server";
 import { sanitizeNextPath } from "@/lib/auth-redirect";
+import {
+  LOCALE_COOKIE,
+  LOCALE_COOKIE_MAX_AGE,
+  isLocale,
+} from "@/i18n/config";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -25,6 +30,25 @@ export async function GET(request: Request) {
           sendError,
         );
       });
+
+      // Apply the stored language preference (if any) before redirecting.
+      try {
+        const { data: settings } = await supabase
+          .from("user_settings")
+          .select("language")
+          .maybeSingle();
+        if (settings && isLocale(settings.language)) {
+          const response = NextResponse.redirect(`${origin}${next}`);
+          response.cookies.set(LOCALE_COOKIE, settings.language, {
+            path: "/",
+            maxAge: LOCALE_COOKIE_MAX_AGE,
+            sameSite: "lax",
+          });
+          return response;
+        }
+      } catch {
+        // Language sync must never block authentication.
+      }
 
       return NextResponse.redirect(`${origin}${next}`);
     }

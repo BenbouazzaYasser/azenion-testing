@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { PageHero } from "@/components/layout/page-hero";
 import { Reveal } from "@/components/ui/reveal";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ interface AcademyHeroProps {
 }
 
 export function AcademyHero({ eyebrow, title, accent, subtitle, badge }: AcademyHeroProps) {
+  const t = useTranslations("academy.hero");
   return (
     <PageHero variant="academy" slug="academy" atmosphere={false}>
       <Reveal delay={0}>
@@ -45,7 +47,7 @@ export function AcademyHero({ eyebrow, title, accent, subtitle, badge }: Academy
             <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
           </span>
           <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
-            Scroll to explore
+            {t("scrollHint")}
           </span>
         </div>
       </Reveal>
