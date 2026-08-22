@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AnnouncementsPage() {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },

@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: TeamSettingsPageProps): Promi
 export default async function TeamSettingsPage({ params }: TeamSettingsPageProps) {
   const { slug } = await params;
   const adminClient = createAdminClient();
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data: team } = await adminClient
     .from("teams")

@@ -2,7 +2,6 @@ import { CheckCircle, KeyRound, Mail, Sparkles, UserCircle, Calendar, LogIn } fr
 import { ChangePasswordModal } from "./change-password-modal";
 import { DeleteAccountModal } from "./delete-account-modal";
 import { RestartOnboardingButton } from "@/components/onboarding/restart-onboarding-button";
-import type { DeletionStatus } from "@/lib/settings-data";
 import { formatDate } from "@/lib/date";
 
 interface ProfileAccountProps {
@@ -12,8 +11,6 @@ interface ProfileAccountProps {
   emailVerified: boolean;
   createdAt: string;
   lastSignInAt: string | null;
-  username: string;
-  deletion: DeletionStatus;
   cardClass: string;
 }
 
@@ -27,8 +24,6 @@ export function ProfileAccount({
   emailVerified,
   createdAt,
   lastSignInAt,
-  username,
-  deletion,
   cardClass,
 }: ProfileAccountProps) {
   if (profileUserId !== currentUserId) return null;
@@ -149,11 +144,11 @@ export function ProfileAccount({
             <div>
               <h3 className="text-sm font-medium text-red-400">Delete Account</h3>
               <p className="mt-1 text-sm text-ink-400">
-                Delete your account and all associated data. You will have 30
-                days to appeal before it is permanently removed.
+                Permanently remove your account and all associated data. This
+                action cannot be undone.
               </p>
             </div>
-            <DeleteAccountModal username={username} deletion={deletion} />
+            <DeleteAccountModal />
           </div>
         </div>
       </div>

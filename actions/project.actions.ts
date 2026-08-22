@@ -17,10 +17,9 @@ import {
   privateMarkerFor,
   isProjectMediaPrivate,
 } from "@/lib/media";
-import { isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE } from "@/lib/validations/urls";
 
 export async function createProject(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -90,7 +89,7 @@ export async function createProject(formData: FormData) {
 }
 
 export async function joinProject(projectId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -113,7 +112,7 @@ export async function joinProject(projectId: string) {
 }
 
 export async function leaveProject(projectId: string, slug: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -137,7 +136,7 @@ export async function leaveProject(projectId: string, slug: string) {
 }
 
 export async function updateProjectSettings(formData: FormData) {
-  const ssr = await createClient(); // SSR-aware, has cookies → can auth
+  const ssr = createClient(); // SSR-aware, has cookies → can auth
   const supabase = createAdminClient(); // service-role, bypasses RLS
 
   const {
@@ -188,13 +187,6 @@ export async function updateProjectSettings(formData: FormData) {
   const technologiesRaw = formData.get("technologies") as string | null;
   const recruitmentRaw = formData.get("recruitment") as string | null;
   const categoryIdsRaw = formData.get("category_ids") as string | null;
-
-  if (website && !isAllowedSchemeUrl(website)) {
-    return { error: `Website ${SAFE_HTTP_URL_MESSAGE.toLowerCase()}` };
-  }
-  if (githubUrl && !isAllowedSchemeUrl(githubUrl)) {
-    return { error: `GitHub URL ${SAFE_HTTP_URL_MESSAGE.toLowerCase()}` };
-  }
 
   if (name) updates.name = name;
   if (slug) updates.slug = slug;
@@ -261,7 +253,7 @@ export async function updateProjectSettings(formData: FormData) {
 }
 
 export async function restoreProject(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -292,7 +284,7 @@ export async function restoreProject(formData: FormData) {
 }
 
 export async function deleteProject(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -323,7 +315,7 @@ export async function deleteProject(formData: FormData) {
 }
 
 export async function uploadProjectLogo(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -390,7 +382,7 @@ export async function uploadProjectLogo(formData: FormData) {
 
 export async function createProjectUpdate(formData: FormData) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const {
       data: { user },
@@ -478,7 +470,7 @@ export async function createProjectUpdate(formData: FormData) {
 }
 
 export async function uploadUpdateImage(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -551,7 +543,7 @@ export async function uploadUpdateImage(formData: FormData) {
 }
 
 export async function updateProjectUpdate(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -597,7 +589,7 @@ export async function updateProjectUpdate(formData: FormData) {
 }
 
 export async function deleteProjectUpdate(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },

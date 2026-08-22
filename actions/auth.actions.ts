@@ -5,10 +5,9 @@ import { redirect } from "next/navigation";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { sanitizeNextPath } from "@/lib/auth-redirect";
 
 export async function signUp(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const data = {
     email: formData.get("email") as string,
@@ -21,10 +20,19 @@ export async function signUp(formData: FormData) {
     },
   };
 
-  const { error } = await supabase.auth.signUp(data);
+  try {
+    const { error } = await supabase.auth.signUp(data);
 
-  if (error) {
-    return { error: error.message };
+    if (error) {
+      return { error: error.message };
+    }
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error
+          ? `Network error: ${err.message}`
+          : "Network error: unable to reach the auth backend",
+    };
   }
 
   revalidatePath("/", "layout");
@@ -32,7 +40,7 @@ export async function signUp(formData: FormData) {
 }
 
 export async function signIn(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const identifier = (formData.get("identifier") as string)?.trim() ?? "";
   const password = formData.get("password") as string;
@@ -46,32 +54,43 @@ export async function signIn(formData: FormData) {
     email = data ?? `__${identifier}__@invalid.invalid`;
   }
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  try {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error) {
-    return { error: error.message };
+    if (error) {
+      return { error: error.message };
+    }
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error
+          ? `Network error: ${err.message}`
+          : "Network error: unable to reach the auth backend",
+    };
   }
 
   revalidatePath("/", "layout");
 
-  // The server writes the session cookie, but the browser-side supabase-js
-  // context is not notified of the new session. The `refresh_auth` flag tells
-  // AuthProvider to re-read the session from cookies on the redirected page so
-  // the UI reflects the login immediately instead of after a stale state.
-  const rawNext = formData.get("next");
-  const next = typeof rawNext === "string" ? sanitizeNextPath(rawNext) : null;
-  if (next && next !== "/login" && next !== "/join") {
-    const sep = next.includes("?") ? "&" : "?";
-    redirect(`${next}${sep}refresh_auth=1`);
+  const next = formData.get("next");
+  if (typeof next === "string" && next.startsWith("/") && !next.startsWith("//") && next !== "/login" && next !== "/join") {
+    redirect(next);
   }
-  redirect("/?refresh_auth=1");
+  redirect("/");
 }
 
+/**
+ * Starts a Google OAuth flow. Returns the provider authorization URL so the
+ * client can redirect the browser to it; Supabase exchanges the resulting
+ * `code` in /auth/callback.
+ */
 export async function signInWithGoogle(next?: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://azenion.com";
-  const safeNext = sanitizeNextPath(next) ?? "/";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const safeNext =
+    typeof next === "string" && next.startsWith("/") && !next.startsWith("//")
+      ? next
+      : "/";
   const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent(safeNext)}`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -86,8 +105,8 @@ export async function signInWithGoogle(next?: string) {
 }
 
 export async function signOut() {
-  const supabase = await createClient();
+  const supabase = createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/?refresh_auth=1");
+  redirect("/");
 }

@@ -43,19 +43,14 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ initialTheme, children }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(initialTheme ?? "dark");
-
-  // The inline <head> script already applied the stored preference to the DOM
-  // before React loads. Start from the server default during hydration so the
-  // server and client render identical HTML (no React hydration mismatch on the
-  // theme toggle), then sync state from the DOM after mount. The actual colors
-  // are driven by `data-theme`, so this update is invisible.
-  useEffect(() => {
-    const pref = document.documentElement.dataset.themePreference;
-    if (pref === "light" || pref === "dark" || pref === "system") {
-      setThemeState(pref);
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (initialTheme) return initialTheme;
+    if (typeof window !== "undefined") {
+      const pref = document.documentElement.dataset.themePreference;
+      if (pref === "light" || pref === "dark" || pref === "system") return pref;
     }
-  }, []);
+    return "system";
+  });
 
   const applyTheme = useCallback((next: Theme) => {
     applyThemeToDom(next);

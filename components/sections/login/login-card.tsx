@@ -26,15 +26,20 @@ export function LoginCard({ next }: { next?: string }) {
     setError(null);
     setLoading(true);
 
-    const formData = new FormData();
-    formData.set("identifier", identifier);
-    formData.set("password", password);
-    if (next) formData.set("next", next);
+    try {
+      const formData = new FormData();
+      formData.set("identifier", identifier);
+      formData.set("password", password);
+      if (next) formData.set("next", next);
 
-    const result = await signIn(formData);
+      const result = await signIn(formData);
 
-    if (result?.error) {
-      setError(result.error);
+      if (result?.error) {
+        setError(result.error);
+      }
+    } catch {
+      setError("Network error: unable to reach the auth backend");
+    } finally {
       setLoading(false);
     }
   }
@@ -179,7 +184,14 @@ export function LoginCard({ next }: { next?: string }) {
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                   </svg>
                 )}
-                {googleLoading ? "Redirecting to Google..." : "Continue with Google"}
+                {googleLoading ? "Redirecting to Google..." : (
+                  <>
+                    Continue with Google
+                    <span className="ml-1 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400" aria-hidden="true">
+                      v2
+                    </span>
+                  </>
+                )}
               </button>
 
               <button

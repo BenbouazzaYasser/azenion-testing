@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ProfileHeader } from "@/components/sections/profile/profile-header";
-import { ProfileRoles } from "@/components/sections/profile/profile-roles";
 import { ProfileStats } from "@/components/sections/profile/profile-stats";
 import { ProfileDetails } from "@/components/sections/profile/profile-details";
 import { ProfileTimeline } from "@/components/sections/profile/profile-timeline";
@@ -12,13 +11,11 @@ import {
   getCurrentUser,
   getOrCreateProfile,
   getUserBranch,
-  getUserRoles,
   getUserTeams,
   getUserProjects,
   getUserActivities,
   getUserInvitations,
 } from "@/lib/profile-data";
-import { getDeletionStatus } from "@/lib/settings-data";
 
 export const metadata: Metadata = {
   title: "Profile | Azenion",
@@ -30,15 +27,13 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
-  const [profile, branch, roles, teams, projects, activities, invitations, deletion] = await Promise.all([
+  const [profile, branch, teams, projects, activities, invitations] = await Promise.all([
     getOrCreateProfile(user),
     getUserBranch(user.id),
-    getUserRoles(user.id),
     getUserTeams(user.id),
     getUserProjects(user.id),
     getUserActivities(user.id),
     getUserInvitations(),
-    getDeletionStatus(),
   ]);
 
   const headerProps = {
@@ -57,7 +52,6 @@ export default async function ProfilePage() {
   return (
     <>
       <ProfileHeader profile={headerProps} branch={branch} cardClass={sectionCardClass} />
-      <ProfileRoles roles={roles} cardClass={sectionCardClass} />
       <ProfileStats
         branch={branch}
         teamsCount={teams.length}
@@ -75,8 +69,6 @@ export default async function ProfilePage() {
         emailVerified={!!user.email_confirmed_at}
         createdAt={user.created_at}
         lastSignInAt={user.last_sign_in_at ?? null}
-        username={headerProps.username}
-        deletion={deletion}
         cardClass={sectionCardClass}
       />
     </>

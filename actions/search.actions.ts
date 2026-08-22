@@ -88,19 +88,18 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
     return { query, results: [] };
   }
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const q = query;
   const results: SearchResultItem[] = [];
 
   // ---- Users
   {
-    // RLS locks `profiles` to the caller's own row (00004_rls_fix), so direct
-    // reads cannot surface other members. search_users is a SECURITY DEFINER
-    // RPC (see 00076_global_user_search.sql) that searches all profiles while
-    // honoring each member's `search_visibility` privacy setting and block list.
-    const userQuery = q.replace(/^@/, "").trim();
+    // RLS locks `profiles` to the caller's own row, so direct reads cannot
+    // surface other members. search_users is a SECURITY DEFINER RPC (see
+    // 00072_global_user_search.sql) that searches all profiles while honoring
+    // each member's `search_visibility` privacy setting and block list.
     const { data } = await supabase.rpc("search_users", {
-      p_query: userQuery,
+      p_query: q,
       p_limit: 80,
     });
     const rows = (data ?? []) as Array<{
@@ -117,7 +116,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
       __q: `${r.full_name ?? ""} ${r.username}`,
       __createdAt: r.created_at,
     }));
-    const ranked = rankedSelect(packed, userQuery);
+    const ranked = rankedSelect(packed, q);
     results.push(
       ...ranked
         .slice(0, LIMITS.Users)

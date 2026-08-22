@@ -1,4 +1,4 @@
-import { Calendar, GraduationCap } from "lucide-react";
+import { Calendar, GraduationCap, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/date";
 

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BranchesPage() {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },

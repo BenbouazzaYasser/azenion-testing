@@ -25,11 +25,6 @@ export interface UserSettings {
   privacy: PrivacySettings;
 }
 
-export interface DeletionStatus {
-  requestedAt: string | null;
-  scheduledAt: string | null;
-}
-
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   team_updates: true,
   project_updates: true,
@@ -95,7 +90,7 @@ export function normalizePrivacy(
 
 /** Loads the authenticated user's settings, falling back to defaults. */
 export async function getUserSettings(): Promise<UserSettings> {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -113,26 +108,5 @@ export async function getUserSettings(): Promise<UserSettings> {
     theme: asTheme(row?.theme),
     notifications: normalizeNotifications(row?.notifications ?? null),
     privacy: normalizePrivacy(row?.privacy ?? null),
-  };
-}
-
-/** Loads the authenticated user's account-deletion status, if any. */
-export async function getDeletionStatus(): Promise<DeletionStatus> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { requestedAt: null, scheduledAt: null };
-
-  const { data } = await supabase
-    .from("profiles")
-    .select("deletion_requested_at, deletion_scheduled_at")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  return {
-    requestedAt: (data?.deletion_requested_at as string | null) ?? null,
-    scheduledAt: (data?.deletion_scheduled_at as string | null) ?? null,
   };
 }

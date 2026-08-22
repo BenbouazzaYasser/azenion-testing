@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getChatUnreadCounts } from "@/actions/chat.actions";
-import { waitForRealtimeAuthReady } from "@/lib/realtime-auth";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 export type ChatUnreadMap = Record<string, number>;
@@ -68,12 +67,9 @@ function handleInsert(payload: RealtimePostgresChangesPayload<Record<string, unk
   notify();
 }
 
-async function ensureChannel() {
+function ensureChannel() {
   if (channel) return;
-  const supabase = getSupabase();
-  await waitForRealtimeAuthReady(supabase);
-  if (channel || listeners.size === 0) return;
-  channel = supabase
+  channel = getSupabase()
     .channel("chat-unread-nav")
     .on<Record<string, unknown>>(
       "postgres_changes",
@@ -106,7 +102,7 @@ export function subscribeToChatUnread(userId: string, listener: Listener): () =>
   }
   listeners.add(listener);
   void bootstrap(userId);
-  void ensureChannel();
+  ensureChannel();
 
   return () => {
     listeners.delete(listener);

@@ -1,4 +1,4 @@
--- Migration: 00076_global_user_search
+-- Migration: 00072_global_user_search
 --
 -- Lets the global search palette discover other members by name or username.
 --

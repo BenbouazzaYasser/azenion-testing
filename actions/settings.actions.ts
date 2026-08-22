@@ -27,7 +27,7 @@ export interface UpdateSettingsInput {
  * authenticated user id is always derived from the server session.
  */
 export async function updateSettings(input: UpdateSettingsInput) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -96,7 +96,7 @@ export async function updateSettings(input: UpdateSettingsInput) {
 }
 
 export async function changeEmail(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -120,7 +120,7 @@ export async function changeEmail(formData: FormData) {
 }
 
 export async function changeUsername(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -163,61 +163,6 @@ export async function changeUsername(formData: FormData) {
  */
 export async function signOutEverywhere() {
   return { unavailable: true };
-}
-
-/**
- * Starts the account-deletion appeal window (default 30 days). The account is
- * not deleted yet — the user can appeal any time before the scheduled date.
- */
-export async function requestAccountDeletion() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { error: "Not authenticated" };
-
-  const { data: scheduledAt, error } = await supabase.rpc(
-    "request_account_deletion",
-  );
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/settings");
-  return { success: true, scheduledAt: (scheduledAt as string | null) ?? null };
-}
-
-/** Cancels a pending account deletion (the user's appeal). */
-export async function cancelAccountDeletion() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { error: "Not authenticated" };
-
-  const { error } = await supabase.rpc("cancel_account_deletion");
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/settings");
-  return { success: true };
-}
-
-/**
- * Best-effort sweep of accounts whose deletion window has elapsed. Called
- * lazily from the app so deletions complete even without a cron job; the
- * pg_cron schedule in the migration is the primary mechanism.
- */
-export async function runDeletionSweep() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return;
-
-  await supabase.rpc("sweep_pending_deletions");
 }
 
 export { signOut as signOutCurrentSession };

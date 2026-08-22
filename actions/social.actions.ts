@@ -9,7 +9,7 @@ import { insertNotification } from "@/lib/notifications";
  * Client-provided ids are never trusted for authorization.
  */
 async function getSessionUserId(): Promise<string | null> {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -27,7 +27,7 @@ export async function sendFriendRequest(receiverId: string) {
   if (!senderId) return { error: "Not authenticated" };
   if (!receiverId) return { error: "Missing friend request target" };
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase.rpc("send_friend_request", {
     p_receiver_id: receiverId,
   });
@@ -52,7 +52,7 @@ export async function cancelFriendRequest(receiverId: string) {
   const senderId = await getSessionUserId();
   if (!senderId) return { error: "Not authenticated" };
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const { error } = await supabase.rpc("cancel_friend_request", {
     p_receiver_id: receiverId,
   });
@@ -65,7 +65,7 @@ export async function acceptFriendRequest(senderId: string) {
   const receiverId = await getSessionUserId();
   if (!receiverId) return { error: "Not authenticated" };
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const { error } = await supabase.rpc("respond_friend_request", {
     p_sender_id: senderId,
     p_accept: true,
@@ -88,7 +88,7 @@ export async function declineFriendRequest(senderId: string) {
   const receiverId = await getSessionUserId();
   if (!receiverId) return { error: "Not authenticated" };
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const { error } = await supabase.rpc("respond_friend_request", {
     p_sender_id: senderId,
     p_accept: false,
@@ -102,7 +102,7 @@ export async function unfriend(targetId: string) {
   const callerId = await getSessionUserId();
   if (!callerId) return { error: "Not authenticated" };
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const { error } = await supabase.rpc("unfriend", { p_target_id: targetId });
 
   if (error) return rpcError(error, "Couldn't unfriend this user.");
@@ -115,7 +115,7 @@ export async function followUser(targetId: string) {
   const followerId = await getSessionUserId();
   if (!followerId) return { error: "Not authenticated" };
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase.rpc("follow_user", {
     p_target_id: targetId,
   });
@@ -139,7 +139,7 @@ export async function unfollowUser(targetId: string) {
   const followerId = await getSessionUserId();
   if (!followerId) return { error: "Not authenticated" };
 
-  const supabase = await createClient();
+  const supabase = createClient();
   const { error } = await supabase.rpc("unfollow_user", {
     p_target_id: targetId,
   });
@@ -162,7 +162,6 @@ export type PublicProfileData = {
     skills: string[];
     institution: string | null;
     created_at: string;
-    roles: string[];
   } | null;
   relationship: {
     is_viewer: boolean;
@@ -200,10 +199,10 @@ export async function getPublicProfile(username: string): Promise<
   | { data: PublicProfileData }
   | { error: string; data?: undefined }
 > {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // Profiles/activities RLS is locked to the caller's own row (00004_rls_fix),
-  // so cross-user reads go through the SECURITY DEFINER RPC (00078_public_profile),
+  // so cross-user reads go through the SECURITY DEFINER RPC (00074_public_profile),
   // the same pattern as search_users.
   const { data: result, error: profileError } = await supabase.rpc(
     "get_public_profile",
@@ -216,11 +215,15 @@ export async function getPublicProfile(username: string): Promise<
 
   const resultObj = (result ?? {}) as Record<string, unknown>;
 
+  if (!resultObj || !resultObj.id) {
+    return { error: "User not found." };
+  }
+
   if (resultObj.hidden === true) {
     return {
       data: {
         profile: {
-          id: String(resultObj.id ?? ""),
+          id: String(resultObj.id),
           username: String(resultObj.username ?? ""),
           full_name: String(resultObj.full_name ?? ""),
           bio: null,
@@ -230,7 +233,6 @@ export async function getPublicProfile(username: string): Promise<
           skills: [],
           institution: null,
           created_at: new Date().toISOString(),
-          roles: [],
         },
         relationship: {
           is_viewer: false,
@@ -247,10 +249,6 @@ export async function getPublicProfile(username: string): Promise<
         posts: [],
       },
     };
-  }
-
-  if (!resultObj || !resultObj.id) {
-    return { error: "User not found." };
   }
 
   const {
@@ -328,7 +326,6 @@ export async function getPublicProfile(username: string): Promise<
         skills: Array.isArray(resultObj.skills) ? (resultObj.skills as string[]) : [],
         institution: typeof resultObj.institution === "string" ? resultObj.institution : null,
         created_at: String(resultObj.created_at ?? new Date().toISOString()),
-        roles: Array.isArray(resultObj.roles) ? (resultObj.roles as string[]) : [],
       },
       relationship: {
         is_viewer: isViewer,

@@ -7,8 +7,6 @@ import { AcademyHero } from "@/components/sections/academy/academy-hero";
 import { CoursesBrowser } from "@/components/sections/academy/courses-browser";
 import { AcademyClosingCta } from "@/components/sections/academy/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
-import { createClient } from "@/lib/supabase/server";
-import type { CourseRow } from "@/lib/validations/course.schema";
 
 export const metadata: Metadata = {
   title: "Courses | Azenion Academy — The Limitless Network",
@@ -16,33 +14,7 @@ export const metadata: Metadata = {
     "Browse Azenion Academy courses — self-paced learning paths across programming, engineering, AI, mathematics, cybersecurity and design.",
 };
 
-export const dynamic = "force-dynamic";
-
-export default async function CoursesPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let canManage = false;
-  if (user) {
-    const { data: isManager } = await supabase.rpc("is_course_manager");
-    canManage = isManager === true;
-  }
-
-  const { data: courseRows } = await supabase
-    .from("courses")
-    .select(
-      "id, title, description, category, content_type, file_url, thumbnail, duration, difficulty, tags, created_by, created_at",
-    )
-    .order("created_at", { ascending: false });
-
-  const courses = ((courseRows ?? []) as unknown as CourseRow[]).map((row) => ({
-    ...row,
-    content_type: (row.content_type === "pdf" ? "pdf" : "html_css") as CourseRow["content_type"],
-  }));
-
+export default function CoursesPage() {
   return (
     <>
       <Navbar />
@@ -54,7 +26,7 @@ export default async function CoursesPage() {
           accent="Own Pace."
           subtitle="Self-paced learning paths crafted for every level — dive in whenever you are ready."
         />
-        <CoursesBrowser courses={courses} canManage={canManage} />
+        <CoursesBrowser />
         <AcademyClosingCta />
         <PageBridge />
       </main>

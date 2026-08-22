@@ -145,7 +145,7 @@ export function Navbar() {
           "w-full xl:w-fit rounded-full border navbar-border transition-[background-color,box-shadow] duration-700 ease-premium will-change-transform backdrop-blur-2xl",
           isScrolled || isMenuOpen
             ? "bg-glass-nav shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)]"
-            : "bg-void-950 shadow-[0_8px_30px_-25px_rgba(255,255,255,0.05)]"
+            : "bg-[rgba(10,11,16,0.18)] shadow-[0_8px_30px_-25px_rgba(255,255,255,0.05)]"
         )}
       >
         <div className="flex h-[64px] items-center justify-between px-4 sm:h-[70px] sm:px-6 xl:justify-start">
@@ -159,10 +159,12 @@ export function Navbar() {
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
                   const navLinkClass = cn(
-                    "relative inline-flex items-center rounded-full px-4 h-9 text-[13px] font-medium leading-none whitespace-nowrap transition-all duration-300",
-                    "text-ink-50 hover:bg-surface-hover hover:-translate-y-0.5 active:scale-[0.98]",
+                    "relative inline-flex items-center rounded-full border border-transparent px-4 py-2 text-[13.5px] font-medium leading-none transition-all duration-300 whitespace-nowrap",
+                    "hover:bg-surface-hover hover:text-ink-50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
-                    active ? "border border-accent-400/60 bg-surface-hover" : ""
+                    active
+                      ? "border-accent bg-surface text-ink-50 shadow-[0_0_18px_-6px_rgba(40,40,255,0.4)]"
+                      : "text-ink-400"
                   );
 
                   if (link.children && link.children.length > 0) {
@@ -187,18 +189,30 @@ export function Navbar() {
                           {isDropdownOpen ? (
                             <div className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2">
                               <div aria-hidden className="absolute -top-3 left-0 right-0 h-3" />
-                              <div className="relative overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card animate-dropdown-in">
-                                <p className="pb-2 text-sm font-medium text-ink-50">{link.label}</p>
-                                {link.children.map((child) => (
-                                  <MenuLink
-                                    key={child.href}
-                                    href={child.href}
-                                    icon={CHILD_ICONS[child.href]}
-                                    title={child.label}
-                                    description={child.description}
-                                    onNavigate={() => setOpenDropdown(null)}
-                                  />
-                                ))}
+                              <div className="relative overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                                <div
+                                  aria-hidden
+                                  className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
+                                />
+                                <div
+                                  aria-hidden
+                                  className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-accent/30 blur-[64px]"
+                                />
+                                <div className="px-2.5 pb-3 pt-2">
+                                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                                    {link.label}
+                                  </p>
+                                  {link.children.map((child) => (
+                                    <MenuLink
+                                      key={child.href}
+                                      href={child.href}
+                                      icon={CHILD_ICONS[child.href]}
+                                      title={child.label}
+                                      description={child.description}
+                                      onNavigate={() => setOpenDropdown(null)}
+                                    />
+                                  ))}
+                                </div>
                               </div>
                             </div>
                           ) : null}
@@ -253,8 +267,17 @@ export function Navbar() {
                           aria-hidden
                           className="absolute -top-3 left-0 right-0 h-3"
                         />
-                        <div className="relative overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card animate-dropdown-in">
-                        <div className="relative flex items-center gap-3.5 pb-4 pt-1">
+                        <div className="relative overflow-hidden rounded-2xl border border-border-strong/[0.1] bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                        <div
+                          aria-hidden
+                          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
+                        />
+                        <div
+                          aria-hidden
+                          className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-accent/30 blur-[64px]"
+                        />
+
+                        <div className="relative flex items-center gap-3.5 px-5 pb-4 pt-5">
                           <div className="relative shrink-0">
                             <div
                               aria-hidden
@@ -285,8 +308,8 @@ export function Navbar() {
                           />
                         </div>
 
-                        <div className="pt-2 pb-1">
-                          <p className="pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                        <div className="px-2.5 pb-3 pt-2">
+                          <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
                             Management
                           </p>
                           <MenuLink
@@ -320,8 +343,17 @@ export function Navbar() {
                     )}
                   </button>
                   {isAvatarOpen ? (
-                      <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card animate-dropdown-in">
-                      <div className="relative flex items-center gap-3.5 pb-4 pt-1">
+                    <div className="absolute right-0 top-full mt-3 w-72 origin-top-right overflow-hidden rounded-2xl border navbar-panel-border bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/60 to-transparent"
+                      />
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-accent/20 blur-[64px]"
+                      />
+
+                      <div className="relative flex items-center gap-3.5 px-5 pb-4 pt-5">
                         <div className="relative shrink-0">
                           <div
                             aria-hidden
@@ -364,8 +396,8 @@ export function Navbar() {
                         />
                       </div>
 
-                      <div className="pt-2 pb-1">
-                        <p className="pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                      <div className="px-2.5 pb-2.5 pt-2">
+                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
                           Workspace
                         </p>
                         <MenuLink
@@ -402,8 +434,8 @@ export function Navbar() {
                         />
                       </div>
 
-                      <div className="pt-2 pb-1">
-                        <p className="pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                      <div className="px-2.5 pb-2.5 pt-2">
+                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
                           Account
                         </p>
                         <MenuLink
@@ -434,7 +466,7 @@ export function Navbar() {
                       </div>
 
                       <div className="px-2.5 pb-3 pt-2">
-                        <p className="pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
                           Danger Zone
                         </p>
                         <form action={signOut}>

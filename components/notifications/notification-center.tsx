@@ -12,9 +12,6 @@ import {
   AtSign,
   Sparkles,
   Megaphone,
-  UserPlus,
-  UserCheck,
-  Share2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
@@ -49,10 +46,6 @@ const TYPE_CONFIG: Record<string, TypeConfig> = {
     icon: Megaphone,
     label: "posted a new announcement",
   },
-  friend_request_received: { icon: UserPlus, label: "sent you a friend request" },
-  friend_request_accepted: { icon: UserCheck, label: "accepted your friend request" },
-  new_follower: { icon: UserPlus, label: "started following you" },
-  shared_post_with_you: { icon: Share2, label: "shared a post with you" },
 };
 
 const DEFAULT_TYPE: TypeConfig = { icon: Sparkles, label: "sent you a notification" };
@@ -64,9 +57,7 @@ function getPreview(n: AppNotification): string | null {
       ? meta.comment_preview
       : typeof meta.preview === "string"
         ? meta.preview
-        : typeof meta.message === "string"
-          ? meta.message
-          : null;
+        : null;
   return raw ? raw.replace(/^"|"$/g, "") : null;
 }
 
@@ -303,9 +294,18 @@ export function NotificationCenter() {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
+          className="absolute right-0 top-full z-50 mt-3 flex w-[min(24rem,calc(100vw-2rem))] animate-dropdown-in flex-col overflow-hidden rounded-2xl border navbar-panel-border bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 max-lg:fixed max-lg:inset-x-4 max-lg:mx-auto max-lg:top-[72px]"
         >
-          <div className="relative flex items-center justify-between gap-3 pb-3 pt-1">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/70 to-transparent"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-14 right-0 h-32 w-32 rounded-full bg-accent/20 blur-[64px]"
+          />
+
+          <div className="relative flex items-center justify-between gap-3 px-4 pb-3 pt-4">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-ink-50">Notifications</h2>
               {unreadCount > 0 && (
@@ -366,7 +366,7 @@ export function NotificationCenter() {
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col pb-1">
+              <div className="flex flex-col p-2.5 pb-3">
                 {notifications.map((n) => (
                   <NotificationItem
                     key={n.id}
@@ -382,7 +382,7 @@ export function NotificationCenter() {
             aria-hidden
             className="relative mx-4 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
           />
-          <p className="relative pt-1 pb-1 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-ink-600">
+          <p className="relative px-4 py-2.5 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-ink-600">
             Azenion
           </p>
         </div>

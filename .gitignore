@@ -29,6 +29,3 @@ yarn-error.log*
 
 # Supabase CLI cache (contains production metadata)
 supabase/.temp/
-
-# disposable QA scripts (tracked qa_*.mjs stay committed; new ones are ignored)
-/qa_*.mjs
