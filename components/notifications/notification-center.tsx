@@ -72,14 +72,14 @@ function NotificationAvatar({
       <img
         src={actor.avatar_url}
         alt=""
-        className="h-9 w-9 shrink-0 rounded-full border border-border-strong/[0.12] object-cover"
+        className="h-9 w-9 shrink-0 rounded-full border border-border-strong/[0.08] object-cover"
       />
     );
   }
   if (actor?.full_name || actor?.username) {
     const initial = actor.full_name?.[0] ?? actor.username?.[0]?.toUpperCase() ?? "?";
     return (
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.08] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
         {initial}
       </span>
     );

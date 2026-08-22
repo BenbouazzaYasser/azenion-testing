@@ -144,10 +144,10 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
                 <img
                   src={avatarSrc}
                   alt=""
-                  className="h-10 w-10 rounded-full border border-border-strong/[0.12] object-cover"
+                  className="h-10 w-10 rounded-full border border-border-strong/[0.08] object-cover"
                 />
               ) : (
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-400 text-sm font-semibold text-white">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong/[0.08] bg-gradient-to-br from-accent to-accent-400 text-sm font-semibold text-white">
                   {isBranch ? <GitBranch size={16} /> : initialFor(entityName)}
                 </span>
               )}

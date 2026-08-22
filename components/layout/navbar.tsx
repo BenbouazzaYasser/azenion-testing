@@ -367,7 +367,7 @@ export function Navbar() {
                             aria-hidden
                             className="absolute -inset-2 rounded-full bg-accent/25 blur-xl"
                           />
-                          <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border-strong/[0.14] shadow-[0_0_24px_-8px_rgba(109,109,255,0.5)]">
+                          <div className="relative h-14 w-14 overflow-hidden rounded-full border border-border-strong/[0.08] shadow-[0_0_24px_-8px_rgba(109,109,255,0.5)]">
                             {profile?.avatar_url ? (
                               <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
                             ) : (
@@ -627,7 +627,7 @@ export function Navbar() {
                     </>
                   ) : null}
                   <div className="flex items-center gap-3 rounded-xl px-4 py-3">
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border-strong/[0.12]">
+                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border-strong/[0.08]">
                       {profile?.avatar_url ? (
                         <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
                       ) : (

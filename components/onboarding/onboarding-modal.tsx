@@ -443,7 +443,7 @@ function BranchStep({
 
       <div className="mt-6 space-y-2.5">
         {data.branches.length === 0 ? (
-          <div className="rounded-xl border border-border bg-surface px-4 py-5 text-center text-sm text-ink-500">
+          <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-5 text-center text-sm text-ink-500">
             No branches are live yet. You can join later from the Branches page.
           </div>
         ) : (
@@ -548,7 +548,7 @@ function TeamStep({
 
       <div className="mt-6 space-y-2.5">
         {data.teams.length === 0 ? (
-          <div className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-sm text-ink-500">
+          <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-6 text-center text-sm text-ink-500">
             No active teams yet. You can browse teams anytime.
           </div>
         ) : (
@@ -631,7 +631,7 @@ function ProjectStep({
 
       <div className="mt-6 space-y-2.5">
         {data.projects.length === 0 ? (
-          <div className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-sm text-ink-500">
+          <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-6 text-center text-sm text-ink-500">
             Featured projects are on the way.
           </div>
         ) : (

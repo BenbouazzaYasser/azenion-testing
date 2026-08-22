@@ -170,9 +170,9 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   className="flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-premium hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
                 >
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.12] object-cover" />
+                    <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.08] object-cover" />
                   ) : (
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.08] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
                       {user.full_name?.[0] ?? user.username[0]?.toUpperCase() ?? "U"}
                     </span>
                   )}
@@ -387,14 +387,14 @@ function ConversationRow({
             src={conv.other_user.avatar_url}
             alt=""
             className={cn(
-              "h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.12] object-cover transition-all duration-300",
+              "h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.08] object-cover transition-all duration-300",
               isActive && "border-accent-400/50 shadow-glow-sm",
             )}
           />
         ) : (
           <span
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.08] bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
               isActive && "border-accent-400/60 shadow-glow-sm",
             )}
           >

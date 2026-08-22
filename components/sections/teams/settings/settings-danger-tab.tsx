@@ -31,7 +31,7 @@ export function SettingsDangerTab({
     return (
       <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
         <h3 className="text-lg font-semibold text-ink-50">Danger Zone</h3>
-        <div className="mt-4 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink-500">
+        <div className="mt-4 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-500">
           <Lock size={13} className="mr-1.5 inline -translate-y-px" />
           Only the team owner can transfer ownership or delete this team.
         </div>

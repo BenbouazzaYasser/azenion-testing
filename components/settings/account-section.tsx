@@ -180,7 +180,7 @@ export function AccountSection({
               <div className="flex items-center gap-2.5 text-sm">
                 <UserCircle size={14} className="shrink-0 text-ink-600" />
                 <span className="text-ink-400">User ID:</span>
-                <code className="rounded-md border border-border bg-surface px-2 py-0.5 text-xs text-ink-200">
+                <code className="rounded-md border border-border-strong/[0.08] bg-surface px-2 py-0.5 text-xs text-ink-200">
                   {userId.slice(0, 12)}…
                 </code>
               </div>

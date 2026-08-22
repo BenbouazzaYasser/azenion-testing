@@ -79,10 +79,10 @@ export function MessageBubble({
           <img
             src={sender_avatar}
             alt=""
-            className="mt-2.5 h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.12] object-cover"
+            className="mt-2.5 h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.08] object-cover"
           />
         ) : (
-          <span className="mt-2.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] bg-gradient-to-br from-accent to-accent-glow text-[11px] font-semibold text-white">
+          <span className="mt-2.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.08] bg-gradient-to-br from-accent to-accent-glow text-[11px] font-semibold text-white">
             {sender_name?.[0]?.toUpperCase() ?? "U"}
           </span>
         )

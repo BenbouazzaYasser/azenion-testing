@@ -15,7 +15,7 @@ const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 function PermissionNotice({ permission }: { permission: string }) {
   return (
-    <div className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink-500">
+    <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-500">
       <Lock size={13} className="mr-1.5 inline -translate-y-px" />
       You need the <span className="font-medium text-ink-300">{permission}</span> permission to edit this.
     </div>

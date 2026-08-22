@@ -341,7 +341,7 @@ export function SettingsRolesTab({
 
       {!canManageRoles ? (
         <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6 shadow-card backdrop-blur-xl">
-          <div className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink-500">
+          <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-500">
             <Lock size={13} className="mr-1.5 inline -translate-y-px" />
             Only the team owner can create, edit, or delete roles and change permissions.
           </div>

@@ -286,7 +286,7 @@ export function ChatConversation({
             type="button"
             onClick={mobileConversations.open}
             aria-label="Open conversations"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.08] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
           >
             <Menu size={18} />
           </button>
@@ -296,7 +296,7 @@ export function ChatConversation({
           <img
             src={participant.avatar_url}
             alt=""
-            className="h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.12] object-cover shadow-[0_0_20px_-8px_rgba(109,109,255,0.5)]"
+            className="h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.08] object-cover shadow-[0_0_20px_-8px_rgba(109,109,255,0.5)]"
           />
         ) : (
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent-400/25 bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white">
@@ -356,7 +356,7 @@ export function ChatConversation({
                 {showDivider && (
                   <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
                     <span aria-hidden className="h-px flex-1 bg-border" />
-                    <span className="rounded-full border border-border bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-500 backdrop-blur-sm">
+                    <span className="rounded-full border border-border-strong/[0.08] bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-500 backdrop-blur-sm">
                       {label}
                     </span>
                     <span aria-hidden className="h-px flex-1 bg-border" />

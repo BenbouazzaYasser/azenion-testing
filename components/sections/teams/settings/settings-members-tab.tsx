@@ -76,7 +76,7 @@ export function SettingsMembersTab({
         </p>
         {!canManageRoles ? (
           <div className="mt-4">
-            <div className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink-500">
+            <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-500">
               <Lock size={13} className="mr-1.5 inline -translate-y-px" />
               Only the team owner can assign roles to members.
             </div>

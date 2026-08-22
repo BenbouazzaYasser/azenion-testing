@@ -29,7 +29,7 @@ export function ProfileSection({ profile, branch }: ProfileSheetProps) {
       <SettingsPanel>
         <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border-strong/[0.12] bg-gradient-to-br from-accent/[0.15] to-accent/[0.05]">
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border-strong/[0.08] bg-gradient-to-br from-accent/[0.15] to-accent/[0.05]">
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
               ) : (

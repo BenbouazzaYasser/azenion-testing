@@ -465,7 +465,7 @@ export function EntityUpdatesFeed({
                           onClick={() => removeImage(i)}
                           disabled={submitting}
                           aria-label={`Remove image ${i + 1}`}
-                          className="absolute right-2 top-2 rounded-full border border-border-strong/[0.12] bg-black/60 p-1.5 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
+                          className="absolute right-2 top-2 rounded-full border border-border-strong/[0.08] bg-black/60 p-1.5 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
                         >
                           <X size={14} />
                         </button>
