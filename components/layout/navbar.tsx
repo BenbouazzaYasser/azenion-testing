@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical, Newspaper, Megaphone, Sparkles } from "lucide-react";
+import { Menu, X, User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS } from "@/data/nav-links";
@@ -320,6 +320,13 @@ export function Navbar() {
                             description="Create and organize communities"
                             onNavigate={() => setIsAdminOpen(false)}
                           />
+                          <MenuLink
+                            href="/admin/roles"
+                            icon={<UserCog size={16} />}
+                            title="Role Management"
+                            description="Grant and revoke platform roles"
+                            onNavigate={() => setIsAdminOpen(false)}
+                          />
                         </div>
                         </div>
                       </div>
@@ -604,12 +611,20 @@ export function Navbar() {
               {user ? (
                 <>
                   {isAdmin ? (
-                    <Button variant="ghost" asChild>
-                      <Link href="/branches/manage" onClick={() => setIsMenuOpen(false)}>
-                        <Shield size={14} />
-                        Manage Branches
-                      </Link>
-                    </Button>
+                    <>
+                      <Button variant="ghost" asChild>
+                        <Link href="/branches/manage" onClick={() => setIsMenuOpen(false)}>
+                          <Shield size={14} />
+                          Manage Branches
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" asChild>
+                        <Link href="/admin/roles" onClick={() => setIsMenuOpen(false)}>
+                          <UserCog size={14} />
+                          Role Management
+                        </Link>
+                      </Button>
+                    </>
                   ) : null}
                   <div className="flex items-center gap-3 rounded-xl px-4 py-3">
                     <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border-strong/[0.12]">
