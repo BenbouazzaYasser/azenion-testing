@@ -222,7 +222,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
             className="pointer-events-none absolute left-1/2 top-full z-50 mt-3 -translate-x-1/2 whitespace-nowrap rounded-lg border navbar-panel-border bg-glass px-2.5 py-1.5 text-xs font-medium text-ink-200 opacity-0 shadow-dropdown backdrop-blur-xl transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
           >
             Search
-            <span className="ml-1.5 rounded border border-border-strong/[0.1] bg-surface px-1 py-0.5 text-[10px] font-medium text-ink-400">
+            <span className="ml-1.5 rounded bg-surface px-1 py-0.5 text-[10px] font-medium text-ink-400">
               Ctrl K
             </span>
           </span>
@@ -275,7 +275,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                   className="pointer-events-none absolute -top-20 right-8 h-40 w-40 rounded-full bg-accent/30 blur-[80px]"
                 />
 
-                <div className="relative flex items-center gap-3 border-b border-border-strong/[0.08] px-4 py-3.5">
+                <div className="relative flex items-center gap-3 px-4 py-3.5">
                   <div className="text-ink-400">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-5 w-5">
                       <circle cx="11" cy="11" r="8" />
@@ -306,7 +306,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                 <div className="max-h-[calc(80vh-72px)] min-h-0 overflow-y-auto overscroll-contain px-2 py-2">
                   {query && !loading && data && data.results.length === 0 ? (
                     <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
-                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-ink-500">
+                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-ink-500">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-6 w-6">
                           <circle cx="11" cy="11" r="8" />
                           <path d="m21 21-4.3-4.3" />
@@ -320,7 +320,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                             key={s.href}
                             type="button"
                             onClick={() => handleSelect(s.href)}
-                            className="rounded-full border border-border-strong/[0.08] bg-surface px-3 py-1.5 text-xs font-medium text-ink-300 transition-colors hover:border-accent-400/40 hover:bg-accent/[0.08] hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                            className="rounded-full bg-surface px-3 py-1.5 text-xs font-medium text-ink-300 transition-colors hover:border-accent-400/40 hover:bg-accent/[0.08] hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                           >
                             {s.label}
                           </button>
@@ -386,7 +386,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                                 ) : null}
                               </span>
                               {item.meta ? (
-                                <span className="hidden shrink-0 rounded-full border border-border-strong/[0.08] bg-surface px-2 py-0.5 text-[10px] font-medium text-ink-500 sm:block">
+                                <span className="hidden shrink-0 rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium text-ink-500 sm:block">
                                   {item.meta}
                                 </span>
                               ) : null}
@@ -403,7 +403,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                   {!query && (
                     <div className="px-4 py-10 text-center">
                       <p className="text-sm font-medium text-ink-200">Search the whole network</p>
-                      <p className="mt-1 text-xs text-ink-500">Press <kbd className="rounded border border-border-strong/[0.1] bg-surface px-1.5 py-0.5 text-[10px]">esc</kbd> to close</p>
+                      <p className="mt-1 text-xs text-ink-500">Press <kbd className="rounded bg-surface px-1.5 py-0.5 text-[10px]">esc</kbd> to close</p>
                     </div>
                   )}
                 </div>

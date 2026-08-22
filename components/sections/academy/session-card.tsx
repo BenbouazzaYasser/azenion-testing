@@ -45,7 +45,7 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
   const durationLabel = hasEnd ? formatDuration(session.duration_minutes ?? 0) : null;
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-border-strong card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:p-7">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:p-7">
       <div className="flex items-start justify-between gap-3">
         <SessionStatusBadge status={session.status} />
         <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
           {session.topics.map((topic) => (
             <span
               key={topic}
-              className="rounded-full border border-border-strong bg-surface px-3 py-1 text-xs font-medium tracking-wide text-ink-200"
+              className="rounded-full bg-surface px-3 py-1 text-xs font-medium tracking-wide text-ink-200"
             >
               {topic}
             </span>
@@ -99,7 +99,7 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
 
       <div
         className={cn(
-          "mt-6 grid divide-x divide-white/10 rounded-xl border border-border-strong/[0.06] bg-surface text-center",
+          "mt-6 grid divide-x divide-white/10 rounded-xl bg-surface text-center",
           hasEnd ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"
         )}
       >

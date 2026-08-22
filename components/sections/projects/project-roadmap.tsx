@@ -43,7 +43,7 @@ export function ProjectRoadmap({ project }: ProjectRoadmapProps) {
             const Icon = STATUS_ICONS[item.status] || Circle;
             return (
               <Reveal key={item.id} delay={i * 80}>
-                <div className="group relative overflow-hidden rounded-2xl border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+                <div className="group relative overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                   <div className="relative p-6 sm:p-7">
                     <div className="flex items-start gap-4">
                       <div className={`mt-0.5 ${STATUS_COLORS[item.status] || "text-ink-600"}`}>

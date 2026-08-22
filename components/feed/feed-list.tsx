@@ -170,7 +170,7 @@ export function FeedList({
       <div className="flex flex-col gap-4">
         {items.length === 0 && !isLoadingMore && !error && (
           <div className="flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300">
               <Newspaper className="h-7 w-7 text-accent-300" />
             </div>
             <div>
@@ -189,7 +189,7 @@ export function FeedList({
               <button
                 type="button"
                 onClick={() => handleFilter("all")}
-                className="mt-1 rounded-full border border-border-strong bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
+                className="mt-1 rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
               >
                 Show all posts
               </button>
@@ -203,7 +203,7 @@ export function FeedList({
             <button
               type="button"
               onClick={handleRetry}
-              className="rounded-full border border-border-strong bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
+              className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
             >
               Retry
             </button>
@@ -243,7 +243,7 @@ export function FeedList({
             <button
               type="button"
               onClick={handleRetry}
-              className="rounded-full border border-border-strong bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
+              className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
             >
               Retry
             </button>
@@ -255,7 +255,7 @@ export function FeedList({
             {Array.from({ length: 2 }).map((_, i) => (
               <div
                 key={i}
-                className="animate-pulse rounded-2xl border border-border-strong bg-surface p-5 shadow-card backdrop-blur-xl"
+                className="animate-pulse rounded-2xl bg-surface p-5 shadow-card backdrop-blur-xl"
               >
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-ink-500/20" />

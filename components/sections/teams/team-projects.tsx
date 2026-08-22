@@ -51,7 +51,7 @@ export function TeamProjects({ projects, canCreateProjects, teamId, teamSlug }: 
         ) : (
           <Reveal delay={120}>
             <div className="mt-10 flex flex-col items-center gap-4 py-16 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent-300">
                 <FolderKanban className="h-6 w-6 text-accent-300" />
               </div>
               <div>

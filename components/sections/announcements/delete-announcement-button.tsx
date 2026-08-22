@@ -53,7 +53,7 @@ export function DeleteAnnouncementButton({ id }: DeleteAnnouncementButtonProps) 
       className={
         confirming
           ? "flex h-9 items-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/15 px-3 text-[12px] font-medium text-red-300 transition-colors hover:bg-red-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
-          : "flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-ink-400 transition-colors hover:border-red-500/40 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+          : "flex h-9 w-9 items-center justify-center rounded-full text-ink-400 transition-colors hover:border-red-500/40 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       }
     >
       <Trash2 size={13} />

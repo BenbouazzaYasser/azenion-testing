@@ -73,14 +73,14 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem] border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+        className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
       >
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-accent-300/70 to-transparent"
         />
 
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border-strong/50 px-5 py-3 sm:px-6">
+        <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-3 sm:px-6">
           <p className="text-sm font-semibold text-ink-100">
             {p ? p.full_name || `@${p.username}` : "Profile"}
           </p>
@@ -88,7 +88,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong/[0.08] bg-surface text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
           >
             <X size={15} />
           </button>
@@ -106,7 +106,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
             <button
               type="button"
               onClick={onClose}
-              className="mt-5 rounded-full border border-border-strong px-5 py-2 text-sm font-medium text-ink-200 transition-colors hover:bg-surface-hover hover:text-ink-50"
+              className="mt-5 rounded-full px-5 py-2 text-sm font-medium text-ink-200 transition-colors hover:bg-surface-hover hover:text-ink-50"
             >
               Close
             </button>
@@ -122,7 +122,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
             <button
               type="button"
               onClick={onClose}
-              className="mt-5 rounded-full border border-border-strong px-5 py-2 text-sm font-medium text-ink-200 transition-colors hover:bg-surface-hover hover:text-ink-50"
+              className="mt-5 rounded-full px-5 py-2 text-sm font-medium text-ink-200 transition-colors hover:bg-surface-hover hover:text-ink-50"
             >
               Close
             </button>

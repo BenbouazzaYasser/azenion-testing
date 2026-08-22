@@ -60,7 +60,7 @@ export function OwnershipLeaveModal({ open, onClose, type, onGoToSettings }: Own
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+        className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
       >
         <div className="flex flex-col items-center px-8 pb-8 pt-10 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">

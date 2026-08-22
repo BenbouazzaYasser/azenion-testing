@@ -9,13 +9,13 @@ import { updateTeam, uploadTeamLogo, uploadTeamBanner } from "@/actions/team.act
 import type { TeamSettingsClientProps } from "./team-settings-client";
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 function PermissionNotice({ permission }: { permission: string }) {
   return (
-    <div className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink-500">
+    <div className="rounded-xl bg-surface px-4 py-3 text-sm text-ink-500">
       <Lock size={13} className="mr-1.5 inline -translate-y-px" />
       You need the <span className="font-medium text-ink-300">{permission}</span> permission to edit this.
     </div>
@@ -95,7 +95,7 @@ export function SettingsOverviewTab({
   return (
     <div className="space-y-8">
       {canEditInfo ? (
-        <form onSubmit={handleSave} className="rounded-2xl border border-border-strong bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
+        <form onSubmit={handleSave} className="rounded-2xl bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
           <h3 className="text-lg font-semibold text-ink-50">Team information</h3>
           <p className="mt-1 text-sm text-ink-400">
             Basic details shown across the platform.
@@ -158,7 +158,7 @@ export function SettingsOverviewTab({
               {(["public", "private"] as const).map((opt) => (
                 <label
                   key={opt}
-                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
+                  className="flex cursor-pointer items-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
                 >
                   <input
                     type="radio"
@@ -190,7 +190,7 @@ export function SettingsOverviewTab({
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                       active
                         ? "bg-accent text-white"
-                        : "border border-border-strong text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
+                        : " text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
                     }`}
                   >
                     {cat.name}
@@ -208,7 +208,7 @@ export function SettingsOverviewTab({
           </div>
         </form>
       ) : (
-        <div className="rounded-2xl border border-border-strong bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
+        <div className="rounded-2xl bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
           <h3 className="text-lg font-semibold text-ink-50">Team information</h3>
           <p className="mt-3 text-sm text-ink-400">
             {team.name} — {team.description ?? "No description."}
@@ -220,14 +220,14 @@ export function SettingsOverviewTab({
       )}
 
       {canEditAppearance ? (
-        <div className="rounded-2xl border border-border-strong bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
+        <div className="rounded-2xl bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
           <h3 className="text-lg font-semibold text-ink-50">Appearance</h3>
           <p className="mt-1 text-sm text-ink-400">Your team logo and banner image.</p>
 
           <div className="mt-6 grid gap-6 sm:grid-cols-2">
             <div>
               <p className="mb-2 text-sm font-medium text-ink-200">Logo</p>
-              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border border-border-strong bg-surface">
+              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl bg-surface">
                 {team.logo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={team.logo_url} alt="Team logo" className="h-full w-full object-cover" />
@@ -262,7 +262,7 @@ export function SettingsOverviewTab({
 
             <div>
               <p className="mb-2 text-sm font-medium text-ink-200">Banner</p>
-              <div className="flex h-28 w-full items-center justify-center overflow-hidden rounded-2xl border border-border-strong bg-surface">
+              <div className="flex h-28 w-full items-center justify-center overflow-hidden rounded-2xl bg-surface">
                 {team.banner_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={team.banner_url} alt="Team banner" className="h-full w-full object-cover" />
@@ -295,7 +295,7 @@ export function SettingsOverviewTab({
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-border-strong bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
+        <div className="rounded-2xl bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
           <h3 className="text-lg font-semibold text-ink-50">Appearance</h3>
           <div className="mt-4">
             <PermissionNotice permission="EDIT_TEAM_APPEARANCE" />

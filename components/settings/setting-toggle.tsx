@@ -57,7 +57,7 @@ export function SettingToggle({
           "relative h-6 w-11 shrink-0 rounded-full border transition-colors duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:cursor-not-allowed disabled:opacity-50 before:absolute before:-inset-2 before:rounded-full before:content-['']",
           checked
             ? "border-accent-400/60 bg-accent shadow-[0_0_16px_-4px_rgba(40,40,255,0.6)]"
-            : "border-border-strong/[0.12] bg-surface",
+            : "border-border-strong/[0.08] bg-surface",
         )}
       >
         <span

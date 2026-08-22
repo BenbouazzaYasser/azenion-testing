@@ -18,9 +18,9 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-void-950/40 to-void-950" />
       </div>
 
-      <div className="relative mx-auto grid w-full max-w-[1320px] grid-cols-1 items-center gap-16 px-5 pb-24 pt-6 sm:px-8 sm:pt-10 lg:-translate-x-[60px] lg:pb-32 lg:pl-2 lg:pr-12 lg:pt-10">
+      <div className="relative mx-auto grid w-full max-w-[1320px] grid-cols-1 items-center gap-16 px-5 pb-24 pt-6 sm:px-8 sm:pt-10 lg:pb-32 lg:px-12 lg:pt-10">
         {/* Left — copy */}
-        <div className="relative z-10 max-w-xl lg:-translate-x-5">
+        <div className="relative z-10 max-w-xl">
           <Reveal delay={0}>
             <Badge className="inline-flex">
               <Globe2 size={13} className="text-accent-400" />
@@ -60,7 +60,7 @@ export function Hero() {
                 aria-hidden
                 className="absolute -inset-x-4 -inset-y-6 rounded-[2rem] bg-accent-400/[0.14] blur-[60px]"
               />
-              <div className="relative rounded-2xl border border-border/50 bg-surface/70 p-4 shadow-[0_24px_50px_-20px_rgba(40,40,255,0.35)] backdrop-blur-xl">
+              <div className="relative rounded-[1.6rem] card-surface-soft p-5 shadow-card backdrop-blur-xl">
                 <p className="text-sm font-medium text-ink-50">Quick overview</p>
                 <p className="mt-2 text-sm leading-6 text-ink-400">
                   Azenion connects learners, builders, and innovators in one global
@@ -71,7 +71,7 @@ export function Hero() {
           </Reveal>
 
           <div className="mt-12 hidden items-center gap-3 sm:flex">
-            <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
+            <span className="flex h-8 w-5 items-start justify-center rounded-full p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
@@ -88,9 +88,9 @@ export function Hero() {
             gigantic environmental object with no perceptible start or end.
             The inner "art" is anchored to the same resting spot the symbol
             already had; only the wrapper's occupancy is expanded. */}
-        <div className="pointer-events-none absolute -inset-[20%] hidden sm:block">
-          <div className="absolute right-[-16%] top-[7%] aspect-[800/520] w-[50rem] -translate-x-[44.5%] translate-y-[25%]">
-            <InfinityHeroArt className="absolute inset-0 h-full w-full scale-[1.05] opacity-95" />
+        <div className="pointer-events-none absolute inset-0 hidden lg:block overflow-visible">
+          <div className="absolute right-[2%] top-[0%] aspect-[800/520] w-[44rem] translate-y-[10%]">
+            <InfinityHeroArt className="absolute inset-0 h-full w-full opacity-95" />
           </div>
         </div>
       </div>

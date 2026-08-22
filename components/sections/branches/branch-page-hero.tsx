@@ -91,7 +91,7 @@ export function BranchPageHero({
               </span>
             ) : null}
             {branch.city ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface px-3 py-1.5 text-[12px] font-medium text-ink-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-[12px] font-medium text-ink-400">
                 <MapPin size={12} className="text-accent-400" />
                 {branch.city}
               </span>
@@ -147,12 +147,12 @@ export function BranchPageHero({
                       key={m.id}
                       src={m.avatar_url}
                       alt=""
-                      className="h-9 w-9 rounded-full border-2 border-void-950 object-cover"
+                      className="h-9 w-9 rounded-full border border-void-950 object-cover"
                     />
                   ) : (
                     <span
                       key={m.id}
-                      className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-void-950 bg-gradient-to-br from-accent-500 to-accent-400 text-xs font-semibold text-white"
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-void-950 bg-gradient-to-br from-accent-500 to-accent-400 text-xs font-semibold text-white"
                     >
                       {(m.full_name?.[0] || m.username?.[0] || "L").toUpperCase()}
                     </span>
@@ -194,7 +194,7 @@ export function BranchPageHero({
 
         <Reveal delay={320}>
           <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
-            <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong p-1.5">
+            <span className="flex h-8 w-5 items-start justify-center rounded-full p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">

@@ -17,7 +17,7 @@ export function SettingsPanel({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-border-strong/[0.08] bg-glass-panel shadow-card backdrop-blur-xl backdrop-saturate-150 transition-colors duration-300",
+        "relative overflow-hidden rounded-2xl bg-glass-panel shadow-card backdrop-blur-xl backdrop-saturate-150 transition-colors duration-300",
         className,
       )}
     >

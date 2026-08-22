@@ -31,7 +31,7 @@ export function ProfileTimeline({ activities, cardClass }: ProfileTimelineProps)
 
       {supportedActivities.length === 0 ? (
         <div className="mt-6 flex flex-col items-center gap-4 py-10 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent-300">
             <Clock className="h-6 w-6 text-accent-300" />
           </div>
           <div>

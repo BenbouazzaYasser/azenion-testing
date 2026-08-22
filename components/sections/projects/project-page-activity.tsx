@@ -43,7 +43,7 @@ export function ProjectPageActivity({ activities }: ProjectPageActivityProps) {
         <div className="mt-10 space-y-5">
           {supportedActivities.map((activity, i) => (
             <Reveal key={`${activity.type}-${activity.created_at}-${i}`} delay={i * 60}>
-              <div className="group relative overflow-hidden rounded-2xl border border-border-strong card-surface p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+              <div className="group relative overflow-hidden rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                 <ActivityRenderer activity={activity} />
               </div>
             </Reveal>

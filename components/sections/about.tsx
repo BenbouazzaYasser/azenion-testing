@@ -6,7 +6,7 @@ export function About() {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="about-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-        <Reveal className="mx-auto max-w-5xl rounded-[2rem] border border-border-strong card-surface-soft p-8 shadow-card backdrop-blur-xl sm:p-10 lg:p-14">
+        <Reveal className="mx-auto max-w-5xl rounded-[2rem] card-surface-soft p-8 shadow-card backdrop-blur-xl sm:p-10 lg:p-14">
           <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
@@ -34,7 +34,7 @@ export function About() {
               </p>
             </div>
 
-            <div className="flex flex-col justify-between rounded-[1.4rem] border border-border/80 bg-void-950/70 p-6 sm:p-7">
+            <div className="flex flex-col justify-between rounded-[1.4rem] bg-void-950/70 p-6 sm:p-7">
               <div>
                 <p className="text-sm font-medium uppercase tracking-[0.16em] text-ink-600">
                   Why join

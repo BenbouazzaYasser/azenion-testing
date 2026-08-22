@@ -58,7 +58,7 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
             {projects.map((project, i) => (
               <Reveal key={project.id} delay={i * 80}>
                 <Link href={`/projects/${project.slug}`} className="group block h-full">
-                  <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+                  <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                     <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                     <div className="relative flex flex-1 flex-col p-6 sm:p-7">
@@ -80,7 +80,7 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
                             ) : null}
                           </div>
                         </div>
-                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border-strong bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
                           {(() => {
                             const Icon = VISIBILITY_ICONS[project.visibility] || Eye;
                             return <Icon size={11} />;
@@ -114,9 +114,9 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
           </div>
         ) : (
           <Reveal delay={120}>
-            <div className="mt-10 rounded-2xl border border-border-strong card-surface p-14 text-center shadow-card backdrop-blur-xl">
+            <div className="mt-10 rounded-2xl card-surface p-14 text-center shadow-card backdrop-blur-xl">
               <div className="flex flex-col items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent-300">
                   <Users className="h-6 w-6 text-accent-300" />
                 </div>
                 <div>

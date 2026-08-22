@@ -60,7 +60,7 @@ export function TogglePreferences({ items, initial, saveAction }: TogglePreferen
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between gap-3 border-t border-border-strong/[0.06] px-6 py-4">
+      <div className="flex items-center justify-between gap-3 px-6 py-4">
         <div className="min-w-0">
           {error ? (
             <p className="text-xs text-red-300">{error}</p>

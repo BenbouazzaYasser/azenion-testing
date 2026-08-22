@@ -15,7 +15,7 @@ export function Features() {
                 key={feature.title}
                 className="group relative px-1 py-10 transition-colors duration-300 sm:px-7 sm:py-12 lg:first:pl-0 lg:last:pr-0"
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border-strong bg-surface text-accent-400 transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-[1.02] group-hover:border-accent-400/40 group-hover:bg-accent/[0.06] group-hover:shadow-glow-sm">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface text-accent-400 transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-[1.02] group-hover:border-accent-400/40 group-hover:bg-accent/[0.06] group-hover:shadow-glow-sm">
                   <Icon size={19} strokeWidth={1.75} />
                 </div>
                 <h3 className="mt-5 text-[1.05rem] font-semibold text-ink-50">

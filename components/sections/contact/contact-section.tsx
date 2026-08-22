@@ -44,11 +44,11 @@ export function ContactSection() {
                       href={channel.href}
                       target={channel.href.startsWith("http") ? "_blank" : undefined}
                       rel={channel.href.startsWith("http") ? "noreferrer noopener" : undefined}
-                      className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border border-border-strong card-surface p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:p-6"
+                      className="group relative flex items-center gap-4 overflow-hidden rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:p-6"
                     >
                       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border-strong bg-surface text-accent-400 transition-all duration-500 ease-premium group-hover:-translate-y-0.5 group-hover:scale-[1.05] group-hover:border-accent-400/40 group-hover:bg-accent/[0.08] group-hover:shadow-glow-sm sm:h-14 sm:w-14">
+                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface text-accent-400 transition-all duration-500 ease-premium group-hover:-translate-y-0.5 group-hover:scale-[1.05] group-hover:border-accent-400/40 group-hover:bg-accent/[0.08] group-hover:shadow-glow-sm sm:h-14 sm:w-14">
                         <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,rgba(40,40,255,0.15),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                         <Icon size={18} strokeWidth={1.75} className="relative sm:size-[20]" />
                       </div>
@@ -73,7 +73,7 @@ export function ContactSection() {
 
           <div className="flex flex-col justify-center">
             <Reveal delay={80}>
-              <div className="group relative overflow-hidden rounded-[2rem] border border-border-strong card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:p-8 lg:p-10">
+              <div className="group relative overflow-hidden rounded-[2rem] card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:p-8 lg:p-10">
                 <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                 <div className="relative">
@@ -99,7 +99,7 @@ export function ContactSection() {
                         placeholder="Full Name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                        className="w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30"
                       />
                     </div>
 
@@ -113,7 +113,7 @@ export function ContactSection() {
                         placeholder="Email Address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                        className="w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30"
                       />
                     </div>
 
@@ -127,7 +127,7 @@ export function ContactSection() {
                         placeholder="Subject"
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        className="w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                        className="w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30"
                       />
                     </div>
 
@@ -141,7 +141,7 @@ export function ContactSection() {
                         placeholder="Message"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        className="w-full resize-none rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                        className="w-full resize-none rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30"
                       />
                     </div>
 

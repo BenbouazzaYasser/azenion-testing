@@ -55,7 +55,7 @@ function getEventStatus(event: { starts_at: string | null; ends_at: string | nul
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -194,7 +194,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
 
     return (
       <Reveal key={event.id} delay={i * 60} className="h-full">
-        <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:flex-row">
+        <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:flex-row">
           {event.cover_url ? (
             <div className="relative h-40 w-full shrink-0 sm:h-auto sm:w-44">
               <img src={event.cover_url} alt="" className="h-full w-full object-cover" />
@@ -209,7 +209,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
                     {branchLogoUrl ? (
                       <img src={branchLogoUrl} alt="" className="h-3.5 w-3.5 rounded-full object-cover" />
                     ) : (
@@ -236,12 +236,12 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                     </span>
                   )}
                   {event.visibility === "public" ? (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
                       <Globe size={10} />
                       Public
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
                       <Users size={10} />
                       Members
                     </span>
@@ -258,7 +258,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                     type="button"
                     onClick={() => openEdit(event)}
                     aria-label="Edit event"
-                    className="rounded-lg border border-border-strong bg-surface p-2 text-ink-400 transition-colors hover:bg-surface-hover hover:text-accent-400"
+                    className="rounded-lg bg-surface p-2 text-ink-400 transition-colors hover:bg-surface-hover hover:text-accent-400"
                   >
                     <Pencil size={13} />
                   </button>
@@ -356,7 +356,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
 
         {showForm ? (
           <Reveal delay={120}>
-            <div className="mt-8 overflow-hidden rounded-2xl border border-border-strong card-surface p-6 shadow-card sm:p-8">
+            <div className="mt-8 overflow-hidden rounded-2xl card-surface p-6 shadow-card sm:p-8">
               <div className="mb-6 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-ink-50">
                   {editingId ? "Edit Event" : "New Event"}
@@ -452,7 +452,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                     {(["public", "members"] as const).map((opt) => (
                       <label
                         key={opt}
-                        className="flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
+                        className="flex cursor-pointer items-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
                       >
                         <input
                           type="radio"
@@ -516,7 +516,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
         ) : (
           <Reveal delay={120}>
             <div className="mt-10 flex flex-col items-center gap-4 py-14 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent-300">
                 <Calendar className="h-6 w-6 text-accent-300" />
               </div>
               <p className="max-w-xs text-sm text-ink-600">
