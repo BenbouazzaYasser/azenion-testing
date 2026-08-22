@@ -14,6 +14,7 @@ import { NotificationCenter } from "@/components/notifications/notification-cent
 import { GlobalSearch } from "@/components/search/global-search";
 import { useChatUnread } from "@/lib/chat-unread";
 import { LightModeButton } from "@/components/theme/light-mode-button";
+import { PageTranslator } from "@/components/shared/page-translator";
 
 interface MenuLinkProps {
   href: string;
@@ -527,6 +528,7 @@ export function Navbar() {
             </div>
 
             <LightModeButton />
+            <PageTranslator />
 
             <button
               type="button"
