@@ -134,26 +134,26 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col border-r border-border-strong bg-void-900/30 bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.05),transparent_55%)]",
+        "flex h-full min-h-0 flex-col border-r border-border-strong/[0.08] bg-glass/60 backdrop-blur-xl",
         className,
       )}
     >
-      <div className="shrink-0 border-b border-border-strong p-4 pb-3">
+      <div className="shrink-0 border-b border-border-strong/[0.06] p-4 pb-3">
         <div ref={searchRef} className="relative">
           <div className="relative">
-            <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-500" />
+            <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-500" />
             <input
               type="text"
               aria-label="Search users"
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full rounded-xl border border-border-strong bg-surface py-2.5 pl-10 pr-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
+              className="w-full rounded-full border border-border-strong bg-surface px-4 py-3 pl-11 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-all duration-300 focus:border-accent-400/60 focus:bg-surface-hover focus:ring-2 focus:ring-accent-400/30"
             />
           </div>
 
           {showSearch && (
-            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl border border-border-strong bg-glass-strong shadow-dropdown backdrop-blur-2xl">
+            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl border border-border-strong/[0.08] bg-glass-strong shadow-dropdown backdrop-blur-2xl">
               {searchResults.length === 0 ? (
                 <p className="px-4 py-3 text-sm text-ink-600">No users found.</p>
               ) : (
@@ -241,18 +241,20 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
 
           {view === "archived" ? (
             archivedLoading ? (
-              <div className="flex flex-col items-center px-4 py-10 text-center">
-                <Archive className="h-5 w-5 animate-pulse text-ink-600" />
-                <p className="mt-2 text-xs text-ink-600">Loading archived…</p>
+              <div className="flex flex-col items-center px-4 py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border-strong/[0.08] bg-surface text-ink-500 shadow-card">
+                  <Archive className="h-5 w-5 animate-pulse" />
+                </div>
+                <p className="mt-3 text-sm font-medium text-ink-300">Loading archived…</p>
               </div>
             ) : archivedConvs.length === 0 ? (
-              <div className="flex flex-col items-center px-4 py-10 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
-                  <Archive size={22} />
+              <div className="flex flex-col items-center px-5 py-12 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                  <Archive size={24} />
                 </div>
-                <p className="mt-3 text-sm font-medium text-ink-200">No archived conversations</p>
-                <p className="mt-1 text-xs text-ink-600">
-                  Archived conversations will show up here.
+                <p className="mt-4 text-[15px] font-semibold text-ink-50">No archived conversations</p>
+                <p className="mt-1.5 max-w-[200px] text-xs leading-relaxed text-ink-500">
+                  Archived conversations will show up here when you archive a chat.
                 </p>
               </div>
             ) : (
@@ -278,13 +280,16 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
               </div>
             )
           ) : convList.length === 0 ? (
-            <div className="flex flex-col items-center px-4 py-10 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
-                <MessageSquare size={22} />
+            <div className="flex flex-col items-center px-5 py-12 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                <MessageSquare size={24} />
               </div>
-              <p className="mt-3 text-sm font-medium text-ink-200">No conversations yet</p>
-              <p className="mt-1 text-xs text-ink-600">
-                Search for a user above to start messaging.
+              <p className="mt-4 text-[15px] font-semibold text-ink-50">No conversations yet</p>
+              <p className="mt-1.5 max-w-[220px] text-xs leading-relaxed text-ink-500">
+                Search for a user above to start messaging. Your conversations will appear here.
+              </p>
+              <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                Start a new chat
               </p>
             </div>
           ) : (
@@ -366,8 +371,8 @@ function ConversationRow({
         className={cn(
           "flex items-center gap-3 overflow-hidden rounded-xl py-3 pl-3 pr-11 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
           isActive
-            ? "border border-accent-400/40 bg-[linear-gradient(135deg,rgba(40,40,255,0.16),rgba(40,40,255,0.05))] shadow-glow-sm"
-            : "border border-transparent hover:border-border hover:bg-surface/50 hover:shadow-card",
+            ? "border border-accent-400/30 bg-[linear-gradient(135deg,rgba(40,40,255,0.13),rgba(40,40,255,0.04))] shadow-glow-sm"
+            : "border border-transparent hover:border-border-strong/[0.08] hover:bg-surface/60 hover:shadow-card",
         )}
       >
         {isActive && (
