@@ -160,11 +160,11 @@ export function Navbar() {
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
                   const navLinkClass = cn(
-                    "relative inline-flex items-center rounded-full border border-transparent px-4 py-2 text-[13.5px] font-medium leading-none transition-all duration-300 whitespace-nowrap",
+                    "relative inline-flex items-center rounded-full px-4 py-2 text-[13.5px] font-medium leading-none transition-all duration-300 whitespace-nowrap",
                     "hover:bg-surface-hover hover:text-ink-50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                     active
-                      ? "border-accent bg-surface text-ink-50 shadow-[0_0_18px_-6px_rgba(40,40,255,0.4)]"
+                      ? "bg-surface-hover text-ink-50"
                       : "text-ink-400"
                   );
 

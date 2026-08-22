@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { CursorGlow } from "@/components/graphics/cursor-glow";
+
 import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -37,7 +37,7 @@ export default function RootLayout({
           aria-hidden
           className="pointer-events-none fixed inset-0 z-[60] bg-grain opacity-[0.025] mix-blend-overlay"
         />
-        <CursorGlow />
+
         <Toaster
           position="bottom-center"
           toastOptions={{
