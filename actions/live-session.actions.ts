@@ -39,7 +39,7 @@ function parseOptionalText(raw: FormDataEntryValue | null): string | null {
 }
 
 export async function createLiveSession(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -104,7 +104,7 @@ export async function createLiveSession(formData: FormData) {
 }
 
 export async function updateLiveSession(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -171,7 +171,7 @@ export async function updateLiveSession(formData: FormData) {
 }
 
 export async function joinLiveSession(sessionId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -194,7 +194,7 @@ export async function joinLiveSession(sessionId: string) {
 }
 
 export async function leaveLiveSession(sessionId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -217,7 +217,7 @@ export async function leaveLiveSession(sessionId: string) {
 }
 
 export async function deleteLiveSession(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },

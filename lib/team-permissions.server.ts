@@ -13,7 +13,7 @@ export async function hasTeamPermission(
   teamId: string,
   permission: TeamPermission
 ): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data } = await supabase.rpc("has_team_permission", {
     p_team_id: teamId,
     p_permission: permission,

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE } from "./urls";
 
 export const profileSchema = z.object({
   full_name: z
@@ -31,14 +30,12 @@ export const profileSchema = z.object({
   github_url: z
     .string()
     .url("Must be a valid URL")
-    .refine(isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE)
     .nullable()
     .optional()
     .or(z.literal("")),
   linkedin_url: z
     .string()
     .url("Must be a valid URL")
-    .refine(isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE)
     .nullable()
     .optional()
     .or(z.literal("")),

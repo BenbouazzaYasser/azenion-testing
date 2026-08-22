@@ -16,7 +16,7 @@ import type {
 } from "@/lib/validations/team-membership.schema";
 
 export async function requestTeamJoin(input: RequestTeamJoinInput) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -48,7 +48,7 @@ export async function requestTeamJoin(input: RequestTeamJoinInput) {
 }
 
 export async function reviewTeamJoinRequest(input: ReviewJoinRequestInput) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -81,7 +81,7 @@ export async function reviewTeamJoinRequest(input: ReviewJoinRequestInput) {
 }
 
 export async function inviteTeamMember(input: InviteTeamMemberInput) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -115,7 +115,7 @@ export async function inviteTeamMember(input: InviteTeamMemberInput) {
 }
 
 export async function respondToTeamInvitation(input: RespondToInvitationInput) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },

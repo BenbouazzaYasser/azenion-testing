@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Rocket } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
@@ -35,9 +34,9 @@ export function FinalCta() {
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <DashboardButton label="Join Now" />
                 <Button asChild variant="secondary" size="lg">
-                  <Link href="/teams">
+                  <a href="/teams">
                     Explore the Platform
-                  </Link>
+                  </a>
                 </Button>
               </div>
             </div>

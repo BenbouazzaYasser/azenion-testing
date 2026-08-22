@@ -40,7 +40,7 @@ export const revalidate = 300;
 
 export default async function CommunityPage() {
   const admin = createAdminClient();
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const [trendingTeamIds, featuredProjectIds] = await Promise.all([
     getTrendingTeamIds(8),
@@ -132,7 +132,7 @@ export default async function CommunityPage() {
           `)
           .order("created_at", { ascending: false })
           .limit(5),
-    supabase.rpc("get_live_sessions"),
+    admin.rpc("get_live_sessions"),
     admin
       .from("platform_announcements")
       .select("id, emoji, title, category, description, badge, details")

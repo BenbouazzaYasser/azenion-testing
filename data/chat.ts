@@ -1,30 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type MessageType = "text" | "post_share";
-
-export interface PostShareMetadata {
-  post_id: string;
-  source_type: string | null;
-  title: string;
-  excerpt: string | null;
-  image: string | null;
-  author: {
-    id: string | null;
-    full_name: string | null;
-    username: string | null;
-    avatar_url: string | null;
-  } | null;
-}
-
 export interface MessageWithSender {
   id: string;
   conversation_id: string;
   sender_id: string;
   content: string;
   image_url: string | null;
-  message_type: MessageType;
-  metadata: PostShareMetadata | null;
   created_at: string | null;
   edited_at: string | null;
   received_at: string | null;
@@ -46,10 +28,6 @@ export interface ConversationWithMeta {
   } | null;
   last_message: {
     content: string;
-    message_type: MessageType;
-    /** Display text for the sidebar: content for text, the optional message
-     *  or "Shared a post" for post_share. */
-    preview: string;
     created_at: string | null;
     sender_id: string;
     received_at: string | null;
@@ -67,7 +45,7 @@ export async function getConversations(
   userId: string,
   options: { archived?: boolean } = {},
 ): Promise<ConversationWithMeta[]> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const membershipQuery = supabase
     .from("conversation_members")
@@ -92,26 +70,21 @@ export async function getConversations(
 
   if (!conversations) return [];
 
-  // Batch membership for every conversation in ONE query instead of N
-  // (per-conversation round-trips) — the previous N+1 pattern scaled
-  // linearly with the number of conversations and dominated chat TTFB.
-  const { data: memberRows } = await supabase
-    .from("conversation_members")
-    .select("conversation_id, user_id, last_read_at")
-    .in("conversation_id", conversationIds);
+  const membersPromises = conversationIds.map(async (cid) => {
+    const { data: members } = await supabase
+      .from("conversation_members")
+      .select("user_id, last_read_at")
+      .eq("conversation_id", cid);
+    return { conversation_id: cid, members: members ?? [] };
+  });
 
-  const membersByConv = new Map<
-    string,
-    { user_id: string; last_read_at: string | null }[]
-  >();
-  for (const row of memberRows ?? []) {
-    const list = membersByConv.get(row.conversation_id) ?? [];
-    list.push({ user_id: row.user_id, last_read_at: row.last_read_at });
-    membersByConv.set(row.conversation_id, list);
-  }
+  const membersResults = await Promise.all(membersPromises);
+  const membersByConv = Object.fromEntries(
+    membersResults.map((r) => [r.conversation_id, r.members]),
+  ) as Record<string, { user_id: string; last_read_at: string | null }[]>;
 
   const allUserIds = [
-    ...new Set((memberRows ?? []).map((m) => m.user_id)),
+    ...new Set(membersResults.flatMap((r) => r.members.map((m) => m.user_id))),
   ];
 
   const { data: profiles } = await createAdminClient()
@@ -126,7 +99,7 @@ export async function getConversations(
   const messagesPromises = conversationIds.map(async (cid) => {
     const { data: messages } = await supabase
       .from("messages")
-      .select("content, message_type, created_at, sender_id, received_at")
+      .select("content, created_at, sender_id, received_at")
       .eq("conversation_id", cid)
       .order("created_at", { ascending: false })
       .limit(1);
@@ -138,13 +111,7 @@ export async function getConversations(
     messagesResults.map((r) => [r.conversation_id, r.lastMessage]),
   ) as Record<
     string,
-    {
-      content: string;
-      message_type: MessageType;
-      created_at: string | null;
-      sender_id: string;
-      received_at: string | null;
-    } | null
+    { content: string; created_at: string | null; sender_id: string; received_at: string | null } | null
   >;
 
   const { data: unreadRows } = await supabase.rpc("get_unread_counts", {
@@ -170,7 +137,7 @@ export async function getConversations(
   const blockedMeIds = new Set((blockersOfMe ?? []) as string[]);
 
   return (conversations ?? []).map((conv) => {
-    const convMembers = membersByConv.get(conv.id) ?? [];
+    const convMembers = membersByConv[conv.id] ?? [];
     const otherMember = convMembers.find((m) => m.user_id !== userId);
     const otherProfile = otherMember ? profileMap.get(otherMember.user_id) : null;
     const lastMsg = lastMessageByConv[conv.id];
@@ -188,11 +155,6 @@ export async function getConversations(
       last_message: lastMsg
         ? {
             content: lastMsg.content,
-            message_type: lastMsg.message_type as MessageType,
-            preview:
-              lastMsg.message_type === "post_share"
-                ? lastMsg.content || "Shared a post"
-                : lastMsg.content,
             created_at: lastMsg.created_at,
             sender_id: lastMsg.sender_id,
             received_at: lastMsg.received_at,
@@ -208,11 +170,11 @@ export async function getConversations(
 }
 
 export async function getMessages(conversationId: string): Promise<MessageWithSender[]> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data: messages } = await supabase
     .from("messages")
-    .select("id, conversation_id, sender_id, content, image_url, message_type, metadata, created_at, edited_at, received_at")
+    .select("id, conversation_id, sender_id, content, image_url, created_at, edited_at, received_at")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
 
@@ -235,32 +197,20 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
   }));
 }
 
-export interface ConversationPeer {
-  id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  username: string;
-}
-
 export async function getConversationBlockState(conversationId: string): Promise<{
   /** True when the other participant has blocked the current user. */
   am_blocked: boolean;
   /** True when the current user has blocked the other participant. */
   i_blocked: boolean;
-  /**
-   * The other participant, derived from conversation membership so it is
-   * always available for a valid 1-to-1 conversation (even with no messages).
-   */
-  peer: ConversationPeer | null;
 }> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { am_blocked: false, i_blocked: false, peer: null };
+    return { am_blocked: false, i_blocked: false };
   }
 
   const { data: members } = await supabase
@@ -271,7 +221,7 @@ export async function getConversationBlockState(conversationId: string): Promise
   const otherId = (members ?? []).find((m) => m.user_id !== user.id)?.user_id ?? null;
 
   if (!otherId) {
-    return { am_blocked: false, i_blocked: false, peer: null };
+    return { am_blocked: false, i_blocked: false };
   }
 
   const { data: ownBlockRows } = await supabase
@@ -285,25 +235,7 @@ export async function getConversationBlockState(conversationId: string): Promise
     p_blocked_id: user.id,
   });
 
-  // Calls stay restricted to 1-to-1 conversations.
-  let peer: ConversationPeer | null = null;
-  if ((members ?? []).length === 2) {
-    const { data: profile } = await createAdminClient()
-      .from("profiles")
-      .select("id, full_name, avatar_url, username")
-      .eq("id", otherId)
-      .maybeSingle();
-    if (profile) {
-      peer = {
-        id: profile.id,
-        full_name: profile.full_name,
-        avatar_url: profile.avatar_url,
-        username: profile.username,
-      };
-    }
-  }
-
-  return { am_blocked: !!am_blocked, i_blocked, peer };
+  return { am_blocked: !!am_blocked, i_blocked };
 }
 
 

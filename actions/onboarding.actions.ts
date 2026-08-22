@@ -15,7 +15,7 @@ function isKnownStep(step: string): step is (typeof STEPS)[number] {
  * on the next visit. `null` clears progress (used for restart).
  */
 export async function persistOnboardingStep(step: string | null) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -35,7 +35,7 @@ export async function persistOnboardingStep(step: string | null) {
 
 /** Marks onboarding complete (sets the completion timestamp, clears the step). */
 export async function completeOnboarding() {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -58,7 +58,7 @@ export async function completeOnboarding() {
 
 /** Clears completion and step so the flow can be walked through again. */
 export async function restartOnboarding() {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -81,38 +81,31 @@ export async function restartOnboarding() {
 }
 
 /**
- * Lightweight profile update used by onboarding steps. Only the fields
- * present in the FormData are touched (bio / institution / full_name), so the
- * profile and branch steps can each update their own field without clobbering
- * the other. Onboarding never forces the user to fill username / full name.
+ * Lightweight profile update used by the onboarding PROFILE step. Only the
+ * optional fields are touched (bio + institution) so onboarding never forces
+ * the user to fill username / full name.
  */
 export async function saveOnboardingProfile(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) return { error: "Not authenticated" };
 
-  const patch: { bio?: string | null; institution?: string | null; full_name?: string } = {};
+  const bioRaw = (formData.get("bio") as string) ?? "";
+  const institutionRaw = (formData.get("institution") as string) ?? "";
+  const fullNameRaw = (formData.get("full_name") as string) ?? "";
 
-  if (formData.has("bio")) {
-    const bioRaw = (formData.get("bio") as string) ?? "";
-    patch.bio = bioRaw.trim().slice(0, 500) || null;
-  }
+  const bio = bioRaw.trim().slice(0, 500) || null;
+  const institution = institutionRaw.trim().slice(0, 100) || null;
+  const full_name = fullNameRaw.trim().slice(0, 100) || null;
 
-  if (formData.has("institution")) {
-    const institutionRaw = (formData.get("institution") as string) ?? "";
-    patch.institution = institutionRaw.trim().slice(0, 100) || null;
-  }
-
-  if (formData.has("full_name")) {
-    const fullNameRaw = (formData.get("full_name") as string) ?? "";
-    const full_name = fullNameRaw.trim().slice(0, 100) || null;
-    if (full_name) patch.full_name = full_name;
-  }
-
-  if (Object.keys(patch).length === 0) return { error: "Nothing to update" };
+  const patch: { bio: string | null; institution: string | null; full_name?: string } = {
+    bio,
+    institution,
+  };
+  if (full_name) patch.full_name = full_name;
 
   const { error } = await supabase
     .from("profiles")
@@ -126,7 +119,7 @@ export async function saveOnboardingProfile(formData: FormData) {
 
 /** One-click join (request) for the team step — uses the existing membership flow. */
 export async function requestTeamJoin(teamId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -152,7 +145,7 @@ export async function requestTeamJoin(teamId: string) {
 }
 
 export async function joinOnboardingBranch(branchId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -170,7 +163,7 @@ export async function joinOnboardingBranch(branchId: string) {
 
 /** Client-facing loader: returns onboarding state + recommendations. */
 export async function getOnboardingData() {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -182,72 +182,11 @@ export type Database = {
           },
         ]
       }
-      courses: {
-        Row: {
-          id: string
-          title: string
-          description: string | null
-          category: string
-          content_type: string
-          file_url: string
-          file_path: string
-          thumbnail: string | null
-          duration: string | null
-          difficulty: string | null
-          tags: string[] | null
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          description?: string | null
-          category: string
-          content_type: string
-          file_url: string
-          file_path: string
-          thumbnail?: string | null
-          duration?: string | null
-          difficulty?: string | null
-          tags?: string[] | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          description?: string | null
-          category?: string
-          content_type?: string
-          file_url?: string
-          file_path?: string
-          thumbnail?: string | null
-          duration?: string | null
-          difficulty?: string | null
-          tags?: string[] | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "courses_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
-          deletion_requested_at: string | null
-          deletion_scheduled_at: string | null
           full_name: string
           github_url: string | null
           id: string
@@ -261,8 +200,6 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
-          deletion_requested_at?: string | null
-          deletion_scheduled_at?: string | null
           full_name: string
           github_url?: string | null
           id: string
@@ -276,8 +213,6 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
-          deletion_requested_at?: string | null
-          deletion_scheduled_at?: string | null
           full_name?: string
           github_url?: string | null
           id?: string
@@ -797,13 +732,6 @@ export type Database = {
       }
     }
     Functions: {
-      can_access_private_media: {
-        Args: {
-          p_path: string
-          p_user_id?: string
-        }
-        Returns: boolean
-      }
       create_project: {
         Args: {
           p_description?: string
@@ -846,10 +774,6 @@ export type Database = {
           conversation_id: string
           unread_count: number
         }[]
-      }
-      is_course_manager: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
       }
       mark_messages_received: {
         Args: { p_conversation_id: string }

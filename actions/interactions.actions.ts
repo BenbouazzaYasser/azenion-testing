@@ -11,11 +11,6 @@ import {
   notifyMentions,
   insertNotification,
 } from "@/lib/notifications";
-import {
-  IMAGE_STORAGE_BUCKET,
-  VIDEO_STORAGE_BUCKET,
-} from "@/lib/validations/media.schema";
-import { resolveMediaValue } from "@/lib/media";
 
 const TARGET_TABLES: Record<string, string> = {
   project_update: "project_updates",
@@ -32,7 +27,7 @@ function getTargetTable(targetType: string) {
  * Client-provided ids are never trusted for authorization.
  */
 async function getSessionUserId(): Promise<string | null> {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -61,7 +56,7 @@ async function isTargetVisible(
 }
 
 export async function toggleLike(targetType: string, targetId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const supabaseAdmin = createAdminClient();
 
   const {
@@ -117,7 +112,7 @@ export async function toggleLike(targetType: string, targetId: string) {
 }
 
 export async function toggleCommentLike(commentId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const supabaseAdmin = createAdminClient();
 
   const {
@@ -189,7 +184,7 @@ export async function toggleCommentLike(commentId: string) {
  * (`record_post_view` RPC). Best-effort: never fails the surrounding render.
  */
 export async function recordPostView(postId: string, sessionToken: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const supabaseAdmin = createAdminClient();
 
   let viewerId: string | null = null;
@@ -219,7 +214,7 @@ export async function createComment(
   body: string,
   parentCommentId?: string | null,
 ) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const supabaseAdmin = createAdminClient();
 
   const {
@@ -298,7 +293,7 @@ export async function createComment(
 }
 
 export async function updateComment(commentId: string, body: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -419,7 +414,7 @@ export async function getCommentsAction(
 }
 
 export async function toggleSavePost(postId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -451,110 +446,8 @@ export async function toggleSavePost(postId: string) {
   return { saved: true };
 }
 
-export interface SavedPostItem {
-  id: string;
-  title: string;
-  body: string | null;
-  source_type: string;
-  saved_at: string;
-  created_at: string | null;
-  author_name: string | null;
-  author_username: string | null;
-  image: string | null;
-}
-
-/**
- * Returns the authenticated user's saved posts, newest save first. Enriched
- * with the post headline, author, and a thumbnail so the settings dialog can
- * render a readable list without round-tripping through the feed pipeline.
- */
-export async function getSavedPosts(): Promise<SavedPostItem[]> {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return [];
-
-  const { data: saved } = await supabase
-    .from("saved_posts")
-    .select("post_id, created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(100);
-
-  const postIds = (saved ?? []).map((s) => s.post_id);
-  if (postIds.length === 0) return [];
-
-  const admin = createAdminClient();
-  const { data: posts } = await admin
-    .from("posts")
-    .select("id, title, body, images, source_type, author_id, created_at")
-    .in("id", postIds);
-
-  const authorIds = [
-    ...new Set((posts ?? []).map((p) => p.author_id).filter((id): id is string => Boolean(id))),
-  ];
-  const { data: profiles } = authorIds.length > 0
-    ? await admin.from("profiles").select("id, full_name, username").in("id", authorIds)
-    : { data: [] as { id: string; full_name: string | null; username: string }[] };
-
-  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
-  const savedAtMap = new Map((saved ?? []).map((s) => [s.post_id, s.created_at ?? ""]));
-
-  return await Promise.all(
-    (posts ?? []).map(async (post) => {
-      const profile = post.author_id ? profileMap.get(post.author_id) : null;
-      const [image] = (await resolveMediaValue(
-        Array.isArray(post.images) ? post.images.filter(Boolean) : [],
-        undefined,
-        admin,
-      )) as string[];
-      return {
-        id: post.id,
-        title: post.title,
-        body: post.body,
-        source_type: post.source_type,
-        saved_at: savedAtMap.get(post.id) ?? "",
-        created_at: post.created_at,
-        author_name: profile?.full_name ?? profile?.username ?? null,
-        author_username: profile?.username ?? null,
-        image: image ?? null,
-      };
-    }),
-  );
-}
-
-/**
- * Parses a feed post's stored media URLs into { bucket, objectPath } objects
- * safe to remove from storage. Only public URLs under the feed buckets whose
- * object path starts with the requesting user's id are returned — anything
- * else (foreign URLs, other users' objects, private markers) is ignored so we
- * never delete media that doesn't belong to this post's author.
- */
-function resolveFeedMediaObjects(
-  userId: string,
-  values: (string | null)[] | null | undefined,
-): { bucket: string; objectPath: string }[] {
-  const storageBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/`;
-  const resolved: { bucket: string; objectPath: string }[] = [];
-  for (const value of values ?? []) {
-    if (!value || !value.startsWith(storageBase)) continue;
-    const rest = value.slice(storageBase.length);
-    const slash = rest.indexOf("/");
-    if (slash <= 0) continue;
-    const bucket = rest.slice(0, slash);
-    const objectPath = rest.slice(slash + 1);
-    if (bucket !== IMAGE_STORAGE_BUCKET && bucket !== VIDEO_STORAGE_BUCKET) continue;
-    if (!objectPath.startsWith(`${userId}/`)) continue;
-    resolved.push({ bucket, objectPath });
-  }
-  return resolved;
-}
-
 export async function deleteFeedPost(postId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -562,45 +455,18 @@ export async function deleteFeedPost(postId: string) {
 
   if (!user) return { error: "Not authenticated" };
 
-  // Only `user_post` rows are user-owned feed posts. Source-backed posts
-  // (project/team/branch) are recreated by their sync triggers, so they can't
-  // be deleted here — the same guard that gates the UI also gates the action.
-  const { data: post } = await supabase
-    .from("posts")
-    .select("images, videos")
-    .eq("id", postId)
-    .eq("author_id", user.id)
-    .eq("source_type", "user_post")
-    .maybeSingle();
-
-  const media = [
-    ...resolveFeedMediaObjects(user.id, post?.images),
-    ...resolveFeedMediaObjects(user.id, post?.videos),
-  ];
-
-  const { data: deleted, error } = await supabase
+  const { error } = await supabase
     .from("posts")
     .delete()
     .eq("id", postId)
-    .eq("author_id", user.id)
-    .eq("source_type", "user_post")
-    .select("id");
+    .eq("author_id", user.id);
 
   if (error) return { error: error.message };
-  if (!deleted || deleted.length === 0) {
-    return { error: "You can only delete your own posts." };
-  }
-
-  // Best-effort: remove this post's media from storage after a successful delete.
-  for (const { bucket, objectPath } of media) {
-    await supabase.storage.from(bucket).remove([objectPath]).catch(() => {});
-  }
-
   return { success: true };
 }
 
 export async function deleteComment(commentId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },

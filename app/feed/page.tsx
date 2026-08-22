@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function FeedPage() {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const userId = user?.id ?? null;
 

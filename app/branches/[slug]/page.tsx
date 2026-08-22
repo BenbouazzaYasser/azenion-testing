@@ -51,7 +51,7 @@ function parseRecruitment(raw: unknown) {
 export default async function BranchPage({ params }: BranchPageProps) {
   const { slug } = await params;
   const adminClient = createAdminClient();
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data: branch } = await adminClient
     .from("branches")

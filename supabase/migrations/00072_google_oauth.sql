@@ -1,9 +1,8 @@
--- Migration: 00091_google_oauth
---
--- Google OAuth sign-ins do not supply a `username` in the user metadata,
--- but public.profiles.username is NOT NULL. Regenerate the signup trigger
--- so it falls back to a unique username derived from the email when none is
--- provided, and carries over Google's display name + avatar.
+-- ── Google OAuth support ───────────────────────────────────────────────────
+-- OAuth sign-ins (e.g. Google) do not supply a `username` in the user
+-- metadata, but public.profiles.username is NOT NULL. Regenerate the signup
+-- trigger so it falls back to a unique username derived from the email when
+-- none is provided, and carries over Google's display name + avatar.
 
 create or replace function public.handle_new_user()
 returns trigger

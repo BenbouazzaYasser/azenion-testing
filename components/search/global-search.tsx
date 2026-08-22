@@ -19,7 +19,6 @@ import { globalSearch, type GlobalSearchResponse, type SearchCategory } from "@/
 import { ProfilePreviewDialog } from "@/components/search/profile-preview-dialog";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { openSearchHotkey, registerSearchHotkey, type SearchHotkeyInstance } from "@/lib/global-search-hotkey";
 
 const CATEGORY_HEADERS: { value: SearchCategory; label: string; icon: typeof Users }[] = [
   { value: "Users", label: "Users", icon: Users },
@@ -52,26 +51,11 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestIdRef = useRef(0);
-  const openRef = useRef(open);
-  openRef.current = open;
 
   const closePalette = useCallback(() => {
     setOpen(false);
     requestAnimationFrame(() => triggerRef.current?.focus());
   }, []);
-
-  const openPalette = useCallback(() => {
-    setOpen(true);
-    setActiveIndex(0);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 60);
-  }, []);
-
-  const hotkeyHandler = useMemo<SearchHotkeyInstance>(
-    () => ({ open: openPalette, close: closePalette, isOpen: () => openRef.current }),
-    [openPalette, closePalette],
-  );
 
   // Flat list of selectable items for keyboard navigation (stable index).
   const flatItems = useMemo(
@@ -91,6 +75,10 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
     if (!open) return;
 
     const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        closePalette();
+      }
       if (e.key === "Escape") {
         e.preventDefault();
         closePalette();
@@ -100,7 +88,17 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, closePalette]);
 
-  useEffect(() => registerSearchHotkey(hotkeyHandler), [hotkeyHandler]);
+  // Global Ctrl/Cmd+K to open from anywhere.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setOpen(true);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -147,6 +145,14 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
       return;
     }
     debouncedRun(value.trim());
+  }
+
+  function openPalette() {
+    setOpen(true);
+    setActiveIndex(0);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 60);
   }
 
   function handleSelect(href: string, category?: SearchCategory) {
@@ -206,7 +212,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
         <button
           ref={triggerRef}
           type="button"
-          onClick={() => openSearchHotkey(hotkeyHandler)}
+          onClick={openPalette}
           aria-label="Search Azenion (Ctrl+K)"
           className="group relative flex h-10 w-10 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
@@ -225,7 +231,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
         <button
           ref={triggerRef}
           type="button"
-          onClick={() => openSearchHotkey(hotkeyHandler)}
+          onClick={openPalette}
           aria-label="Search"
           className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-transform duration-300 hover:scale-105 hover:bg-surface-hover hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
@@ -253,14 +259,23 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                 ref={panelRef}
                 onKeyDown={handlePanelKeyDown}
                 className={cn(
-                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-[1.6rem] border border-border-strong card-surface-soft p-4 shadow-card transition-all duration-200 ease-premium",
+                  "relative z-10 mx-auto flex max-h-[80vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border navbar-panel-border bg-[rgb(var(--glass-panel)/0.9)] shadow-dialog backdrop-blur-2xl backdrop-saturate-150 transition-all duration-200 ease-premium",
                 )}
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "translateY(0)" : "translateY(-8px)",
                 }}
               >
-                <div className="relative flex items-center gap-3 border-b border-border-strong/[0.08] pb-3 pt-1">
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -top-20 right-8 h-40 w-40 rounded-full bg-accent/30 blur-[80px]"
+                />
+
+                <div className="relative flex items-center gap-3 border-b border-border-strong/[0.08] px-4 py-3.5">
                   <div className="text-ink-400">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-5 w-5">
                       <circle cx="11" cy="11" r="8" />
@@ -288,7 +303,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                   )}
                 </div>
 
-                <div className="max-h-[calc(80vh-72px)] min-h-0 overflow-y-auto overscroll-contain py-1">
+                <div className="max-h-[calc(80vh-72px)] min-h-0 overflow-y-auto overscroll-contain px-2 py-2">
                   {query && !loading && data && data.results.length === 0 ? (
                     <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
                       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-ink-500">

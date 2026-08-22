@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowUpRight, Plus } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
@@ -33,10 +32,10 @@ export function FeaturedContent({ teams, projects }: FeaturedContentProps) {
               </h2>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
-              <Link href="/teams">
+              <a href="/teams">
                 Browse all teams
                 <ArrowUpRight size={16} />
-              </Link>
+              </a>
             </Button>
           </div>
         </Reveal>
@@ -55,7 +54,7 @@ export function FeaturedContent({ teams, projects }: FeaturedContentProps) {
               <ProjectCard key={project.id} project={project} index={i} />
             ))}
             <Reveal delay={featuredProjects.length * 60}>
-              <Link href="/projects" className="group block h-full">
+              <a href="/projects" className="group block h-full">
                 <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-3 rounded-[2rem] border border-dashed border-border-strong bg-white/[0.01] p-8 text-center transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:bg-accent/[0.03] hover:shadow-glow-sm">
                   <span className="flex h-12 w-12 items-center justify-center rounded-full border border-accent-400/30 bg-accent/[0.08] text-accent-300">
                     <Plus size={20} />
@@ -69,7 +68,7 @@ export function FeaturedContent({ teams, projects }: FeaturedContentProps) {
                     <ArrowUpRight size={14} />
                   </span>
                 </div>
-              </Link>
+              </a>
             </Reveal>
           </div>
         ) : null}

@@ -6,7 +6,7 @@ export function SecurityNote() {
       <div className="mx-auto max-w-[440px] px-5 sm:px-8">
         <Reveal delay={100}>
           <p className="text-center text-xs leading-relaxed text-ink-600">
-            Authentication will soon be powered securely by Supabase.
+            Authentication is secured and powered by Supabase.
           </p>
         </Reveal>
       </div>

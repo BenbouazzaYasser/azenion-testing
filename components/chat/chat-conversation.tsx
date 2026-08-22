@@ -15,16 +15,9 @@ import {
   getConversationRecipientReadAt,
 } from "@/actions/chat.actions";
 import { setActiveConversation } from "@/lib/chat-unread";
-import { waitForRealtimeAuthReady } from "@/lib/realtime-auth";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
 import { formatDate } from "@/lib/date";
 import { useMobileConversations } from "@/components/chat/mobile-conversations-context";
-import type { MessageType, PostShareMetadata, ConversationPeer } from "@/data/chat";
-import type { RealtimeChannel } from "@supabase/supabase-js";
-import { useCallContext } from "@/components/chat/call-provider";
-import type { CallPeer } from "@/lib/call";
-import { CallButtons } from "@/components/chat/call-buttons";
-import { ProfilePopover } from "@/components/chat/profile-popover";
 
 interface Message {
   id: string;
@@ -32,8 +25,6 @@ interface Message {
   sender_id: string;
   content: string;
   image_url: string | null;
-  message_type: MessageType;
-  metadata: PostShareMetadata | null;
   created_at: string | null;
   edited_at: string | null;
   received_at: string | null;
@@ -51,8 +42,6 @@ interface ChatConversationProps {
   currentUserId: string;
   /** True when the other participant has blocked the current user. */
   amBlocked?: boolean;
-  /** The other participant (from conversation membership), null for non-1-to-1. */
-  peer: ConversationPeer | null;
 }
 
 function startOfDay(date: Date): number {
@@ -75,7 +64,6 @@ export function ChatConversation({
   initialMessages,
   currentUserId,
   amBlocked = false,
-  peer,
 }: ChatConversationProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -120,117 +108,91 @@ export function ChatConversation({
   }
 
   useEffect(() => {
-    let disposed = false;
-    let channel: RealtimeChannel | undefined;
-    let readChannel: RealtimeChannel | undefined;
     const supabase = createClient();
 
-    void (async () => {
-      await waitForRealtimeAuthReady(supabase);
-      if (disposed) return;
+    const channel = supabase
+      .channel(`chat:${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        async (payload) => {
+          const newMsg = payload.new as Message;
+          if (newMsg.sender_id === currentUserId) return;
 
-      channel = supabase
-        .channel(`chat:${conversationId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "messages",
-            filter: `conversation_id=eq.${conversationId}`,
-          },
-          async (payload) => {
-            const newMsg = payload.new as Message;
-            if (newMsg.sender_id === currentUserId) return;
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("id, full_name, avatar_url, username")
+            .eq("id", newMsg.sender_id)
+            .single();
 
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("id, full_name, avatar_url, username")
-              .eq("id", newMsg.sender_id)
-              .single();
+          void markMessagesReceived(conversationId);
 
-            void markMessagesReceived(conversationId);
+          setMessages((prev) => [
+            ...prev,
+            { ...newMsg, sender: profile },
+          ]);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const row = payload.new as Message;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === row.id
+                ? {
+                    ...m,
+                    content: row.content,
+                    edited_at: row.edited_at,
+                    received_at: row.received_at,
+                  }
+                : m,
+            ),
+          );
+        },
+      )
+      .subscribe();
 
-            setMessages((prev) => [
-              ...prev,
-              { ...newMsg, sender: profile },
-            ]);
-          },
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "messages",
-            filter: `conversation_id=eq.${conversationId}`,
-          },
-          (payload) => {
-            const row = payload.new as Message;
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === row.id
-                  ? {
-                      ...m,
-                      content: row.content,
-                      message_type: row.message_type,
-                      metadata: row.metadata,
-                      edited_at: row.edited_at,
-                      received_at: row.received_at,
-                    }
-                  : m,
-              ),
-            );
-          },
-        )
-        .subscribe();
-
-      readChannel = supabase
-        .channel(`chat-read:${conversationId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "conversation_members",
-            filter: `conversation_id=eq.${conversationId}`,
-          },
-          (payload) => {
-            const row = payload.new as { user_id: string; last_read_at: string | null };
-            if (row.user_id !== currentUserId) {
-              setOtherLastReadAt(row.last_read_at ?? null);
-            }
-          },
-        )
-        .subscribe();
-    })();
+    const readChannel = supabase
+      .channel(`chat-read:${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "conversation_members",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const row = payload.new as { user_id: string; last_read_at: string | null };
+          if (row.user_id !== currentUserId) {
+            setOtherLastReadAt(row.last_read_at ?? null);
+          }
+        },
+      )
+      .subscribe();
 
     return () => {
-      disposed = true;
-      if (channel) supabase.removeChannel(channel);
-      if (readChannel) supabase.removeChannel(readChannel);
+      supabase.removeChannel(channel);
+      supabase.removeChannel(readChannel);
     };
   }, [conversationId, currentUserId]);
 
-  // The peer comes from conversation membership (server-side), so it is always
-  // available for a valid 1-to-1 conversation, even before any messages exist.
-  const callPeer: CallPeer | null = peer;
-
-  // Calls are only possible between users who can already access the
-  // conversation (and are not blocked).
-  const callsEnabled = !amBlocked && callPeer !== null && callPeer.id !== currentUserId;
-
-  // The app-level CallProvider hosts the WebRTC/signaling state machine and the
-  // incoming-call listener; this page only advertises the conversation it is in
-  // so outgoing calls are routed to the right peer.
-  const { setContext, startCall } = useCallContext();
-
-  useEffect(() => {
-    if (callsEnabled) {
-      setContext({ conversationId, peer: callPeer! });
-    }
-    return () => setContext(null);
-  }, [callsEnabled, conversationId, callPeer, setContext]);
+  const participant = useMemo(() => {
+    const other = initialMessages.find((m) => m.sender_id !== currentUserId);
+    return other?.sender ?? null;
+  }, [initialMessages, currentUserId]);
 
   const otherReadTs = otherLastReadAt ? new Date(otherLastReadAt).getTime() : null;
 
@@ -274,8 +236,6 @@ export function ChatConversation({
       sender_id: currentUserId,
       content,
       image_url: null,
-      message_type: "text",
-      metadata: null,
       created_at: new Date().toISOString(),
       edited_at: null,
       received_at: null,
@@ -298,8 +258,8 @@ export function ChatConversation({
     }
   };
 
-  const participantName = callPeer?.full_name ?? callPeer?.username ?? "Conversation";
-  const participantInitial = (callPeer?.full_name?.[0] ?? callPeer?.username?.[0] ?? "?").toUpperCase();
+  const participantName = participant?.full_name ?? participant?.username ?? "Conversation";
+  const participantInitial = (participant?.full_name?.[0] ?? participant?.username?.[0] ?? "?").toUpperCase();
   const mobileConversations = useMobileConversations();
 
   return (
@@ -320,81 +280,44 @@ export function ChatConversation({
         <div className="absolute -right-20 bottom-20 h-80 w-80 rounded-full bg-accent-glow/[0.05] blur-[130px]" />
       </div>
 
-      <header className="relative z-10 flex shrink-0 items-center gap-3 border-b border-border-strong/[0.12] bg-void-900 px-4 py-3.5 sm:px-6">
+      <header className="relative z-10 flex shrink-0 items-center gap-3 border-b border-border bg-void-900/50 px-4 py-3 backdrop-blur-xl sm:px-6">
         {mobileConversations ? (
           <button
             type="button"
             onClick={mobileConversations.open}
             aria-label="Open conversations"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] text-ink-400 transition-all duration-300 ease-premium focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.12] text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
           >
             <Menu size={18} />
           </button>
         ) : null}
 
-        {callPeer?.avatar_url ? (
-          <ProfilePopover
-            user={{
-              id: callPeer.id,
-              full_name: callPeer.full_name,
-              username: callPeer.username,
-              avatar_url: callPeer.avatar_url,
-            }}
-          >
-            <span className="relative shrink-0">
-              <img
-                src={callPeer.avatar_url}
-                alt=""
-                className="h-10 w-10 rounded-full border border-border-strong/[0.12] object-cover"
-              />
-              <span
-                aria-hidden
-                className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-void-900 bg-emerald-400"
-              />
-            </span>
-          </ProfilePopover>
-        ) : callPeer ? (
-          <ProfilePopover
-            user={{
-              id: callPeer.id,
-              full_name: callPeer.full_name,
-              username: callPeer.username,
-              avatar_url: null,
-            }}
-          >
-            <span className="relative shrink-0">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent-400/25 bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white">
-                {participantInitial}
-              </span>
-              <span
-                aria-hidden
-                className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-void-900 bg-emerald-400"
-              />
-            </span>
-          </ProfilePopover>
+        {participant?.avatar_url ? (
+          <img
+            src={participant.avatar_url}
+            alt=""
+            className="h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.12] object-cover shadow-[0_0_20px_-8px_rgba(109,109,255,0.5)]"
+          />
         ) : (
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent-400/25 bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white">
-            <Users size={16} className="text-accent-300" />
+            {participant ? participantInitial : <Users size={16} className="text-accent-300" />}
           </span>
         )}
 
         <div className="min-w-0">
           <h1 className="truncate text-sm font-semibold text-ink-50">{participantName}</h1>
-          {callPeer?.username ? (
-            <p className="mt-0.5 truncate text-xs text-ink-500">@{callPeer.username}</p>
+          {participant?.username ? (
+            <p className="truncate text-xs text-ink-500">@{participant.username}</p>
           ) : (
-            <p className="mt-0.5 text-xs text-ink-500">Private chat</p>
+            <p className="text-xs text-ink-500">Private chat</p>
           )}
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2">
-          {callsEnabled ? <CallButtons onStart={startCall} /> : null}
-          <div className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border-strong bg-surface/70 px-2.5 py-1 sm:flex">
-            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-ink-400">
-              Private
-            </span>
-          </div>
+        <div className="ml-auto hidden shrink-0 items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1 sm:flex">
+          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
+          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">
+            Private
+          </span>
         </div>
       </header>
 
@@ -405,7 +328,7 @@ export function ChatConversation({
               aria-hidden
               className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[120px]"
             />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300 shadow-card">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300 shadow-input">
               <MessageSquare size={26} />
             </div>
             <h2 className="mt-5 text-lg font-semibold text-ink-50">No messages yet</h2>
@@ -431,12 +354,12 @@ export function ChatConversation({
             return (
               <Fragment key={msg.id}>
                 {showDivider && (
-                  <div className="flex items-center gap-3 py-3" role="separator" aria-label={label ?? undefined}>
-                    <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-transparent via-border-strong/50 to-border-strong/50" />
-                    <span className="rounded-full border border-border-strong bg-surface px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-500 shadow-card">
+                  <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
+                    <span aria-hidden className="h-px flex-1 bg-border" />
+                    <span className="rounded-full border border-border bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-500 backdrop-blur-sm">
                       {label}
                     </span>
-                    <span aria-hidden className="h-px flex-1 bg-gradient-to-l from-transparent via-border-strong/50 to-border-strong/50" />
+                    <span aria-hidden className="h-px flex-1 bg-border" />
                   </div>
                 )}
 
@@ -448,15 +371,12 @@ export function ChatConversation({
                     edited_at={msg.edited_at}
                     sender_id={msg.sender_id}
                     sender_name={msg.sender?.full_name ?? msg.sender?.username ?? null}
-                    sender_username={msg.sender?.username ?? null}
                     sender_avatar={msg.sender?.avatar_url ?? null}
-                    messageType={msg.message_type}
-                    metadata={msg.metadata}
                     isOwn={msg.sender_id === currentUserId}
                     isGrouped={isGrouped}
                     showAvatar={showAvatar}
                     status={getMessageStatus(msg, i)}
-                    statusAvatarUrl={callPeer?.avatar_url ?? null}
+                    statusAvatarUrl={participant?.avatar_url ?? null}
                     statusAvatarName={participantName}
                     active={msg.id === activeMessageId}
                     showActions={actionsMessageId === msg.id}
@@ -477,40 +397,38 @@ export function ChatConversation({
         </div>
       </div>
 
-      <div className="relative z-10 shrink-0 border-t border-border-strong/[0.12] bg-surface px-3 pb-3 pt-3 sm:px-5 sm:pb-5 sm:pt-4">
+      <div className="relative z-10 shrink-0 border-t border-border/60 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4 sm:pt-3">
         {amBlocked ? (
           <div
             role="status"
-            className="flex items-center justify-center gap-2.5 rounded-2xl border border-border-strong bg-surface/70 px-4 py-3.5 text-center shadow-card"
+            className="flex items-center justify-center gap-2.5 rounded-2xl border border-border-strong/60 bg-surface/70 px-4 py-3.5 text-center"
           >
             <Ban size={16} className="shrink-0 text-ink-500" />
             <p className="text-sm text-ink-400">
-              You can&apos;t send messages to @{callPeer?.username ?? participantName} because they blocked you.
+              You can&apos;t send messages to @{participant?.username ?? participantName} because they blocked you.
             </p>
           </div>
         ) : (
           <form
-            className="flex items-center gap-2.5"
+            className="flex items-center gap-3"
             onSubmit={(e) => {
               e.preventDefault();
               handleSend();
             }}
           >
-            <div className="relative flex min-w-0 flex-1 items-center rounded-2xl border border-border-strong bg-surface/70 px-4 py-3 shadow-card transition-all duration-300 ease-premium focus-within:border-accent-400/60 focus-within:bg-accent/[0.03] focus-within:ring-2 focus-within:ring-accent-400/20">
-              <input
-                type="text"
-                aria-label="Type a message"
-                placeholder="Type a message..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="min-w-0 flex-1 bg-transparent text-sm text-ink-50 placeholder:text-ink-600 focus:outline-none"
-              />
-            </div>
+            <input
+              type="text"
+              aria-label="Type a message"
+              placeholder="Type a message..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="min-w-0 flex-1 rounded-2xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/60 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
+            />
             <Button
               type="submit"
               aria-label="Send message"
               disabled={!input.trim() || isSending}
-              className="h-12 w-12 shrink-0 rounded-2xl p-0 shadow-card"
+              className="h-12 w-12 shrink-0 rounded-2xl p-0"
             >
               <Send size={18} />
             </Button>
