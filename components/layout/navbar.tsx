@@ -378,7 +378,7 @@ export function Navbar() {
                           </div>
                           <span
                             aria-hidden
-                            className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-void-900 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
+                            className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-void-900 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
                           />
                         </div>
                         <div className="min-w-0">

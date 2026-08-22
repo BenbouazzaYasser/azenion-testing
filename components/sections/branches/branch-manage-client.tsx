@@ -544,7 +544,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                               key={m.id}
                               className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/[0.07] px-2.5 py-1 text-xs text-emerald-300"
                             >
-                              <span className="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border border-white/10">
+                              <span className="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border border-border-strong/[0.08]">
                                 {m.avatar_url ? (
                                   <img src={m.avatar_url} alt="" className="h-full w-full object-cover" />
                                 ) : (
@@ -599,7 +599,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                                   className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm text-ink-300 transition-colors hover:bg-surface-hover"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
-                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10">
+                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-strong/[0.08]">
                                       {p.avatar_url ? (
                                         <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
                                       ) : (

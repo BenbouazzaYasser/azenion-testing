@@ -335,7 +335,7 @@ function ProfileStep({
           onClick={() => avatarInputRef.current?.click()}
           disabled={busy}
           className={cn(
-            "group relative h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-accent-400/30 bg-accent/[0.08] transition-all duration-300 hover:border-accent-400/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+            "group relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-accent-400/30 bg-accent/[0.08] transition-all duration-300 hover:border-accent-400/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
             hasAvatar ? "" : "border-dashed",
           )}
         >

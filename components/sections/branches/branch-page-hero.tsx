@@ -147,12 +147,12 @@ export function BranchPageHero({
                       key={m.id}
                       src={m.avatar_url}
                       alt=""
-                      className="h-9 w-9 rounded-full border-2 border-void-950 object-cover"
+                      className="h-9 w-9 rounded-full border border-void-950 object-cover"
                     />
                   ) : (
                     <span
                       key={m.id}
-                      className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-void-950 bg-gradient-to-br from-accent-500 to-accent-400 text-xs font-semibold text-white"
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-void-950 bg-gradient-to-br from-accent-500 to-accent-400 text-xs font-semibold text-white"
                     >
                       {(m.full_name?.[0] || m.username?.[0] || "L").toUpperCase()}
                     </span>

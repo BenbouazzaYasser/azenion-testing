@@ -55,7 +55,7 @@ export function AvatarUpload({ avatarUrl, username }: AvatarUploadProps) {
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={loading}
-        className="group relative h-24 w-24 overflow-hidden rounded-full border-2 border-accent-400/30 bg-accent/[0.08] transition-all duration-300 hover:border-accent-400/60 hover:shadow-[0_0_20px_rgba(40,40,255,0.15)] sm:h-28 sm:w-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+        className="group relative h-24 w-24 overflow-hidden rounded-full border border-accent-400/30 bg-accent/[0.08] transition-all duration-300 hover:border-accent-400/60 hover:shadow-[0_0_20px_rgba(40,40,255,0.15)] sm:h-28 sm:w-28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
       >
         {preview ? (
           <img
