@@ -7,6 +7,8 @@ import { AcademyHero } from "@/components/sections/academy/academy-hero";
 import { CoursesBrowser } from "@/components/sections/academy/courses-browser";
 import { AcademyClosingCta } from "@/components/sections/academy/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
+import { createClient } from "@/lib/supabase/server";
+import type { CourseRow } from "@/lib/validations/course.schema";
 
 export const metadata: Metadata = {
   title: "Courses | Azenion Academy — The Limitless Network",
@@ -14,7 +16,41 @@ export const metadata: Metadata = {
     "Browse Azenion Academy courses — self-paced learning paths across programming, engineering, AI, mathematics, cybersecurity and design.",
 };
 
-export default function CoursesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function CoursesPage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let canManage = false;
+  if (user) {
+    const { data: roleRows } = await supabase
+      .from("user_roles")
+      .select("roles(name)")
+      .eq("user_id", user.id);
+    const roles = (roleRows as Array<{ roles: { name: string } | { name: string }[] | null }> | null) ?? [];
+    canManage = roles.some((row) => {
+      const r = row.roles as unknown as { name: string } | { name: string }[] | null;
+      if (!r) return false;
+      return Array.isArray(r) ? r.some((x) => x.name === "core_team_member") : r.name === "core_team_member";
+    });
+  }
+
+  const { data: courseRows } = await supabase
+    .from("courses")
+    .select(
+      "id, title, description, category, content_type, file_url, thumbnail, duration, difficulty, tags, created_by, created_at",
+    )
+    .order("created_at", { ascending: false });
+
+  const courses = ((courseRows ?? []) as unknown as CourseRow[]).map((row) => ({
+    ...row,
+    content_type: (row.content_type === "pdf" ? "pdf" : "html_css") as CourseRow["content_type"],
+  }));
+
   return (
     <>
       <Navbar />
@@ -26,7 +62,7 @@ export default function CoursesPage() {
           accent="Own Pace."
           subtitle="Self-paced learning paths crafted for every level — dive in whenever you are ready."
         />
-        <CoursesBrowser />
+        <CoursesBrowser courses={courses} canManage={canManage} />
         <AcademyClosingCta />
         <PageBridge />
       </main>
