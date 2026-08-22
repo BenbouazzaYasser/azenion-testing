@@ -496,7 +496,7 @@ export function ChatConversation({
               handleSend();
             }}
           >
-            <div className="relative flex min-w-0 flex-1 items-center rounded-2xl border border-border-strong bg-surface/70 px-4 py-3 shadow-card transition-all duration-300 ease-premium">
+            <div className="relative flex min-w-0 flex-1 items-center rounded-2xl border border-border-strong bg-surface/70 px-4 py-3 shadow-card transition-all duration-300 ease-premium focus-within:border-accent-400/60 focus-within:bg-accent/[0.03] focus-within:ring-2 focus-within:ring-accent-400/20">
               <input
                 type="text"
                 aria-label="Type a message"

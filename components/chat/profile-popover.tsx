@@ -11,7 +11,7 @@ import { PublicProfileHeader } from "@/app/u/[username]/components/public-profil
 import { RelationshipActions } from "@/app/u/[username]/components/relationship-actions";
 import { PublicProfileTimeline } from "@/app/u/[username]/components/public-profile-timeline";
 import { PublicProfilePosts } from "@/app/u/[username]/components/public-profile-posts";
-import { cardBase, sectionCardClass } from "@/components/sections/profile/card-classes";
+import { sectionCardClass } from "@/components/sections/profile/card-classes";
 import { cn } from "@/lib/utils";
 import { getOrCreateConversation } from "@/actions/chat.actions";
 
@@ -58,6 +58,7 @@ export function ProfilePopover({
   const [loadingProfile, setLoadingProfile] = useState(false);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const initial = (user.full_name?.[0] ?? user.username[0] ?? "U").toUpperCase();
@@ -122,6 +123,57 @@ export function ProfilePopover({
       window.removeEventListener("resize", handleResize);
     };
   }, [open]);
+
+  // Full-screen profile preview: close on Escape, trap Tab inside the dialog,
+  // move focus in on open and restore it to the previously focused element.
+  useEffect(() => {
+    if (!previewOpen) return;
+
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    previewRef.current?.focus();
+
+    function getFocusable() {
+      if (!previewRef.current) return [];
+      return Array.from(
+        previewRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+    }
+
+    function handleKeyDown(e: globalThis.KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setPreviewOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      const current = document.activeElement;
+      const contained = previewRef.current?.contains(current) ?? false;
+      if (!contained) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && current === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && current === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previouslyFocused?.focus();
+    };
+  }, [previewOpen]);
 
   const panelStyle: CSSProperties | undefined =
     open && pos
@@ -238,9 +290,12 @@ export function ProfilePopover({
       {previewOpen &&
         createPortal(
           <div
-            className="fixed inset-0 z-[250] flex items-center justify-center px-4 py-6 sm:py-10"
+            ref={previewRef}
+            tabIndex={-1}
+            className="fixed inset-0 z-[250] flex items-center justify-center px-4 py-6 sm:py-10 outline-none"
             role="dialog"
             aria-modal="true"
+            aria-label={`${displayName}'s profile`}
           >
             <button
               type="button"
