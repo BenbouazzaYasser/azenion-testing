@@ -25,15 +25,15 @@ export interface Project {
   tagline: string;
   description: string;
   status: ProjectStatus;
-  memberCount?: number;
+  memberCount: number;
   technologies: string[];
   about: string;
   aboutAdditional: string[];
   contributors: ProjectContributor[];
   roles: ProjectRole[];
   roadmap: ProjectRoadmapItem[];
-  joinCtaLabel?: string;
-  joinCtaHref?: string;
+  joinCtaLabel: string;
+  joinCtaHref: string;
 }
 
 export const projects: Project[] = [
@@ -44,6 +44,7 @@ export const projects: Project[] = [
     description:
       "Developing the official Azenion platform to connect ambitious students worldwide.",
     status: "Active",
+    memberCount: 3,
     technologies: ["Next.js", "TypeScript", "Tailwind CSS"],
     about:
       "The Azenion website is the central hub of the Limitless Network — a premium, cinematic web experience that introduces visitors to the ecosystem, highlights branches and teams, and serves as the gateway for new members to join the community.",
@@ -97,6 +98,8 @@ export const projects: Project[] = [
         status: "Upcoming",
       },
     ],
+    joinCtaLabel: "Join This Project",
+    joinCtaHref: "/projects",
   },
   {
     slug: "azenion-mobile",
@@ -105,6 +108,7 @@ export const projects: Project[] = [
     description:
       "Designing the future mobile experience for the Azenion ecosystem.",
     status: "Planning",
+    memberCount: 0,
     technologies: ["React Native", "Expo", "TypeScript"],
     about:
       "Azenion Mobile will bring the Limitless Network to your pocket — a companion app that lets members stay connected, discover projects, and collaborate on the go.",
@@ -150,6 +154,8 @@ export const projects: Project[] = [
         status: "Upcoming",
       },
     ],
+    joinCtaLabel: "Join This Project",
+    joinCtaHref: "/projects",
   },
   {
     slug: "community-platform",
@@ -158,6 +164,7 @@ export const projects: Project[] = [
     description:
       "Building the future collaboration platform powering the Azenion community.",
     status: "Concept",
+    memberCount: 1,
     technologies: ["Next.js", "Supabase", "PostgreSQL"],
     about:
       "The Community Platform is the digital home of the Azenion network — a unified hub where members connect, collaborate on projects, track their growth, and build lasting relationships across campuses and disciplines.",
@@ -211,6 +218,8 @@ export const projects: Project[] = [
         status: "Upcoming",
       },
     ],
+    joinCtaLabel: "Join This Project",
+    joinCtaHref: "/projects",
   },
 ];
 

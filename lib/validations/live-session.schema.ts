@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE } from "./urls";
 
 export const LIVE_SESSION_HOST_TYPES = ["BRANCH", "TEAM"] as const;
 export const LIVE_SESSION_FORMATS = ["ONLINE", "IN_PERSON"] as const;
@@ -46,7 +45,6 @@ export const createLiveSessionSchema = z.object({
   meeting_url: z
     .string()
     .max(500, "Meeting link must be 500 characters or less")
-    .refine(isAllowedSchemeUrl, SAFE_HTTP_URL_MESSAGE)
     .nullable()
     .optional(),
   format: z.enum(LIVE_SESSION_FORMATS).default("ONLINE"),

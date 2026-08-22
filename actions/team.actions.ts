@@ -24,7 +24,7 @@ import {
 } from "@/lib/validations/project.schema";
 
 export async function createTeam(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -98,7 +98,7 @@ export async function createTeam(formData: FormData) {
 }
 
 export async function updateTeam(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -202,7 +202,7 @@ export async function updateTeam(formData: FormData) {
 }
 
 export async function reactivateTeam(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -233,7 +233,7 @@ export async function reactivateTeam(formData: FormData) {
 }
 
 export async function deleteTeam(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -264,7 +264,7 @@ export async function deleteTeam(formData: FormData) {
 }
 
 export async function leaveTeam(teamId: string, slug: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -289,7 +289,7 @@ export async function leaveTeam(teamId: string, slug: string) {
 }
 
 export async function uploadTeamLogo(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -356,7 +356,7 @@ export async function uploadTeamLogo(formData: FormData) {
 }
 
 export async function uploadTeamBanner(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -422,7 +422,7 @@ export async function uploadTeamBanner(formData: FormData) {
 }
 
 export async function updateMemberRole(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -460,7 +460,7 @@ export async function updateMemberRole(formData: FormData) {
 }
 
 export async function removeMember(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -492,7 +492,7 @@ export async function removeMember(formData: FormData) {
 }
 
 export async function saveOpenRole(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -549,7 +549,7 @@ export async function saveOpenRole(formData: FormData) {
 }
 
 export async function deleteOpenRole(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -580,7 +580,7 @@ export async function deleteOpenRole(formData: FormData) {
 // ── Team Updates ────────────────────────────────────────────────────────
 
 export async function toggleTeamFeedPin(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -625,7 +625,7 @@ export async function toggleTeamFeedPin(formData: FormData) {
 
 export async function createTeamUpdate(formData: FormData) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
 
     const {
       data: { user },
@@ -690,7 +690,7 @@ export async function createTeamUpdate(formData: FormData) {
 }
 
 export async function uploadTeamUpdateImage(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -763,7 +763,7 @@ export async function uploadTeamUpdateImage(formData: FormData) {
 }
 
 export async function updateTeamUpdate(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -809,7 +809,7 @@ export async function updateTeamUpdate(formData: FormData) {
 }
 
 export async function deleteTeamUpdate(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },

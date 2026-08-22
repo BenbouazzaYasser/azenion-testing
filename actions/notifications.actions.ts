@@ -24,7 +24,7 @@ export interface AppNotification {
  * Client-provided ids are never trusted.
  */
 async function getSessionUserId(): Promise<string | null> {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -79,7 +79,7 @@ export async function markNotificationsRead(_userId: string | null) {
   const userId = await getSessionUserId();
   if (!userId) return;
 
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { error } = await supabase
     .from("notifications")
@@ -100,7 +100,7 @@ export async function markNotificationRead(notificationId: string) {
   const userId = await getSessionUserId();
   if (!userId) return;
 
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { error } = await supabase
     .from("notifications")
@@ -125,7 +125,6 @@ const FEED_POST_TYPES = new Set<string>([
   "replied_to_your_comment",
   "liked_your_comment",
   "mentioned_you",
-  "shared_post_with_you",
 ]);
 
 /**

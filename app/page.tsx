@@ -32,7 +32,7 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   const admin = createAdminClient();
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const [
     { data: teamRows },
@@ -82,7 +82,7 @@ export default async function HomePage() {
       `)
       .order("created_at", { ascending: false })
       .limit(4),
-    supabase.rpc("get_live_sessions"),
+    admin.rpc("get_live_sessions"),
     admin.from("profiles").select("id", { count: "exact", head: true }),
     admin.from("teams").select("id", { count: "exact", head: true }),
     admin.from("projects").select("id", { count: "exact", head: true }),

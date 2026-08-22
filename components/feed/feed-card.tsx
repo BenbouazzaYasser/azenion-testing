@@ -1,7 +1,8 @@
 "use client";
 
-import { memo, useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
+  Bookmark,
   Calendar,
   GitBranch,
   Globe,
@@ -10,6 +11,7 @@ import {
   MapPin,
   Pin,
   Rocket,
+  Share2,
   User,
   Users,
 } from "lucide-react";
@@ -19,9 +21,6 @@ import { ImageGallery } from "@/components/feed/image-gallery";
 import { VideoGallery } from "@/components/feed/video-gallery";
 import { LikeButton } from "@/components/interactions/like-button";
 import { CommentSection } from "@/components/interactions/comment-section";
-import { SharePostButton } from "@/components/feed/share-post-button";
-import { SaveButton } from "@/components/interactions/save-button";
-import { ProfilePopover } from "@/components/chat/profile-popover";
 import { toggleLike } from "@/actions/interactions.actions";
 import type { FeedItemWithAuthor } from "@/actions/feed.actions";
 
@@ -109,25 +108,9 @@ interface FeedCardProps {
   item: FeedItemWithAuthor;
   currentUserId: string | null;
   headerAction?: ReactNode;
-  postMenu?: ReactNode;
 }
 
-// Memoized so cards only re-render when their own props change (e.g. a new
-// page of items). Without this, any parent state change (filter, load-more,
-// pin toggle) re-rendered every card in the feed, each mounting heavy
-// children (CommentSection, galleries, popovers) — a main-thread/INP sink.
-export const FeedCard = memo(function FeedCard({
-  item,
-  currentUserId,
-  headerAction,
-  postMenu,
-}: FeedCardProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
   const entityType = entityTypeFor(item);
   const config = ENTITY_CONFIG[entityType];
   const EntityIcon = config.icon;
@@ -141,7 +124,7 @@ export const FeedCard = memo(function FeedCard({
   const avatarSrc = item.entity_logo_url ?? item.author_avatar;
   const showAuthor = Boolean(item.author_name) && entityType !== "POST";
 
-  const timeAgo = item.created_at && mounted ? formatDistanceToNow(new Date(item.created_at)) : "";
+  const timeAgo = item.created_at ? formatDistanceToNow(new Date(item.created_at)) : "";
   const likedBy = likedByText(item);
 
   const eventStatus = isEvent
@@ -153,11 +136,7 @@ export const FeedCard = memo(function FeedCard({
     <div className="group relative overflow-hidden rounded-2xl border border-border-strong card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-      <div className={cn("relative", postMenu && "pr-9")}>
-        {postMenu ? (
-          <div className="absolute right-0 top-0 z-20">{postMenu}</div>
-        ) : null}
-
+      <div className="relative">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <div className="shrink-0">
@@ -165,8 +144,6 @@ export const FeedCard = memo(function FeedCard({
                 <img
                   src={avatarSrc}
                   alt=""
-                  loading="lazy"
-                  decoding="async"
                   className="h-10 w-10 rounded-full border border-border-strong/[0.12] object-cover"
                 />
               ) : (
@@ -237,35 +214,10 @@ export const FeedCard = memo(function FeedCard({
 
         {showAuthor ? (
           <div className="mt-3 flex items-center gap-2">
-            {item.author_id ? (
-              <ProfilePopover
-                user={{
-                  id: item.author_id,
-                  full_name: item.author_name ?? null,
-                  username: item.author_username ?? "",
-                  avatar_url: item.author_avatar ?? null,
-                }}
-              >
-                {item.author_avatar ? (
-                  <img
-                    src={item.author_avatar}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                    className="h-5 w-5 rounded-full border border-border-strong/[0.1] object-cover"
-                  />
-                ) : (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-ink-400">
-                    {initialFor(item.author_name)}
-                  </span>
-                )}
-              </ProfilePopover>
-            ) : item.author_avatar ? (
+            {item.author_avatar ? (
               <img
                 src={item.author_avatar}
                 alt=""
-                loading="lazy"
-                decoding="async"
                 className="h-5 w-5 rounded-full border border-border-strong/[0.1] object-cover"
               />
             ) : (
@@ -370,16 +322,28 @@ export const FeedCard = memo(function FeedCard({
             </div>
 
             <div className="flex min-w-0 items-center gap-4">
-              <SharePostButton postId={item.id} currentUserId={currentUserId} />
-              <SaveButton
-                postId={item.id}
-                initialSaved={item.saved_by_user}
-                currentUserId={currentUserId}
-              />
+              <button
+                type="button"
+                disabled
+                title="Coming Soon"
+                className="flex items-center gap-1.5 text-xs text-ink-600 transition-colors duration-300 ease-premium hover:text-ink-200 disabled:pointer-events-none disabled:opacity-50"
+              >
+                <Share2 size={14} />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+              <button
+                type="button"
+                disabled
+                title="Coming Soon"
+                className="flex items-center gap-1.5 text-xs text-ink-600 transition-colors duration-300 ease-premium hover:text-ink-200 disabled:pointer-events-none disabled:opacity-50"
+              >
+                <Bookmark size={14} />
+                <span className="hidden sm:inline">Save</span>
+              </button>
             </div>
           </div>
         ) : null}
       </div>
     </div>
   );
-});
+}

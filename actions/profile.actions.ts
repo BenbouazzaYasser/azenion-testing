@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { profileSchema } from "@/lib/validations/profile.schema";
 
 export async function updateProfile(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -56,7 +56,7 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function updatePassword(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
@@ -88,7 +88,7 @@ export async function updatePassword(formData: FormData) {
 }
 
 export async function uploadAvatar(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const {
     data: { user },

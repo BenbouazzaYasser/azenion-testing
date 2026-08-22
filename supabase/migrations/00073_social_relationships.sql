@@ -1,4 +1,4 @@
--- Migration: 00077_social_relationships
+-- Migration: 00073_social_relationships
 --
 -- Adds the social graph for the public profile page: friend requests and
 -- follows.

@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: TeamPageProps): Promise<Metad
 export default async function TeamPage({ params }: TeamPageProps) {
   const { slug } = await params;
   const adminClient = createAdminClient();
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data: team } = await adminClient
     .from("teams")

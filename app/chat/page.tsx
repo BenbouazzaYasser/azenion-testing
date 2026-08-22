@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/navbar";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatLayout } from "@/components/chat/chat-layout";
-import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { getConversations } from "@/data/chat";
 
 export const metadata: Metadata = {
@@ -14,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ChatPage() {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -26,8 +25,7 @@ export default async function ChatPage() {
   return (
     <>
       <Navbar />
-      <main className="relative flex h-screen max-h-screen flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
-        <PageAtmosphere />
+      <main className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
         <ChatLayout conversations={conversations} currentUserId={user.id}>
           <div className="relative min-h-0 flex-1 overflow-hidden md:hidden">
             <ChatSidebar conversations={conversations} currentUserId={user.id} />
@@ -45,7 +43,11 @@ export default async function ChatPage() {
               <div className="absolute -right-20 bottom-20 h-80 w-80 rounded-full bg-accent-glow/[0.05] blur-[130px]" />
             </div>
             <div className="relative flex flex-col items-center px-6 text-center">
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300 shadow-card">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[120px]"
+              />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300 shadow-input">
                 <MessageSquare size={26} />
               </div>
               <h2 className="relative mt-5 text-lg font-semibold text-ink-50">

@@ -1,4 +1,4 @@
--- Migration: 00078_public_profile
+-- Migration: 00074_public_profile
 --
 -- Backs the public profile page (/u/[username]) with an RLS-bypassing read.
 --
@@ -11,7 +11,7 @@
 --
 -- FIX
 --   A SECURITY DEFINER RPC (the established pattern, e.g.
---   00039_session_requests_getters / 00071_user_blocks / 00076_global_user_search):
+--   00039_session_requests_getters / 00071_user_blocks / 00072_global_user_search):
 --     * resolves a profile by username,
 --     * returns only non-private columns (never email or auth data),
 --     * honors `user_settings.privacy.show_profile_publicly` and

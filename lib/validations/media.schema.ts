@@ -9,19 +9,6 @@ export const VIDEO_STORAGE_BUCKET = "feed-videos";
 
 export type FeedMediaKind = "image" | "video";
 
-const MIME_TO_EXTENSION: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/webp": "webp",
-  "video/mp4": "mp4",
-  "video/webm": "webm",
-  "video/quicktime": "mov",
-};
-
-export function extensionForMimeType(type: string): string | null {
-  return MIME_TO_EXTENSION[type] ?? null;
-}
-
 export function isVideoMimeType(type: string): boolean {
   return ALLOWED_VIDEO_TYPES.includes(type);
 }
