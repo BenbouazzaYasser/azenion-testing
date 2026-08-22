@@ -55,7 +55,7 @@ export function DeleteAccountModal() {
           <div
             ref={dialogFocusRef}
             tabIndex={-1}
-            className="relative z-10 max-h-[85vh] w-full max-w-[480px] overflow-y-auto rounded-2xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
+            className="relative z-10 max-h-[85vh] w-full max-w-[480px] overflow-y-auto rounded-2xl border border-border-strong/[0.08] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
             style={{
               opacity: mounted ? 1 : 0,
               transform: mounted ? "scale(1)" : "scale(0.95)",

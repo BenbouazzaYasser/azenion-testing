@@ -73,7 +73,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem] border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+        className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem] border border-border-strong/[0.08] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
       >
         <div
           aria-hidden
@@ -106,7 +106,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
             <button
               type="button"
               onClick={onClose}
-              className="mt-5 rounded-full border border-border-strong px-5 py-2 text-sm font-medium text-ink-200 transition-colors hover:bg-surface-hover hover:text-ink-50"
+              className="mt-5 rounded-full border border-border-strong/[0.08] px-5 py-2 text-sm font-medium text-ink-200 transition-colors hover:bg-surface-hover hover:text-ink-50"
             >
               Close
             </button>
@@ -122,7 +122,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
             <button
               type="button"
               onClick={onClose}
-              className="mt-5 rounded-full border border-border-strong px-5 py-2 text-sm font-medium text-ink-200 transition-colors hover:bg-surface-hover hover:text-ink-50"
+              className="mt-5 rounded-full border border-border-strong/[0.08] px-5 py-2 text-sm font-medium text-ink-200 transition-colors hover:bg-surface-hover hover:text-ink-50"
             >
               Close
             </button>

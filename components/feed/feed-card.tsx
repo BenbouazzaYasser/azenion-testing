@@ -133,7 +133,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
   const schedule = isEvent ? eventScheduleText(item) : null;
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border-strong card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
+    <div className="group relative overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative">
@@ -167,7 +167,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
             <div className="flex shrink-0 items-center gap-2">
               {headerAction}
               {item.event_visibility ? (
-                <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-border-strong bg-surface px-3 py-1 text-[11px] font-medium text-ink-400">
+                <span className="flex shrink-0 items-center gap-1.5 rounded-full border border-border-strong/[0.08] bg-surface px-3 py-1 text-[11px] font-medium text-ink-400">
                   {item.event_visibility === "public" ? <Globe size={11} /> : <Users size={11} />}
                   {item.event_visibility === "public" ? "Public" : "Members"}
                 </span>

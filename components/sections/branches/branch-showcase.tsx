@@ -64,7 +64,7 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
               placeholder="Search branches..."
               aria-label="Search branches"
               className={cn(
-                "w-full rounded-full border border-border-strong bg-surface px-11 py-3 text-sm text-ink-50",
+                "w-full rounded-full border border-border-strong/[0.08] bg-surface px-11 py-3 text-sm text-ink-50",
                 "placeholder:text-ink-600 outline-none backdrop-blur-xl transition-colors",
                 "focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-[0_0_0_1px_rgba(40,40,255,0.25)]",
               )}
@@ -75,7 +75,7 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
         {filtered.length === 0 ? (
           <Reveal delay={160}>
             <div className="flex flex-col items-center gap-4 py-20 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300">
                 <Landmark className="h-7 w-7 text-accent-300" aria-hidden="true" />
               </div>
               <div>

@@ -58,7 +58,7 @@ export function UpcomingSessions({ sessions, canCreate, hostOptions }: UpcomingS
           </div>
         ) : (
           <Reveal delay={120}>
-            <div className="relative mt-14 flex flex-col items-center overflow-hidden rounded-2xl border border-border-strong card-surface-soft px-8 py-20 text-center shadow-card backdrop-blur-xl">
+            <div className="relative mt-14 flex flex-col items-center overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface-soft px-8 py-20 text-center shadow-card backdrop-blur-xl">
               <div
                 aria-hidden
                 className="pointer-events-none absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]"

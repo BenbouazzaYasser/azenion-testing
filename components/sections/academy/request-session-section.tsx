@@ -47,7 +47,7 @@ export function RequestSessionSection({
             {TOPICS.map((topic) => (
               <span
                 key={topic}
-                className="rounded-full border border-border-strong bg-surface px-3.5 py-1.5 text-xs font-medium tracking-wide text-ink-200"
+                className="rounded-full border border-border-strong/[0.08] bg-surface px-3.5 py-1.5 text-xs font-medium tracking-wide text-ink-200"
               >
                 {topic}
               </span>

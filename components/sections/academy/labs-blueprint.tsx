@@ -16,7 +16,7 @@ export function LabsBlueprint() {
     >
       <div className="mx-auto max-w-[880px] px-5 sm:px-8">
         <Reveal>
-          <div className="relative overflow-hidden rounded-[2rem] border border-border-strong card-surface-soft shadow-card backdrop-blur-xl">
+          <div className="relative overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface-soft shadow-card backdrop-blur-xl">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(109,109,255,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(109,109,255,0.07)_1px,transparent_1px)] bg-[size:36px_36px]"

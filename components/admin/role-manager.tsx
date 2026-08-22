@@ -108,7 +108,7 @@ export function RoleManager({ roleCatalog }: RoleManagerProps) {
   return (
     <div className="space-y-6">
       {/* ── User search ─────────────────────────────────────────────── */}
-      <section className="rounded-2xl border border-border-strong bg-surface shadow-card backdrop-blur-xl">
+      <section className="rounded-2xl border border-border-strong/[0.08] bg-surface shadow-card backdrop-blur-xl">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -122,7 +122,7 @@ export function RoleManager({ roleCatalog }: RoleManagerProps) {
             maxLength={100}
             placeholder="Search members by username or name…"
             aria-label="Search users"
-            className="flex-1 rounded-xl border border-border-strong bg-surface px-4 py-3 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
+            className="flex-1 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
           />
           <Button type="submit" size="sm" disabled={isSearching}>
             <Search size={14} />
@@ -178,7 +178,7 @@ export function RoleManager({ roleCatalog }: RoleManagerProps) {
 
       {/* ── Selected member ─────────────────────────────────────────── */}
       {selected ? (
-        <section className="rounded-2xl border border-border-strong bg-surface shadow-card backdrop-blur-xl">
+        <section className="rounded-2xl border border-border-strong/[0.08] bg-surface shadow-card backdrop-blur-xl">
           <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4 sm:px-6">
             {selected.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -218,7 +218,7 @@ export function RoleManager({ roleCatalog }: RoleManagerProps) {
                     return (
                       <li
                         key={assignment.name}
-                        className="inline-flex items-center gap-2 rounded-full border border-border-strong bg-surface px-4 py-1.5 text-xs font-medium tracking-wide text-ink-200"
+                        className="inline-flex items-center gap-2 rounded-full border border-border-strong/[0.08] bg-surface px-4 py-1.5 text-xs font-medium tracking-wide text-ink-200"
                         title={role?.description ?? undefined}
                       >
                         {assignment.name}
@@ -262,7 +262,7 @@ export function RoleManager({ roleCatalog }: RoleManagerProps) {
                       id="admin-grant-role"
                       value={grantRole}
                       onChange={(e) => setGrantRole(e.target.value)}
-                      className="w-full appearance-none rounded-xl border border-border-strong bg-surface px-4 py-3 text-[0.95rem] text-ink-50 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
+                      className="w-full appearance-none rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-[0.95rem] text-ink-50 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
                     >
                       <option value="" disabled>
                         Select a role…

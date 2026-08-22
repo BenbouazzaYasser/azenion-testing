@@ -40,7 +40,7 @@ const MAX_BODY_LENGTH = 5000;
 const MAX_PREVIEW_HEIGHT = 320;
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input disabled:cursor-not-allowed disabled:opacity-50";
 
 function autosize(el: HTMLTextAreaElement) {
   el.style.height = "auto";
@@ -214,7 +214,7 @@ export function FeedComposer({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border-strong card-surface p-5 shadow-card backdrop-blur-xl sm:p-6",
+        "rounded-2xl border border-border-strong/[0.08] card-surface p-5 shadow-card backdrop-blur-xl sm:p-6",
         className,
       )}
     >
@@ -284,7 +284,7 @@ export function FeedComposer({
               <div
                 key={item.id}
                 className={cn(
-                  "group relative overflow-hidden rounded-xl border border-border-strong bg-surface",
+                  "group relative overflow-hidden rounded-xl border border-border-strong/[0.08] bg-surface",
                   media.length === 1 ? "aspect-[16/10]" : "aspect-[4/3]",
                 )}
               >

@@ -69,7 +69,7 @@ export function SettingsMembersTab({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-border-strong bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
+      <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
         <h3 className="text-lg font-semibold text-ink-50">Members</h3>
         <p className="mt-1 text-sm text-ink-400">
           {members.length} total · {roles.length} roles
@@ -94,7 +94,7 @@ export function SettingsMembersTab({
         return (
           <div
             key={member.id}
-            className="flex flex-col gap-4 rounded-2xl border border-border-strong bg-surface p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-start sm:justify-between sm:p-6"
+            className="flex flex-col gap-4 rounded-2xl border border-border-strong/[0.08] bg-surface p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-start sm:justify-between sm:p-6"
           >
             <div className="flex min-w-0 items-start gap-4">
               {member.avatar_url ? (
@@ -114,7 +114,7 @@ export function SettingsMembersTab({
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[0.95rem] font-semibold text-ink-50">{displayName}</span>
                   {isSelf ? (
-                    <span className="rounded-full border border-border-strong px-2 py-0.5 text-[11px] font-medium text-ink-500">
+                    <span className="rounded-full border border-border-strong/[0.08] px-2 py-0.5 text-[11px] font-medium text-ink-500">
                       You
                     </span>
                   ) : null}

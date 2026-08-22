@@ -44,7 +44,7 @@ interface TeamSettingsDialogProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -170,7 +170,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
               <div
                 ref={dialogFocusRef}
                 tabIndex={-1}
-                className="relative z-10 flex max-h-[85vh] w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
+                className="relative z-10 flex max-h-[85vh] w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-border-strong/[0.08] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.95)",
@@ -267,7 +267,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                           {(["public", "private"] as const).map((opt) => (
                             <label
                               key={opt}
-                              className="flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/40 hover:bg-surface-hover focus-within:outline-none focus-within:ring-2 focus-within:ring-accent-400 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
+                              className="flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/40 hover:bg-surface-hover focus-within:outline-none focus-within:ring-2 focus-within:ring-accent-400 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
                             >
                               <input
                                 type="radio"
@@ -301,7 +301,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                                   active
                                     ? "bg-accent text-white"
-                                    : "border border-border-strong text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
+                                    : "border border-border-strong/[0.08] text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
                                 }`}
                               >
                                 {cat.name}
@@ -328,7 +328,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                               {eligibleMembers.map((member) => (
                                 <div
                                   key={member.id}
-                                  className="flex items-center justify-between gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3"
+                                  className="flex items-center justify-between gap-3 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3"
                                 >
                                   <div className="flex items-center gap-3 min-w-0">
                                     <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-border-strong/[0.1]">

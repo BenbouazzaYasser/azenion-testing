@@ -63,7 +63,7 @@ function OpenRoleCard({
   }
 
   const inputClass =
-    "w-full rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+    "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
   if (isEditing) {
     return (
@@ -114,7 +114,7 @@ function OpenRoleCard({
   }
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+    <div className="group relative overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative p-6 sm:p-8">
@@ -213,7 +213,7 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
                     maxLength={100}
                     required
                     placeholder="e.g. Frontend Developer"
-                    className="w-full rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
+                    className="w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
                   />
                 </div>
                 <div>
@@ -224,7 +224,7 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
                     maxLength={500}
                     rows={3}
                     placeholder="What are you looking for?"
-                    className="w-full resize-none rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
+                    className="w-full resize-none rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
                   />
                 </div>
                 <div>
@@ -235,7 +235,7 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
                     onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
                     min={1}
                     max={100}
-                    className="w-full rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
+                    className="w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-50 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
                   />
                 </div>
                 <div className="flex gap-3">
@@ -252,7 +252,7 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
 
           {roles.length === 0 && !isAdding ? (
             <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300">
                 <UserPlus className="h-6 w-6 text-accent-300" />
               </div>
               <div>

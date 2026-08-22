@@ -86,7 +86,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
                   placeholder="Search projects..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-xl border border-border-strong bg-surface px-11 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input"
+                  className="w-full rounded-xl border border-border-strong/[0.08] bg-surface px-11 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input"
                 />
               </div>
 
@@ -95,7 +95,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as SortKey)}
-                  className="appearance-none rounded-xl border border-border-strong bg-surface px-3 py-3 pr-8 text-sm text-ink-50 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input"
+                  className="appearance-none rounded-xl border border-border-strong/[0.08] bg-surface px-3 py-3 pr-8 text-sm text-ink-50 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input"
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value} className="bg-surface text-ink-50">
@@ -147,7 +147,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
         {filtered.length === 0 ? (
           <Reveal delay={160}>
             <div className="mt-10 flex flex-col items-center gap-4 py-20 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300">
                 <Rocket className="h-7 w-7 text-accent-300" />
               </div>
               <div>

@@ -77,7 +77,7 @@ export function RevokeRoleConfirmModal({
       <div
         ref={dialogFocusRef}
         tabIndex={-1}
-        className="relative z-10 w-full max-w-[440px] overflow-hidden rounded-2xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
+        className="relative z-10 w-full max-w-[440px] overflow-hidden rounded-2xl border border-border-strong/[0.08] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
       >
         <div className="flex flex-col items-center px-8 pb-8 pt-10 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">

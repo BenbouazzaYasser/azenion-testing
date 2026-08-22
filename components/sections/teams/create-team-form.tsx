@@ -34,7 +34,7 @@ function TeamPreviewCard({
   logoPreview: string | null;
 }) {
   return (
-    <div className="group overflow-hidden rounded-[2rem] border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium">
+    <div className="group overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium">
       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative p-6 sm:p-8">
@@ -124,7 +124,7 @@ export function CreateTeamForm() {
   }
 
   const inputClass =
-    "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
+    "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
 
   const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -138,7 +138,7 @@ export function CreateTeamForm() {
             <Reveal>
               <form
                 onSubmit={handleSubmit}
-                className="overflow-hidden rounded-[2rem] border border-border-strong card-surface p-6 shadow-card backdrop-blur-xl sm:p-8"
+                className="overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface p-6 shadow-card backdrop-blur-xl sm:p-8"
               >
                 <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)]" />
 
@@ -213,7 +213,7 @@ export function CreateTeamForm() {
                         <img
                           src={logoPreview}
                           alt="Logo preview"
-                          className="h-12 w-12 rounded-xl border border-border-strong object-cover"
+                          className="h-12 w-12 rounded-xl border border-border-strong/[0.08] object-cover"
                         />
                         <button
                           type="button"
@@ -237,7 +237,7 @@ export function CreateTeamForm() {
                       {(["public", "private"] as const).map((opt) => (
                         <label
                           key={opt}
-                          className="flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
+                          className="flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
                         >
                           <input
                             type="radio"
@@ -279,7 +279,7 @@ export function CreateTeamForm() {
                             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                               active
                                 ? "bg-accent text-white"
-                                : "border border-border-strong text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
+                                : "border border-border-strong/[0.08] text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
                             }`}
                           >
                             {cat.name}

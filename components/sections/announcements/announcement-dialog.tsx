@@ -15,7 +15,7 @@ interface AnnouncementFormDialogProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -110,7 +110,7 @@ export function AnnouncementFormDialog({ mode, announcement }: AnnouncementFormD
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Edit announcement"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong text-ink-400 transition-colors hover:border-accent-400/50 hover:text-accent-400"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong/[0.08] text-ink-400 transition-colors hover:border-accent-400/50 hover:text-accent-400"
         >
           <Pencil size={13} />
         </button>
@@ -135,7 +135,7 @@ export function AnnouncementFormDialog({ mode, announcement }: AnnouncementFormD
               <div
                 ref={dialogFocusRef}
                 tabIndex={-1}
-                className="relative z-10 flex max-h-[85vh] w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
+                className="relative z-10 flex max-h-[85vh] w-full max-w-[600px] flex-col overflow-hidden rounded-2xl border border-border-strong/[0.08] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.95)",

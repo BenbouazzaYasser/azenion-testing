@@ -328,7 +328,7 @@ export function ChatConversation({
               aria-hidden
               className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[120px]"
             />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300 shadow-input">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300 shadow-input">
               <MessageSquare size={26} />
             </div>
             <h2 className="mt-5 text-lg font-semibold text-ink-50">No messages yet</h2>
@@ -422,7 +422,7 @@ export function ChatConversation({
               placeholder="Type a message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="min-w-0 flex-1 rounded-2xl border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/60 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
+              className="min-w-0 flex-1 rounded-2xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 transition-all duration-300 ease-premium hover:border-border focus:border-accent-400/60 focus:bg-accent/[0.04] focus:outline-none focus:ring-2 focus:ring-accent-400/25"
             />
             <Button
               type="submit"

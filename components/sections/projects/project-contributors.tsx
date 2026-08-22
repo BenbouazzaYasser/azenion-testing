@@ -30,7 +30,7 @@ export function ProjectContributors({ project }: ProjectContributorsProps) {
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {project.contributors.map((contributor, i) => (
               <Reveal key={contributor.id} delay={i * 80}>
-                <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+                <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                   <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                   <div className="relative flex flex-1 flex-col items-center p-8 text-center sm:p-9">
@@ -52,9 +52,9 @@ export function ProjectContributors({ project }: ProjectContributorsProps) {
           </div>
         ) : (
           <Reveal delay={160}>
-            <div className="mt-10 rounded-2xl border border-border-strong card-surface p-10 text-center shadow-card backdrop-blur-xl">
+            <div className="mt-10 rounded-2xl border border-border-strong/[0.08] card-surface p-10 text-center shadow-card backdrop-blur-xl">
               <div className="flex flex-col items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300">
                   <Users className="h-6 w-6 text-accent-300" />
                 </div>
                 <div>

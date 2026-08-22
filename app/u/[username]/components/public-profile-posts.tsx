@@ -25,7 +25,7 @@ export function PublicProfilePosts({ posts, cardClass }: PublicProfilePostsProps
 
       {posts.length === 0 ? (
         <div className="mt-6 flex flex-col items-center gap-4 py-10 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong bg-surface text-accent-300">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300">
             <Newspaper className="h-6 w-6 text-accent-300" />
           </div>
           <div>
@@ -41,7 +41,7 @@ export function PublicProfilePosts({ posts, cardClass }: PublicProfilePostsProps
             <Link
               key={post.id}
               href={`/feed/post/${post.id}`}
-              className="group block rounded-2xl border border-border-strong bg-surface p-5 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm"
+              className="group block rounded-2xl border border-border-strong/[0.08] bg-surface p-5 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm"
             >
               {post.images.length > 0 ? (
                 <ImageGallery images={post.images} className="mb-4" />

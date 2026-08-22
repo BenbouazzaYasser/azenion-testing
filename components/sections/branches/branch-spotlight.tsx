@@ -19,7 +19,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
   const order = String(index + 1).padStart(2, "0");
 
   return (
-    <article className="group relative overflow-hidden rounded-[2rem] border border-border-strong card-surface p-6 backdrop-blur-xl transition-all duration-700 ease-premium hover:border-[rgba(40,40,255,0.4)] sm:p-10 lg:p-12">
+    <article className="group relative overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface p-6 backdrop-blur-xl transition-all duration-700 ease-premium hover:border-[rgba(40,40,255,0.4)] sm:p-10 lg:p-12">
       {/* Background index numeral */}
       <span
         aria-hidden="true"
@@ -116,7 +116,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
 
         {/* Detail column */}
         <div className={`flex flex-col gap-6 ${reversed ? "lg:order-1" : "lg:order-2"}`}>
-          <div className="rounded-2xl border border-border-strong bg-surface p-6">
+          <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6">
             <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-ink-500">
               <Calendar className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
               Upcoming events
@@ -130,7 +130,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-border-strong bg-surface p-6">
+          <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6">
             <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-ink-500">
               <Sparkles className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
               Branch highlights

@@ -84,7 +84,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
 
             return (
               <Reveal key={request.id} delay={i * 60}>
-                <div className="flex flex-col gap-4 rounded-2xl border border-border-strong card-surface p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                <div className="flex flex-col gap-4 rounded-2xl border border-border-strong/[0.08] card-surface p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6">
                   <div className="flex min-w-0 items-start gap-4">
                     {request.avatar_url ? (
                       <img

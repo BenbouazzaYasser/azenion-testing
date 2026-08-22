@@ -10,7 +10,7 @@ import { TransferOwnershipConfirmModal } from "@/components/shared/transfer-owne
 import type { TeamSettingsClientProps, SettingsMember } from "./team-settings-client";
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-red-400/60 focus:bg-surface-hover";
+  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-red-400/60 focus:bg-surface-hover";
 
 export function SettingsDangerTab({
   team,
@@ -29,7 +29,7 @@ export function SettingsDangerTab({
 
   if (!isOwner) {
     return (
-      <div className="rounded-2xl border border-border-strong bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
+      <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
         <h3 className="text-lg font-semibold text-ink-50">Danger Zone</h3>
         <div className="mt-4 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-ink-500">
           <Lock size={13} className="mr-1.5 inline -translate-y-px" />
@@ -93,7 +93,7 @@ export function SettingsDangerTab({
               return (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     {member.avatar_url ? (

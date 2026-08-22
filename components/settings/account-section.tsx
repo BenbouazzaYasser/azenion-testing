@@ -10,7 +10,7 @@ import { formatDate } from "@/lib/date";
 import { toast } from "sonner";
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong bg-surface px-4 py-2.5 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
+  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-2.5 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
 
 interface AccountSectionProps {
   userId: string;

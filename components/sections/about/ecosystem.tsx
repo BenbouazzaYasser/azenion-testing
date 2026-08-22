@@ -15,7 +15,7 @@ function EcosystemCard({
   index: number;
 }) {
   return (
-    <div className="group relative flex-1 overflow-hidden rounded-2xl border border-border-strong card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+    <div className="group relative flex-1 overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative p-6 sm:p-7">
@@ -23,7 +23,7 @@ function EcosystemCard({
           <span className="flex h-7 w-7 items-center justify-center rounded-full border border-accent-400/30 bg-accent/[0.06] text-[11px] font-semibold text-accent-400">
             {index + 1}
           </span>
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border-strong bg-surface text-accent-400 transition-all duration-500 ease-premium group-hover:-translate-y-0.5 group-hover:scale-[1.05] group-hover:border-accent-400/40 group-hover:bg-accent/[0.08] group-hover:shadow-glow-sm">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-border-strong/[0.08] bg-surface text-accent-400 transition-all duration-500 ease-premium group-hover:-translate-y-0.5 group-hover:scale-[1.05] group-hover:border-accent-400/40 group-hover:bg-accent/[0.08] group-hover:shadow-glow-sm">
             <div className="absolute inset-0 rounded-lg bg-[radial-gradient(circle_at_center,rgba(40,40,255,0.15),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             <Icon size={18} strokeWidth={1.75} className="relative" />
           </div>

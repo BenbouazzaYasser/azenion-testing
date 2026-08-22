@@ -37,7 +37,7 @@ export function ProfileProjects({ projects, cardClass }: ProfileProjectsProps) {
           <Link
             key={project.id}
             href={`/projects/${project.slug}`}
-            className="group flex items-center gap-3 rounded-xl border border-border-strong bg-surface px-4 py-3 transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.04]"
+            className="group flex items-center gap-3 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.04]"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-accent-400/30 bg-accent/[0.08] p-2">
               {project.logo_url ? (
@@ -55,7 +55,7 @@ export function ProfileProjects({ projects, cardClass }: ProfileProjectsProps) {
                   {project.role}
                 </span>
                 {project.visibility ? (
-                  <span className="inline-flex items-center gap-0.5 rounded-full border border-border-strong bg-surface px-1.5 py-0.5 text-[10px] font-medium text-ink-400">
+                  <span className="inline-flex items-center gap-0.5 rounded-full border border-border-strong/[0.08] bg-surface px-1.5 py-0.5 text-[10px] font-medium text-ink-400">
                     {project.visibility === "private" ? <Lock size={8} /> : <Eye size={8} />}
                     {visibilityLabels[project.visibility] ?? project.visibility}
                   </span>

@@ -61,7 +61,7 @@ export function AcademyFeatures() {
         <div className="mt-14 grid gap-5 md:grid-cols-3">
           {FEATURES.map((feature, i) => (
             <Reveal key={feature.title} delay={i * 120}>
-              <article className="group flex h-full flex-col rounded-[2rem] border border-border-strong card-surface p-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+              <article className="group flex h-full flex-col rounded-[2rem] border border-border-strong/[0.08] card-surface p-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                 <div className="flex items-center justify-between">
                   <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-accent-400/25 bg-accent/[0.08] text-accent-300 shadow-[0_0_24px_-6px_rgba(109,109,255,0.5)]">
                     <feature.icon size={22} />

@@ -129,7 +129,7 @@ export function TeamSettingsClient(props: TeamSettingsClientProps) {
           </p>
         </div>
 
-        <div className="mt-10 flex flex-wrap gap-2 rounded-2xl border border-border-strong bg-surface p-2 shadow-card backdrop-blur-xl">
+        <div className="mt-10 flex flex-wrap gap-2 rounded-2xl border border-border-strong/[0.08] bg-surface p-2 shadow-card backdrop-blur-xl">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;

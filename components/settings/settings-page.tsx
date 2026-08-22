@@ -269,7 +269,7 @@ function ConfirmOverlay({
       <div
         ref={confirmFocusRef}
         tabIndex={-1}
-        className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl border border-border-strong panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
+        className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl border border-border-strong/[0.08] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
         style={{ opacity: mounted ? 1 : 0, transform: mounted ? "scale(1)" : "scale(0.96)" }}
       >
         <div className="flex items-start justify-between border-b border-border px-6 py-5">

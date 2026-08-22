@@ -118,7 +118,7 @@ export function MessageBubble({
                   setIsEditing(false);
                   setEditText(content);
                 }}
-                className="rounded-lg border border-border-strong px-3 py-1 text-xs font-medium text-ink-400 transition-colors hover:text-ink-50"
+                className="rounded-lg border border-border-strong/[0.08] px-3 py-1 text-xs font-medium text-ink-400 transition-colors hover:text-ink-50"
               >
                 Cancel
               </button>
@@ -183,7 +183,7 @@ export function MessageBubble({
         {isOwn && !isEditing && (
           <div
             className={cn(
-              "absolute right-0 -top-[40px] z-20 flex items-center gap-0.5 rounded-full border border-border-strong bg-void-900/95 p-1 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.8)] backdrop-blur transition-all duration-200 ease-premium",
+              "absolute right-0 -top-[40px] z-20 flex items-center gap-0.5 rounded-full border border-border-strong/[0.08] bg-void-900/95 p-1 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.8)] backdrop-blur transition-all duration-200 ease-premium",
               showActions
                 ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
                 : "pointer-events-none -translate-y-1 scale-95 opacity-0",
