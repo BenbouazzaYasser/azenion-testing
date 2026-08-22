@@ -27,8 +27,16 @@ export default async function CoursesPage() {
 
   let canManage = false;
   if (user) {
-    const { data: isManager } = await supabase.rpc("is_course_manager");
-    canManage = isManager === true;
+    const { data: roleRows } = await supabase
+      .from("user_roles")
+      .select("roles(name)")
+      .eq("user_id", user.id);
+    const roles = (roleRows as Array<{ roles: { name: string } | { name: string }[] | null }> | null) ?? [];
+    canManage = roles.some((row) => {
+      const r = row.roles as unknown as { name: string } | { name: string }[] | null;
+      if (!r) return false;
+      return Array.isArray(r) ? r.some((x) => x.name === "core_team_member") : r.name === "core_team_member";
+    });
   }
 
   const { data: courseRows } = await supabase

@@ -126,7 +126,7 @@ export function CourseCreateDialog() {
   }
 
   const acceptAttr =
-    contentType === "pdf" ? ".pdf,application/pdf" : ".zip,.html,.htm,.css";
+    contentType === "pdf" ? ".pdf,application/pdf" : ".zip,.html,.htm,.css,.js,.mjs";
 
   return (
     <>
@@ -305,8 +305,8 @@ export function CourseCreateDialog() {
                           [
                             {
                               value: "html_css",
-                              label: "HTML/CSS Course",
-                              hint: ".zip, .html, or .css",
+                               label: "HTML/CSS/JS Course",
+                               hint: ".zip, .html, .css, or .js",
                               icon: Code2,
                             },
                             {
@@ -376,7 +376,7 @@ export function CourseCreateDialog() {
                           <Code2 size={24} />
                         )}
                         <span className="text-sm">
-                          {fileName || `Upload ${contentType === "pdf" ? "PDF" : "HTML/CSS"} file`}
+                           {fileName || `Upload ${contentType === "pdf" ? "PDF" : "HTML/CSS/JS"} file`}
                         </span>
                       </button>
                     </div>

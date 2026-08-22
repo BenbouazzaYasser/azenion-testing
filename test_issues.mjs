@@ -1,6 +1,6 @@
 // Quick test to identify real issues
 import { createClient } from './lib/supabase/client';
-import { createAdminClient } from './lib/supabase/admin';
+import { createAdminClient } from './lib/supabase/admin.ts';
 
 async function identifyIssues() {
   console.log('=== TESTING CURRENT IMPLEMENTATION ===\n');

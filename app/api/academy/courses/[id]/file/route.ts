@@ -23,6 +23,8 @@ const CONTENT_TYPES: Record<string, string> = {
   html: "text/html; charset=utf-8",
   htm: "text/html; charset=utf-8",
   css: "text/css; charset=utf-8",
+  js: "text/javascript; charset=utf-8",
+  mjs: "text/javascript; charset=utf-8",
 };
 
 function fileExtension(filePath: string): string {
@@ -84,7 +86,7 @@ export async function GET(
     status: 200,
     headers: {
       "Content-Type": contentType,
-      "Content-Security-Policy": "sandbox",
+      "Content-Security-Policy": "sandbox allow-scripts",
       "Content-Disposition": `inline; filename="course.${ext}"`,
       "Cache-Control": "public, max-age=3600",
     },

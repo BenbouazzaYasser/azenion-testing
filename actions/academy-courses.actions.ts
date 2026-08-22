@@ -2,39 +2,48 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { courseSchema } from "@/lib/validations/course.schema";
 
 const COURSES_PATH = "/academy/courses";
 
 const MAX_COURSE_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-
 const MAX_THUMBNAIL_SIZE = 5 * 1024 * 1024; // 5MB
 
 const PDF_EXTENSIONS = new Set(["pdf"]);
-const HTML_CSS_EXTENSIONS = new Set(["zip", "html", "htm", "css"]);
-
+const HTML_CSS_EXTENSIONS = new Set(["zip", "html", "htm", "css", "js", "mjs"]);
 const THUMBNAIL_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
 
-// Content-Type by extension so the browser renders (not downloads) HTML/CSS
-// course files served from storage. `File.type` is frequently empty for
-// .html/.css and falls back to application/octet-stream, which makes Supabase
-// serve the file as a download instead of rendering it.
 const CONTENT_TYPES: Record<string, string> = {
   pdf: "application/pdf",
   zip: "application/zip",
   html: "text/html",
   htm: "text/html",
   css: "text/css",
+  js: "text/javascript",
+  mjs: "text/javascript",
 };
 
 function fileExtension(fileName: string): string {
   return fileName.split(".").pop()?.toLowerCase() ?? "";
 }
 
-async function isCourseManager(): Promise<boolean> {
-  const supabase = await createClient();
-  const { data } = await supabase.rpc("is_course_manager");
-  return data === true;
+async function isCourseManager(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("user_roles")
+    .select("roles(name)")
+    .eq("user_id", user.id);
+  const rows = (data as Array<{ roles: { name: string } | { name: string }[] | null }> | null) ?? [];
+  return rows.some((row) => {
+    const r = row.roles as unknown as { name: string } | { name: string }[] | null;
+    if (!r) return false;
+    return Array.isArray(r) ? r.some((x) => x.name === "core_team_member") : r.name === "core_team_member";
+  });
 }
 
 function parseTags(raw: string | null): string[] | undefined {
@@ -57,8 +66,8 @@ export async function createCourse(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isCourseManager())) {
-    return { error: "Only course managers or creators can upload courses" };
+  if (!(await isCourseManager(supabase))) {
+    return { error: "Not authorized - core team only" };
   }
 
   const raw = {
@@ -102,13 +111,16 @@ export async function createCourse(formData: FormData) {
       error:
         raw.content_type === "pdf"
           ? "Invalid file type. Use a .pdf file for PDF courses."
-          : "Invalid file type. Use a .zip, .html, or .css file for HTML/CSS courses.",
+          : "Invalid file type. Use a .zip, .html, .css, or .js file for HTML/CSS/JS courses.",
     };
   }
 
   const objectPath = `courses/${user.id}/${crypto.randomUUID()}.${ext}`;
 
-  const { error: uploadError } = await supabase.storage
+  // Use admin client to bypass RLS (storage bucket + courses table are gated by is_course_manager)
+  const admin = createAdminClient();
+
+  const { error: uploadError } = await admin.storage
     .from("course-files")
     .upload(objectPath, file, {
       contentType: CONTENT_TYPES[ext] ?? (file.type || "application/octet-stream"),
@@ -121,9 +133,9 @@ export async function createCourse(formData: FormData) {
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from("course-files").getPublicUrl(objectPath);
+  } = admin.storage.from("course-files").getPublicUrl(objectPath);
 
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await admin
     .from("courses")
     .insert({
       title: parsed.data.title,
@@ -141,7 +153,7 @@ export async function createCourse(formData: FormData) {
     .single();
 
   if (insertError || !inserted?.id) {
-    await supabase.storage.from("course-files").remove([objectPath]);
+    await admin.storage.from("course-files").remove([objectPath]);
     return { error: insertError?.message ?? "Failed to create course" };
   }
 
@@ -155,7 +167,7 @@ export async function createCourse(formData: FormData) {
       return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
     }
     const thumbnailPath = `courses/${inserted.id}/thumbnail.${thumbExt}`;
-    const { error: thumbError } = await supabase.storage
+    const { error: thumbError } = await admin.storage
       .from("course-files")
       .upload(thumbnailPath, thumbnail, {
         contentType: thumbnail.type || `image/${thumbExt === "jpg" ? "jpeg" : thumbExt}`,
@@ -165,8 +177,8 @@ export async function createCourse(formData: FormData) {
     if (!thumbError) {
       const {
         data: { publicUrl: thumbUrl },
-      } = supabase.storage.from("course-files").getPublicUrl(thumbnailPath);
-      await supabase.from("courses").update({ thumbnail: thumbUrl }).eq("id", inserted.id);
+      } = admin.storage.from("course-files").getPublicUrl(thumbnailPath);
+      await admin.from("courses").update({ thumbnail: thumbUrl }).eq("id", inserted.id);
     }
   }
 
@@ -185,8 +197,8 @@ export async function deleteCourse(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isCourseManager())) {
-    return { error: "Only course managers or creators can delete courses" };
+  if (!(await isCourseManager(supabase))) {
+    return { error: "Not authorized - core team only" };
   }
 
   const id = (formData.get("id") as string) ?? "";
@@ -195,13 +207,15 @@ export async function deleteCourse(formData: FormData) {
     return { error: "Missing course id" };
   }
 
-  const { data: course } = await supabase
+  const admin = createAdminClient();
+
+  const { data: course } = await admin
     .from("courses")
     .select("file_path, thumbnail")
     .eq("id", id)
     .maybeSingle();
 
-  const { error: deleteError } = await supabase.from("courses").delete().eq("id", id);
+  const { error: deleteError } = await admin.from("courses").delete().eq("id", id);
 
   if (deleteError) {
     return { error: deleteError.message };
@@ -215,7 +229,7 @@ export async function deleteCourse(formData: FormData) {
   }
 
   if (objectsToRemove.length > 0) {
-    await supabase.storage.from("course-files").remove(objectsToRemove);
+    await admin.storage.from("course-files").remove(objectsToRemove);
   }
 
   revalidatePath(COURSES_PATH);
@@ -233,8 +247,8 @@ export async function updateCourse(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isCourseManager())) {
-    return { error: "Only course managers or creators can edit courses" };
+  if (!(await isCourseManager(supabase))) {
+    return { error: "Not authorized - core team only" };
   }
 
   const parsed = courseSchema.safeParse({
@@ -261,7 +275,9 @@ export async function updateCourse(formData: FormData) {
     return { error: "Thumbnail too large. Maximum size is 5MB" };
   }
 
-  const { data: existing } = await supabase
+  const admin = createAdminClient();
+
+  const { data: existing } = await admin
     .from("courses")
     .select("thumbnail")
     .eq("id", parsed.data.id)
@@ -277,7 +293,7 @@ export async function updateCourse(formData: FormData) {
 
     thumbnailPath = `courses/${parsed.data.id}/thumbnail.${ext}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await admin.storage
       .from("course-files")
       .upload(thumbnailPath, thumbnail, {
         contentType: thumbnail.type || `image/${ext === "jpg" ? "jpeg" : ext}`,
@@ -309,29 +325,25 @@ export async function updateCourse(formData: FormData) {
   if (hasNewThumbnail && thumbnailPath) {
     const {
       data: { publicUrl },
-    } = supabase.storage.from("course-files").getPublicUrl(thumbnailPath);
+    } = admin.storage.from("course-files").getPublicUrl(thumbnailPath);
     patch.thumbnail = publicUrl;
   } else if (removeThumbnail) {
     patch.thumbnail = null;
+    if (existing?.thumbnail) {
+      const oldThumbPath = existing.thumbnail.split("/course-files/")[1];
+      if (oldThumbPath) {
+        await admin.storage.from("course-files").remove([oldThumbPath]);
+      }
+    }
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await admin
     .from("courses")
     .update(patch)
     .eq("id", parsed.data.id);
 
   if (updateError) {
-    if (thumbnailPath) {
-      await supabase.storage.from("course-files").remove([thumbnailPath]);
-    }
     return { error: updateError.message };
-  }
-
-  const oldObjectPath = existing?.thumbnail?.split("/course-files/")[1];
-  const thumbnailReplacedOrRemoved = hasNewThumbnail || removeThumbnail;
-
-  if (oldObjectPath && thumbnailReplacedOrRemoved) {
-    await supabase.storage.from("course-files").remove([oldObjectPath]);
   }
 
   revalidatePath(COURSES_PATH);

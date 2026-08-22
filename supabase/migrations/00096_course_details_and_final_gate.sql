@@ -35,7 +35,7 @@ as $$
     from public.user_roles ur
     join public.roles r on r.id = ur.role_id
     where ur.user_id = auth.uid()
-      and r.name in ('core_team_member', 'creator')
+      and r.name = 'core_team_member'
   )
   or exists (
     select 1 from public.platform_admins where user_id = auth.uid()
