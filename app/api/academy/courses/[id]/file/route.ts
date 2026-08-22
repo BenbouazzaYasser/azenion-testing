@@ -84,7 +84,7 @@ export async function GET(
     status: 200,
     headers: {
       "Content-Type": contentType,
-      "Content-Security-Policy": "sandbox",
+      "Content-Security-Policy": "sandbox allow-scripts",
       "Content-Disposition": `inline; filename="course.${ext}"`,
       "Cache-Control": "public, max-age=3600",
     },
