@@ -5,7 +5,7 @@ function Skeleton({ className }: { className: string }) {
 export default function PublicProfileLoading() {
   return (
     <>
-      <div className="overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
+      <div className="overflow-hidden rounded-[2rem] card-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:gap-8">
           <Skeleton className="h-24 w-24 shrink-0 rounded-full sm:h-28 sm:w-28" />
           <div className="flex-1 space-y-4">
@@ -20,7 +20,7 @@ export default function PublicProfileLoading() {
           </div>
         </div>
       </div>
-      <div className="overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface px-6 py-6 shadow-card backdrop-blur-xl sm:px-8 sm:py-7">
+      <div className="overflow-hidden rounded-[2rem] card-surface px-6 py-6 shadow-card backdrop-blur-xl sm:px-8 sm:py-7">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-8">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -33,7 +33,7 @@ export default function PublicProfileLoading() {
           <Skeleton className="h-10 w-32 rounded-full" />
         </div>
       </div>
-      <div className="overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface px-6 py-8 shadow-card backdrop-blur-xl sm:px-10 sm:py-9">
+      <div className="overflow-hidden rounded-[2rem] card-surface px-6 py-8 shadow-card backdrop-blur-xl sm:px-10 sm:py-9">
         <Skeleton className="mb-8 h-5 w-40" />
         <div className="space-y-5">
           {Array.from({ length: 3 }).map((_, i) => (

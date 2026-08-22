@@ -29,7 +29,7 @@ export function ProfileSection({ profile, branch }: ProfileSheetProps) {
       <SettingsPanel>
         <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border-strong/[0.08] bg-gradient-to-br from-accent/[0.15] to-accent/[0.05]">
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-accent/[0.15] to-accent/[0.05]">
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -65,12 +65,12 @@ export function ProfileSection({ profile, branch }: ProfileSheetProps) {
             {profile.skills.length ? (
               <div className="flex flex-wrap gap-1.5">
                 {profile.skills.slice(0, 6).map((skill) => (
-                  <span key={skill} className="rounded-full border border-border-strong/[0.08] bg-surface px-2 py-0.5 text-[11px] text-ink-200">
+                  <span key={skill} className="rounded-full bg-surface px-2 py-0.5 text-[11px] text-ink-200">
                     {skill}
                   </span>
                 ))}
                 {profile.skills.length > 6 ? (
-                  <span className="rounded-full border border-border-strong/[0.08] bg-surface px-2 py-0.5 text-[11px] text-ink-400">
+                  <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] text-ink-400">
                     +{profile.skills.length - 6}
                   </span>
                 ) : null}
@@ -84,14 +84,14 @@ export function ProfileSection({ profile, branch }: ProfileSheetProps) {
           <SummaryRow icon={<Link2 size={16} className="text-accent-300" />} label="Social links">
             <div className="flex gap-3 text-ink-300">
               {profile.github_url ? (
-                <a href={profile.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 rounded-lg border border-border-strong/[0.08] px-2 py-1 text-xs hover:text-ink-50" aria-label="GitHub profile">
+                <a href={profile.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs hover:text-ink-50" aria-label="GitHub profile">
                   <Github size={14} /> GitHub
                 </a>
               ) : (
                 <span className="text-ink-500">No GitHub</span>
               )}
               {profile.linkedin_url ? (
-                <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 rounded-lg border border-border-strong/[0.08] px-2 py-1 text-xs hover:text-ink-50" aria-label="LinkedIn profile">
+                <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs hover:text-ink-50" aria-label="LinkedIn profile">
                   <Linkedin size={14} /> LinkedIn
                 </a>
               ) : (

@@ -20,7 +20,7 @@ const CHANNEL_ICONS: Record<string, typeof Mail> = {
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-border-strong">
+    <footer className="relative">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
       <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_80%_100%_at_50%_0%,rgba(40,40,255,0.08),transparent_70%)]" />
 
@@ -101,7 +101,7 @@ export function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                     aria-label={label}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-border-strong/[0.08] bg-surface text-ink-400 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-accent-400 hover:shadow-glow-sm"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface text-ink-400 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-accent-400 hover:shadow-glow-sm"
                   >
                     <Icon size={16} />
                   </a>
@@ -118,9 +118,9 @@ export function Footer() {
                     href={channel.href}
                     target={channel.href.startsWith("http") ? "_blank" : undefined}
                     rel={channel.href.startsWith("http") ? "noreferrer noopener" : undefined}
-                    className="group flex items-center gap-3 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:bg-surface-hover hover:shadow-glow-sm"
+                    className="group flex items-center gap-3 rounded-xl bg-surface px-4 py-3 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:bg-surface-hover hover:shadow-glow-sm"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border-strong/[0.08] bg-surface text-accent-400 transition-all duration-300 group-hover:border-accent-400/30 group-hover:bg-accent/[0.06]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface text-accent-400 transition-all duration-300 group-hover:border-accent-400/30 group-hover:bg-accent/[0.06]">
                       <Icon size={14} />
                     </div>
                     <div className="min-w-0">
@@ -139,7 +139,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="relative border-t border-border-strong">
+      <div className="relative">
         <div className="mx-auto max-w-[1320px] px-5 py-6 sm:px-8 lg:px-12">
           <p className="text-center text-xs text-ink-600 sm:text-left">
             &copy; {new Date().getFullYear()} Azenion. All rights reserved.

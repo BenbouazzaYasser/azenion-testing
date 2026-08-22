@@ -243,7 +243,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
 
         <Reveal delay={320}>
           <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
-            <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong/[0.08] p-1.5">
+            <span className="flex h-8 w-5 items-start justify-center rounded-full p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">

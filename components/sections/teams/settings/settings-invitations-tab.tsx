@@ -15,7 +15,7 @@ function JoinRequestRow({ request, onReview }: { request: SettingsJoinRequest; o
   const requestedAgo = formatDistanceToNow(new Date(request.created_at));
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border-strong/[0.08] bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-2xl bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-start gap-3">
         {request.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -59,7 +59,7 @@ function InvitationRow({ invitation }: { invitation: SettingsInvitation }) {
   const status = invitation.status.toLowerCase();
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-border-strong/[0.08] bg-surface p-4">
+    <div className="flex items-center gap-3 rounded-2xl bg-surface p-4">
       {invitation.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={invitation.avatar_url} alt="" className="h-10 w-10 shrink-0 rounded-xl border border-accent-400/30 object-cover" />
@@ -140,13 +140,13 @@ export function SettingsInvitationsTab({
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6 text-center text-sm text-ink-500 shadow-card backdrop-blur-xl">
+            <div className="rounded-2xl bg-surface p-6 text-center text-sm text-ink-500 shadow-card backdrop-blur-xl">
               No pending join requests.
             </div>
           )
         ) : (
-          <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6 shadow-card backdrop-blur-xl">
-            <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-500">
+          <div className="rounded-2xl bg-surface p-6 shadow-card backdrop-blur-xl">
+            <div className="rounded-xl bg-surface px-4 py-3 text-sm text-ink-500">
               <Lock size={13} className="mr-1.5 inline -translate-y-px" />
               You need the REVIEW_JOIN_REQUESTS permission to review join requests.
             </div>
@@ -158,7 +158,7 @@ export function SettingsInvitationsTab({
         <div className="mb-4 flex items-center gap-2">
           <Mail size={16} className="text-accent-400" />
           <h3 className="text-lg font-semibold text-ink-50">Sent invitations</h3>
-          <span className="rounded-full border border-border-strong/[0.08] bg-surface px-2 py-0.5 text-[11px] font-medium text-ink-400">
+          <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-ink-400">
             {invitations.length}
           </span>
         </div>
@@ -171,13 +171,13 @@ export function SettingsInvitationsTab({
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6 text-center text-sm text-ink-500 shadow-card backdrop-blur-xl">
+            <div className="rounded-2xl bg-surface p-6 text-center text-sm text-ink-500 shadow-card backdrop-blur-xl">
               No invitations sent yet.
             </div>
           )
         ) : (
-          <div className="rounded-2xl border border-border-strong/[0.08] bg-surface p-6 shadow-card backdrop-blur-xl">
-            <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-500">
+          <div className="rounded-2xl bg-surface p-6 shadow-card backdrop-blur-xl">
+            <div className="rounded-xl bg-surface px-4 py-3 text-sm text-ink-500">
               <Lock size={13} className="mr-1.5 inline -translate-y-px" />
               You need the INVITE_MEMBERS permission to see sent invitations.
             </div>

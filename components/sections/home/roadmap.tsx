@@ -98,7 +98,7 @@ export function Roadmap() {
                     >
                       <Icon size={22} strokeWidth={1.75} />
                     </span>
-                    <div className="min-w-0 flex-1 rounded-[1.5rem] border border-border-strong/[0.08] card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
+                    <div className="min-w-0 flex-1 rounded-[1.5rem] card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <h3 className="text-lg font-semibold text-ink-50">{item.title}</h3>
                         <span

@@ -27,7 +27,7 @@ interface CreateProjectFormProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -96,7 +96,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
 
       <div className="mx-auto max-w-[640px] px-5 sm:px-8 lg:px-12">
         <Reveal>
-          <div className="overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface p-8 shadow-card backdrop-blur-xl sm:p-10">
+          <div className="overflow-hidden rounded-[2rem] card-surface p-8 shadow-card backdrop-blur-xl sm:p-10">
             {error ? (
               <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                 {error}
@@ -127,7 +127,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
               ) : teams.length === 1 ? (
                 <div>
                   <label className={labelClass}>Team</label>
-                  <div className="flex items-center gap-3 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-200">
+                  <div className="flex items-center gap-3 rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-200">
                     <Users size={16} className="text-accent-400" />
                     {teams[0]!.team_name}
                   </div>
@@ -191,7 +191,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                           className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                             active
                               ? "bg-accent text-white"
-                              : "border border-border-strong/[0.08] text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
+                              : " text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
                           }`}
                         >
                           {cat.name}
@@ -224,7 +224,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                   {(["open", "private", "invite_only"] as const).map((v) => (
                     <label
                       key={v}
-                      className="flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
+                      className="flex cursor-pointer items-center gap-2 rounded-xl bg-surface px-4 py-3 text-sm text-ink-300 transition-all duration-300 has-[:checked]:border-accent-400/40 has-[:checked]:bg-accent/[0.04] has-[:checked]:text-ink-50"
                     >
                       <input
                         type="radio"

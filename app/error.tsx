@@ -42,7 +42,7 @@ export default function Error({ error, reset }: ErrorProps) {
             </Button>
             <Link
               href="/"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-border-strong/[0.08] bg-surface px-5 py-3 text-sm font-medium text-ink-200 transition-all duration-200 hover:border-accent-400/40 hover:bg-accent/[0.08] hover:text-accent-200 hover:shadow-[0_0_20px_-5px_rgba(40,40,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-surface px-5 py-3 text-sm font-medium text-ink-200 transition-all duration-200 hover:border-accent-400/40 hover:bg-accent/[0.08] hover:text-accent-200 hover:shadow-[0_0_20px_-5px_rgba(40,40,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
             >
               <Home size={16} />
               Back home

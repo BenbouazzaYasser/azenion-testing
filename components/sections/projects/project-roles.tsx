@@ -27,7 +27,7 @@ export function ProjectRoles({ project }: ProjectRolesProps) {
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {project.roles.map((role, i) => (
             <Reveal key={role.id} delay={i * 60}>
-              <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+              <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                 <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                 <div className="relative flex flex-1 flex-col p-6 sm:p-7">

@@ -58,12 +58,12 @@ export function UpcomingSessions({ sessions, canCreate, hostOptions }: UpcomingS
           </div>
         ) : (
           <Reveal delay={120}>
-            <div className="relative mt-14 flex flex-col items-center overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface-soft px-8 py-20 text-center shadow-card backdrop-blur-xl">
+            <div className="relative mt-14 flex flex-col items-center overflow-hidden rounded-2xl card-surface-soft px-8 py-20 text-center shadow-card backdrop-blur-xl">
               <div
                 aria-hidden
                 className="pointer-events-none absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]"
               />
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+              <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
                 <CalendarClock size={32} />
               </div>
               <h3 className="relative mt-8 text-2xl font-semibold text-ink-50 sm:text-3xl">

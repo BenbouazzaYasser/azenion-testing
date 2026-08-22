@@ -134,11 +134,11 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col border-r border-border-strong/[0.08] bg-glass/60 backdrop-blur-xl",
+        "flex h-full min-h-0 flex-col bg-glass/60 backdrop-blur-xl",
         className,
       )}
     >
-      <div className="shrink-0 border-b border-border-strong/[0.06] p-4 pb-3">
+      <div className="shrink-0 p-4 pb-3">
         <div ref={searchRef} className="relative">
           <div className="relative">
             <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-500" />
@@ -148,12 +148,12 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full rounded-full border border-border-strong/[0.08] bg-surface px-4 py-3 pl-11 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-all duration-300 focus:border-accent-400/60 focus:bg-surface-hover focus:ring-2 focus:ring-accent-400/30"
+              className="w-full rounded-full bg-surface px-4 py-3 pl-11 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-all duration-300 focus:border-accent-400/60 focus:bg-surface-hover focus:ring-2 focus:ring-accent-400/30"
             />
           </div>
 
           {showSearch && (
-            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl border border-border-strong/[0.08] bg-glass-strong shadow-dropdown backdrop-blur-2xl">
+            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl bg-glass-strong shadow-dropdown backdrop-blur-2xl">
               {searchResults.length === 0 ? (
                 <p className="px-4 py-3 text-sm text-ink-600">No users found.</p>
               ) : (
@@ -170,9 +170,9 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   className="flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-premium hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
                 >
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.08] object-cover" />
+                    <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
                   ) : (
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.08] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
                       {user.full_name?.[0] ?? user.username[0]?.toUpperCase() ?? "U"}
                     </span>
                   )}
@@ -242,14 +242,14 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
           {view === "archived" ? (
             archivedLoading ? (
               <div className="flex flex-col items-center px-4 py-12 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border-strong/[0.08] bg-surface text-ink-500 shadow-card">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface text-ink-500 shadow-card">
                   <Archive className="h-5 w-5 animate-pulse" />
                 </div>
                 <p className="mt-3 text-sm font-medium text-ink-300">Loading archived…</p>
               </div>
             ) : archivedConvs.length === 0 ? (
               <div className="flex flex-col items-center px-5 py-12 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
                   <Archive size={24} />
                 </div>
                 <p className="mt-4 text-[15px] font-semibold text-ink-50">No archived conversations</p>
@@ -281,7 +281,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
             )
           ) : convList.length === 0 ? (
             <div className="flex flex-col items-center px-5 py-12 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
                 <MessageSquare size={24} />
               </div>
               <p className="mt-4 text-[15px] font-semibold text-ink-50">No conversations yet</p>
@@ -387,14 +387,14 @@ function ConversationRow({
             src={conv.other_user.avatar_url}
             alt=""
             className={cn(
-              "h-10 w-10 shrink-0 rounded-full border border-border-strong/[0.08] object-cover transition-all duration-300",
+              "h-10 w-10 shrink-0 rounded-full object-cover transition-all duration-300",
               isActive && "border-accent-400/50 shadow-glow-sm",
             )}
           />
         ) : (
           <span
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.08] bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
               isActive && "border-accent-400/60 shadow-glow-sm",
             )}
           >

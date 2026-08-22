@@ -10,7 +10,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { signIn, signInWithGoogle } from "@/actions/auth.actions";
 
 const INPUT_CLASS =
-  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 focus:border-accent-400/50 focus:bg-accent/[0.04] focus:outline-none focus:ring-1 focus:ring-accent-400/30";
 
 export function LoginCard({ next }: { next?: string }) {
   const [identifier, setIdentifier] = useState("");
@@ -68,7 +68,7 @@ export function LoginCard({ next }: { next?: string }) {
 
       <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
         <Reveal>
-          <div className="group overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:shadow-glow-sm sm:px-12 sm:py-9">
+          <div className="group overflow-hidden rounded-[2rem] card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:shadow-glow-sm sm:px-12 sm:py-9">
             <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative text-center">
@@ -172,7 +172,7 @@ export function LoginCard({ next }: { next?: string }) {
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={googleLoading || loading}
-                className="relative flex w-full items-center justify-center gap-3 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-sm font-medium text-ink-200 backdrop-blur-xl transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.08] hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:cursor-not-allowed disabled:opacity-60"
+                className="relative flex w-full items-center justify-center gap-3 rounded-xl bg-surface px-4 py-3.5 text-sm font-medium text-ink-200 backdrop-blur-xl transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.08] hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {googleLoading ? (
                   <Loader2 size={18} className="animate-spin" />
@@ -198,7 +198,7 @@ export function LoginCard({ next }: { next?: string }) {
                 type="button"
                 disabled
                 aria-disabled="true"
-                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
+                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl bg-surface px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
               >
                 <Github size={19} />
                 Continue with GitHub
@@ -208,7 +208,7 @@ export function LoginCard({ next }: { next?: string }) {
               </button>
             </div>
 
-            <div className="relative mt-6 border-t border-border-strong pt-8 text-center">
+            <div className="relative mt-6 pt-8 text-center">
               <p className="text-sm text-ink-400">
                 New to Azenion?{" "}
                 <Link

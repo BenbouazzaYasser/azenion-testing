@@ -67,9 +67,9 @@ interface ProjectSettingsDialogProps {
 }
 
 const cardClass =
-  "rounded-2xl border border-border-strong/[0.08] card-surface p-6 shadow-card backdrop-blur-xl sm:p-8";
+  "rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl sm:p-8";
 const inputClass =
-  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 const sectionTitleClass = "text-lg font-semibold text-ink-50";
 
@@ -265,7 +265,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
               <div
                 ref={dialogFocusRef}
                 tabIndex={-1}
-                className="relative z-10 flex max-h-[90vh] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl border border-border-strong/[0.08] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
+                className="relative z-10 flex max-h-[90vh] w-full max-w-[680px] flex-col overflow-hidden rounded-2xl panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.95)",
@@ -407,7 +407,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
                                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                                   active
                                     ? "bg-accent text-white"
-                                    : "border border-border-strong/[0.08] text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
+                                    : " text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
                                 }`}
                               >
                                 {cat.name}
@@ -483,7 +483,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
                       <p className="mt-1 text-sm text-ink-400">The team this project belongs to.</p>
                       <div className="mt-6">
                         {project.team ? (
-                          <div className="flex items-center justify-between rounded-xl border border-border-strong/[0.08] bg-surface px-5 py-4">
+                          <div className="flex items-center justify-between rounded-xl bg-surface px-5 py-4">
                             <div className="flex items-center gap-3">
                               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08]">
                                 <Building2 size={18} className="text-accent-400" />
@@ -562,10 +562,10 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
                           {eligibleMembers.map((member) => (
                             <div
                               key={member.id}
-                              className="flex items-center justify-between gap-3 rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3"
+                              className="flex items-center justify-between gap-3 rounded-xl bg-surface px-4 py-3"
                             >
                               <div className="flex items-center gap-3 min-w-0">
-                                <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border border-border-strong/[0.1]">
+                                <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full">
                                   {member.avatar_url ? (
                                     <img src={member.avatar_url} alt="" className="h-full w-full object-cover" />
                                   ) : (

@@ -84,7 +84,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
               <TeamCategoryBadge key={cat.id} name={cat.name} />
             ))}
             {catOverflow > 0 ? (
-              <span className="inline-flex rounded-full border border-border-strong/[0.08] bg-white/[0.03] px-2.5 py-0.5 text-[11px] font-medium text-white/55">
+              <span className="inline-flex rounded-full bg-white/[0.03] px-2.5 py-0.5 text-[11px] font-medium text-white/55">
                 +{catOverflow}
               </span>
             ) : null}
@@ -154,7 +154,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
         <Reveal delay={200}>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/55">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border-strong/[0.08] bg-white/[0.03]">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.03]">
                 {team.owner.avatar_url ? (
                   <img
                     src={team.owner.avatar_url}
@@ -211,7 +211,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
 
         <Reveal delay={320}>
           <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
-            <span className="flex h-8 w-5 items-start justify-center rounded-full border border-border-strong/[0.08] p-1.5">
+            <span className="flex h-8 w-5 items-start justify-center rounded-full p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.14em] text-white/35">

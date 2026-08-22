@@ -53,7 +53,7 @@ export function RelationshipActions({ profileId, relationship, cardClass }: Rela
             type="button"
             onClick={() => run(() => unfriend(profileId), { friend_status: "none" })}
             disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-full border border-border-strong/[0.08] bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-red-400/40 hover:text-red-300 hover:shadow-glow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-red-400/40 hover:text-red-300 hover:shadow-glow-sm disabled:opacity-50"
           >
             {isPending ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
             Friends
@@ -65,7 +65,7 @@ export function RelationshipActions({ profileId, relationship, cardClass }: Rela
             type="button"
             onClick={() => run(() => cancelFriendRequest(profileId), { friend_status: "none" })}
             disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-full border border-border-strong/[0.08] bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm disabled:opacity-50"
           >
             {isPending ? <Loader2 size={16} className="animate-spin" /> : <ArrowLeft size={16} />}
             Request sent
@@ -87,7 +87,7 @@ export function RelationshipActions({ profileId, relationship, cardClass }: Rela
               type="button"
               onClick={() => run(() => declineFriendRequest(profileId), { friend_status: "none" })}
               disabled={isPending}
-              className="inline-flex items-center gap-2 rounded-full border border-border-strong/[0.08] bg-surface px-5 py-2.5 text-sm font-medium text-ink-300 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-red-400/40 hover:text-red-300 hover:shadow-glow-sm disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-300 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-red-400/40 hover:text-red-300 hover:shadow-glow-sm disabled:opacity-50"
             >
               {isPending ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
               Decline
@@ -141,7 +141,7 @@ export function RelationshipActions({ profileId, relationship, cardClass }: Rela
               )
             }
             disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-full border border-border-strong/[0.08] bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm disabled:opacity-50"
           >
             {isPending ? (
               <Loader2 size={16} className="animate-spin" />

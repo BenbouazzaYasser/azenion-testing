@@ -37,7 +37,7 @@ export default async function ChatPage() {
               <div className="absolute left-1/2 top-1/2 h-[360px] w-[520px] -translate-x-1/2 -translate-y-1/2 bg-[linear-gradient(to_right,rgba(244,245,248,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(244,245,248,0.03)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_75%)] opacity-40" />
             </div>
             <div className="relative flex flex-col items-center px-6 text-center">
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.45)]">
+              <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.45)]">
                 <div aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl bg-accent/[0.06] blur-xl" />
                 <MessageSquare size={28} className="relative" />
               </div>

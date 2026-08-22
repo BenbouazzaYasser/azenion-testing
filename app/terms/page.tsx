@@ -83,7 +83,7 @@ export default function TermsPage() {
             ))}
           </div>
 
-          <p className="mt-12 border-t border-border-strong pt-8 text-sm leading-relaxed text-ink-500">
+          <p className="mt-12 pt-8 text-sm leading-relaxed text-ink-500">
             These Terms of Service are provided as a placeholder and do not
             constitute legal advice. They will be finalized before public launch.
           </p>

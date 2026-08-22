@@ -89,7 +89,7 @@ export function VideoMedia({
         </video>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-border-strong/[0.08] bg-white/10 text-white backdrop-blur-sm">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm">
             <Play size={18} className="ml-0.5" fill="currentColor" />
           </span>
         </div>
@@ -97,7 +97,7 @@ export function VideoMedia({
 
       {inView && !metadataReady && !playError ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-border-strong/[0.08] bg-white/10 text-white backdrop-blur-sm">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm">
             <Play size={18} className="ml-0.5" fill="currentColor" />
           </span>
         </div>

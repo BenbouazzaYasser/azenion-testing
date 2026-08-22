@@ -62,7 +62,7 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
     <Reveal delay={index * 100}>
       <div
         ref={ref}
-        className="flex flex-col items-center gap-3 rounded-[2rem] border border-border-strong/[0.08] card-surface-soft p-8 text-center shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm"
+        className="flex flex-col items-center gap-3 rounded-[2rem] card-surface-soft p-8 text-center shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm"
       >
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-accent-400/30 bg-accent/[0.08] text-accent-300">
           <Icon size={22} strokeWidth={1.75} />

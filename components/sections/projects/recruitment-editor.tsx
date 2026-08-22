@@ -18,7 +18,7 @@ interface RecruitmentEditorProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-[0.9rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+  "w-full rounded-xl bg-surface px-4 py-3 text-[0.9rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 function newRole(): RecruitmentRole {
   return {
@@ -45,7 +45,7 @@ export function RecruitmentEditor({ roles, onChange, disabled }: RecruitmentEdit
       {roles.map((role, i) => (
         <div
           key={role.id}
-          className="rounded-xl border border-border-strong/[0.08] bg-surface p-5 transition-all duration-300"
+          className="rounded-xl bg-surface p-5 transition-all duration-300"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2">

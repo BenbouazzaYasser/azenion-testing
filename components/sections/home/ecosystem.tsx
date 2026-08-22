@@ -93,7 +93,7 @@ export function Ecosystem() {
               <Reveal key={item.href} delay={i * 60} className="h-full">
                 <Link
                   href={item.href}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-[1.6rem] border border-border-strong/[0.08] card-surface-soft p-7 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm"
+                  className="group relative flex h-full flex-col overflow-hidden rounded-[1.6rem] card-surface-soft p-7 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm"
                 >
                   <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[1.6rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.07),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 

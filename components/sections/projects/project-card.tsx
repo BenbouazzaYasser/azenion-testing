@@ -64,7 +64,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
   return (
     <Reveal delay={index * 60}>
       <Link href={`/projects/${project.slug}`} className="group block h-full focus-visible:outline-none">
-        <div className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-border-strong/[0.08] card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm group-focus-visible:ring-2 group-focus-visible:ring-accent-400/60">
+        <div className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm group-focus-visible:ring-2 group-focus-visible:ring-accent-400/60">
           <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
           <div className="relative flex flex-1 flex-col p-6 sm:p-8">
@@ -151,7 +151,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
             <div className="mt-auto pt-5">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-ink-500">
                 {vis ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-border-strong/[0.08] bg-surface px-2 py-0.5 font-medium text-ink-400">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 font-medium text-ink-400">
                     {(() => {
                       const Icon = vis.icon;
                       return <Icon size={10} />;

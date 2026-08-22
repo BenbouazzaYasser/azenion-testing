@@ -72,21 +72,21 @@ function NotificationAvatar({
       <img
         src={actor.avatar_url}
         alt=""
-        className="h-9 w-9 shrink-0 rounded-full border border-border-strong/[0.08] object-cover"
+        className="h-9 w-9 shrink-0 rounded-full object-cover"
       />
     );
   }
   if (actor?.full_name || actor?.username) {
     const initial = actor.full_name?.[0] ?? actor.username?.[0]?.toUpperCase() ?? "?";
     return (
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.08] bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
         {initial}
       </span>
     );
   }
   const Icon = TYPE_CONFIG[notification.type]?.icon ?? DEFAULT_TYPE.icon;
   return (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.1] bg-surface text-ink-400">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-400">
       <Icon size={16} />
     </span>
   );
@@ -354,7 +354,7 @@ export function NotificationCenter() {
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center px-6 py-12 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
                   <BellOff size={24} />
                 </div>
                 <p className="mt-4 text-sm font-medium text-ink-200">

@@ -40,7 +40,7 @@ const MAX_BODY_LENGTH = 5000;
 const MAX_PREVIEW_HEIGHT = 320;
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input disabled:cursor-not-allowed disabled:opacity-50";
 
 function autosize(el: HTMLTextAreaElement) {
   el.style.height = "auto";
@@ -214,7 +214,7 @@ export function FeedComposer({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border-strong/[0.08] card-surface p-5 shadow-card backdrop-blur-xl sm:p-6",
+        "rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:p-6",
         className,
       )}
     >
@@ -284,7 +284,7 @@ export function FeedComposer({
               <div
                 key={item.id}
                 className={cn(
-                  "group relative overflow-hidden rounded-xl border border-border-strong/[0.08] bg-surface",
+                  "group relative overflow-hidden rounded-xl bg-surface",
                   media.length === 1 ? "aspect-[16/10]" : "aspect-[4/3]",
                 )}
               >
@@ -325,7 +325,7 @@ export function FeedComposer({
                   onClick={() => removeMedia(i)}
                   disabled={submitting || disabled}
                   aria-label={`Remove ${kindLabel(item.kind)} ${i + 1}`}
-                  className="absolute right-2 top-2 rounded-full border border-border-strong/[0.08] bg-black/60 p-1.5 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
+                  className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
                 >
                   <X size={14} />
                 </button>
@@ -344,7 +344,7 @@ export function FeedComposer({
         </div>
       ) : null}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border-strong/50 pt-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-4">
         <input
           ref={fileInputRef}
           type="file"

@@ -79,10 +79,10 @@ export function MessageBubble({
           <img
             src={sender_avatar}
             alt=""
-            className="mt-2.5 h-8 w-8 shrink-0 rounded-full border border-border-strong/[0.08] object-cover"
+            className="mt-2.5 h-8 w-8 shrink-0 rounded-full object-cover"
           />
         ) : (
-          <span className="mt-2.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-strong/[0.08] bg-gradient-to-br from-accent to-accent-glow text-[11px] font-semibold text-white">
+          <span className="mt-2.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-[11px] font-semibold text-white">
             {sender_name?.[0]?.toUpperCase() ?? "U"}
           </span>
         )
@@ -118,7 +118,7 @@ export function MessageBubble({
                   setIsEditing(false);
                   setEditText(content);
                 }}
-                className="rounded-lg border border-border-strong/[0.08] px-3 py-1 text-xs font-medium text-ink-400 transition-colors hover:text-ink-50"
+                className="rounded-lg px-3 py-1 text-xs font-medium text-ink-400 transition-colors hover:text-ink-50"
               >
                 Cancel
               </button>
@@ -136,7 +136,7 @@ export function MessageBubble({
               "cursor-pointer rounded-2xl px-3.5 py-2 text-sm leading-relaxed backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2",
               isOwn
                 ? "rounded-br-none border border-accent-300/25 bg-gradient-to-br from-accent to-accent-glow text-white shadow-[0_10px_28px_-12px_rgba(40,40,255,0.55)] focus-visible:ring-accent-300/40"
-                : "rounded-bl-none border border-border-strong/50 bg-surface/80 text-ink-50 shadow-[0_8px_20px_-14px_rgba(0,0,0,0.7)] focus-visible:ring-accent-400/40",
+                : "rounded-bl-none bg-surface/80 text-ink-50 shadow-[0_8px_20px_-14px_rgba(0,0,0,0.7)] focus-visible:ring-accent-400/40",
             )}
           >
             <p className="whitespace-pre-wrap break-words">{content}</p>
@@ -183,7 +183,7 @@ export function MessageBubble({
         {isOwn && !isEditing && (
           <div
             className={cn(
-              "absolute right-0 -top-[40px] z-20 flex items-center gap-0.5 rounded-full border border-border-strong/[0.08] bg-void-900/95 p-1 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.8)] backdrop-blur transition-all duration-200 ease-premium",
+              "absolute right-0 -top-[40px] z-20 flex items-center gap-0.5 rounded-full bg-void-900/95 p-1 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.8)] backdrop-blur transition-all duration-200 ease-premium",
               showActions
                 ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
                 : "pointer-events-none -translate-y-1 scale-95 opacity-0",

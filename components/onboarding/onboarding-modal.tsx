@@ -46,7 +46,7 @@ const NEXT_STEP: Record<StepKey, OnboardingStep> = {
 };
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+  "w-full rounded-xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 interface OnboardingModalProps {
   data: OnboardingData;
@@ -144,7 +144,7 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
                 aria-modal="true"
                 aria-label={`Onboarding ${STEP_ORDER[stepIndex] ?? "done"} step`}
                 tabIndex={-1}
-                className="relative z-10 flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-3xl border border-border-strong/[0.08] panel-gradient shadow-dialog backdrop-blur-2xl outline-none transition-all duration-200 ease-premium"
+                className="relative z-10 flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-3xl panel-gradient shadow-dialog backdrop-blur-2xl outline-none transition-all duration-200 ease-premium"
                 style={{
                   opacity: mounted ? 1 : 0,
                   transform: mounted ? "scale(1)" : "scale(0.96)",
@@ -443,7 +443,7 @@ function BranchStep({
 
       <div className="mt-6 space-y-2.5">
         {data.branches.length === 0 ? (
-          <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-5 text-center text-sm text-ink-500">
+          <div className="rounded-xl bg-surface px-4 py-5 text-center text-sm text-ink-500">
             No branches are live yet. You can join later from the Branches page.
           </div>
         ) : (
@@ -459,7 +459,7 @@ function BranchStep({
                     : "border-border-strong bg-surface",
                 )}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-strong/[0.1] bg-accent/[0.08]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent/[0.08]">
                   {b.logo_url ? (
                     <img src={b.logo_url} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -548,7 +548,7 @@ function TeamStep({
 
       <div className="mt-6 space-y-2.5">
         {data.teams.length === 0 ? (
-          <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-6 text-center text-sm text-ink-500">
+          <div className="rounded-xl bg-surface px-4 py-6 text-center text-sm text-ink-500">
             No active teams yet. You can browse teams anytime.
           </div>
         ) : (
@@ -557,9 +557,9 @@ function TeamStep({
             return (
               <div
                 key={t.id}
-                className="flex items-center gap-3 rounded-xl border border-border-strong/[0.08] bg-surface p-3"
+                className="flex items-center gap-3 rounded-xl bg-surface p-3"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-strong/[0.1] bg-surface-500/[0.12]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface-500/[0.12]">
                   {t.logo_url ? (
                     <img src={t.logo_url} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -631,7 +631,7 @@ function ProjectStep({
 
       <div className="mt-6 space-y-2.5">
         {data.projects.length === 0 ? (
-          <div className="rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-6 text-center text-sm text-ink-500">
+          <div className="rounded-xl bg-surface px-4 py-6 text-center text-sm text-ink-500">
             Featured projects are on the way.
           </div>
         ) : (
@@ -669,9 +669,9 @@ function ProjectRow({
         onViewed();
         router.push(`/projects/${project.slug}`);
       }}
-      className="flex w-full items-center gap-3 rounded-xl border border-border-strong/[0.08] bg-surface p-3 text-left transition-colors hover:border-accent-400/30 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+      className="flex w-full items-center gap-3 rounded-xl bg-surface p-3 text-left transition-colors hover:border-accent-400/30 hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border-strong/[0.1] bg-accent/[0.08]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-accent/[0.08]">
         {project.logo_url ? (
           <img src={project.logo_url} alt="" className="h-full w-full object-cover" />
         ) : (

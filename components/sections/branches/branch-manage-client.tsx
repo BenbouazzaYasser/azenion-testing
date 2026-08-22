@@ -40,7 +40,7 @@ interface BranchManageClientProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-border-strong/[0.08] bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
@@ -276,7 +276,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
 
         {showForm ? (
           <Reveal delay={80}>
-            <div className="mt-8 overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface p-8 shadow-card backdrop-blur-xl">
+            <div className="mt-8 overflow-hidden rounded-2xl card-surface p-8 shadow-card backdrop-blur-xl">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-ink-50">
                   {editingId ? "Edit Branch" : "Create Branch"}
@@ -444,7 +444,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
         <div className="mt-10 grid gap-5">
           {branches.length === 0 ? (
             <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent-300">
                 <Building2 className="h-6 w-6 text-accent-300" />
               </div>
               <div>
@@ -455,7 +455,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
           ) : (
             branches.map((branch, i) => (
               <Reveal key={branch.id} delay={i * 80}>
-                <div className="group relative flex items-start gap-5 overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+                <div className="group relative flex items-start gap-5 overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08] p-2.5">
                     {branch.logo_url ? (
                       <img src={branch.logo_url} alt="" className="h-full w-full rounded-lg object-cover" />
@@ -472,7 +472,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                         <button
                           type="button"
                           onClick={() => openEdit(branch)}
-                          className="rounded-lg border border-border-strong/[0.08] bg-surface p-2 text-ink-400 transition-colors hover:bg-surface-hover hover:text-accent-400"
+                          className="rounded-lg bg-surface p-2 text-ink-400 transition-colors hover:bg-surface-hover hover:text-accent-400"
                           aria-label={`Edit ${branch.name}`}
                         >
                           <Pencil size={14} />
@@ -530,7 +530,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                             setAssignQuery("");
                             setError(null);
                           }}
-                          className="ml-auto inline-flex items-center gap-1 rounded-lg border border-border-strong/[0.08] bg-surface px-2 py-1 text-xs text-ink-400 transition-colors hover:bg-surface-hover hover:text-accent-400"
+                          className="ml-auto inline-flex items-center gap-1 rounded-lg bg-surface px-2 py-1 text-xs text-ink-400 transition-colors hover:bg-surface-hover hover:text-accent-400"
                         >
                           <UserPlus size={12} />
                           {assignFor === branch.id ? "Close" : "Assign"}
@@ -544,7 +544,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                               key={m.id}
                               className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/[0.07] px-2.5 py-1 text-xs text-emerald-300"
                             >
-                              <span className="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full border border-border-strong/[0.08]">
+                              <span className="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full">
                                 {m.avatar_url ? (
                                   <img src={m.avatar_url} alt="" className="h-full w-full object-cover" />
                                 ) : (
@@ -581,7 +581,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                             />
                             <UserPlus size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-600" />
                           </div>
-                          <div className="mt-2 max-h-52 space-y-1 overflow-y-auto rounded-xl border border-border-strong/[0.08] bg-surface p-1.5">
+                          <div className="mt-2 max-h-52 space-y-1 overflow-y-auto rounded-xl bg-surface p-1.5">
                             {matchingProfiles(branch).length === 0 ? (
                               <p className="px-3 py-2 text-xs text-ink-600">
                                 {profiles.length === 0
@@ -599,7 +599,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                                   className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm text-ink-300 transition-colors hover:bg-surface-hover"
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
-                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border-strong/[0.08]">
+                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full">
                                       {p.avatar_url ? (
                                         <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
                                       ) : (

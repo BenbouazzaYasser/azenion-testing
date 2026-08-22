@@ -83,7 +83,7 @@ export default function PrivacyPage() {
             ))}
           </div>
 
-          <p className="mt-12 border-t border-border-strong pt-8 text-sm leading-relaxed text-ink-500">
+          <p className="mt-12 pt-8 text-sm leading-relaxed text-ink-500">
             This Privacy Policy is provided as a placeholder and does not
             constitute legal advice. It will be finalized before public launch.
           </p>

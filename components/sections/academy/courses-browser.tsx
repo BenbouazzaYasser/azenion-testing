@@ -30,7 +30,7 @@ const CATEGORIES = [
 ];
 
 const inputClass =
-  "w-full rounded-full border border-border-strong/[0.08] bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-all duration-300 focus:border-accent-400/60 focus:bg-surface-hover focus:ring-2 focus:ring-accent-400/30";
+  "w-full rounded-full bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-all duration-300 focus:border-accent-400/60 focus:bg-surface-hover focus:ring-2 focus:ring-accent-400/30";
 
 interface CoursesBrowserProps {
   courses: CourseRow[];
@@ -95,7 +95,7 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
               ))}
             </div>
           ) : (
-            <div className="relative mt-14 overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface-soft shadow-card backdrop-blur-xl">
+            <div className="relative mt-14 overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(244,245,248,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(244,245,248,0.04)_1px,transparent_1px)] bg-[size:32px_32px]"
@@ -106,7 +106,7 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
               />
 
               <div className="relative flex flex-col items-center px-8 py-20 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-border-strong/[0.08] bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
                   <GraduationCap size={32} />
                 </div>
                 <h3
@@ -169,7 +169,7 @@ function CourseCard({
   }
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border-strong/[0.08] card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow">
       <div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-accent/10 blur-[100px] transition-opacity duration-300 group-hover:opacity-100"
@@ -206,7 +206,7 @@ function CourseCard({
         {(course.duration || course.difficulty) && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {course.duration ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong/[0.08] bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-400">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-400">
                 <Clock size={11} />
                 {course.duration}
               </span>

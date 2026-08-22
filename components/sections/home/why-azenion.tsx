@@ -104,7 +104,7 @@ export function WhyAzenion() {
               const Icon = card.icon;
               return (
                 <Reveal key={card.title} delay={i * 80} className="h-full">
-                  <div className="group relative h-full overflow-hidden rounded-[1.6rem] border border-border-strong/[0.08] card-surface-soft p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:card-surface hover:shadow-glow-sm sm:p-7">
+                  <div className="group relative h-full overflow-hidden rounded-[1.6rem] card-surface-soft p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:card-surface hover:shadow-glow-sm sm:p-7">
                     <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[1.6rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.07),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                     <div className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-accent-400/25 bg-accent/[0.08] text-accent-300 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-glow-sm">
@@ -133,7 +133,7 @@ export function WhyAzenion() {
               return (
                 <div
                   key={pillar.title}
-                  className="group relative overflow-hidden rounded-[1.4rem] border border-border-strong/[0.08] card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:card-surface hover:shadow-glow-sm"
+                  className="group relative overflow-hidden rounded-[1.4rem] card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:card-surface hover:shadow-glow-sm"
                 >
                   <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[1.6rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.07),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                   <div

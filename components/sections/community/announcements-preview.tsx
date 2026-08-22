@@ -48,7 +48,7 @@ export function AnnouncementsPreview({ announcements }: AnnouncementsPreviewProp
           {preview.length > 0 ? (
             preview.map((announcement, i) => (
               <Reveal key={announcement.id} delay={i * 100}>
-                <article className="group relative overflow-hidden rounded-[1.6rem] border border-border-strong/[0.08] card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:p-7">
+                <article className="group relative overflow-hidden rounded-[1.6rem] card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:p-7">
                   <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[1.6rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                   <div className="relative flex items-start gap-4">
