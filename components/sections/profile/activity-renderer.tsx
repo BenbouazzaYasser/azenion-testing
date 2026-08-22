@@ -224,13 +224,6 @@ const activityConfig: Record<string, ActivityConfig> = {
       `Created the ${str(meta.branch_name, str(meta.branch_slug, str(meta.branch_id, "branch")))} branch`,
     color: "text-accent-400",
   },
-  updated_branch: {
-    icon: GitBranch,
-    label: "Updated Branch",
-    getDescription: (meta) =>
-      `Updated the ${str(meta.branch_name, str(meta.branch_id, "branch"))} branch`,
-    color: "text-accent-400",
-  },
   deleted_branch: {
     icon: Trash2,
     label: "Deleted Branch",
