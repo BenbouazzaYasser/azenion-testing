@@ -125,6 +125,7 @@ export async function createCourse(formData: FormData) {
     .upload(objectPath, file, {
       contentType: CONTENT_TYPES[ext] ?? (file.type || "application/octet-stream"),
       upsert: false,
+      metadata: { created_by: user.id },
     });
 
   if (uploadError) {

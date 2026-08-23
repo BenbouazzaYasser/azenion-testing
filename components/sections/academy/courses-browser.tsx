@@ -177,14 +177,18 @@ function CourseCard({
 
       <div className="relative flex flex-1 flex-col p-6">
         {course.thumbnail ? (
-          <div className="relative -mx-6 -mt-6 mb-5 overflow-hidden border-b border-border">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+          <a
+            href={`/api/academy/courses/${course.id}/file`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative -mx-6 -mt-6 mb-5 overflow-hidden border-b border-border hover:opacity-100 transition-opacity duration-300"
+          >
             <img
-              src={course.thumbnail}
+              src={`/api/academy/courses/${course.id}/file?isThumbnail=true`}
               alt={`${course.title} thumbnail`}
               className="h-40 w-full object-cover"
             />
-          </div>
+          </a>
         ) : null}
 
         <div className="flex items-start justify-between gap-4">
@@ -271,7 +275,7 @@ function CourseCard({
               </button>
             ) : null}
             <a
-              href={isPdf ? course.file_url : `/api/academy/courses/${course.id}/file`}
+              href={`/api/academy/courses/${course.id}/file`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"

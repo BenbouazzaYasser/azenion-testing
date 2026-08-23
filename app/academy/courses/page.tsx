@@ -42,13 +42,16 @@ export default async function CoursesPage() {
   const { data: courseRows } = await supabase
     .from("courses")
     .select(
-      "id, title, description, category, content_type, file_url, thumbnail, duration, difficulty, tags, created_by, created_at",
+      "id, title, description, category, content_type, file_url, thumbnail, duration, difficulty, is_free, currency, status, tags, created_by, created_at",
     )
     .order("created_at", { ascending: false });
 
   const courses = ((courseRows ?? []) as unknown as CourseRow[]).map((row) => ({
     ...row,
     content_type: (row.content_type === "pdf" ? "pdf" : "html_css") as CourseRow["content_type"],
+    is_free: row.is_free ?? true,
+    currency: row.currency ?? "usd",
+    status: row.status ?? "draft",
   }));
 
   return (
