@@ -372,7 +372,7 @@ function ConversationRow({
           "flex items-center gap-3 overflow-hidden rounded-xl py-3 pl-3 pr-11 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
           isActive
             ? "border border-accent-400/30 bg-[linear-gradient(135deg,rgba(40,40,255,0.13),rgba(40,40,255,0.04))] shadow-glow-sm"
-            : "border border-transparent hover:border-border-strong/[0.08] hover:bg-surface/60 hover:shadow-card",
+            : "border border-transparent hover:bg-surface/60 hover:shadow-card",
         )}
       >
         {isActive && (
