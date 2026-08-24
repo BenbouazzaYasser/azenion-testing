@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Send, MessageSquare, Users, Menu, Ban, Phone, Video, Monitor } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -80,6 +81,18 @@ export function ChatConversation({
   } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Start a call requested from the sidebar conversation menu (?call=video|screen|audio).
+  useEffect(() => {
+    const kind = searchParams.get("call");
+    if (kind !== "audio" && kind !== "video" && kind !== "screen") return;
+    setActiveCall((prev) =>
+      prev ?? { callId: crypto.randomUUID(), kind, isIncoming: false },
+    );
+    router.replace(`/chat/${conversationId}`, { scroll: false });
+  }, [searchParams, conversationId, router]);
 
   useEffect(() => {
     setMessages(initialMessages);

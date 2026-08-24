@@ -32,7 +32,7 @@ export async function createProject(formData: FormData) {
   const categoryIdsRaw = formData.get("category_ids") as string | null;
 
   const raw = {
-    team_id: formData.get("team_id") as string,
+    team_id: (formData.get("team_id") as string) || undefined,
     name: formData.get("name") as string,
     slug: formData.get("slug") as string,
     description: (formData.get("description") as string) || null,
@@ -46,6 +46,40 @@ export async function createProject(formData: FormData) {
     const fieldErrors = parsed.error.flatten().fieldErrors;
     const firstError = Object.values(fieldErrors).flat()[0];
     return { error: firstError ?? "Invalid input" };
+  }
+
+  // Standalone project (no parent team): no server, just a group chat channel.
+  if (!parsed.data.team_id) {
+    const { data: projectId, error } = await supabase.rpc("create_standalone_project", {
+      p_name: parsed.data.name,
+      p_slug: parsed.data.slug,
+      p_description: parsed.data.description ?? null,
+      p_visibility: parsed.data.visibility,
+      p_logo_url: null,
+    });
+
+    if (error) {
+      if (error.message.includes("duplicate key") || error.message.includes("unique")) {
+        return { error: "A project with this name or slug already exists." };
+      }
+      return { error: error.message };
+    }
+
+    const categoryIds: string[] = categoryIdsRaw
+      ? (JSON.parse(categoryIdsRaw) as string[])
+      : [];
+
+    if (categoryIds.length > 0 && projectId) {
+      const members = categoryIds.map((cid) => ({
+        project_id: projectId as string,
+        category_id: cid,
+      }));
+      await supabase.from("project_category_members").insert(members);
+    }
+
+    revalidatePath("/projects");
+
+    return { slug: parsed.data.slug };
   }
 
   const { data: projectId, error } = await supabase.rpc("create_project", {

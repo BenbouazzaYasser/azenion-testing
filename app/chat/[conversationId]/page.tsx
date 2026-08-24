@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/navbar";
@@ -28,12 +29,20 @@ export default async function ConversationPage({ params }: Props) {
       <Navbar />
       <main className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
         <ChatLayout conversations={conversations} currentUserId={user.id}>
-          <ChatConversation
-            conversationId={params.conversationId}
-            initialMessages={messages}
-            currentUserId={user.id}
-            amBlocked={blockState.am_blocked}
-          />
+          <Suspense
+            fallback={
+              <div className="flex h-full items-center justify-center text-sm text-ink-500">
+                Loading conversation…
+              </div>
+            }
+          >
+            <ChatConversation
+              conversationId={params.conversationId}
+              initialMessages={messages}
+              currentUserId={user.id}
+              amBlocked={blockState.am_blocked}
+            />
+          </Suspense>
         </ChatLayout>
       </main>
     </>

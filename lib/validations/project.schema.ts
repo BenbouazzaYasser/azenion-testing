@@ -6,7 +6,8 @@ export const ALLOWED_POST_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"
 export const ALLOWED_ASSET_TYPES = ALLOWED_POST_IMAGE_TYPES;
 
 export const createProjectSchema = z.object({
-  team_id: z.string().uuid(),
+  // Omitted => standalone project (no parent team).
+  team_id: z.string().uuid().optional(),
   name: z
     .string()
     .min(1, "Project name is required")

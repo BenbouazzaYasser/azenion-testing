@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { createProject } from "@/actions/project.actions";
@@ -31,6 +30,8 @@ const inputClass =
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
+const STANDALONE = "__standalone__";
+
 export function CreateProjectForm({ teams, categories }: CreateProjectFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,7 +39,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
 
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const defaultTeamId = teams.length === 1 ? teams[0]!.team_id : "";
+  const defaultTeamId = teams.length === 1 ? teams[0]!.team_id : teams.length === 0 ? STANDALONE : "";
   const [teamId, setTeamId] = useState(preSelectedTeam ?? defaultTeamId);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -64,12 +65,14 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
     setError(null);
 
     if (!teamId) {
-      setError("Please select a team.");
+      setError("Please select a team or choose a personal project.");
       return;
     }
 
+    const isStandalone = teamId === STANDALONE;
+
     const formData = new FormData();
-    formData.set("team_id", teamId);
+    formData.set("team_id", isStandalone ? "" : teamId);
     const selectedTeam = teams.find((t) => t.team_id === teamId);
     formData.set("team_slug", selectedTeam?.team_slug ?? "");
     formData.set("name", name);
@@ -104,16 +107,15 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
             ) : null}
 
             <form onSubmit={handleSubmit} className="space-y-7">
-              {teams.length > 1 ? (
+              {teams.length > 0 ? (
                 <div>
                   <label htmlFor="cp-team" className={labelClass}>
-                    Team <span className="text-accent-400">*</span>
+                    Team <span className="text-ink-500">(optional)</span>
                   </label>
                   <select
                     id="cp-team"
                     value={teamId}
                     onChange={(e) => setTeamId(e.target.value)}
-                    required
                     className={`${inputClass} appearance-none`}
                   >
                     <option value="" disabled>Select a team</option>
@@ -122,22 +124,29 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                         {t.team_name}
                       </option>
                     ))}
+                    <option value={STANDALONE} className="bg-void-950">
+                      No team — personal project
+                    </option>
                   </select>
-                </div>
-              ) : teams.length === 1 ? (
-                <div>
-                  <label className={labelClass}>Team</label>
-                  <div className="flex items-center gap-3 rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-200">
-                    <Users size={16} className="text-accent-400" />
-                    {teams[0]!.team_name}
-                  </div>
+                  {teamId === STANDALONE ? (
+                    <p className="mt-1.5 text-xs leading-relaxed text-ink-500">
+                      Personal projects don&apos;t get a server — just a simple group chat on the
+                      project page.
+                    </p>
+                  ) : (
+                    <p className="mt-1.5 text-xs leading-relaxed text-ink-500">
+                      The project gets a channel inside the team&apos;s server automatically.
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-sm text-amber-300">
-                  You need to be an owner or admin of a team to create a project.{" "}
+                  You&apos;re not an owner or admin of any team yet — you can still create a
+                  personal project below, or{" "}
                   <a href="/teams/create" className="underline hover:text-amber-200">
-                    Create a team
+                    create a team
                   </a>
+                  .
                 </div>
               )}
 
@@ -244,7 +253,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                   type="submit"
                   size="lg"
                   className="w-full sm:w-auto"
-                  disabled={isPending || teams.length === 0}
+                  disabled={isPending}
                 >
                   {isPending ? "Creating..." : "Create Project"}
                 </Button>
