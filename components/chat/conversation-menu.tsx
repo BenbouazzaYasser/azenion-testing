@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { MoreVertical, CheckCheck, Archive, ArchiveRestore, Trash2, Ban, UserCheck } from "lucide-react";
+import { MoreVertical, CheckCheck, Archive, ArchiveRestore, Trash2, Ban, UserCheck, Video, ScreenShare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -31,7 +31,7 @@ interface ConversationMenuProps {
 
 const MENU_WIDTH = 200;
 const MENU_GAP = 8;
-const MENU_EST_HEIGHT = 240;
+const MENU_EST_HEIGHT = 330;
 
 export function ConversationMenu({
   conversationId,
@@ -157,6 +157,12 @@ export function ConversationMenu({
     }
   }
 
+  function handleStartCall(kind: "video" | "screen") {
+    if (pending) return;
+    close();
+    router.push(`/chat/${conversationId}?call=${kind}`);
+  }
+
   async function handleMarkSeen() {
     await runAction(async () => {
       const result = await markConversationRead(conversationId);
@@ -268,20 +274,56 @@ export function ConversationMenu({
               style={{ top: coords.top, left: coords.left }}
             >
               {mode === "inbox" && (
-                <button
-                  type="button"
-                  role="menuitem"
-                  disabled={!hasUnread || pending}
-                  onClick={handleMarkSeen}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
-                    "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
-                    "disabled:pointer-events-none disabled:opacity-40",
-                  )}
-                >
-                  <CheckCheck className="h-4 w-4 shrink-0 text-accent-300" />
-                  Mark as seen
-                </button>
+                <>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={!hasUnread || pending}
+                    onClick={handleMarkSeen}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
+                      "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                      "disabled:pointer-events-none disabled:opacity-40",
+                    )}
+                  >
+                    <CheckCheck className="h-4 w-4 shrink-0 text-accent-300" />
+                    Mark as seen
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={pending || isBlocked}
+                    onClick={() => handleStartCall("video")}
+                    title={`Start a video call with ${conversationName}`}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
+                      "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                      "disabled:pointer-events-none disabled:opacity-40",
+                    )}
+                  >
+                    <Video className="h-4 w-4 shrink-0 text-accent-300" />
+                    Video call
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={pending || isBlocked}
+                    onClick={() => handleStartCall("screen")}
+                    title={`Share your screen with ${conversationName}`}
+                    className={cn(
+                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 ease-premium",
+                      "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                      "disabled:pointer-events-none disabled:opacity-40",
+                    )}
+                  >
+                    <ScreenShare className="h-4 w-4 shrink-0 text-accent-300" />
+                    Share screen
+                  </button>
+
+                  <div aria-hidden className="mx-2 my-1 h-px bg-border-strong/40" />
+                </>
               )}
 
               {mode === "archived" ? (

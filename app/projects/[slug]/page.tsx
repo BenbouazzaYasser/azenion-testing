@@ -10,10 +10,12 @@ import { ProjectPageRecruitment } from "@/components/sections/projects/project-p
 import { ProjectPageMembers } from "@/components/sections/projects/project-page-members";
 import { ProjectPageActivity } from "@/components/sections/projects/project-page-activity";
 import { ProjectPageUpdates } from "@/components/sections/projects/project-page-updates";
+import { ProjectPageDiscussion } from "@/components/sections/projects/project-page-discussion";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { resolveMediaValue } from "@/lib/media";
+import { getProjectChannel, getChannelMessages } from "@/data/servers";
 
 interface ProjectPageProps {
   params: Promise<{ slug: string }>;
@@ -197,6 +199,28 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   const userCanManage = userRole === "owner" || userRole === "admin";
 
+  // Group chat: standalone projects get their own channel; team projects get a
+  // channel inside the team's server. Only project members can chat here.
+  let discussion: {
+    channelId: string;
+    channelName: string;
+    topic: string | null;
+    initialMessages: Awaited<ReturnType<typeof getChannelMessages>>;
+  } | null = null;
+
+  if (isMember && user) {
+    const channel = await getProjectChannel(project.id);
+
+    if (channel) {
+      discussion = {
+        channelId: channel.id,
+        channelName: channel.name,
+        topic: channel.topic,
+        initialMessages: await getChannelMessages(channel.id),
+      };
+    }
+  }
+
   const recruitment = (() => {
     try {
       return typeof project.recruitment === "string"
@@ -284,6 +308,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           currentUserId={user?.id ?? null}
           isMember={isMember}
         />
+        {discussion ? (
+          <ProjectPageDiscussion
+            channelId={discussion.channelId}
+            channelName={discussion.channelName}
+            topic={discussion.topic}
+            currentUserId={user!.id}
+            initialMessages={discussion.initialMessages}
+          />
+        ) : null}
         {activities && activities.length > 0 ? (
           <ProjectPageActivity
             activities={activities.map((a) => ({

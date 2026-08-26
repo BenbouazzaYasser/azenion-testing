@@ -63,7 +63,7 @@ export function RequestToJoinDialog({ teamId, teamName, open, onClose, onSuccess
 
       onClose();
       resetForm();
-      toast.success("Request sent. The team owner will review it.");
+      toast.success("Request sent. Once approved, you'll be added to the team's server channels.");
       onSuccess();
       router.refresh();
     });
@@ -101,7 +101,8 @@ export function RequestToJoinDialog({ teamId, teamName, open, onClose, onSuccess
                     <h2 className="text-xl font-semibold text-ink-50">Request to join</h2>
                     <p className="mt-1 text-sm text-ink-400">
                       Send a request to join <span className="font-medium text-ink-200">{teamName}</span>. The
-                      team owner will review it before you become a member.
+                      team owner will review it before you become a member — once approved,
+                      you&apos;ll be added to the team&apos;s server channels automatically.
                     </p>
                   </div>
                   <button
