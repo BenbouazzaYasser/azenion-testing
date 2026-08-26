@@ -128,7 +128,7 @@ export default function InstructorVerificationAdmin({
                       />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/20 text-lg font-semibold text-accent">
-                        {request.username[0].toUpperCase()}
+                        {((request.username ?? "?")[0] ?? "?").toUpperCase()}
                       </div>
                     )}
                     <div>
@@ -137,7 +137,7 @@ export default function InstructorVerificationAdmin({
                       </h3>
                       <p className="text-sm text-ink-400">@{request.username}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {request.expertise_areas.map((area) => (
+                        {(request.expertise_areas ?? []).map((area) => (
                           <span
                             key={area}
                             className="inline-flex items-center rounded-full bg-accent/20 px-2 py-1 text-xs text-accent"

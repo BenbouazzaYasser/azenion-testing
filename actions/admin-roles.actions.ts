@@ -233,8 +233,7 @@ export async function adminListUsersWithRoles(input: {
     `
     )
     .order("full_name", { ascending: true })
-    .limit(limit)
-    .offset(offset);
+    .range(offset, offset + limit - 1);
 
   if (error) {
     return { error: error.message, users: null };

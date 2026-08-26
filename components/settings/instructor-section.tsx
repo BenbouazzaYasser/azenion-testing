@@ -37,7 +37,7 @@ export function InstructorSection() {
 
       setIsInstructor(instructorResult.is_instructor);
       if (!verificationResult.error) {
-        setRequest(verificationResult.request);
+        setRequest(verificationResult.request ?? null);
       }
       setLoading(false);
     }
@@ -84,7 +84,7 @@ export function InstructorSection() {
       // Reload data
       const verificationResult = await getMyInstructorVerification();
       if (!verificationResult.error) {
-        setRequest(verificationResult.request);
+        setRequest(verificationResult.request ?? null);
       }
       setSubmitting(false);
     }

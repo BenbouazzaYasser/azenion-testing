@@ -19,33 +19,33 @@ export const OnboardingModal = dynamic(
 // Feed components - heavy components loaded on demand
 export const FeedList = dynamic(
   () => import("@/components/feed/feed-list").then(mod => ({ default: mod.FeedList })),
-  { loading: () => <div className="h-screen animate-pulse bg-surface" /> }
+  { loading: () => null }
 );
 
 // Chat components
 export const ChatSidebar = dynamic(
   () => import("@/components/chat/chat-sidebar").then(mod => ({ default: mod.ChatSidebar })),
-  { loading: () => <div className="h-full w-full animate-pulse bg-surface" />, ssr: false }
+  { loading: () => null, ssr: false }
 );
 
 export const ChatConversation = dynamic(
   () => import("@/components/chat/chat-conversation").then(mod => ({ default: mod.ChatConversation })),
-  { loading: () => <div className="h-full w-full animate-pulse bg-surface" />, ssr: false }
+  { loading: () => null, ssr: false }
 );
 
 // Team/Branch components
 export const TeamForm = dynamic(
-  () => import("@/components/teams/team-form").then(mod => ({ default: mod.TeamForm })),
-  { loading: () => <div className="h-96 animate-pulse bg-surface rounded-lg" /> }
+  () => import("@/components/sections/teams/create-team-form").then(mod => ({ default: mod.CreateTeamForm })),
+  { loading: () => null }
 );
 
 export const ProjectCard = dynamic(
-  () => import("@/components/projects/project-card").then(mod => ({ default: mod.ProjectCard })),
-  { loading: () => <div className="h-48 animate-pulse bg-surface rounded-lg" /> }
+  () => import("@/components/sections/projects/project-card").then(mod => ({ default: mod.ProjectCard })),
+  { loading: () => null }
 );
 
 // Settings components
 export const SettingsPage = dynamic(
   () => import("@/components/settings/settings-page").then(mod => ({ default: mod.SettingsPage })),
-  { loading: () => <div className="h-screen animate-pulse bg-surface" />, ssr: false }
+  { loading: () => null, ssr: false }
 );
