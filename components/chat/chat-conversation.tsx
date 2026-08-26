@@ -1,12 +1,10 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Send, MessageSquare, Users, Menu, Ban, Phone, Video, Monitor } from "lucide-react";
+import { Send, MessageSquare, Users, Menu, Ban } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
-import { CallModal } from "@/components/chat/call-modal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
@@ -73,26 +71,8 @@ export function ChatConversation({
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [actionsMessageId, setActionsMessageId] = useState<string | null>(null);
   const [otherLastReadAt, setOtherLastReadAt] = useState<string | null>(null);
-  const [activeCall, setActiveCall] = useState<{
-    callId: string;
-    kind: "audio" | "video" | "screen";
-    isIncoming: boolean;
-    offerSdp?: any;
-  } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // Start a call requested from the sidebar conversation menu (?call=video|screen|audio).
-  useEffect(() => {
-    const kind = searchParams.get("call");
-    if (kind !== "audio" && kind !== "video" && kind !== "screen") return;
-    setActiveCall((prev) =>
-      prev ?? { callId: crypto.randomUUID(), kind, isIncoming: false },
-    );
-    router.replace(`/chat/${conversationId}`, { scroll: false });
-  }, [searchParams, conversationId, router]);
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -203,35 +183,9 @@ export function ChatConversation({
       )
       .subscribe();
 
-    const callChannel = supabase
-      .channel(`chat-calls-inbound:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "call_events",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          const row = payload.new as any;
-          if (row.sender_id === currentUserId) return;
-          if (row.event_type === "offer" && !activeCall) {
-            setActiveCall({
-              callId: row.call_id,
-              kind: row.payload?.kind ?? "audio",
-              isIncoming: true,
-              offerSdp: row.payload?.sdp,
-            });
-          }
-        },
-      )
-      .subscribe();
-
     return () => {
       supabase.removeChannel(channel);
       supabase.removeChannel(readChannel);
-      supabase.removeChannel(callChannel);
     };
   }, [conversationId, currentUserId]);
 
@@ -360,34 +314,7 @@ export function ChatConversation({
         </div>
 
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => setActiveCall({ callId: crypto.randomUUID(), kind: "audio", isIncoming: false })}
-            aria-label="Start voice call"
-            title="Voice Call"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-ink-400 hover:text-ink-50 hover:bg-surface transition-all"
-          >
-            <Phone size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveCall({ callId: crypto.randomUUID(), kind: "video", isIncoming: false })}
-            aria-label="Start camera call"
-            title="Camera Call"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-ink-400 hover:text-ink-50 hover:bg-surface transition-all"
-          >
-            <Video size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveCall({ callId: crypto.randomUUID(), kind: "screen", isIncoming: false })}
-            aria-label="Start screen share"
-            title="Screen Share"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-ink-400 hover:text-ink-50 hover:bg-surface transition-all"
-          >
-            <Monitor size={16} />
-          </button>
-          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1 ml-1">
+          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1">
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
             <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">
               Private
@@ -510,16 +437,6 @@ export function ChatConversation({
           </form>
         )}
       </div>
-
-      {activeCall && (
-        <CallModal
-          conversationId={conversationId}
-          currentUserId={currentUserId}
-          peer={participant}
-          activeCall={activeCall}
-          onClose={() => setActiveCall(null)}
-        />
-      )}
     </div>
   );
 }

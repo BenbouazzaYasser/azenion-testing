@@ -327,6 +327,13 @@ export function Navbar() {
                             description="Grant and revoke platform roles"
                             onNavigate={() => setIsAdminOpen(false)}
                           />
+                          <MenuLink
+                            href="/admin/instructor-verification"
+                            icon={<GraduationCap size={16} />}
+                            title="Instructor Verification"
+                            description="Review instructor applications"
+                            onNavigate={() => setIsAdminOpen(false)}
+                          />
                         </div>
                         </div>
                       </div>
@@ -622,6 +629,12 @@ export function Navbar() {
                         <Link href="/admin/roles" onClick={() => setIsMenuOpen(false)}>
                           <UserCog size={14} />
                           Role Management
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" asChild>
+                        <Link href="/admin/instructor-verification" onClick={() => setIsMenuOpen(false)}>
+                          <GraduationCap size={14} />
+                          Instructor Verification
                         </Link>
                       </Button>
                     </>

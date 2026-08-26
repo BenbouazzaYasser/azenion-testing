@@ -14,6 +14,18 @@ export interface AdminUserSearchResult {
   avatar_url: string | null;
 }
 
+export interface AdminPlatformRole {
+  name: string;
+  description: string | null;
+  is_system: boolean;
+}
+
+export interface AdminUserRole {
+  name: string;
+  description: string | null;
+  assigned_at: string;
+}
+
 export type AdminRoleListResult =
   | { error: string; roles: null }
   | { error: null; roles: AdminUserRole[] };
@@ -22,11 +34,13 @@ export type AdminUserSearchActionResult =
   | { error: string; users: null }
   | { error: null; users: AdminUserSearchResult[] };
 
-export interface AdminUserRole {
-  name: string;
-  description: string | null;
-  assigned_at: string;
-}
+export type AdminListRolesResult =
+  | { error: string; roles: null }
+  | { error: null; roles: AdminPlatformRole[] };
+
+export type AdminListUsersWithRoleResult =
+  | { error: string; users: null }
+  | { error: null; users: Array<{ user_id: string; username: string; full_name: string | null; avatar_url: string | null; roles: string[] }> };
 
 /**
  * Resolves the caller and verifies they are a platform administrator via the
@@ -122,6 +136,24 @@ export async function adminGetUserRoles(input: {
   return { error: null, roles };
 }
 
+export async function adminListPlatformRoles(): Promise<AdminListRolesResult> {
+  const guard = await requirePlatformAdmin();
+  if (!guard.ok) return { error: guard.error, roles: null };
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("roles")
+    .select("name, description, is_system")
+    .order("is_system", { ascending: false })
+    .order("name", { ascending: true });
+
+  if (error) {
+    return { error: error.message, roles: null };
+  }
+
+  return { error: null, roles: (data ?? []) as AdminPlatformRole[] };
+}
+
 export async function adminGrantRole(input: {
   user_id: string;
   role_name: string;
@@ -135,7 +167,7 @@ export async function adminGrantRole(input: {
   }
 
   const supabase = createClient();
-  const { error } = await supabase.rpc("admin_grant_role", {
+  const { error } = await supabase.rpc("grant_platform_role", {
     p_user_id: parsed.data.user_id,
     p_role_name: parsed.data.role_name,
   });
@@ -160,7 +192,7 @@ export async function adminRevokeRole(input: {
   }
 
   const supabase = createClient();
-  const { error } = await supabase.rpc("admin_revoke_role", {
+  const { error } = await supabase.rpc("revoke_platform_role", {
     p_user_id: parsed.data.user_id,
     p_role_name: parsed.data.role_name,
   });
@@ -170,4 +202,63 @@ export async function adminRevokeRole(input: {
   }
 
   return { success: true };
+}
+
+/**
+ * List all users with their assigned platform roles.
+ * Useful for admin dashboard to see who has which roles.
+ */
+export async function adminListUsersWithRoles(input: {
+  limit?: number;
+  offset?: number;
+}): Promise<AdminListUsersWithRoleResult> {
+  const guard = await requirePlatformAdmin();
+  if (!guard.ok) return { error: guard.error, users: null };
+
+  const limit = Math.min(input.limit ?? 50, 100);
+  const offset = input.offset ?? 0;
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(
+      `
+      id,
+      username,
+      full_name,
+      avatar_url,
+      user_roles(
+        roles(name)
+      )
+    `
+    )
+    .order("full_name", { ascending: true })
+    .limit(limit)
+    .offset(offset);
+
+  if (error) {
+    return { error: error.message, users: null };
+  }
+
+  const users = (data ?? [])
+    .map((row: any) => {
+      const roles = (row.user_roles ?? [])
+        .map((ur: any) => {
+          const r = ur.roles as { name: string } | { name: string }[] | null;
+          if (!r) return null;
+          return Array.isArray(r) ? r[0]?.name : r.name;
+        })
+        .filter((name: string | null): name is string => name !== null);
+
+      return {
+        user_id: row.id,
+        username: row.username,
+        full_name: row.full_name,
+        avatar_url: row.avatar_url,
+        roles,
+      };
+    })
+    .filter((u) => u.roles.length > 0); // Only show users with roles for admin dashboard
+
+  return { error: null, users };
 }
