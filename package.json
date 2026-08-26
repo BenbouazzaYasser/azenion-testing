@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@opentelemetry/api": "^1.9.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.111.0",

@@ -408,7 +408,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main className="relative min-h-screen bg-void-950 dark:bg-void-950">
         <PageAtmosphere />
         <TeamHero
           team={teamWithOwner}
