@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfileAndRoles = useCallback(async (userId: string) => {
     const supabase = createClient();
-    const [{ data: profileData }, { data: adminResult }, { data: leaderRows }] =
+    const [{ data: profileData }, { data: adminResult }, { data: coreTeamResult }, { data: leaderRows }] =
       await Promise.all([
         supabase
           .from("profiles")
@@ -54,10 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq("id", userId)
           .maybeSingle(),
         supabase.rpc("is_platform_admin"),
+        supabase.rpc("has_platform_role", { p_role_name: "core_team_member", p_user_id: userId }),
         supabase.from("branch_leaders").select("branch_id").eq("user_id", userId).limit(1),
       ]);
     setProfile(profileData);
-    setIsAdmin(!!adminResult);
+    setIsAdmin(!!adminResult || !!coreTeamResult);
     setIsLeader((leaderRows ?? []).length > 0);
   }, []);
 

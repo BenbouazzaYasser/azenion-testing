@@ -22,10 +22,13 @@ export default async function AdminInstructorVerificationPage({
     redirect("/login");
   }
 
-  // Check if user is platform admin
-  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
+  // Check if user is platform admin or core team member
+  const [{ data: isPlatformAdmin }, { data: isCoreTeam }] = await Promise.all([
+    supabase.rpc("is_platform_admin"),
+    supabase.rpc("has_platform_role", { p_role_name: "core_team_member", p_user_id: user.id }),
+  ]);
 
-  if (!isPlatformAdmin) {
+  if (!isPlatformAdmin && !isCoreTeam) {
     redirect("/");
   }
 
