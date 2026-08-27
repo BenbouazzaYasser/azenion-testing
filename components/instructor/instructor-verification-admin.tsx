@@ -75,7 +75,6 @@ export default function InstructorVerificationAdmin({
         </div>
       )}
 
-      {/* Filters */}
       <div className="flex gap-2 overflow-x-auto">
         {filters.map((filter) => {
           const isActive = filter.value === currentStatus || (!filter.value && !currentStatus);
@@ -95,7 +94,6 @@ export default function InstructorVerificationAdmin({
         })}
       </div>
 
-      {/* Stats */}
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-4">
         <p className="text-ink-300">
           Showing <span className="font-medium text-ink-50">{requests.length}</span> of{" "}
@@ -103,7 +101,6 @@ export default function InstructorVerificationAdmin({
         </p>
       </div>
 
-      {/* Requests List */}
       <div className="space-y-4">
         {requests.length === 0 ? (
           <div className="rounded-lg border border-ink-800 bg-void-900/50 p-8 text-center text-ink-400">
@@ -167,6 +164,55 @@ export default function InstructorVerificationAdmin({
 
                 {isExpanded && (
                   <div className="mt-4 space-y-4 border-t border-ink-800 pt-4">
+                    {request.education && request.education.length > 0 && (
+                      <div>
+                        <h4 className="mb-2 text-sm font-medium text-ink-200">Education</h4>
+                        <div className="space-y-1">
+                          {request.education.map((edu, i) => (
+                            <p key={i} className="text-sm text-ink-300">
+                              {edu.self_taught ? (
+                                "Self-taught"
+                              ) : (
+                                <>
+                                  {edu.degree && <>{edu.degree} in {edu.field && <>{edu.field} — </>}</>}
+                                  {edu.institution}
+                                  {edu.start_year && <> ({edu.start_year}{edu.end_year ? ` – ${edu.end_year}` : " – Present"})</>}
+                                </>
+                              )}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {request.certifications && request.certifications.length > 0 && (
+                      <div>
+                        <h4 className="mb-2 text-sm font-medium text-ink-200">Certifications</h4>
+                        <div className="space-y-1">
+                          {request.certifications.map((cert, i) => (
+                            <p key={i} className="text-sm text-ink-300">
+                              {cert.name}
+                              {cert.issuer && <> — {cert.issuer}</>}
+                              {cert.year && <> ({cert.year})</>}
+                              {cert.url && (
+                                <>
+                                  {" "}
+                                  <a
+                                    href={cert.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-accent hover:underline"
+                                  >
+                                    [link]
+                                  </a>
+                                </>
+                              )}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div>
                       <label className="mb-2 block text-sm font-medium text-ink-200">
                         Review Notes
@@ -176,7 +222,7 @@ export default function InstructorVerificationAdmin({
                         onChange={(e) => setReviewNotes(e.target.value)}
                         rows={3}
                         placeholder="Add notes about your review decision..."
-                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none dark:border-ink-700 dark:bg-void-800 dark:text-ink-50 dark:focus:border-accent"
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none"
                       />
                     </div>
 
@@ -211,13 +257,12 @@ export default function InstructorVerificationAdmin({
         )}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center gap-2">
           {currentPage > 1 && (
             <Link
               href={`/admin/instructor-verification?page=${currentPage - 1}${currentStatus ? `&status=${currentStatus}` : ""}`}
-              className="rounded-lg bg-void-800 px-4 py-2 text-sm font-medium text-ink-200 hover:bg-void-700 dark:bg-void-800 dark:text-ink-200 dark:hover:bg-void-700"
+              className="rounded-lg bg-void-800 px-4 py-2 text-sm font-medium text-ink-200 hover:bg-void-700"
             >
               Previous
             </Link>
@@ -228,7 +273,7 @@ export default function InstructorVerificationAdmin({
           {currentPage < totalPages && (
             <Link
               href={`/admin/instructor-verification?page=${currentPage + 1}${currentStatus ? `&status=${currentStatus}` : ""}`}
-              className="rounded-lg bg-void-800 px-4 py-2 text-sm font-medium text-ink-200 hover:bg-void-700 dark:bg-void-800 dark:text-ink-200 dark:hover:bg-void-700"
+              className="rounded-lg bg-void-800 px-4 py-2 text-sm font-medium text-ink-200 hover:bg-void-700"
             >
               Next
             </Link>

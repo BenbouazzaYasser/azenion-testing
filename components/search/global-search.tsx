@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
 import { useRouter, usePathname } from "next/navigation";
 import { useUser } from "@/hooks/use-user";
@@ -16,9 +17,13 @@ import {
   Video,
 } from "lucide-react";
 import { globalSearch, type GlobalSearchResponse, type SearchCategory } from "@/actions/search.actions";
-import { ProfilePreviewDialog } from "@/components/search/profile-preview-dialog";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+
+const ProfilePreviewDialog = dynamic(
+  () => import("@/components/search/profile-preview-dialog").then((m) => m.ProfilePreviewDialog),
+  { ssr: false },
+);
 
 const CATEGORY_HEADERS: { value: SearchCategory; label: string; icon: typeof Users }[] = [
   { value: "Users", label: "Users", icon: Users },

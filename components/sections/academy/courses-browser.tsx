@@ -30,7 +30,7 @@ const CATEGORIES = [
 ];
 
 const inputClass =
-  "w-full rounded-full bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-all duration-300 focus:border-accent-400/60 focus:bg-surface-hover focus:ring-2 focus:ring-accent-400/30";
+  "w-full rounded-full bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/60 focus:ring-2 focus:ring-accent-400/30";
 
 interface CoursesBrowserProps {
   courses: CourseRow[];

@@ -279,7 +279,7 @@ export function CommentSection({
                     handlePost();
                   }
                 }}
-                className="min-w-0 flex-1 rounded-lg bg-surface px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
+                className="min-w-0 flex-1 rounded-lg bg-surface px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-[border-color,box-shadow] focus:border-accent-400/50 focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
               />
               <button
                 type="button"
@@ -444,7 +444,7 @@ function CommentItem({
               onChange={(e) => setDraft(e.target.value)}
               autoFocus
               rows={2}
-              className="w-full resize-y rounded-lg bg-surface px-3 py-2 text-sm text-ink-50 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
+              className="w-full resize-y rounded-lg bg-surface px-3 py-2 text-sm text-ink-50 outline-none transition-[border-color,box-shadow] focus:border-accent-400/50 focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
             />
             <div className="mt-2 flex items-center gap-2">
               <button
@@ -518,7 +518,7 @@ function CommentItem({
                 }
               }}
               autoFocus
-              className="min-w-0 flex-1 rounded-lg bg-surface px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-all focus:border-accent-400/50 focus:bg-accent/[0.04] focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
+              className="min-w-0 flex-1 rounded-lg bg-surface px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-[border-color,box-shadow] focus:border-accent-400/50 focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
             />
             <button
               type="button"

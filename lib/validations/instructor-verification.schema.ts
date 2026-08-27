@@ -1,5 +1,21 @@
 import { z } from "zod";
 
+export interface EducationEntry {
+  institution: string;
+  degree: string | null;
+  field: string | null;
+  start_year: string | null;
+  end_year: string | null;
+  self_taught: boolean;
+}
+
+export interface CertificationEntry {
+  name: string;
+  issuer: string | null;
+  year: string | null;
+  url: string | null;
+}
+
 export const instructorVerificationSchema = z.object({
   full_name: z
     .string()
@@ -21,6 +37,8 @@ export const instructorVerificationSchema = z.object({
     .max(2000, "Teaching experience must be 2000 characters or less")
     .optional()
     .nullable(),
+  education: z.any().optional().default([]),
+  certifications: z.any().optional().default([]),
   portfolio_url: z
     .string()
     .trim()
@@ -53,6 +71,8 @@ export interface InstructorVerificationRow {
   bio: string;
   expertise_areas: string[];
   teaching_experience: string | null;
+  education: EducationEntry[];
+  certifications: CertificationEntry[];
   portfolio_url: string | null;
   linkedin_url: string | null;
   github_url: string | null;
