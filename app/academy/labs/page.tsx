@@ -39,13 +39,19 @@ export default async function LabsPage() {
   // ways -- a row in public.platform_admins, or the 'platform_admin' role
   // in user_roles (the latter being what /admin/roles actually grants).
   // has_platform_role() already ORs both together, so this picks up
-  // either representation without introducing a new check.
+  // either representation without introducing a new check. Core team
+  // members are also allowed to create and manage labs.
   let isPlatformAdminUser = false;
+  let isCoreTeamUser = false;
   let isInstructorOrCreator = false;
   if (user) {
-    const { data } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
-    isPlatformAdminUser = Boolean(data);
-    if (!isPlatformAdminUser) {
+    const [{ data: paData }, { data: ctData }] = await Promise.all([
+      supabase.rpc("has_platform_role", { p_role_name: "platform_admin" }),
+      supabase.rpc("has_platform_role", { p_role_name: "core_team_member" }),
+    ]);
+    isPlatformAdminUser = Boolean(paData);
+    isCoreTeamUser = Boolean(ctData);
+    if (!isPlatformAdminUser && !isCoreTeamUser) {
       const { data: roleRows } = await supabase.from("user_roles").select("roles(name)").eq("user_id", user.id);
       const roles = (roleRows as Array<{ roles: { name: string } | { name: string }[] | null }> | null) ?? [];
       isInstructorOrCreator = roles.some((row) => {
@@ -56,7 +62,7 @@ export default async function LabsPage() {
       });
     }
   }
-  const canCreate = isPlatformAdminUser || isInstructorOrCreator;
+  const canCreate = isPlatformAdminUser || isCoreTeamUser || isInstructorOrCreator;
 
   // Published labs for everyone; a manager also sees their own unpublished
   // labs (matching the existing "creators can read their own labs" /

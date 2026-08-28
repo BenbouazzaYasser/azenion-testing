@@ -48,6 +48,10 @@ async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>):
   const { data: isPlatformAdminRole } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
   if (isPlatformAdminRole) return true;
 
+  // Core team members may also create and manage labs.
+  const { data: isCoreTeam } = await supabase.rpc("has_platform_role", { p_role_name: "core_team_member" });
+  if (isCoreTeam) return true;
+
   // Check if user has instructor or creator platform role
   const admin = createAdminClient();
   const { data } = await admin
@@ -73,8 +77,11 @@ async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>):
 // user_roles) are recognized -- see isLabCreator() above for the same
 // reasoning.
 async function isPlatformAdmin(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
-  const { data } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
-  return Boolean(data);
+  const { data: pa } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
+  if (pa) return true;
+  // Core team members may also manage any lab.
+  const { data: ct } = await supabase.rpc("has_platform_role", { p_role_name: "core_team_member" });
+  return Boolean(ct);
 }
 
 // PostgREST embeds (e.g. `labs(created_by)`) come back as either a single
