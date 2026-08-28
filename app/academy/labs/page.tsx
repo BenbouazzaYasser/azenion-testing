@@ -46,8 +46,8 @@ export default async function LabsPage() {
   let isInstructorOrCreator = false;
   if (user) {
     const [{ data: paData }, { data: ctData }] = await Promise.all([
-      supabase.rpc("has_platform_role", { p_role_name: "platform_admin" }),
-      supabase.rpc("has_platform_role", { p_role_name: "core_team_member" }),
+      supabase.rpc("has_platform_role", { p_role_name: "platform_admin", p_user_id: user.id }),
+      supabase.rpc("has_platform_role", { p_role_name: "core_team_member", p_user_id: user.id }),
     ]);
     isPlatformAdminUser = Boolean(paData);
     isCoreTeamUser = Boolean(ctData);

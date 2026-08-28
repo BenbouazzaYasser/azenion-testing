@@ -45,11 +45,13 @@ async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>):
   // or the 'platform_admin' role in user_roles (the latter being what
   // /admin/roles actually grants) -- and has_platform_role() already ORs
   // both together.
-  const { data: isPlatformAdminRole } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
+  // Pass p_user_id explicitly: auth.uid() does not resolve reliably in this
+  // app's server context, but the explicit id (as used by the navbar) works.
+  const { data: isPlatformAdminRole } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin", p_user_id: user.id });
   if (isPlatformAdminRole) return true;
 
   // Core team members may also create and manage labs.
-  const { data: isCoreTeam } = await supabase.rpc("has_platform_role", { p_role_name: "core_team_member" });
+  const { data: isCoreTeam } = await supabase.rpc("has_platform_role", { p_role_name: "core_team_member", p_user_id: user.id });
   if (isCoreTeam) return true;
 
   // Check if user has instructor or creator platform role
@@ -77,10 +79,16 @@ async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>):
 // user_roles) are recognized -- see isLabCreator() above for the same
 // reasoning.
 async function isPlatformAdmin(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
-  const { data: pa } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  // Pass p_user_id explicitly: auth.uid() does not resolve reliably in this
+  // app's server context, but the explicit id (as used by the navbar) works.
+  const { data: pa } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin", p_user_id: user.id });
   if (pa) return true;
   // Core team members may also manage any lab.
-  const { data: ct } = await supabase.rpc("has_platform_role", { p_role_name: "core_team_member" });
+  const { data: ct } = await supabase.rpc("has_platform_role", { p_role_name: "core_team_member", p_user_id: user.id });
   return Boolean(ct);
 }
 
