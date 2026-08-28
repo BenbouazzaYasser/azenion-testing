@@ -29,11 +29,11 @@ const FEATURES = [
     icon: FlaskConical,
     title: "Labs",
     description:
-      "Build, experiment, collaborate and innovate with other members in a shared space.",
+      "Practical, hands-on labs across OSINT, Linux and coding — investigate, solve, and prove what you know.",
     href: "/academy/labs",
-    action: "Coming Soon",
-    badge: "Coming Soon",
-    disabled: true,
+    action: "Explore Labs",
+    badge: null,
+    disabled: false,
   },
 ] as const;
 
