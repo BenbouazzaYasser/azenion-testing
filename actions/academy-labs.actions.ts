@@ -39,9 +39,14 @@ async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>):
   } = await supabase.auth.getUser();
   if (!user) return false;
 
-  // Check if user is a platform admin
-  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
-  if (isPlatformAdmin) return true;
+  // Check if user is a platform admin. has_platform_role('platform_admin')
+  // is used instead of the raw is_platform_admin() RPC because this
+  // platform recognizes admins two ways -- a row in public.platform_admins,
+  // or the 'platform_admin' role in user_roles (the latter being what
+  // /admin/roles actually grants) -- and has_platform_role() already ORs
+  // both together.
+  const { data: isPlatformAdminRole } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
+  if (isPlatformAdminRole) return true;
 
   // Check if user has instructor or creator platform role
   const admin = createAdminClient();
@@ -62,8 +67,13 @@ async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>):
 // Platform admins can manage any lab, not just ones they created themselves.
 // Kept separate from isLabCreator (which gates create/instructor-or-creator
 // access) so the ownership checks below stay a single, explicit condition.
+// Uses has_platform_role('platform_admin') rather than the raw
+// is_platform_admin() RPC so both admin representations (the
+// public.platform_admins table and the 'platform_admin' role in
+// user_roles) are recognized -- see isLabCreator() above for the same
+// reasoning.
 async function isPlatformAdmin(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
-  const { data } = await supabase.rpc("is_platform_admin");
+  const { data } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
   return Boolean(data);
 }
 

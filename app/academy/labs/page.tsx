@@ -33,10 +33,17 @@ export default async function LabsPage() {
   // resolved per-card in LabsBrowser/LabCard, rather than a single blanket
   // flag. This is UI-only: the server actions re-check authorization
   // independently regardless of what renders here.
+  //
+  // Admin detection uses has_platform_role('platform_admin') rather than
+  // the raw is_platform_admin() RPC: this platform recognizes admins two
+  // ways -- a row in public.platform_admins, or the 'platform_admin' role
+  // in user_roles (the latter being what /admin/roles actually grants).
+  // has_platform_role() already ORs both together, so this picks up
+  // either representation without introducing a new check.
   let isPlatformAdminUser = false;
   let isInstructorOrCreator = false;
   if (user) {
-    const { data } = await supabase.rpc("is_platform_admin");
+    const { data } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
     isPlatformAdminUser = Boolean(data);
     if (!isPlatformAdminUser) {
       const { data: roleRows } = await supabase.from("user_roles").select("roles(name)").eq("user_id", user.id);
