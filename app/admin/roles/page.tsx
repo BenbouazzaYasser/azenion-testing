@@ -21,13 +21,9 @@ export default async function AdminRolesPage() {
 
   // Platform admins live in `platform_admins` (00028) — deliberately separate
   // from the `user_roles` catalog managed on this page.
-  // core_team_member role also grants admin panel access.
-  const [{ data: isPlatformAdmin }, { data: isCoreTeam }] = await Promise.all([
-    supabase.rpc("is_platform_admin"),
-    supabase.rpc("has_platform_role", { p_role_name: "core_team_member", p_user_id: user.id }),
-  ]);
+  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
 
-  if (!isPlatformAdmin && !isCoreTeam) {
+  if (!isPlatformAdmin) {
     redirect("/");
   }
 
