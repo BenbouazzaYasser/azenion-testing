@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { instructorVerificationSchema } from "@/lib/validations/instructor-verification.schema";
+import { instructorVerificationSchema, type EducationEntry, type CertificationEntry } from "@/lib/validations/instructor-verification.schema";
 
 export interface InstructorVerificationRequest {
   id: string;
@@ -11,6 +11,8 @@ export interface InstructorVerificationRequest {
   bio: string;
   expertise_areas: string[];
   teaching_experience: string | null;
+  education: EducationEntry[];
+  certifications: CertificationEntry[];
   portfolio_url: string | null;
   linkedin_url: string | null;
   github_url: string | null;
@@ -29,6 +31,8 @@ export interface AdminVerificationRequest {
   avatar_url: string | null;
   status: "pending" | "approved" | "rejected" | "needs_info";
   expertise_areas: string[];
+  education: EducationEntry[];
+  certifications: CertificationEntry[];
   created_at: string;
   updated_at: string;
 }
@@ -82,6 +86,8 @@ export async function submitInstructorVerification(
       p_portfolio_url: parsed.data.portfolio_url || null,
       p_linkedin_url: parsed.data.linkedin_url || null,
       p_github_url: parsed.data.github_url || null,
+      p_education: JSON.stringify(parsed.data.education ?? []),
+      p_certifications: JSON.stringify(parsed.data.certifications ?? []),
     }
   );
 
@@ -126,6 +132,8 @@ export async function getMyInstructorVerification(): Promise<GetMyVerificationRe
       bio: row.bio,
       expertise_areas: row.expertise_areas,
       teaching_experience: row.teaching_experience,
+      education: parseJsonField<EducationEntry>(row.education),
+      certifications: parseJsonField<CertificationEntry>(row.certifications),
       portfolio_url: row.portfolio_url,
       linkedin_url: row.linkedin_url,
       github_url: row.github_url,
@@ -156,7 +164,6 @@ export async function adminGetVerificationRequests(input: {
     return { error: "Not authenticated" };
   }
 
-  // Check if user is platform admin
   const { data: isPlatformAdmin, error: rpcError } = await supabase.rpc(
     "is_platform_admin"
   );
@@ -178,7 +185,6 @@ export async function adminGetVerificationRequests(input: {
     return { error: error.message };
   }
 
-  // Get total count
   const totalResult = await supabase.rpc("admin_get_verification_requests", {
     p_status: input.status || null,
     p_limit: 999999,
@@ -188,7 +194,11 @@ export async function adminGetVerificationRequests(input: {
   const total = totalResult.data?.length ?? 0;
 
   return {
-    requests: (data ?? []) as AdminVerificationRequest[],
+    requests: (data ?? []).map((row: Record<string, unknown>) => ({
+      ...row,
+      education: parseJsonField<EducationEntry>(row.education),
+      certifications: parseJsonField<CertificationEntry>(row.certifications),
+    })) as AdminVerificationRequest[],
     total,
   };
 }
@@ -211,7 +221,6 @@ export async function adminReviewInstructorVerification(input: {
     return { error: "Not authenticated" };
   }
 
-  // Check if user is platform admin
   const { data: isPlatformAdmin, error: rpcError } = await supabase.rpc(
     "is_platform_admin"
   );
@@ -263,4 +272,18 @@ export async function amIVerifiedInstructor(): Promise<{
   }
 
   return { is_instructor: !!data };
+}
+
+function parseJsonField<T = unknown>(value: unknown): T[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
 }

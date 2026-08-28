@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, useCallback, type ReactNode } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Menu, X, User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
@@ -9,12 +10,22 @@ import { Button } from "@/components/ui/button";
 import { NAV_LINKS } from "@/data/nav-links";
 import { useUser } from "@/hooks/use-user";
 import { cn } from "@/lib/utils";
-import { signOut } from "@/actions/auth.actions";
-import { NotificationCenter } from "@/components/notifications/notification-center";
-import { GlobalSearch } from "@/components/search/global-search";
+import { createClient } from "@/lib/supabase/client";
 import { useChatUnread } from "@/lib/chat-unread";
 import { LightModeButton } from "@/components/theme/light-mode-button";
-import { PageTranslator } from "@/components/shared/page-translator";
+
+const NotificationCenter = dynamic(
+  () => import("@/components/notifications/notification-center").then((m) => m.NotificationCenter),
+  { ssr: false },
+);
+const GlobalSearch = dynamic(
+  () => import("@/components/search/global-search").then((m) => m.GlobalSearch),
+  { ssr: false },
+);
+const PageTranslator = dynamic(
+  () => import("@/components/shared/page-translator").then((m) => m.PageTranslator),
+  { ssr: false },
+);
 
 interface MenuLinkProps {
   href: string;
@@ -484,11 +495,15 @@ export function Navbar() {
                         <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
                           Danger Zone
                         </p>
-                        <form action={signOut}>
-                          <button
-                            type="submit"
-                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-red-500/[0.08] hover:shadow-[0_0_24px_-10px_rgba(248,113,113,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
-                          >
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const supabase = createClient();
+                            await supabase.auth.signOut();
+                            window.location.href = "/";
+                          }}
+                          className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-red-500/[0.08] hover:shadow-[0_0_24px_-10px_rgba(248,113,113,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                        >
                             <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg bg-surface text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-red-400/30 group-hover:bg-red-500/[0.1] group-hover:text-red-400">
                               <LogOut size={16} />
                             </span>
@@ -501,7 +516,6 @@ export function Navbar() {
                               </span>
                             </span>
                           </button>
-                        </form>
                       </div>
                     </div>
                   ) : null}
@@ -689,12 +703,19 @@ export function Navbar() {
                     </Link>
                   </Button>
                   <div className="border-t border-border pt-3">
-                    <form action={signOut}>
-                      <Button type="submit" variant="ghost" className="w-full justify-start text-red-400 hover:text-red-300">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="w-full justify-start text-red-400 hover:text-red-300"
+                        onClick={async () => {
+                          const supabase = createClient();
+                          await supabase.auth.signOut();
+                          window.location.href = "/";
+                        }}
+                      >
                         <LogOut size={14} />
                         Sign Out
                       </Button>
-                    </form>
                   </div>
                 </>
               ) : (

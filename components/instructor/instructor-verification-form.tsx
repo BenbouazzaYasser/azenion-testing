@@ -2,7 +2,25 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { submitInstructorVerification } from "@/actions/instructor-verification.actions";
+import type { EducationEntry, CertificationEntry } from "@/lib/validations/instructor-verification.schema";
+
+const emptyEducation: EducationEntry = {
+  institution: "",
+  degree: "",
+  field: "",
+  start_year: "",
+  end_year: "",
+  self_taught: false,
+};
+
+const emptyCertification: CertificationEntry = {
+  name: "",
+  issuer: "",
+  year: "",
+  url: "",
+};
 
 export default function InstructorVerificationForm() {
   const router = useRouter();
@@ -13,6 +31,8 @@ export default function InstructorVerificationForm() {
     bio: "",
     expertise_areas: [] as string[],
     teaching_experience: "",
+    education: [] as EducationEntry[],
+    certifications: [] as CertificationEntry[],
     portfolio_url: "",
     linkedin_url: "",
     github_url: "",
@@ -36,6 +56,46 @@ export default function InstructorVerificationForm() {
     });
   };
 
+  const handleAddEducation = () => {
+    setFormData({
+      ...formData,
+      education: [...formData.education, { ...emptyEducation }],
+    });
+  };
+
+  const handleUpdateEducation = (index: number, field: keyof EducationEntry, value: string | boolean) => {
+    const updated = [...formData.education];
+    updated[index] = { ...updated[index], [field]: value } as EducationEntry;
+    setFormData({ ...formData, education: updated });
+  };
+
+  const handleRemoveEducation = (index: number) => {
+    setFormData({
+      ...formData,
+      education: formData.education.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleAddCertification = () => {
+    setFormData({
+      ...formData,
+      certifications: [...formData.certifications, { ...emptyCertification }],
+    });
+  };
+
+  const handleUpdateCertification = (index: number, field: keyof CertificationEntry, value: string) => {
+    const updated = [...formData.certifications];
+    updated[index] = { ...updated[index], [field]: value } as CertificationEntry;
+    setFormData({ ...formData, certifications: updated });
+  };
+
+  const handleRemoveCertification = (index: number) => {
+    setFormData({
+      ...formData,
+      certifications: formData.certifications.filter((_, i) => i !== index),
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -46,6 +106,8 @@ export default function InstructorVerificationForm() {
       bio: formData.bio,
       expertise_areas: formData.expertise_areas,
       teaching_experience: formData.teaching_experience || null,
+      education: formData.education.filter((e) => e.self_taught || e.institution.trim()),
+      certifications: formData.certifications.filter((c) => c.name.trim()),
       portfolio_url: formData.portfolio_url || null,
       linkedin_url: formData.linkedin_url || null,
       github_url: formData.github_url || null,
@@ -55,6 +117,7 @@ export default function InstructorVerificationForm() {
       setError(result.error);
       setLoading(false);
     } else {
+      toast.success("Verification request submitted! We'll review it shortly.");
       router.refresh();
     }
   };
@@ -162,6 +225,201 @@ export default function InstructorVerificationForm() {
             />
           </div>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-ink-50">Education</h2>
+          <button
+            type="button"
+            onClick={handleAddEducation}
+            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-500"
+          >
+            + Add
+          </button>
+        </div>
+
+        {formData.education.length === 0 ? (
+          <p className="text-sm text-ink-500">No education entries added yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {formData.education.map((edu, index) => (
+              <div
+                key={index}
+                className="relative rounded-lg border border-ink-700 bg-void-800/50 p-4"
+              >
+                <button
+                  type="button"
+                  onClick={() => handleRemoveEducation(index)}
+                  className="absolute right-3 top-3 text-ink-500 hover:text-danger"
+                >
+                  ×
+                </button>
+
+                <div className="mb-3 flex items-center gap-3">
+                  <label className="flex items-center gap-2 text-sm text-ink-300">
+                    <input
+                      type="checkbox"
+                      checked={edu.self_taught}
+                      onChange={(e) => handleUpdateEducation(index, "self_taught", e.target.checked)}
+                      className="rounded border-ink-600 bg-void-800 text-accent focus:ring-accent"
+                    />
+                    Self-taught
+                  </label>
+                </div>
+
+                {!edu.self_taught && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <label className="mb-1 block text-xs font-medium text-ink-400">
+                        Institution *
+                      </label>
+                      <input
+                        type="text"
+                        value={edu.institution}
+                        onChange={(e) => handleUpdateEducation(index, "institution", e.target.value)}
+                        placeholder="e.g., MIT, Stanford University"
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-ink-400">Degree</label>
+                      <input
+                        type="text"
+                        value={edu.degree ?? ""}
+                        onChange={(e) => handleUpdateEducation(index, "degree", e.target.value)}
+                        placeholder="e.g., B.S., M.A., Ph.D."
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-ink-400">
+                        Field of Study
+                      </label>
+                      <input
+                        type="text"
+                        value={edu.field ?? ""}
+                        onChange={(e) => handleUpdateEducation(index, "field", e.target.value)}
+                        placeholder="e.g., Computer Science"
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-ink-400">
+                        Start Year
+                      </label>
+                      <input
+                        type="text"
+                        value={edu.start_year ?? ""}
+                        onChange={(e) => handleUpdateEducation(index, "start_year", e.target.value)}
+                        placeholder="2020"
+                        maxLength={4}
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-ink-400">
+                        End Year
+                      </label>
+                      <input
+                        type="text"
+                        value={edu.end_year ?? ""}
+                        onChange={(e) => handleUpdateEducation(index, "end_year", e.target.value)}
+                        placeholder="2024 or leave blank if current"
+                        maxLength={4}
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-ink-50">Certifications</h2>
+          <button
+            type="button"
+            onClick={handleAddCertification}
+            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-500"
+          >
+            + Add
+          </button>
+        </div>
+
+        {formData.certifications.length === 0 ? (
+          <p className="text-sm text-ink-500">No certifications added yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {formData.certifications.map((cert, index) => (
+              <div
+                key={index}
+                className="relative rounded-lg border border-ink-700 bg-void-800/50 p-4"
+              >
+                <button
+                  type="button"
+                  onClick={() => handleRemoveCertification(index)}
+                  className="absolute right-3 top-3 text-ink-500 hover:text-danger"
+                >
+                  ×
+                </button>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className="mb-1 block text-xs font-medium text-ink-400">
+                      Certification Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={cert.name}
+                      onChange={(e) => handleUpdateCertification(index, "name", e.target.value)}
+                      placeholder="e.g., AWS Solutions Architect, Google Cloud Professional"
+                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-ink-400">
+                      Issuing Organization
+                    </label>
+                    <input
+                      type="text"
+                      value={cert.issuer ?? ""}
+                      onChange={(e) => handleUpdateCertification(index, "issuer", e.target.value)}
+                      placeholder="e.g., Amazon, Google"
+                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-ink-400">Year</label>
+                    <input
+                      type="text"
+                      value={cert.year ?? ""}
+                      onChange={(e) => handleUpdateCertification(index, "year", e.target.value)}
+                      placeholder="2024"
+                      maxLength={4}
+                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1 block text-xs font-medium text-ink-400">
+                      Credential URL (optional)
+                    </label>
+                    <input
+                      type="url"
+                      value={cert.url ?? ""}
+                      onChange={(e) => handleUpdateCertification(index, "url", e.target.value)}
+                      placeholder="https://..."
+                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">

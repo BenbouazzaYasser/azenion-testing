@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SettingsPanel } from "./settings-panel";
 import { DeleteAccountModal } from "@/components/sections/profile/delete-account-modal";
 import { signOutEverywhere } from "@/actions/settings.actions";
-import { signOut } from "@/actions/auth.actions";
+import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
 export function DangerZoneSection() {
@@ -73,11 +73,17 @@ export function DangerZoneSection() {
               <h3 className="text-sm font-medium text-ink-50">Sign out of this device</h3>
               <p className="mt-1 text-sm text-ink-400">End your current session and return to the login screen.</p>
             </div>
-            <form action={signOut}>
-              <Button type="submit" variant="secondary" size="sm">
-                Sign out
-              </Button>
-            </form>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={async () => {
+                const supabase = createClient();
+                await supabase.auth.signOut();
+                window.location.href = "/";
+              }}
+            >
+              Sign out
+            </Button>
           </div>
         </div>
       </SettingsPanel>

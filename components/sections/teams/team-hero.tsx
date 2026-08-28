@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Users, Calendar, User, Building2, Settings, Clock, Archive } from "lucide-react";
+import { AmbientBg } from "@/components/graphics/ambient-bg";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Reveal } from "@/components/ui/reveal";
 import { TeamJoinButton, type TeamRequestStatus } from "./team-join-button";
@@ -60,7 +61,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
   }
 
   return (
-    <section className="section-cosmic relative pt-[88px] sm:pt-[104px] lg:pt-[120px]">
+    <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
       {team.banner_url ? (
         <div className="absolute inset-0">
           <img
@@ -72,6 +73,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
         </div>
       ) : null}
       <BackgroundInfinity variant="teams" />
+      <AmbientBg />
 
       <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
         <Reveal delay={0}>
@@ -129,7 +131,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
                 )}
               </div>
               {isOwner ? (
-                <Button size="sm" variant="secondary" onClick={handleReactivate} disabled={isPending} className="border-border-strong/[0.08] bg-white/[0.04] text-white/85 hover:border-accent/40 hover:bg-white/[0.06] hover:text-white dark:border-border-strong/[0.08] dark:bg-white/[0.04] dark:text-white/85 dark:hover:border-accent/40 dark:hover:bg-white/[0.06] dark:hover:text-white">
+                <Button size="sm" variant="secondary" onClick={handleReactivate} disabled={isPending}>
                   {isPending ? "Reactivating..." : "Reactivate team"}
                 </Button>
               ) : null}
@@ -196,11 +198,10 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
               isOwner={isOwner}
               requestStatus={requestStatus}
               onGoToSettings={() => router.push(`/teams/${team.slug}/settings`)}
-              className="border-border-strong/[0.08] bg-white/[0.04] text-white/85 hover:border-accent/40 hover:bg-white/[0.06] hover:text-white dark:border-border-strong/[0.08] dark:bg-white/[0.04] dark:text-white/85 dark:hover:border-accent/40 dark:hover:bg-white/[0.06] dark:hover:text-white"
             />
             {isMember ? (
               <Link href={`/teams/${team.slug}/settings`}>
-                <Button size="lg" variant="secondary" className="border-border-strong/[0.08] bg-white/[0.04] text-white/85 hover:border-accent/40 hover:bg-white/[0.06] hover:text-white dark:border-border-strong/[0.08] dark:bg-white/[0.04] dark:text-white/85 dark:hover:border-accent/40 dark:hover:bg-white/[0.06] dark:hover:text-white">
+                <Button size="lg" variant="secondary">
                   <Settings size={15} />
                   Settings
                 </Button>
@@ -221,7 +222,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
         </Reveal>
       </div>
 
-      <div className="absolute bottom-0 left-1/2 h-px w-[600px] -translate-x-1/2 bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+      <div className="absolute bottom-0 left-1/2 hidden h-px w-[600px] -translate-x-1/2 bg-gradient-to-r from-transparent via-accent/30 to-transparent lg:block" />
     </section>
   );
 }

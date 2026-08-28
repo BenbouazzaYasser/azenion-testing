@@ -42,6 +42,40 @@ create policy "user roles are publicly readable"
 create index if not exists idx_user_roles_user_id on public.user_roles(user_id);
 create index if not exists idx_user_roles_role_id on public.user_roles(role_id);
 
+-- Back-compat: older DBs (00093) created user_roles without assigned_by.
+alter table public.user_roles add column if not exists assigned_by uuid references public.profiles(id) on delete set null;
+alter table public.user_roles add column if not exists assigned_at timestamptz not null default now();
+alter table public.roles add column if not exists is_system boolean not null default false;
+alter table public.roles add column if not exists description text;
+alter table public.roles add column if not exists created_at timestamptz not null default now();
+
+-- ── RPC: is_platform_admin overload (uuid) ───────────────────────────────────
+-- Original 00028 defines is_platform_admin() with no args (checks auth.uid()).
+-- has_platform_role needs to check arbitrary users, so add the uuid overload first.
+
+create or replace function public.is_platform_admin(p_user_id uuid)
+returns boolean
+language sql
+security definer set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.platform_admins where user_id = p_user_id
+  );
+$$;
+
+create or replace function public.is_platform_admin()
+returns boolean
+language sql
+security definer set search_path = public
+stable
+as $$
+  select public.is_platform_admin(auth.uid());
+$$;
+
+grant execute on function public.is_platform_admin(uuid) to anon, authenticated, service_role;
+grant execute on function public.is_platform_admin() to anon, authenticated, service_role;
+
 -- ── RPC: has_platform_role ────────────────────────────────────────────────────
 -- Single source of truth: does a user hold a platform role?
 -- Platform admins implicitly hold every role (via is_platform_admin).

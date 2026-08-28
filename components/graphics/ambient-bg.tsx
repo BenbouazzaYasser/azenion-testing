@@ -18,7 +18,7 @@ const presets: Record<AmbientPreset, {
     radials:
       "radial-gradient(circle_at_20%_10%,rgba(40,40,255,0.24),transparent_34%)," +
       "radial-gradient(circle_at_80%_20%,rgba(109,109,255,0.16),transparent_36%)," +
-      "linear-gradient(180deg,rgba(255,255,255,0.05),transparent_55%)",
+      "linear-gradient(180deg,rgba(255,255,255,0.05),transparent)",
     topWash: "h-[70vh] bg-gradient-to-b from-accent/10 via-transparent to-transparent",
     centerGlow:
       "absolute left-1/2 top-0 h-40 w-[700px] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(40,40,255,0.12),transparent_70%)]",
