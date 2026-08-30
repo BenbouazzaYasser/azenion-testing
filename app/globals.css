@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Noto+Naskh+Arabic:wght@400;500;600&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -76,6 +78,31 @@
   }
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Polished Arabic typography — Tajawal + Noto Naskh give a clean, modern MSA feel
+     with proper kashida handling and balanced line-height. Inter alone renders Arabic
+     with weak shaping and uneven baselines. */
+  html[lang="ar"],
+  html[dir="rtl"] {
+    font-family: "Tajawal", "Noto Naskh Arabic", var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  }
+  html[lang="ar"] body,
+  html[dir="rtl"] body {
+    line-height: 1.8;
+    letter-spacing: 0;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Isolate LTR fragments (brand names, emails, code) inside RTL flow so they
+     don't get bidi-mirrored. */
+  html[dir="rtl"] [data-no-translate],
+  html[dir="rtl"] [translate="no"],
+  html[dir="rtl"] code,
+  html[dir="rtl"] pre {
+    unicode-bidi: isolate;
+    direction: ltr;
+    display: inline-block;
   }
 
   body {

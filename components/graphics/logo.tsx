@@ -21,6 +21,9 @@ export function Logo({ withWordmark = true, wordmarkClassName, className, markSi
     <Link
       href="/"
       aria-label="Azenion — home"
+      data-no-translate
+      translate="no"
+      dir="ltr"
       className={cn(
         "group flex items-center gap-2.5 transition-opacity duration-200 hover:opacity-90",
         className
@@ -36,6 +39,9 @@ export function Logo({ withWordmark = true, wordmarkClassName, className, markSi
       />
       {withWordmark && (
         <span
+          data-no-translate
+          translate="no"
+          dir="ltr"
           className={cn(
             "font-display text-[1.05rem] font-semibold tracking-tight text-ink-50",
             wordmarkClassName

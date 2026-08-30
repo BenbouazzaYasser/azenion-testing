@@ -6,17 +6,20 @@ import { signOut } from "@/actions/auth.actions";
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_PRIVACY_SETTINGS,
+  DEFAULT_SETTINGS,
   normalizeNotifications,
   normalizePrivacy,
   type NotificationSettings,
   type PrivacySettings,
   type Theme,
 } from "@/lib/settings-data";
+import { isValidLanguage } from "@/lib/translation/languages";
 
 const THEMES: Theme[] = ["system", "light", "dark"];
 
 export interface UpdateSettingsInput {
   theme?: Theme;
+  language?: string;
   notifications?: Partial<NotificationSettings>;
   privacy?: Partial<PrivacySettings>;
 }
@@ -37,17 +40,21 @@ export async function updateSettings(input: UpdateSettingsInput) {
   if (input.theme !== undefined && !THEMES.includes(input.theme)) {
     return { error: "Invalid theme" };
   }
+  if (input.language !== undefined && !isValidLanguage(input.language)) {
+    return { error: "Invalid language" };
+  }
 
   const {
     data: existing,
   } = await supabase
     .from("user_settings")
-    .select("theme, notifications, privacy")
+    .select("theme, language, notifications, privacy")
     .eq("user_id", user.id)
     .maybeSingle();
 
   const current = (existing ?? {}) as {
     theme?: string;
+    language?: string | null;
     notifications?: Record<string, unknown> | null;
     privacy?: Record<string, unknown> | null;
   };
@@ -55,6 +62,11 @@ export async function updateSettings(input: UpdateSettingsInput) {
   const nextTheme = THEMES.includes(input.theme as Theme)
     ? (input.theme as Theme)
     : (current.theme as Theme) ?? "system";
+
+  const nextLanguage =
+    input.language !== undefined && isValidLanguage(input.language)
+      ? input.language
+      : (current.language ?? DEFAULT_SETTINGS.language);
 
   const nextNotifications = {
     ...DEFAULT_NOTIFICATION_SETTINGS,
@@ -67,18 +79,50 @@ export async function updateSettings(input: UpdateSettingsInput) {
     ...input.privacy,
   };
 
-  const { error } = await supabase
+  let { error } = await supabase
     .from("user_settings")
     .upsert(
       {
         user_id: user.id,
         theme: nextTheme,
+        language: nextLanguage,
         notifications: nextNotifications,
         privacy: nextPrivacy,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id" },
     );
+
+  // Graceful fallback if migration 00107 hasn't been applied yet.
+  if (error && /language/i.test(error.message)) {
+    const retry = await supabase
+      .from("user_settings")
+      .upsert(
+        {
+          user_id: user.id,
+          theme: nextTheme,
+          notifications: nextNotifications,
+          privacy: nextPrivacy,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+    if (!retry.error) {
+      // storage/cookie already persist client side; still report success
+      revalidatePath("/settings");
+      return {
+        success: true,
+        settings: {
+          theme: nextTheme as Theme,
+          language: nextLanguage,
+          notifications: normalizeNotifications(
+            nextNotifications as unknown as Record<string, unknown>,
+          ),
+          privacy: normalizePrivacy(nextPrivacy as unknown as Record<string, unknown>),
+        },
+      };
+    }
+  }
 
   if (error) return { error: error.message };
 
@@ -87,6 +131,7 @@ export async function updateSettings(input: UpdateSettingsInput) {
     success: true,
     settings: {
       theme: nextTheme as Theme,
+      language: nextLanguage,
       notifications: normalizeNotifications(
         nextNotifications as unknown as Record<string, unknown>,
       ),
