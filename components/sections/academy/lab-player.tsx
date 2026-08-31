@@ -15,6 +15,7 @@ import {
   Flag as FlagIcon,
   ArrowLeft,
   Loader2,
+  EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/ui/reveal";
@@ -160,6 +161,7 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
   const alreadyPassed = submission?.status === "passed";
   const awaitingReview = submission?.status === "submitted";
   const previouslyFailed = submission?.status === "failed";
+  const isUnpublished = !lab.is_published;
 
   return (
     <>
@@ -224,6 +226,17 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
 
       <section className="relative pb-24 pt-4 sm:pb-28">
         <div className="mx-auto max-w-[720px] px-5 sm:px-8">
+          {isUnpublished ? (
+            <Reveal>
+              <StatusBanner
+                icon={EyeOff}
+                tone="pending"
+                title="Preview — unpublished"
+                message="Only you can see this lab right now. Submitting answers is disabled until it's published."
+              />
+            </Reveal>
+          ) : null}
+
           {alreadyPassed ? (
             <Reveal>
               <StatusBanner
@@ -290,7 +303,12 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
               {questionBlocks.length > 0 ? (
                 <Reveal delay={80 + blocks.length * 40}>
                   <div className="mt-8 rounded-2xl card-surface-soft p-6 shadow-card backdrop-blur-xl">
-                    {!isAuthenticated ? (
+                    {isUnpublished ? (
+                      <p className="text-center text-sm text-ink-400">
+                        This lab is unpublished, so submissions aren&apos;t accepted yet. Publish it from the Labs page to
+                        allow learners (and yourself) to submit answers.
+                      </p>
+                    ) : !isAuthenticated ? (
                       <p className="text-center text-sm text-ink-400">
                         <Link href="/login" className="font-medium text-accent-300 hover:underline">
                           Sign in
@@ -458,12 +476,14 @@ function QuestionBlockView({
   result: { correct: boolean | null; graded: string } | null;
   showResult: boolean;
 }) {
+  const labelId = `${block.id}-label`;
+
   return (
-    <fieldset className="rounded-2xl card-surface-soft p-6 shadow-card backdrop-blur-xl">
-      <legend className="flex w-full items-start justify-between gap-3 pb-3 text-[0.95rem] font-medium text-ink-50">
-        <span>{block.prompt}</span>
+    <div role="group" aria-labelledby={labelId} className="rounded-2xl card-surface-soft p-6 shadow-card backdrop-blur-xl">
+      <div id={labelId} className="flex w-full items-start justify-between gap-3 pb-3 text-[0.95rem] font-medium text-ink-50">
+        <span className="break-words">{block.prompt}</span>
         {showResult && result ? <ResultBadge result={result} /> : null}
-      </legend>
+      </div>
 
       {block.question_type === "qcm" ? (
         <div className="space-y-2">
@@ -497,7 +517,7 @@ function QuestionBlockView({
           value={answer?.question_type === "text_answer" ? answer.text : ""}
           onChange={(e) => onTextChange(e.target.value)}
           placeholder="Your answer"
-          aria-label={block.prompt}
+          aria-labelledby={labelId}
           className="w-full rounded-xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input"
         />
       ) : null}
@@ -511,7 +531,7 @@ function QuestionBlockView({
               value={answer?.question_type === "flag" ? answer.flag : ""}
               onChange={(e) => onFlagChange(e.target.value)}
               placeholder={block.flag_format_hint || "AZN{...}"}
-              aria-label={block.prompt}
+              aria-labelledby={labelId}
               className="w-full rounded-xl bg-surface py-3 pl-11 pr-4 font-mono text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input"
             />
           </div>
@@ -540,7 +560,7 @@ function QuestionBlockView({
           })}
         </div>
       ) : null}
-    </fieldset>
+    </div>
   );
 }
 

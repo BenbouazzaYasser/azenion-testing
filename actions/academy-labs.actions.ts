@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { labSchema, labContentSchema, labAnswerInputSchema, labAnswerKeySchema, labSubmittedAnswersSchema } from "@/lib/validations/lab.schema";
 import type { LabAnswerKey, LabContent } from "@/lib/validations/lab.schema";
 import { gradeSubmission, hashFlag, questionBlocksOf, validateSubmittedAnswers } from "@/lib/labs/grading";
+import { getLabsAuthContext } from "@/lib/labs/authorization";
 
 const LABS_PATH = "/academy/labs";
 
@@ -33,48 +34,24 @@ function fileExtension(fileName: string): string {
   return fileName.split(".").pop()?.toLowerCase() ?? "";
 }
 
-async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return false;
-
-  // Check if user is a platform admin. has_platform_role('platform_admin')
-  // is used instead of the raw is_platform_admin() RPC because this
-  // platform recognizes admins two ways -- a row in public.platform_admins,
-  // or the 'platform_admin' role in user_roles (the latter being what
-  // /admin/roles actually grants) -- and has_platform_role() already ORs
-  // both together.
-  const { data: isPlatformAdminRole } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
-  if (isPlatformAdminRole) return true;
-
-  // Check if user has instructor or creator platform role
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("user_roles")
-    .select("roles(name)")
-    .eq("user_id", user.id);
-
-  const rows = (data as Array<{ roles: { name: string } | { name: string }[] | null }> | null) ?? [];
-  return rows.some((row) => {
-    const r = row.roles as unknown as { name: string } | { name: string }[] | null;
-    if (!r) return false;
-    const names = Array.isArray(r) ? r.map((x) => x.name) : [r.name];
-    return names.includes("instructor") || names.includes("creator");
-  });
+// Instructor, creator, core_team_member, or platform admin can create and
+// manage their own labs. Takes an explicit userId (the caller must already
+// have it from supabase.auth.getUser()) rather than deriving it from
+// auth.uid() inside an RPC -- that path was found to be unreliable in the
+// server/RSC context. See lib/labs/authorization.ts for the full reasoning.
+async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<boolean> {
+  const ctx = await getLabsAuthContext(supabase, userId);
+  return ctx.canCreateLab;
 }
 
-// Platform admins can manage any lab, not just ones they created themselves.
-// Kept separate from isLabCreator (which gates create/instructor-or-creator
-// access) so the ownership checks below stay a single, explicit condition.
-// Uses has_platform_role('platform_admin') rather than the raw
-// is_platform_admin() RPC so both admin representations (the
-// public.platform_admins table and the 'platform_admin' role in
-// user_roles) are recognized -- see isLabCreator() above for the same
-// reasoning.
-async function isPlatformAdmin(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
-  const { data } = await supabase.rpc("has_platform_role", { p_role_name: "platform_admin" });
-  return Boolean(data);
+// Platform admins can manage any lab, not just ones they created themselves
+// -- core_team_member/instructor/creator intentionally do NOT get this,
+// only isLabCreator's narrower "can create/manage own labs" access. Kept
+// separate from isLabCreator so the ownership-override checks below stay a
+// single, explicit condition.
+async function isPlatformAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<boolean> {
+  const ctx = await getLabsAuthContext(supabase, userId);
+  return ctx.isPlatformAdmin;
 }
 
 // PostgREST embeds (e.g. `labs(created_by)`) come back as either a single
@@ -136,8 +113,8 @@ export async function createLab(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isLabCreator(supabase))) {
-    return { error: "Not authorized - instructor or creator role required" };
+  if (!(await isLabCreator(supabase, user.id))) {
+    return { error: "Not authorized - instructor, creator, core team, or admin role required" };
   }
 
   const raw = {
@@ -185,6 +162,7 @@ export async function createLab(formData: FormData) {
 
   // Handle thumbnail upload if provided
   const thumbnail = formData.get("thumbnail") as File | null;
+  let thumbnailWarning: string | undefined;
   if (thumbnail && thumbnail.size > 0) {
     if (thumbnail.size > MAX_THUMBNAIL_SIZE) {
       return { error: "Thumbnail too large. Maximum size is 5MB" };
@@ -201,16 +179,31 @@ export async function createLab(formData: FormData) {
         upsert: true,
       });
 
-    if (!thumbError) {
+    if (thumbError) {
+      thumbnailWarning = `Lab created, but the thumbnail could not be uploaded: ${thumbError.message}`;
+    } else {
       const {
         data: { publicUrl: thumbUrl },
       } = admin.storage.from("course-files").getPublicUrl(thumbnailPath);
-      await admin.from("labs").update({ thumbnail_url: thumbUrl }).eq("id", lab.id);
+      // Cache-bust: this path is stable and gets overwritten (upsert) on
+      // every future edit, so without a varying query param, browsers and
+      // any CDN in front of Supabase Storage would keep serving whatever
+      // they cached for this exact URL -- including a cached "missing"
+      // response from before the file existed, or a stale older image
+      // after a later re-upload. The stored URL, not just the storage
+      // path, must change whenever the underlying file changes.
+      const { error: urlUpdateError } = await admin
+        .from("labs")
+        .update({ thumbnail_url: `${thumbUrl}?v=${Date.now()}` })
+        .eq("id", lab.id);
+      if (urlUpdateError) {
+        thumbnailWarning = `Lab created, but the thumbnail could not be saved: ${urlUpdateError.message}`;
+      }
     }
   }
 
   revalidatePath(LABS_PATH);
-  return { success: true, lab_id: lab.id };
+  return { success: true, lab_id: lab.id, ...(thumbnailWarning ? { warning: thumbnailWarning } : {}) };
 }
 
 export async function updateLab(formData: FormData) {
@@ -224,8 +217,8 @@ export async function updateLab(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isLabCreator(supabase))) {
-    return { error: "Not authorized - instructor or creator role required" };
+  if (!(await isLabCreator(supabase, user.id))) {
+    return { error: "Not authorized - instructor, creator, core team, or admin role required" };
   }
 
   const id = (formData.get("id") as string) ?? "";
@@ -247,7 +240,7 @@ export async function updateLab(formData: FormData) {
     return { error: "Lab not found" };
   }
 
-  if (existingLab.created_by !== user.id && !(await isPlatformAdmin(supabase))) {
+  if (existingLab.created_by !== user.id && !(await isPlatformAdmin(supabase, user.id))) {
     return { error: "Not authorized - you can only edit your own labs" };
   }
 
@@ -292,6 +285,7 @@ export async function updateLab(formData: FormData) {
 
   // Handle thumbnail update if provided
   const thumbnail = formData.get("thumbnail") as File | null;
+  let thumbnailWarning: string | undefined;
   if (thumbnail && thumbnail.size > 0) {
     if (thumbnail.size > MAX_THUMBNAIL_SIZE) {
       return { error: "Thumbnail too large. Maximum size is 5MB" };
@@ -308,16 +302,28 @@ export async function updateLab(formData: FormData) {
         upsert: true,
       });
 
-    if (!thumbError) {
+    if (thumbError) {
+      thumbnailWarning = `Lab updated, but the thumbnail could not be uploaded: ${thumbError.message}`;
+    } else {
       const {
         data: { publicUrl: thumbUrl },
       } = admin.storage.from("course-files").getPublicUrl(thumbnailPath);
-      await admin.from("labs").update({ thumbnail_url: thumbUrl }).eq("id", id);
+      // Cache-bust: same reasoning as createLab -- this path is stable and
+      // just got overwritten (upsert), so the stored URL must change too
+      // or a browser/CDN that already cached the old file at this exact
+      // URL will keep serving it after the replacement.
+      const { error: urlUpdateError } = await admin
+        .from("labs")
+        .update({ thumbnail_url: `${thumbUrl}?v=${Date.now()}` })
+        .eq("id", id);
+      if (urlUpdateError) {
+        thumbnailWarning = `Lab updated, but the thumbnail could not be saved: ${urlUpdateError.message}`;
+      }
     }
   }
 
   revalidatePath(LABS_PATH);
-  return { success: true };
+  return { success: true, ...(thumbnailWarning ? { warning: thumbnailWarning } : {}) };
 }
 
 export async function deleteLab(formData: FormData) {
@@ -331,8 +337,8 @@ export async function deleteLab(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isLabCreator(supabase))) {
-    return { error: "Not authorized - instructor or creator role required" };
+  if (!(await isLabCreator(supabase, user.id))) {
+    return { error: "Not authorized - instructor, creator, core team, or admin role required" };
   }
 
   const id = (formData.get("id") as string) ?? "";
@@ -355,7 +361,7 @@ export async function deleteLab(formData: FormData) {
     return { error: "Lab not found" };
   }
 
-  if (existingLab.created_by !== user.id && !(await isPlatformAdmin(supabase))) {
+  if (existingLab.created_by !== user.id && !(await isPlatformAdmin(supabase, user.id))) {
     return { error: "Not authorized - you can only delete your own labs" };
   }
 
@@ -368,7 +374,11 @@ export async function deleteLab(formData: FormData) {
   // Clean up storage files
   const objectsToRemove: string[] = [];
   if (existingLab.thumbnail_url) {
-    const thumbPath = existingLab.thumbnail_url.split("/course-files/")[1];
+    // thumbnail_url carries a cache-busting "?v=..." query string (see
+    // createLab/updateLab) -- strip it before treating this as a literal
+    // storage object path, or removal would silently no-op against a path
+    // that doesn't exist and orphan the real file.
+    const thumbPath = existingLab.thumbnail_url.split("/course-files/")[1]?.split("?")[0];
     if (thumbPath) objectsToRemove.push(thumbPath);
   }
 
@@ -394,7 +404,7 @@ export async function uploadLabVersionFile(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isLabCreator(supabase))) {
+  if (!(await isLabCreator(supabase, user.id))) {
     return { error: "Not authorized" };
   }
 
@@ -424,7 +434,8 @@ export async function uploadLabVersionFile(formData: FormData) {
     return { error: `Invalid file type for ${fileType}. Allowed: ${Array.from(allowedTypes[fileType] ?? []).join(", ")}` };
   }
 
-  // Check that user is the lab creator
+  // Check that user is the lab creator, or a platform admin managing on
+  // behalf of another creator
   const admin = createAdminClient();
   const { data: lab } = await admin
     .from("labs")
@@ -432,7 +443,11 @@ export async function uploadLabVersionFile(formData: FormData) {
     .eq("id", labId)
     .maybeSingle();
 
-  if (!lab || lab.created_by !== user.id) {
+  if (!lab) {
+    return { error: "Lab not found" };
+  }
+
+  if (lab.created_by !== user.id && !(await isPlatformAdmin(supabase, user.id))) {
     return { error: "Not authorized - you can only edit your own labs" };
   }
 
@@ -471,7 +486,7 @@ export async function createLabVersion(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isLabCreator(supabase))) {
+  if (!(await isLabCreator(supabase, user.id))) {
     return { error: "Not authorized" };
   }
 
@@ -490,7 +505,8 @@ export async function createLabVersion(formData: FormData) {
     return { error: "Missing lab_id" };
   }
 
-  // Check that user is the lab creator and get the next version number
+  // Check that user is the lab creator, or a platform admin managing on
+  // behalf of another creator, and get the next version number
   const admin = createAdminClient();
   const { data: lab } = await admin
     .from("labs")
@@ -498,7 +514,11 @@ export async function createLabVersion(formData: FormData) {
     .eq("id", labId)
     .maybeSingle();
 
-  if (!lab || lab.created_by !== user.id) {
+  if (!lab) {
+    return { error: "Lab not found" };
+  }
+
+  if (lab.created_by !== user.id && !(await isPlatformAdmin(supabase, user.id))) {
     return { error: "Not authorized" };
   }
 
@@ -687,7 +707,8 @@ export async function submitLabSolution(formData: FormData) {
     );
 
   if (submissionError) {
-    return { error: submissionError.message };
+    console.error("submitLabSolution: failed to save submission", submissionError);
+    return { error: "Something went wrong while saving your submission. Please try again." };
   }
 
   return { success: true };
@@ -736,7 +757,7 @@ export async function getLabWithContent(labId: string) {
       return { error: "Lab not found" };
     }
     const isOwner = lab.created_by === user.id;
-    if (!isOwner && !(await isPlatformAdmin(supabase))) {
+    if (!isOwner && !(await isPlatformAdmin(supabase, user.id))) {
       return { error: "Lab not found" };
     }
   }
@@ -906,7 +927,8 @@ export async function submitLabAnswers(labId: string, answers: unknown) {
   );
 
   if (submissionError) {
-    return { error: submissionError.message };
+    console.error("submitLabAnswers: failed to save submission", submissionError);
+    return { error: "Something went wrong while saving your submission. Please try again." };
   }
 
   if (status === "passed") {
@@ -959,7 +981,7 @@ export async function gradeLabSubmission(formData: FormData) {
 
   const labInfo = firstOrSelf(submission.labs as { created_by: string } | { created_by: string }[] | null);
   const isOwnLab = labInfo?.created_by === user.id;
-  if (!isOwnLab && !(await isPlatformAdmin(supabase))) {
+  if (!isOwnLab && !(await isPlatformAdmin(supabase, user.id))) {
     return { error: "Not authorized to grade this submission" };
   }
 
@@ -1027,11 +1049,15 @@ export async function linkLabToCourse(formData: FormData) {
     return { error: "Missing course_id or lab_id" };
   }
 
-  // Matches the course_labs RLS policy: whoever can already manage courses
-  // or manage labs can link them together.
-  const { data: isCourseManager } = await supabase.rpc("is_course_manager");
-  const canManageLab = await isLabCreator(supabase);
-  if (!isCourseManager && !canManageLab) {
+  // Whoever can create/manage labs can link them to courses (covers
+  // core_team_member, instructor, creator, and platform admin). Previously
+  // this also OR'd in the is_course_manager() RPC result, but that RPC is
+  // unparameterized and relies on the same unreliable auth.uid() default
+  // that caused the platform-admin detection bug -- canCreateLab already
+  // covers every role is_course_manager() would have added here (creator,
+  // core_team_member, admin), so it's dropped rather than duplicated.
+  const canManageLab = await isLabCreator(supabase, user.id);
+  if (!canManageLab) {
     return { error: "Not authorized to link labs to courses" };
   }
 
@@ -1075,9 +1101,8 @@ export async function unlinkLabFromCourse(formData: FormData) {
     return { error: "Missing course_id or lab_id" };
   }
 
-  const { data: isCourseManager } = await supabase.rpc("is_course_manager");
-  const canManageLab = await isLabCreator(supabase);
-  if (!isCourseManager && !canManageLab) {
+  const canManageLab = await isLabCreator(supabase, user.id);
+  if (!canManageLab) {
     return { error: "Not authorized to unlink labs from courses" };
   }
 
