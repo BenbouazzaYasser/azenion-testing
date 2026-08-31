@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useChatUnread } from "@/lib/chat-unread";
 import { LightModeButton } from "@/components/theme/light-mode-button";
+import { useTranslation } from "@/components/translation/translation-provider";
+import { isRtlLanguage } from "@/lib/translation/languages";
 
 const NotificationCenter = dynamic(
   () => import("@/components/notifications/notification-center").then((m) => m.NotificationCenter),
@@ -20,10 +22,6 @@ const NotificationCenter = dynamic(
 );
 const GlobalSearch = dynamic(
   () => import("@/components/search/global-search").then((m) => m.GlobalSearch),
-  { ssr: false },
-);
-const PageTranslator = dynamic(
-  () => import("@/components/shared/page-translator").then((m) => m.PageTranslator),
   { ssr: false },
 );
 
@@ -63,6 +61,8 @@ function MenuLink({ href, icon, title, description, onNavigate }: MenuLinkProps)
 export function Navbar() {
   const pathname = usePathname();
   const { user, profile, loading, isAdmin } = useUser();
+  const { language } = useTranslation();
+  const isRtl = isRtlLanguage(language);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
@@ -151,7 +151,10 @@ export function Navbar() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6 sm:pt-5">
+    <header
+      dir="ltr"
+      className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4 sm:px-6 sm:pt-5"
+    >
       <div
         className={cn(
           "w-full xl:w-fit rounded-full border navbar-border transition-[background-color,box-shadow] duration-700 ease-premium will-change-transform backdrop-blur-2xl",
@@ -160,12 +163,12 @@ export function Navbar() {
             : "bg-[rgba(10,11,16,0.18)] shadow-[0_8px_30px_-25px_rgba(255,255,255,0.05)]"
         )}
       >
-        <div className="flex h-[64px] items-center justify-between px-4 sm:h-[70px] sm:px-6 xl:justify-start">
-          <div className="flex items-center">
+        <div className="flex h-[64px] items-center justify-between gap-3 px-4 sm:h-[70px] sm:px-6 xl:justify-start xl:gap-5">
+          <div className="flex shrink-0 items-center pr-1">
             <Logo withWordmark={false} markSize={32} />
           </div>
 
-          <div className="hidden xl:flex xl:ml-4">
+          <div className="hidden xl:flex xl:ms-2">
             <nav aria-label="Primary" className="flex items-center">
               <ul className="flex items-center gap-4">
                 {NAV_LINKS.map((link) => {
@@ -251,7 +254,7 @@ export function Navbar() {
             </nav>
           </div>
 
-          <div className="flex items-center justify-end gap-2 xl:ml-4">
+          <div className="flex items-center justify-end gap-2 xl:ms-6">
             <div className="hidden items-center gap-2 xl:flex">
             <GlobalSearch variant="desktop" />
             {loading ? null : user ? (
@@ -556,7 +559,6 @@ export function Navbar() {
             </div>
 
             <LightModeButton />
-            <PageTranslator />
 
             <button
               type="button"

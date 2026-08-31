@@ -1,4 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  DEFAULT_LANGUAGE,
+  isValidLanguage,
+} from "@/lib/translation/languages";
 
 export type Theme = "system" | "light" | "dark";
 
@@ -21,6 +25,7 @@ export interface PrivacySettings {
 
 export interface UserSettings {
   theme: Theme;
+  language: string;
   notifications: NotificationSettings;
   privacy: PrivacySettings;
 }
@@ -44,18 +49,24 @@ export const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
 
 export const DEFAULT_SETTINGS: UserSettings = {
   theme: "system",
+  language: DEFAULT_LANGUAGE,
   notifications: { ...DEFAULT_NOTIFICATION_SETTINGS },
   privacy: { ...DEFAULT_PRIVACY_SETTINGS },
 };
 
 interface SettingsRow {
   theme: string;
+  language: string | null;
   notifications: Record<string, unknown> | null;
   privacy: Record<string, unknown> | null;
 }
 
 function asTheme(value: unknown): Theme {
   return value === "light" || value === "dark" ? value : "system";
+}
+
+function asLanguage(value: unknown): string {
+  return typeof value === "string" && isValidLanguage(value) ? value : DEFAULT_LANGUAGE;
 }
 
 export function normalizeNotifications(
@@ -97,15 +108,32 @@ export async function getUserSettings(): Promise<UserSettings> {
 
   if (!user) return { ...DEFAULT_SETTINGS };
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("user_settings")
-    .select("theme, notifications, privacy")
+    .select("theme, language, notifications, privacy")
     .eq("user_id", user.id)
     .maybeSingle();
+
+  if (error && /language/i.test(error.message)) {
+    // Migration 00107 not yet applied — retry without language.
+    const fallback = await supabase
+      .from("user_settings")
+      .select("theme, notifications, privacy")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const row2 = fallback.data as unknown as SettingsRow | null;
+    return {
+      theme: asTheme(row2?.theme),
+      language: DEFAULT_LANGUAGE,
+      notifications: normalizeNotifications(row2?.notifications ?? null),
+      privacy: normalizePrivacy(row2?.privacy ?? null),
+    };
+  }
 
   const row = data as SettingsRow | null;
   return {
     theme: asTheme(row?.theme),
+    language: asLanguage(row?.language),
     notifications: normalizeNotifications(row?.notifications ?? null),
     privacy: normalizePrivacy(row?.privacy ?? null),
   };
