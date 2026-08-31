@@ -24,10 +24,6 @@ const GlobalSearch = dynamic(
   () => import("@/components/search/global-search").then((m) => m.GlobalSearch),
   { ssr: false },
 );
-const PageTranslator = dynamic(
-  () => import("@/components/shared/page-translator").then((m) => m.PageTranslator),
-  { ssr: false },
-);
 
 interface MenuLinkProps {
   href: string;
@@ -563,7 +559,6 @@ export function Navbar() {
             </div>
 
             <LightModeButton />
-            <PageTranslator />
 
             <button
               type="button"

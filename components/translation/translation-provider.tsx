@@ -49,6 +49,21 @@ function getStoredLanguage(): string {
     const c = m?.[1] ? decodeURIComponent(m[1]) : null;
     if (c && isValidLanguage(c)) return c;
   } catch {}
+  
+  // Detect browser language
+  if (typeof window !== "undefined" && typeof navigator !== "undefined" && navigator) {
+    const nav = navigator as { language?: unknown; languages?: readonly unknown[] };
+    const langStr = typeof nav.language === "string" ? nav.language : (Array.isArray(nav.languages) && typeof nav.languages[0] === "string" ? nav.languages[0] : null);
+    if (langStr && typeof langStr === "string") {
+      const parts = langStr.split("-");
+      const primary = parts[0];
+      if (primary && typeof primary === "string") {
+        const browserLang = primary.toLowerCase();
+        if (isValidLanguage(browserLang)) return browserLang;
+      }
+    }
+  }
+
   const htmlLang = document.documentElement.lang;
   if (htmlLang && isValidLanguage(htmlLang)) return htmlLang;
   return DEFAULT_LANGUAGE;
@@ -210,6 +225,9 @@ export function TranslationProvider({
       if (target === SOURCE_LANG) return;
       const root = document.body;
       if (!root) return;
+      
+      // Instantly gather all text nodes on the page and translate them in one batch before rendering/revealing
+      setIsTranslating(true);
       const nodes = collectTextNodes(root);
       await translateNodes(nodes, target);
 
@@ -229,7 +247,6 @@ export function TranslationProvider({
                 addedNodes.push(...collectTextNodes(el));
               }
             }
-            // Also catch characterData changes? handled via addedNodes
             if (m.type === "characterData" && m.target.nodeType === Node.TEXT_NODE) {
               const tn = m.target as Text;
               const v = tn.nodeValue ?? "";
@@ -263,18 +280,27 @@ export function TranslationProvider({
     return () => window.clearTimeout(t);
   }, [language, runTranslation]);
 
-  // When the route changes, the MutationObserver on body will already catch
-  // added nodes, but as a safety net re-scan the body for any untranslated
-  // nodes that appeared during the transition (e.g. server-rendered courses).
+  // When the route changes, do not trigger incremental loading. 
+  // All translations are pre-cached and applied instantly on route change.
   useEffect(() => {
     if (language === SOURCE_LANG) return;
-    const t = window.setTimeout(() => {
-      const root = document.body;
-      const nodes = collectTextNodes(root);
-      if (nodes.length) void translateNodes(nodes, language);
-    }, 120);
-    return () => window.clearTimeout(t);
-  }, [pathname, language, translateNodes]);
+    const root = document.body;
+    const nodes = collectTextNodes(root);
+    if (nodes.length) {
+      // Apply silently from cache without showing loading overlay
+      const target = language;
+      const cache = loadCache(target);
+      for (const node of nodes) {
+        const value = node.nodeValue!;
+        const trimmed = value.trim();
+        const hit = cache[trimmed];
+        if (!hit) continue;
+        (node as unknown as Record<string, unknown>).__azenion_original = value;
+        originalsRef.current.set(node, value);
+        node.nodeValue = value.replace(trimmed, hit);
+      }
+    }
+  }, [pathname, language]);
 
   const setLanguage = useCallback((code: string) => {
     if (!isValidLanguage(code)) return;

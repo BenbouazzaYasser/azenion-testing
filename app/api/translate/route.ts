@@ -205,19 +205,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ translations: map });
   }
 
-  const unique = [...new Set((texts as unknown[]).filter((t): t is string => typeof t === "string" && t.trim().length > 0))].slice(0, 80);
+  const unique = [...new Set((texts as unknown[]).filter((t): t is string => typeof t === "string" && t.trim().length > 0))].slice(0, 150);
 
   const results: Array<[string, string | null]> = [];
-  const CHUNK_SIZE = 4;
+  const CHUNK_SIZE = 10;
   for (let i = 0; i < unique.length; i += CHUNK_SIZE) {
     const chunk = unique.slice(i, i + CHUNK_SIZE);
     const chunkResults = await Promise.all(
       chunk.map(async (text) => [text, await fetchMyMemory(text, src, target)] as [string, string | null])
     );
     results.push(...chunkResults);
-    if (i + CHUNK_SIZE < unique.length) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
   }
 
   const translations: Record<string, string> = {};
