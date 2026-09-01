@@ -141,7 +141,11 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
       }
 
       setOpen(false);
-      toast.success("Lab updated.");
+      if (result && "warning" in result && result.warning) {
+        toast.warning(result.warning);
+      } else {
+        toast.success("Lab updated.");
+      }
       router.refresh();
     });
   }

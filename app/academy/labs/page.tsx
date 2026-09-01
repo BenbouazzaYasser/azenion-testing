@@ -8,6 +8,7 @@ import { LabsBrowser } from "@/components/sections/academy/labs-browser";
 import { AcademyClosingCta } from "@/components/sections/academy/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
+import { getLabsAuthContext } from "@/lib/labs/authorization";
 import type { LabRow } from "@/lib/validations/lab.schema";
 
 export const metadata: Metadata = {
@@ -25,44 +26,19 @@ export default async function LabsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Mirrors the Phase 2 backend gates. Unlike Courses (where any manager
-  // can edit any course), Labs restrict update/delete to the lab's own
-  // creator unless the user is a platform admin (Phase 0). So "can create
-  // a lab" (role-based) and "can manage THIS lab" (ownership-based, admin
-  // overrides) are two different questions -- computed separately here and
-  // resolved per-card in LabsBrowser/LabCard, rather than a single blanket
-  // flag. This is UI-only: the server actions re-check authorization
-  // independently regardless of what renders here.
-  //
-  // Admin detection uses has_platform_role('platform_admin') rather than
-  // the raw is_platform_admin() RPC: this platform recognizes admins two
-  // ways -- a row in public.platform_admins, or the 'platform_admin' role
-  // in user_roles (the latter being what /admin/roles actually grants).
-  // has_platform_role() already ORs both together, so this picks up
-  // either representation without introducing a new check. Core team
-  // members are also allowed to create and manage labs.
-  let isPlatformAdminUser = false;
-  let isCoreTeamUser = false;
-  let isInstructorOrCreator = false;
-  if (user) {
-    const [{ data: paData }, { data: ctData }] = await Promise.all([
-      supabase.rpc("has_platform_role", { p_role_name: "platform_admin", p_user_id: user.id }),
-      supabase.rpc("has_platform_role", { p_role_name: "core_team_member", p_user_id: user.id }),
-    ]);
-    isPlatformAdminUser = Boolean(paData);
-    isCoreTeamUser = Boolean(ctData);
-    if (!isPlatformAdminUser && !isCoreTeamUser) {
-      const { data: roleRows } = await supabase.from("user_roles").select("roles(name)").eq("user_id", user.id);
-      const roles = (roleRows as Array<{ roles: { name: string } | { name: string }[] | null }> | null) ?? [];
-      isInstructorOrCreator = roles.some((row) => {
-        const r = row.roles as unknown as { name: string } | { name: string }[] | null;
-        if (!r) return false;
-        const names = Array.isArray(r) ? r.map((x) => x.name) : [r.name];
-        return names.includes("instructor") || names.includes("creator");
-      });
-    }
-  }
-  const canCreate = isPlatformAdminUser || isCoreTeamUser || isInstructorOrCreator;
+  // Mirrors the backend gates in academy-labs.actions.ts. Unlike Courses
+  // (where any manager can edit any course), Labs restrict update/delete
+  // to the lab's own creator unless the user is a platform admin. So "can
+  // create a lab" (role-based: instructor/creator/core_team_member/admin)
+  // and "can manage THIS lab" (ownership-based, admin overrides) are two
+  // different questions -- computed separately here and resolved per-card
+  // in LabsBrowser/LabCard, rather than a single blanket flag. This is
+  // UI-only: the server actions re-check authorization independently
+  // regardless of what renders here.
+  const { isPlatformAdmin: isPlatformAdminUser, canCreateLab: canCreate } = await getLabsAuthContext(
+    supabase,
+    user?.id,
+  );
 
   // Published labs for everyone; a manager also sees their own unpublished
   // labs (matching the existing "creators can read their own labs" /

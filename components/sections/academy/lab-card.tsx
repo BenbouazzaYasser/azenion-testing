@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Clock, Trash2, ArrowUpRight, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,14 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
   const [confirming, setConfirming] = useState(false);
   const meta = labTypeMeta(lab.type);
   const Icon = meta.icon;
+
+  // A destructive action shouldn't stay silently "armed" forever if the
+  // user clicks once and walks away -- auto-disarm after a few seconds.
+  useEffect(() => {
+    if (!confirming) return;
+    const timer = setTimeout(() => setConfirming(false), 4000);
+    return () => clearTimeout(timer);
+  }, [confirming]);
 
   function handleDelete(e: React.MouseEvent) {
     e.preventDefault();

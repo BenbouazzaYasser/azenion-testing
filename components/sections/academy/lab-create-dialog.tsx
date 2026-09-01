@@ -138,7 +138,11 @@ export function LabCreateDialog() {
 
       setOpen(false);
       resetForm();
-      toast.success("Lab created.");
+      if (result && "warning" in result && result.warning) {
+        toast.warning(result.warning);
+      } else {
+        toast.success("Lab created.");
+      }
       router.refresh();
     });
   }
