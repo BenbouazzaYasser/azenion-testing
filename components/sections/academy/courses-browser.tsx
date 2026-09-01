@@ -41,6 +41,14 @@ const CATEGORIES = [
   "Robotics",
   "IoT",
   "Embedded Systems",
+  "Machine Learning",
+  "Big Data",
+  "Operating Systems",
+  "System Administration",
+  "Software Testing",
+  "AR/VR",
+  "Quantum Computing",
+  "Edge Computing",
 ];
 
 const inputClass =

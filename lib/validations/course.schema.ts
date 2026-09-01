@@ -21,6 +21,14 @@ export const COURSE_CATEGORIES = [
   "Robotics",
   "IoT",
   "Embedded Systems",
+  "Machine Learning",
+  "Big Data",
+  "Operating Systems",
+  "System Administration",
+  "Software Testing",
+  "AR/VR",
+  "Quantum Computing",
+  "Edge Computing",
 ] as const;
 
 export const COURSE_CONTENT_TYPES = ["html_css", "pdf"] as const;
