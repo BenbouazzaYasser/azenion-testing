@@ -7,6 +7,12 @@ export const COURSE_CATEGORIES = [
   "Mathematics",
   "Cybersecurity",
   "Design",
+  "Data Science",
+  "Cloud Computing",
+  "Mobile Development",
+  "Business",
+  "Marketing",
+  "DevOps",
 ] as const;
 
 export const COURSE_CONTENT_TYPES = ["html_css", "pdf"] as const;

@@ -27,6 +27,12 @@ const CATEGORIES = [
   "Mathematics",
   "Cybersecurity",
   "Design",
+  "Data Science",
+  "Cloud Computing",
+  "Mobile Development",
+  "Business",
+  "Marketing",
+  "DevOps",
 ];
 
 const inputClass =

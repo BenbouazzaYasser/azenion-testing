@@ -13,7 +13,7 @@ import type { CourseRow } from "@/lib/validations/course.schema";
 export const metadata: Metadata = {
   title: "Courses | Azenion Academy — The Limitless Network",
   description:
-    "Browse Azenion Academy courses — self-paced learning paths across programming, engineering, AI, mathematics, cybersecurity and design.",
+    "Browse Azenion Academy courses — self-paced learning paths across programming, engineering, AI, mathematics, cybersecurity, design, data science, cloud computing, mobile development, business, marketing and DevOps.",
 };
 
 export const dynamic = "force-dynamic";
