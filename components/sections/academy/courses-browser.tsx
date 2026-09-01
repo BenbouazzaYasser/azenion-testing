@@ -33,6 +33,14 @@ const CATEGORIES = [
   "Business",
   "Marketing",
   "DevOps",
+  "Web Development",
+  "Blockchain",
+  "Networking",
+  "Databases",
+  "Game Development",
+  "Robotics",
+  "IoT",
+  "Embedded Systems",
 ];
 
 const inputClass =
