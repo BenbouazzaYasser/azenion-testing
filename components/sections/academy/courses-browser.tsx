@@ -49,6 +49,10 @@ const CATEGORIES = [
   "AR/VR",
   "Quantum Computing",
   "Edge Computing",
+  "Computer Architecture",
+  "Computer Science",
+  "Information Systems",
+  "Software Architecture",
 ];
 
 const inputClass =

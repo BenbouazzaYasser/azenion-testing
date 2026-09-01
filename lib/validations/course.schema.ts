@@ -29,6 +29,10 @@ export const COURSE_CATEGORIES = [
   "AR/VR",
   "Quantum Computing",
   "Edge Computing",
+  "Computer Architecture",
+  "Computer Science",
+  "Information Systems",
+  "Software Architecture",
 ] as const;
 
 export const COURSE_CONTENT_TYPES = ["html_css", "pdf"] as const;
