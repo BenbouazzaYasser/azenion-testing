@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { FileText, Download, AlertCircle, Loader2, Image as ImageIcon } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { FileText, Download, AlertCircle, Loader2, Image as ImageIcon, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatChatFileSize } from "@/lib/chat-media";
 import type { ChatAttachmentForMessage } from "@/data/chat";
@@ -11,11 +11,121 @@ interface ChatAttachmentProps {
   isOwn?: boolean;
 }
 
+function formatDuration(seconds: number): string {
+  if (!isFinite(seconds) || seconds < 0) return "0:00";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessage; isOwn?: boolean }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState<number>(attachment.duration_seconds ?? 0);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    setError(false);
+    setLoading(true);
+    setCurrentTime(0);
+  }, [attachment.signedUrl]);
+
+  const toggle = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (isPlaying) {
+      el.pause();
+    } else {
+      el.play().catch(() => setError(true));
+    }
+  };
+
+  const displayDuration = duration > 0 ? duration : attachment.duration_seconds ?? 0;
+  const progress = displayDuration > 0 ? Math.min(currentTime / displayDuration, 1) : 0;
+
+  if (!attachment.signedUrl) {
+    return (
+      <div className="flex items-center gap-2 rounded-xl bg-surface/60 px-3 py-2 text-sm text-ink-400">
+        <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+        <span>Audio unavailable</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-2xl px-3 py-2.5",
+        isOwn ? "bg-black/10" : "bg-surface/70",
+        "min-w-[220px] max-w-[260px]",
+      )}
+    >
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={isPlaying ? "Pause" : "Play"}
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
+          isOwn ? "bg-white text-accent hover:bg-white/90" : "bg-accent text-white hover:bg-accent-glow",
+        )}
+      >
+        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 translate-x-0.5" />}
+      </button>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <div className={cn("h-1.5 flex-1 overflow-hidden rounded-full", isOwn ? "bg-white/20" : "bg-accent/15")}>
+            <div
+              className={cn("h-full rounded-full transition-all", isOwn ? "bg-white" : "bg-accent")}
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+          <span className={cn("text-xs tabular-nums", isOwn ? "text-white/80" : "text-ink-500")}>
+            {formatDuration(isPlaying ? currentTime : displayDuration)}
+          </span>
+        </div>
+        {attachment.filename && attachment.filename !== "voice-message" && (
+          <span className={cn("truncate text-[11px]", isOwn ? "text-white/60" : "text-ink-500")}>{attachment.filename}</span>
+        )}
+      </div>
+      {loading && !error && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ink-400" />}
+      {error && <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />}
+      <audio
+        ref={audioRef}
+        src={attachment.signedUrl}
+        preload="metadata"
+        onLoadedMetadata={(e) => {
+          const d = e.currentTarget.duration;
+          if (isFinite(d) && d > 0) setDuration(d);
+          setLoading(false);
+        }}
+        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          setCurrentTime(0);
+        }}
+        onError={() => {
+          setError(true);
+          setLoading(false);
+        }}
+      />
+    </div>
+  );
+}
+
 export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
   const [imgError, setImgError] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
 
+  const isAudio = attachment.type === "audio";
   const isImage = attachment.type === "image" && attachment.mime_type?.startsWith("image/");
+
+  if (isAudio) {
+    return <AudioPlayer attachment={attachment} isOwn={isOwn} />;
+  }
 
   if (isImage && attachment.signedUrl && !imgError) {
     return (

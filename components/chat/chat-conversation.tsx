@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { Send, MessageSquare, Users, Menu, Ban, Paperclip, X } from "lucide-react";
+import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
@@ -26,9 +26,12 @@ import {
   CHAT_FILE_MIMES,
   CHAT_MAX_IMAGE_SIZE,
   CHAT_MAX_FILE_SIZE,
+  CHAT_MAX_AUDIO_SIZE,
+  CHAT_MAX_AUDIO_DURATION_SECONDS,
   getChatMediaObjectPath,
   sanitizeFilename,
 } from "@/lib/chat-media";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 
 interface Message {
   id: string;
@@ -116,6 +119,9 @@ export function ChatConversation({
   const bottomRef = useRef<HTMLDivElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const voice = useVoiceRecorder();
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -350,6 +356,158 @@ export function ChatConversation({
 
   const retryQueued = async (id: string) => {
     setQueued((prev) => prev.map((q) => (q.id === id ? { ...q, status: "queued" as const, error: undefined } : q)));
+  };
+
+  // Voice helpers
+  const handleMicClick = async () => {
+    if (voice.isRecording) {
+      voice.stop();
+      return;
+    }
+    if (voice.blob) return;
+    if (!voice.isSupported) {
+      toast.error("Voice messages are not supported in this browser.");
+      return;
+    }
+    if (queued.length > 0) {
+      toast.error("Please send or remove attached files before recording.");
+      return;
+    }
+    await voice.start();
+    if (voice.error) toast.error(voice.error);
+  };
+
+  const handleCancelVoice = () => {
+    voice.cancel();
+    setIsPlayingPreview(false);
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current = null;
+    }
+  };
+
+  const handleDiscardVoice = () => {
+    voice.clear();
+    setIsPlayingPreview(false);
+  };
+
+  const togglePreviewPlayback = () => {
+    const el = previewAudioRef.current;
+    if (!el || !voice.previewUrl) return;
+    if (isPlayingPreview) {
+      el.pause();
+    } else {
+      el.play().catch(() => toast.error("Could not play preview"));
+    }
+  };
+
+  const handleSendVoice = async () => {
+    if (!voice.blob || !voice.previewUrl || isSending) return;
+    const blob = voice.blob;
+    if (blob.size > CHAT_MAX_AUDIO_SIZE) {
+      toast.error(`Voice message too large (max ${Math.round(CHAT_MAX_AUDIO_SIZE / 1024 / 1024)}MB)`);
+      return;
+    }
+    const dur = voice.duration > 0 ? voice.duration : Math.round(blob.size / 16000); // fallback estimate
+    if (dur > CHAT_MAX_AUDIO_DURATION_SECONDS) {
+      toast.error(`Voice message too long (max ${CHAT_MAX_AUDIO_DURATION_SECONDS}s)`);
+      return;
+    }
+    setIsSending(true);
+    const supabase = createClient();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url, username")
+      .eq("id", currentUserId)
+      .single();
+
+    const attachmentId = crypto.randomUUID();
+    const mime = voice.mimeType ?? blob.type ?? "audio/webm";
+    const ext = mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : mime.includes("mpeg") ? "mp3" : "webm";
+    const filename = `voice-message.${ext}`;
+    const path = getChatMediaObjectPath(conversationId, attachmentId, filename);
+
+    // Create a separate object URL for optimistic rendering so revoking the recorder's preview doesn't break it
+    const optimisticPreviewUrl = URL.createObjectURL(blob);
+    const optimisticVoiceAtt: ChatAttachmentForMessage = {
+      id: attachmentId,
+      message_id: "optimistic",
+      conversation_id: conversationId,
+      uploader_id: currentUserId,
+      type: "audio",
+      storage_path: path,
+      filename,
+      mime_type: mime,
+      file_size: blob.size,
+      duration_seconds: dur,
+      provider: null,
+      external_id: null,
+      metadata: null,
+      created_at: new Date().toISOString(),
+      signedUrl: optimisticPreviewUrl,
+    };
+
+    const optimistic: Message = {
+      id: crypto.randomUUID(),
+      conversation_id: conversationId,
+      sender_id: currentUserId,
+      content: "",
+      image_url: null,
+      created_at: new Date().toISOString(),
+      edited_at: null,
+      received_at: null,
+      sender: profile,
+      attachments: [optimisticVoiceAtt],
+    };
+    setMessages((prev) => [...prev, optimistic]);
+
+    try {
+      const { error: upErr } = await supabase.storage.from("chat-media").upload(path, blob, {
+        contentType: mime,
+        upsert: false,
+      });
+      if (upErr) {
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        URL.revokeObjectURL(optimisticPreviewUrl);
+        toast.error(upErr.message);
+        return;
+      }
+
+      const result = await sendMessageWithAttachments(conversationId, "", [
+        {
+          type: "audio",
+          storage_path: path,
+          filename,
+          mime_type: mime,
+          file_size: blob.size,
+          duration_seconds: dur,
+        },
+      ]);
+
+      if (result && "error" in result && result.error) {
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        URL.revokeObjectURL(optimisticPreviewUrl);
+        toast.error(result.error);
+        await supabase.storage.from("chat-media").remove([path]).catch(() => {});
+      } else if (result && "success" in result && result.id) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === optimistic.id
+              ? { ...m, id: result.id as string, created_at: (result.created_at as string) ?? m.created_at, attachments: [{ ...optimisticVoiceAtt, message_id: result.id as string }] }
+              : m,
+          ),
+        );
+        voice.clear();
+        setIsPlayingPreview(false);
+      }
+    } catch {
+      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+      URL.revokeObjectURL(optimisticPreviewUrl);
+      toast.error("Voice message could not be sent.");
+    } finally {
+      setIsSending(false);
+      void markConversationRead(conversationId);
+    }
   };
 
   const handleSend = async () => {
@@ -694,6 +852,56 @@ export function ChatConversation({
               You can&apos;t send messages to @{participant?.username ?? participantName} because they blocked you.
             </p>
           </div>
+        ) : voice.isRecording ? (
+          <div className="flex items-center gap-3">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" aria-hidden />
+            <span className="min-w-0 flex-1 text-sm font-medium tabular-nums text-ink-50">
+              {Math.floor(voice.duration / 60)}:{String(voice.duration % 60).padStart(2, "0")} / {Math.floor(CHAT_MAX_AUDIO_DURATION_SECONDS / 60)}:{String(CHAT_MAX_AUDIO_DURATION_SECONDS % 60).padStart(2, "0")}
+            </span>
+            <span className="text-xs text-ink-500">Recording…</span>
+            <Button type="button" variant="secondary" aria-label="Cancel recording" onClick={handleCancelVoice} className="h-10 w-10 shrink-0 rounded-full p-0">
+              <Trash2 size={16} />
+            </Button>
+            <Button type="button" aria-label="Stop recording" onClick={() => voice.stop()} className="h-10 w-10 shrink-0 rounded-full p-0">
+              <Square size={14} />
+            </Button>
+          </div>
+        ) : voice.blob && voice.previewUrl ? (
+          <div className="flex flex-col gap-2">
+            {voice.error && <p className="text-xs text-red-400">{voice.error}</p>}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-label={isPlayingPreview ? "Pause preview" : "Play preview"}
+                onClick={togglePreviewPlayback}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white"
+              >
+                {isPlayingPreview ? <Pause size={16} /> : <Play size={16} className="translate-x-0.5" />}
+              </button>
+              <div className="min-w-0 flex-1 rounded-full bg-surface px-3 py-2 text-sm text-ink-50">
+                Voice message • {Math.floor(voice.duration / 60)}:{String(voice.duration % 60).padStart(2, "0")} • {Math.round(voice.blob.size / 1024)} KB
+              </div>
+              <audio
+                ref={(el) => {
+                  previewAudioRef.current = el;
+                  if (el) {
+                    el.onplay = () => setIsPlayingPreview(true);
+                    el.onpause = () => setIsPlayingPreview(false);
+                    el.onended = () => setIsPlayingPreview(false);
+                  }
+                }}
+                src={voice.previewUrl}
+                preload="metadata"
+                className="hidden"
+              />
+              <Button type="button" variant="secondary" aria-label="Discard voice message" onClick={handleDiscardVoice} className="h-10 w-10 shrink-0 rounded-full p-0">
+                <Trash2 size={16} />
+              </Button>
+              <Button type="button" aria-label="Send voice message" onClick={handleSendVoice} disabled={isSending} className="h-10 w-10 shrink-0 rounded-full p-0">
+                <Send size={16} />
+              </Button>
+            </div>
+          </div>
         ) : (
           <>
             {queued.length > 0 && (
@@ -711,6 +919,7 @@ export function ChatConversation({
                 ))}
               </div>
             )}
+            {voice.error && <p className="mb-2 text-xs text-red-400">{voice.error}</p>}
             <form
               className="flex items-center gap-2 sm:gap-3"
               onSubmit={(e) => {
@@ -732,6 +941,7 @@ export function ChatConversation({
                 size="default"
                 aria-label="Attach file"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={!!voice.blob || voice.isRecording}
                 className="h-12 w-12 shrink-0 rounded-2xl p-0"
               >
                 <Paperclip size={18} />
@@ -743,16 +953,26 @@ export function ChatConversation({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onPaste={handlePaste}
-                className="min-w-0 flex-1 rounded-2xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none"
+                disabled={!!voice.blob || voice.isRecording}
+                className="min-w-0 flex-1 rounded-2xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none disabled:opacity-50"
               />
-              <Button
-                type="submit"
-                aria-label="Send message"
-                disabled={!canSend || isSending}
-                className="h-12 w-12 shrink-0 rounded-2xl p-0"
-              >
-                <Send size={18} />
-              </Button>
+              {canSend ? (
+                <Button type="submit" aria-label="Send message" disabled={isSending} className="h-12 w-12 shrink-0 rounded-2xl p-0">
+                  <Send size={18} />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  aria-label="Record voice message"
+                  onClick={handleMicClick}
+                  disabled={!voice.isSupported || isSending}
+                  className="h-12 w-12 shrink-0 rounded-2xl p-0"
+                  title={!voice.isSupported ? "Voice not supported in this browser" : "Record voice message"}
+                >
+                  <Mic size={18} />
+                </Button>
+              )}
             </form>
           </>
         )}

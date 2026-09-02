@@ -64,11 +64,12 @@ export async function sendMessage(conversationId: string, content: string) {
 }
 
 export interface SendMessageAttachmentInput {
-  type: "image" | "file";
+  type: "image" | "file" | "audio";
   storage_path: string;
   filename: string;
   mime_type: string;
   file_size: number;
+  duration_seconds?: number | null;
 }
 
 export async function sendMessageWithAttachments(
@@ -127,6 +128,7 @@ export async function sendMessageWithAttachments(
       filename: att.filename,
       mimeType: att.mime_type,
       fileSize: att.file_size,
+      durationSeconds: att.duration_seconds ?? null,
       storagePath: att.storage_path,
     });
     if (!result.valid) {
@@ -169,6 +171,7 @@ export async function sendMessageWithAttachments(
     filename: att.filename,
     mime_type: att.mime_type,
     file_size: att.file_size,
+    duration_seconds: att.type === "audio" ? (att.duration_seconds ?? null) : null,
     metadata: {},
   }));
 
