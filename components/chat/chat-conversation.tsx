@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause } from "lucide-react";
+import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
@@ -32,6 +32,7 @@ import {
   sanitizeFilename,
 } from "@/lib/chat-media";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import { EmojiPicker } from "@/components/chat/emoji-picker";
 
 interface Message {
   id: string;
@@ -116,9 +117,12 @@ export function ChatConversation({
   const [otherLastReadAt, setOtherLastReadAt] = useState<string | null>(null);
   const [queued, setQueued] = useState<QueuedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const emojiContainerRef = useRef<HTMLDivElement>(null);
   const voice = useVoiceRecorder();
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -164,6 +168,24 @@ export function ChatConversation({
       });
     };
   }, [queued]);
+
+  useEffect(() => {
+    if (!showEmojiPicker) return;
+    function handleEmojiOutside(e: MouseEvent) {
+      if (emojiContainerRef.current && !emojiContainerRef.current.contains(e.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    }
+    function handleEmojiEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") setShowEmojiPicker(false);
+    }
+    document.addEventListener("mousedown", handleEmojiOutside);
+    document.addEventListener("keydown", handleEmojiEsc);
+    return () => {
+      document.removeEventListener("mousedown", handleEmojiOutside);
+      document.removeEventListener("keydown", handleEmojiEsc);
+    };
+  }, [showEmojiPicker]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -357,6 +379,28 @@ export function ChatConversation({
   const retryQueued = async (id: string) => {
     setQueued((prev) => prev.map((q) => (q.id === id ? { ...q, status: "queued" as const, error: undefined } : q)));
   };
+
+  const insertEmoji = useCallback(
+    (emoji: string) => {
+      const el = inputRef.current;
+      if (!el) {
+        setInput((prev) => prev + emoji);
+        return;
+      }
+      const start = el.selectionStart ?? input.length;
+      const end = el.selectionEnd ?? input.length;
+      const next = input.slice(0, start) + emoji + input.slice(end);
+      setInput(next);
+      requestAnimationFrame(() => {
+        el.focus();
+        const pos = start + emoji.length;
+        try {
+          el.setSelectionRange(pos, pos);
+        } catch {}
+      });
+    },
+    [input],
+  );
 
   // Voice helpers
   const handleMicClick = async () => {
@@ -903,7 +947,7 @@ export function ChatConversation({
             </div>
           </div>
         ) : (
-          <>
+          <div ref={emojiContainerRef} className="relative">
             {queued.length > 0 && (
               <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
                 {queued.map((q) => (
@@ -920,6 +964,16 @@ export function ChatConversation({
               </div>
             )}
             {voice.error && <p className="mb-2 text-xs text-red-400">{voice.error}</p>}
+            {showEmojiPicker && (
+              <div className="absolute bottom-full left-0 z-30 mb-2">
+                <EmojiPicker
+                  onSelect={(emoji) => {
+                    insertEmoji(emoji);
+                  }}
+                  onClose={() => setShowEmojiPicker(false)}
+                />
+              </div>
+            )}
             <form
               className="flex items-center gap-2 sm:gap-3"
               onSubmit={(e) => {
@@ -946,7 +1000,19 @@ export function ChatConversation({
               >
                 <Paperclip size={18} />
               </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="default"
+                aria-label="Open emoji picker"
+                onClick={() => setShowEmojiPicker((v) => !v)}
+                disabled={!!voice.blob || voice.isRecording}
+                className="h-12 w-12 shrink-0 rounded-2xl p-0"
+              >
+                <Smile size={18} />
+              </Button>
               <input
+                ref={inputRef}
                 type="text"
                 aria-label="Type a message"
                 placeholder="Type a message..."
@@ -974,7 +1040,7 @@ export function ChatConversation({
                 </Button>
               )}
             </form>
-          </>
+          </div>
         )}
       </div>
     </div>

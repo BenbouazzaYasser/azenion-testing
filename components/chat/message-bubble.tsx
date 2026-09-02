@@ -31,6 +31,19 @@ interface MessageBubbleProps {
   attachments?: ChatAttachmentForMessage[];
 }
 
+function isEmojiOnly(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+  const withoutWs = trimmed.replace(/\s/g, "");
+  if (withoutWs.length === 0) return false;
+  if (withoutWs.length > 30) return false;
+  if (/[a-zA-Z0-9]/.test(trimmed)) return false;
+  const hasEmoji = /\p{Extended_Pictographic}/u.test(withoutWs);
+  if (!hasEmoji) return false;
+  const emojiOnlyRegex = /^[\p{Emoji}\p{Extended_Pictographic}\uFE0F\u200D\s]+$/u;
+  return emojiOnlyRegex.test(trimmed);
+}
+
 export function MessageBubble({
   id,
   content,
@@ -129,28 +142,37 @@ export function MessageBubble({
             </div>
           </div>
         ) : (
-          <div
-            tabIndex={0}
-            role="group"
-            aria-label={`Message from ${sender_name ?? "unknown sender"}`}
-            onClick={() => onSelect?.(id)}
-            onFocus={() => onSelect?.(id)}
-            onDoubleClick={() => onToggleActions?.(id)}
-            className={cn(
-              "cursor-pointer rounded-2xl px-3.5 py-2 text-sm leading-relaxed backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2",
-              isOwn
-                ? "rounded-br-none border border-accent-300/25 bg-gradient-to-br from-accent to-accent-glow text-white shadow-[0_10px_28px_-12px_rgba(40,40,255,0.55)] focus-visible:ring-accent-300/40"
-                : "rounded-bl-none bg-surface/80 text-ink-50 shadow-[0_8px_20px_-14px_rgba(0,0,0,0.7)] focus-visible:ring-accent-400/40",
-            )}
-          >
-            {attachments.length > 0 && (
-              <div className="mb-1 flex flex-col gap-2">
-                {attachments.map((att) => (
-                  <ChatAttachment key={att.id} attachment={att} isOwn={isOwn} />
-                ))}
-              </div>
-            )}
-            {content.trim().length > 0 && <p className="whitespace-pre-wrap break-words">{content}</p>}
+          (() => {
+            const emojiOnly = isEmojiOnly(content) && attachments.length === 0;
+            const graphemeCount = emojiOnly ? Array.from(content.trim().replace(/\s/g, "")).length : 0;
+            const emojiSize = graphemeCount <= 3 ? "text-4xl" : graphemeCount <= 6 ? "text-3xl" : "text-2xl";
+            return (
+              <div
+                tabIndex={0}
+                role="group"
+                aria-label={`Message from ${sender_name ?? "unknown sender"}`}
+                onClick={() => onSelect?.(id)}
+                onFocus={() => onSelect?.(id)}
+                onDoubleClick={() => onToggleActions?.(id)}
+                className={cn(
+                  "cursor-pointer rounded-2xl px-3.5 py-2 text-sm leading-relaxed backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2",
+                  emojiOnly
+                    ? "bg-transparent border-0 shadow-none px-1 py-1"
+                    : isOwn
+                      ? "rounded-br-none border border-accent-300/25 bg-gradient-to-br from-accent to-accent-glow text-white shadow-[0_10px_28px_-12px_rgba(40,40,255,0.55)] focus-visible:ring-accent-300/40"
+                      : "rounded-bl-none bg-surface/80 text-ink-50 shadow-[0_8px_20px_-14px_rgba(0,0,0,0.7)] focus-visible:ring-accent-400/40",
+                )}
+              >
+                {attachments.length > 0 && (
+                  <div className="mb-1 flex flex-col gap-2">
+                    {attachments.map((att) => (
+                      <ChatAttachment key={att.id} attachment={att} isOwn={isOwn} />
+                    ))}
+                  </div>
+                )}
+                {content.trim().length > 0 && (
+                  <p className={cn("whitespace-pre-wrap break-words", emojiOnly && `${emojiSize} leading-none`)}>{content}</p>
+                )}
             <div
               aria-hidden={!active}
               className="grid transition-[grid-template-rows] duration-200 ease-premium"
@@ -167,7 +189,7 @@ export function MessageBubble({
                     <span
                       className={cn(
                         "flex items-center gap-1 text-[10px] font-medium leading-none tracking-wide",
-                        isOwn ? "text-white/70" : "text-ink-500",
+                        isOwn ? (emojiOnly ? "text-ink-500" : "text-white/70") : "text-ink-500",
                       )}
                     >
                       {edited_at && <span className="opacity-80">edited&nbsp;&bull;&nbsp;</span>}
@@ -177,7 +199,9 @@ export function MessageBubble({
                 </div>
               </div>
             </div>
-          </div>
+              </div>
+            );
+          })()
         )}
 
         {isOwn && status && !isEditing && (
