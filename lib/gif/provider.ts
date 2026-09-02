@@ -41,6 +41,29 @@ function getGiphyKey(): string | null {
   return key && key.trim().length > 0 ? key.trim() : null;
 }
 
+// Curated fallback GIFs (public Giphy CDN, no API key required to render) — used when GIPHY_API_KEY is not set so the feature works in local/dev
+const MOCK_GIFS: GifResult[] = [
+  { id: "mock-hello", title: "Hello", url: "https://media.giphy.com/media/3o7TKMt1VVNkHV2PaE/giphy.gif", previewUrl: "https://media.giphy.com/media/3o7TKMt1VVNkHV2PaE/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-laugh", title: "Laugh", url: "https://media.giphy.com/media/l0HlNaQ6gWfllcjDO/giphy.gif", previewUrl: "https://media.giphy.com/media/l0HlNaQ6gWfllcjDO/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-wow", title: "Wow", url: "https://media.giphy.com/media/3o7ablnW1L2NZXsW9s/giphy.gif", previewUrl: "https://media.giphy.com/media/3o7ablnW1L2NZXsW9s/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-love", title: "Love", url: "https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif", previewUrl: "https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-thumbsup", title: "Thumbs Up", url: "https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif", previewUrl: "https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-clap", title: "Clap", url: "https://media.giphy.com/media/3o7TKQ8kAP0f9X5PoY/giphy.gif", previewUrl: "https://media.giphy.com/media/3o7TKQ8kAP0f9X5PoY/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-party", title: "Party", url: "https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif", previewUrl: "https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-thinking", title: "Thinking", url: "https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif", previewUrl: "https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-cool", title: "Cool", url: "https://media.giphy.com/media/26gssIytJvy1b1TH8Q/giphy.gif", previewUrl: "https://media.giphy.com/media/26gssIytJvy1b1TH8Q/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-fire", title: "Fire", url: "https://media.giphy.com/media/3o7TKShaW3RId6qNa8/giphy.gif", previewUrl: "https://media.giphy.com/media/3o7TKShaW3RId6qNa8/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-star", title: "Star", url: "https://media.giphy.com/media/26BRuo6sLetdll9KQ/giphy.gif", previewUrl: "https://media.giphy.com/media/26BRuo6sLetdll9KQ/giphy.gif", width: 480, height: 270, provider: "giphy" },
+  { id: "mock-heart", title: "Heart", url: "https://media.giphy.com/media/l4pTdcifPZLpDjL1e/giphy.gif", previewUrl: "https://media.giphy.com/media/l4pTdcifPZLpDjL1e/giphy.gif", width: 480, height: 270, provider: "giphy" },
+];
+
+function getMockResults(query: string, limit: number): GifResult[] {
+  if (!query.trim()) return MOCK_GIFS.slice(0, limit);
+  const q = query.toLowerCase();
+  const filtered = MOCK_GIFS.filter((g) => g.title.toLowerCase().includes(q) || g.id.toLowerCase().includes(q));
+  return (filtered.length > 0 ? filtered : MOCK_GIFS).slice(0, limit);
+}
+
 interface GiphyApiResponse {
   data: Array<{
     id: string;
@@ -56,7 +79,7 @@ interface GiphyApiResponse {
 
 async function giphySearch({ query, limit = 12, offset = 0 }: GifSearchOptions): Promise<GifResult[]> {
   const key = getGiphyKey();
-  if (!key) throw new Error("GIPHY_API_KEY not configured");
+  if (!key) return getMockResults(query, limit);
   const url = new URL("https://api.giphy.com/v1/gifs/search");
   url.searchParams.set("api_key", key);
   url.searchParams.set("q", query);
@@ -86,7 +109,7 @@ async function giphySearch({ query, limit = 12, offset = 0 }: GifSearchOptions):
 
 async function giphyTrending(limit = 12): Promise<GifResult[]> {
   const key = getGiphyKey();
-  if (!key) throw new Error("GIPHY_API_KEY not configured");
+  if (!key) return MOCK_GIFS.slice(0, limit);
   const url = new URL("https://api.giphy.com/v1/gifs/trending");
   url.searchParams.set("api_key", key);
   url.searchParams.set("limit", String(Math.min(limit, 25)));
@@ -113,7 +136,7 @@ async function giphyTrending(limit = 12): Promise<GifResult[]> {
 
 export const gifProvider = {
   get isConfigured(): boolean {
-    return !!getGiphyKey();
+    return true; // Mock GIFs ensure feature works without GIPHY_API_KEY; key unlocks full Giphy search
   },
   get providerId(): GifProviderId {
     return "giphy";

@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { gifProvider } from "@/lib/gif/provider";
 
-// Server-side GIF search — GIPHY_API_KEY never leaves server
+// Server-side GIF search — GIPHY_API_KEY never leaves server (mock fallback when not set)
 export async function GET(req: NextRequest) {
-  if (!gifProvider.isConfigured) {
-    return NextResponse.json(
-      { error: `GIF search unavailable: set ${gifProvider.requiredEnvVar} on server` },
-      { status: 503 },
-    );
-  }
-
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q")?.trim() ?? "";
   const limitRaw = searchParams.get("limit");
