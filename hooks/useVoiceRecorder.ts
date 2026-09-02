@@ -71,11 +71,20 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
+    // Diagnostic for tester: log browser capabilities
+    console.log("[Voice] Diagnostics", {
+      isSecureContext: typeof window !== "undefined" ? window.isSecureContext : null,
+      mediaDevices: typeof navigator !== "undefined" ? !!navigator.mediaDevices : null,
+      getUserMedia: typeof navigator !== "undefined" ? !!navigator.mediaDevices?.getUserMedia : null,
+      MediaRecorder: typeof MediaRecorder !== "undefined",
+    });
     if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      console.log("[Voice] Not supported: missing mediaDevices/getUserMedia/MediaRecorder");
       setIsSupported(false);
       return;
     }
     const m = pickSupportedMime();
+    console.log("[Voice] Selected recorder MIME:", m);
     if (!m) {
       // Still consider supported but will fallback to default MediaRecorder
       setMimeType(null);
@@ -131,13 +140,21 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       startTimeRef.current = Date.now();
 
       recorder.ondataavailable = (e) => {
+        console.log("[Voice] ondataavailable", { size: e.data?.size, type: e.data?.type });
         if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
         const mime = recorder.mimeType || chosenMime || "audio/webm";
         const b = new Blob(chunksRef.current, { type: mime });
+        const dur = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        console.log("[Voice] onstop", { mimeType: mime, size: b.size, chunks: chunksRef.current.length, duration: dur, recorderMime: recorder.mimeType, chosenMime });
         setBlob(b);
         const url = URL.createObjectURL(b);
+        console.log("[Voice] previewUrl created", { url: url.slice(0, 50), size: b.size });
+        // Test local playback before upload
+        const testAudio = new Audio(url);
+        testAudio.onloadedmetadata = () => console.log("[Voice] local preview duration", testAudio.duration);
+        testAudio.onerror = () => console.log("[Voice] local preview error");
         setPreviewUrl(url);
         setMimeType(mime);
         cleanup();

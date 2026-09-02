@@ -23,8 +23,9 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
         aria-label="Photos and images"
         title="Photos & images"
         onClick={() => {
+          // Minimal dumb synchronous trigger — keep within user gesture, defer close to next tick so menu not unmounted before click
           onSelectImages();
-          onClose();
+          setTimeout(onClose, 0);
         }}
         className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
@@ -37,7 +38,7 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
         title="Files & documents"
         onClick={() => {
           onSelectFiles();
-          onClose();
+          setTimeout(onClose, 0);
         }}
         className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
@@ -50,7 +51,7 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
         title="GIF"
         onClick={() => {
           onSelectGif();
-          onClose();
+          setTimeout(onClose, 0);
         }}
         className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
@@ -63,7 +64,7 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
         title="Stickers"
         onClick={() => {
           onSelectSticker();
-          onClose();
+          setTimeout(onClose, 0);
         }}
         className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >

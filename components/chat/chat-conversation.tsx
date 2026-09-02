@@ -340,6 +340,7 @@ export function ChatConversation({
 
   const addFiles = useCallback((files: FileList | File[]) => {
     const list = Array.from(files);
+    console.log("[Chat] addFiles", { count: list.length, queued: queued.length, files: list.map((f) => ({ name: f.name, type: f.type, size: f.size })) });
     if (list.length === 0) return;
     if (queued.length + list.length > 10) {
       toast.error("Too many files. Max 10 per message.");
@@ -348,6 +349,7 @@ export function ChatConversation({
     const next: QueuedFile[] = [];
     for (const file of list) {
       const cls = classifyFile(file);
+      console.log("[Chat] classifyFile", { name: file.name, type: file.type, size: file.size, result: cls });
       if (!cls.valid) {
         toast.error(cls.error ?? "Unsupported file type");
         continue;
@@ -355,11 +357,14 @@ export function ChatConversation({
       const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
       next.push({ id: crypto.randomUUID(), file, previewUrl, status: "queued" });
     }
+    console.log("[Chat] addFiles queued next", next.length);
     if (next.length > 0) setQueued((prev) => [...prev, ...next]);
   }, [queued.length]);
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("[Chat] handleFileInputChange", { hasFiles: !!e.target.files, count: e.target.files?.length, value: e.target.value });
     if (e.target.files) {
+      console.log("[Chat] fileInput files", Array.from(e.target.files).map((f) => ({ name: f.name, type: f.type, size: f.size })));
       addFiles(e.target.files);
       e.target.value = "";
     }
@@ -400,6 +405,19 @@ export function ChatConversation({
   const retryQueued = async (id: string) => {
     setQueued((prev) => prev.map((q) => (q.id === id ? { ...q, status: "queued" as const, error: undefined } : q)));
   };
+
+  // Minimal dumb synchronous file-input triggers (keep within user gesture)
+  const handleSelectImages = useCallback(() => {
+    console.log("[Chat] Photos button clicked", { hasRef: !!imageInputRef.current, accept: imageInputRef.current?.accept });
+    imageInputRef.current?.click();
+    console.log("[Chat] imageInput click triggered");
+  }, []);
+
+  const handleSelectFiles = useCallback(() => {
+    console.log("[Chat] Files button clicked", { hasRef: !!fileInputRef.current, accept: fileInputRef.current?.accept });
+    fileInputRef.current?.click();
+    console.log("[Chat] fileInput click triggered");
+  }, []);
 
   const insertEmoji = useCallback(
     (emoji: string) => {
@@ -668,11 +686,20 @@ export function ChatConversation({
 
   // Voice helpers
   const handleMicClick = async () => {
+    console.log("[Chat] handleMicClick", {
+      isSecureContext: typeof window !== "undefined" ? window.isSecureContext : null,
+      mediaDevices: typeof navigator !== "undefined" ? !!navigator.mediaDevices : null,
+      getUserMedia: typeof navigator !== "undefined" ? !!navigator.mediaDevices?.getUserMedia : null,
+      MediaRecorder: typeof window !== "undefined" ? !!window.MediaRecorder : null,
+      isSupported: voice.isSupported,
+      isRecording: voice.isRecording,
+    });
     setShowAttachmentMenu(false);
     setShowEmojiPicker(false);
     setShowGifPicker(false);
     setShowStickerPicker(false);
     if (voice.isRecording) {
+      console.log("[Chat] stopping recording");
       voice.stop();
       return;
     }
@@ -685,6 +712,7 @@ export function ChatConversation({
       toast.error("Please send or remove attached files before recording.");
       return;
     }
+    console.log("[Chat] starting voice recording");
     await voice.start();
     if (voice.error) toast.error(voice.error);
   };
@@ -716,6 +744,7 @@ export function ChatConversation({
   const handleSendVoice = async () => {
     if (!voice.blob || !voice.previewUrl || isSending) return;
     const blob = voice.blob;
+    console.log("[Chat] handleSendVoice", { size: blob.size, type: blob.type, duration: voice.duration, mimeType: voice.mimeType });
     if (blob.size > CHAT_MAX_AUDIO_SIZE) {
       toast.error(`Voice message too large (max ${Math.round(CHAT_MAX_AUDIO_SIZE / 1024 / 1024)}MB)`);
       return;
@@ -774,10 +803,12 @@ export function ChatConversation({
     setMessages((prev) => [...prev, optimistic]);
 
     try {
-      const { error: upErr } = await supabase.storage.from("chat-media").upload(path, blob, {
+      console.log("[Chat] uploading voice", { path, mime, size: blob.size, duration: dur });
+      const { error: upErr, data: upData } = await supabase.storage.from("chat-media").upload(path, blob, {
         contentType: mime,
         upsert: false,
       });
+      console.log("[Chat] voice upload result", { error: upErr?.message, data: upData });
       if (upErr) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
         URL.revokeObjectURL(optimisticPreviewUrl);
@@ -785,6 +816,7 @@ export function ChatConversation({
         return;
       }
 
+      console.log("[Chat] sendMessageWithAttachments voice", { conversationId, path, mime, size: blob.size, duration: dur });
       const result = await sendMessageWithAttachments(conversationId, "", [
         {
           type: "audio",
@@ -795,6 +827,7 @@ export function ChatConversation({
           duration_seconds: dur,
         },
       ]);
+      console.log("[Chat] voice send result", result);
 
       if (result && "error" in result && result.error) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
@@ -825,6 +858,7 @@ export function ChatConversation({
   const handleSend = async () => {
     const hasText = input.trim().length > 0;
     const hasFiles = queued.length > 0;
+    console.log("[Chat] handleSend", { hasText, hasFiles, queued: queued.length, isSending, content: input.slice(0, 50) });
     if ((!hasText && !hasFiles) || isSending) return;
 
     // Close pickers on send
@@ -898,6 +932,7 @@ export function ChatConversation({
       let attachmentInputs: { type: "image" | "file"; storage_path: string; filename: string; mime_type: string; file_size: number }[] = [];
 
       if (toUpload.length > 0) {
+        console.log("[Chat] toUpload", toUpload.map((q) => ({ name: q.file.name, type: q.file.type, size: q.file.size })));
         // Upload each file to chat-media
         const uploadResults = await Promise.all(
           toUpload.map(async (q) => {
@@ -905,10 +940,12 @@ export function ChatConversation({
             const attachmentId = q.id; // reuse queued id as attachment id for path determinism
             const safeName = sanitizeFilename(q.file.name);
             const path = getChatMediaObjectPath(conversationId, attachmentId, safeName);
-            const { error } = await supabase.storage.from("chat-media").upload(path, q.file, {
+            console.log("[Chat] uploading", { name: q.file.name, path, type: q.file.type, size: q.file.size });
+            const { error, data } = await supabase.storage.from("chat-media").upload(path, q.file, {
               contentType: q.file.type,
               upsert: false,
             });
+            console.log("[Chat] upload result", { name: q.file.name, error: error?.message, data });
             if (error) {
               return { error: error.message, q };
             }
@@ -921,6 +958,7 @@ export function ChatConversation({
             };
           }),
         );
+        console.log("[Chat] uploadResults", uploadResults);
 
         const failed = uploadResults.filter((r) => "error" in r) as { error: string; q: QueuedFile }[];
         if (failed.length > 0) {
@@ -949,11 +987,13 @@ export function ChatConversation({
       setQueued([]);
 
       let result;
+      console.log("[Chat] calling sendMessage", { conversationId, content: content.slice(0, 50), attachmentInputs });
       if (attachmentInputs.length > 0) {
         result = await sendMessageWithAttachments(conversationId, content, attachmentInputs);
       } else {
         result = await sendMessage(conversationId, content);
       }
+      console.log("[Chat] send result", result);
 
       if (result && "error" in result && result.error) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
@@ -1291,13 +1331,15 @@ export function ChatConversation({
                   aria-hidden={!showAttachmentMenu}
                 >
                   <AttachmentMenu
-                    onSelectImages={() => imageInputRef.current?.click()}
-                    onSelectFiles={() => fileInputRef.current?.click()}
+                    onSelectImages={handleSelectImages}
+                    onSelectFiles={handleSelectFiles}
                     onSelectGif={() => {
+                      console.log("[Chat] GIF selected from plus menu");
                       setShowGifPicker(true);
                       setShowAttachmentMenu(false);
                     }}
                     onSelectSticker={() => {
+                      console.log("[Chat] Sticker selected from plus menu");
                       setShowStickerPicker(true);
                       setShowAttachmentMenu(false);
                     }}
