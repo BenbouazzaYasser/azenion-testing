@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { createLiveSession, updateLiveSession } from "@/actions/live-session.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useTranslation } from "@/components/translation/translation-provider";
 import {
   LIVE_SESSION_FORMATS,
   type LiveSessionFormat,
@@ -48,24 +49,29 @@ function isoToLocalParts(iso: string) {
 
 const TIME_24H_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-function validateTimeField(time: string): string | null {
+function validateTimeField(time: string, t: (k: "academy.timeErrorRequired" | "academy.timeErrorFormat") => string): string | null {
   const value = time.trim();
-  if (!value) return "Time is required";
-  if (!TIME_24H_RE.test(value)) return "Use 24-hour HH:MM, e.g. 18:30";
+  if (!value) return t("academy.timeErrorRequired");
+  if (!TIME_24H_RE.test(value)) return t("academy.timeErrorFormat");
   return null;
 }
 
-function validateEndTimeFields(date: string, time: string): string | null {
+function validateEndTimeFields(
+  date: string,
+  time: string,
+  t: (k: "academy.endDateRequired" | "academy.endTimeRequired" | "academy.timeErrorFormat") => string
+): string | null {
   const value = time.trim();
   if (!date && !value) return null;
-  if (!date) return "End date is required when an end time is provided";
-  if (!value) return "End time is required when an end date is provided";
-  if (!TIME_24H_RE.test(value)) return "Use 24-hour HH:MM, e.g. 18:30";
+  if (!date) return t("academy.endDateRequired");
+  if (!value) return t("academy.endTimeRequired");
+  if (!TIME_24H_RE.test(value)) return t("academy.timeErrorFormat");
   return null;
 }
 
 export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDialogProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
   const [error, setError] = useState<string | null>(null);
@@ -197,16 +203,16 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
     setEndsTimeError(null);
 
     if (!hostId) {
-      setError("Please choose a host");
+      setError(t("academy.hostRequired"));
       return;
     }
 
-    const startTimeError = validateTimeField(startsTime);
+    const startTimeError = validateTimeField(startsTime, t);
     if (startTimeError) {
       setStartsTimeError(startTimeError);
       return;
     }
-    const endTimeError = validateEndTimeFields(endsDate, endsTime);
+    const endTimeError = validateEndTimeFields(endsDate, endsTime, t);
     if (endTimeError) {
       setEndsTimeError(endTimeError);
       return;
@@ -242,7 +248,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
 
       setOpen(false);
       resetForm();
-      toast.success(mode === "edit" ? "Session updated." : "Session created.");
+      toast.success(mode === "edit" ? t("academy.sessionUpdated") : t("academy.sessionCreated"));
       router.refresh();
     });
   }
@@ -252,13 +258,13 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
       {mode === "create" ? (
         <Button variant="primary" size="default" onClick={() => setOpen(true)}>
           <Plus size={15} />
-          Create Session
+          {t("academy.createSession")}
         </Button>
       ) : (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="Edit session"
+          aria-label={t("academy.editSession")}
           className="flex h-8 w-8 items-center justify-center rounded-full text-ink-400 transition-colors hover:border-accent-400/50 hover:text-accent-400"
         >
           <Pencil size={13} />
@@ -271,11 +277,11 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
               className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8"
               role="dialog"
               aria-modal="true"
-              aria-label={mode === "create" ? "Create session" : "Edit session"}
+              aria-label={mode === "create" ? t("academy.createSession") : t("academy.editSession")}
             >
               <button
                 type="button"
-                aria-label="Close"
+                aria-label={t("common.close")}
                 className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-200"
                 style={{ opacity: mounted ? 1 : 0 }}
                 onClick={() => setOpen(false)}
@@ -293,18 +299,18 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                 <div className="flex items-start justify-between border-b border-border px-8 py-5">
                   <div>
                     <h2 className="text-xl font-semibold text-ink-50">
-                      {mode === "create" ? "Create Session" : "Edit Session"}
+                      {mode === "create" ? t("academy.createSession") : t("academy.editSession")}
                     </h2>
                     <p className="mt-1 text-sm text-ink-400">
                       {mode === "create"
-                        ? "Schedule a new live session for the Academy."
-                        : "Update this live session."}
+                        ? t("academy.createSessionSub")
+                        : t("academy.editSessionSub")}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    aria-label="Close"
+                    aria-label={t("common.close")}
                     className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
@@ -321,7 +327,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                       <label htmlFor="session-title" className={labelClass}>
-                        Session title
+                        {t("academy.sessionTitle")}
                       </label>
                       <input
                         id="session-title"
@@ -329,14 +335,14 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                         onChange={(e) => setTitle(e.target.value)}
                         required
                         maxLength={200}
-                        placeholder="e.g. Intro to Web Development"
+                        placeholder={t("academy.sessionTitlePlaceholder")}
                         className={inputClass}
                       />
                     </div>
 
                     <div>
                       <label htmlFor="session-description" className={labelClass}>
-                        Description
+                        {t("common.description")}
                       </label>
                       <textarea
                         id="session-description"
@@ -345,7 +351,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                         required
                         maxLength={5000}
                         rows={3}
-                        placeholder="What will this session cover?"
+                        placeholder={t("academy.sessionDescPlaceholder")}
                         className={`${inputClass} resize-none`}
                       />
                       <p className="mt-1.5 text-xs text-ink-500">
@@ -354,12 +360,12 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                     </div>
 
                     <fieldset>
-                      <legend className={labelClass}>Host type</legend>
+                      <legend className={labelClass}>{t("academy.hostType")}</legend>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {(
                           [
-                            { value: "BRANCH", label: "Branch", icon: Building2 },
-                            { value: "TEAM", label: "Team", icon: Users },
+                            { value: "BRANCH", labelKey: "academy.branch", icon: Building2 },
+                            { value: "TEAM", labelKey: "academy.team", icon: Users },
                           ] as const
                         ).map((option) => {
                           const Icon = option.icon;
@@ -391,7 +397,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                                 <Icon size={15} />
                               </span>
                               <span className="text-sm font-medium text-ink-50">
-                                {option.label}
+                                {t(option.labelKey)}
                               </span>
                             </button>
                           );
@@ -401,7 +407,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
 
                     <div>
                       <label htmlFor="session-host" className={labelClass}>
-                        Host {hostType === "BRANCH" ? "branch" : "team"}
+                        {hostType === "BRANCH" ? t("academy.hostBranch") : t("academy.hostTeam")}
                       </label>
                       <div className="relative">
                         <select
@@ -413,8 +419,12 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                         >
                           <option value="">
                             {filteredHosts.length > 0
-                              ? `Select a ${hostType === "BRANCH" ? "branch" : "team"}`
-                              : `No ${hostType === "BRANCH" ? "branches" : "teams"} available`}
+                              ? hostType === "BRANCH"
+                                ? t("academy.selectBranch")
+                                : t("academy.selectTeam")
+                              : hostType === "BRANCH"
+                                ? t("academy.noBranches")
+                                : t("academy.noTeams")}
                           </option>
                           {filteredHosts.map((host) => (
                             <option key={host.host_id} value={host.host_id}>
@@ -432,7 +442,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div>
                         <label htmlFor="session-instructor" className={labelClass}>
-                          Instructor
+                          {t("academy.instructor")}
                         </label>
                         <input
                           id="session-instructor"
@@ -440,14 +450,14 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           onChange={(e) => setInstructor(e.target.value)}
                           required
                           maxLength={200}
-                          placeholder="Who is teaching?"
+                          placeholder={t("academy.instructorPlaceholder")}
                           className={inputClass}
                         />
                       </div>
                       <div>
                         <label htmlFor="session-capacity" className={labelClass}>
-                          Capacity{" "}
-                          <span className="text-ink-600">(optional)</span>
+                          {t("academy.capacity")}{" "}
+                          <span className="text-ink-600">({t("common.optional")})</span>
                         </label>
                         <input
                           id="session-capacity"
@@ -455,7 +465,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           min={1}
                           value={capacity}
                           onChange={(e) => setCapacity(e.target.value)}
-                          placeholder="e.g. 50"
+                          placeholder={t("academy.capacityPlaceholder")}
                           className={inputClass}
                         />
                       </div>
@@ -464,7 +474,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                     <div className="grid gap-6 sm:grid-cols-2">
                       <div>
                         <label htmlFor="session-starts-date" className={labelClass}>
-                          Starts at
+                          {t("academy.startsAt")}
                         </label>
                         <input
                           id="session-starts-date"
@@ -494,13 +504,13 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           <p className="mt-1.5 text-xs text-red-300">{startsTimeError}</p>
                         ) : (
                           <p className="mt-1.5 text-xs text-ink-500">
-                            24-hour format, e.g. 18:30
+                            {t("academy.timeFormatHint")}
                           </p>
                         )}
                       </div>
                       <div>
                         <label htmlFor="session-ends-date" className={labelClass}>
-                          End Time <span className="text-ink-600">(optional)</span>
+                          {t("academy.endTime")} <span className="text-ink-600">({t("common.optional")})</span>
                         </label>
                         <input
                           id="session-ends-date"
@@ -529,19 +539,19 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           <p className="mt-1.5 text-xs text-red-300">{endsTimeError}</p>
                         ) : (
                           <p className="mt-1.5 text-xs text-ink-500">
-                            24-hour format, e.g. 18:30. Leave empty for an open-ended session.
+                            {t("academy.endTimeFormatHint")}
                           </p>
                         )}
                       </div>
                     </div>
 
                     <fieldset>
-                      <legend className={labelClass}>Format</legend>
+                      <legend className={labelClass}>{t("academy.format")}</legend>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {(
                           [
-                            { value: "ONLINE", label: "Online", icon: Video },
-                            { value: "IN_PERSON", label: "In-person", icon: MapPin },
+                            { value: "ONLINE", labelKey: "academy.formatOnline", icon: Video },
+                            { value: "IN_PERSON", labelKey: "academy.formatInPerson", icon: MapPin },
                           ] as const
                         ).map((option) => {
                           const Icon = option.icon;
@@ -570,7 +580,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                                 <Icon size={15} />
                               </span>
                               <span className="text-sm font-medium text-ink-50">
-                                {option.label}
+                                {t(option.labelKey)}
                               </span>
                             </button>
                           );
@@ -581,22 +591,22 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                     {format === "IN_PERSON" ? (
                       <div>
                         <label htmlFor="session-location" className={labelClass}>
-                          Location
+                          {t("academy.location")}
                         </label>
                         <input
                           id="session-location"
                           value={location}
                           onChange={(e) => setLocation(e.target.value)}
                           maxLength={500}
-                          placeholder="Building, room or venue"
+                          placeholder={t("academy.locationPlaceholder")}
                           className={inputClass}
                         />
                       </div>
                     ) : (
                       <div>
                         <label htmlFor="session-meeting-url" className={labelClass}>
-                          Meeting link{" "}
-                          <span className="text-ink-600">(optional)</span>
+                          {t("academy.meetingLink")}{" "}
+                          <span className="text-ink-600">({t("common.optional")})</span>
                         </label>
                         <input
                           id="session-meeting-url"
@@ -612,7 +622,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
 
                     <div>
                       <label htmlFor="session-topics" className={labelClass}>
-                        Topics <span className="text-ink-600">(optional, one per line)</span>
+                        {t("academy.topics")} <span className="text-ink-600">{t("academy.topicsHint")}</span>
                       </label>
                       <textarea
                         id="session-topics"
@@ -623,7 +633,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                         className={`${inputClass} resize-none`}
                       />
                       <p className="mt-1.5 text-xs text-ink-500">
-                        Each line becomes a topic chip on the session card.
+                        {t("academy.topicsChipHint")}
                       </p>
                     </div>
 
@@ -638,14 +648,14 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                         }}
                         disabled={isPending}
                       >
-                        Cancel
+                        {t("common.cancel")}
                       </Button>
                       <Button type="submit" variant="primary" size="sm" disabled={isPending}>
                         {isPending
-                          ? "Saving..."
+                          ? t("academy.saving")
                           : mode === "create"
-                            ? "Create Session"
-                            : "Save Changes"}
+                            ? t("academy.createSession")
+                            : t("academy.saveChanges")}
                       </Button>
                     </div>
                   </form>

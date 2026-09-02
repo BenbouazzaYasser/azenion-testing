@@ -11,6 +11,8 @@ import type { RecruitmentRole } from "./recruitment-editor";
 import { ProjectSettingsDialog } from "./project-settings-dialog";
 import { getProjectLifecycleStatus } from "@/lib/lifecycle";
 import Link from "next/link";
+import { useTranslation } from "@/components/translation/translation-provider";
+import type { DictKey } from "@/lib/translation/types";
 
 interface MemberInfo {
   id: string;
@@ -48,13 +50,14 @@ interface ProjectPageHeroProps {
   allCategories: { id: string; name: string; slug: string }[];
 }
 
-const VISIBILITY_CONFIG: Record<string, { icon: typeof Lock; label: string; class: string }> = {
-  open: { icon: Globe, label: "Open", class: "border-accent/25 bg-accent/[0.08] text-accent-300" },
-  private: { icon: Lock, label: "Private", class: "border-amber-400/25 bg-amber-400/[0.08] text-amber-300" },
-  invite_only: { icon: UserPlus, label: "Invite only", class: "border-purple-400/25 bg-purple-400/[0.08] text-purple-300" },
+const VISIBILITY_CONFIG: Record<string, { icon: typeof Lock; labelKey: DictKey; class: string }> = {
+  open: { icon: Globe, labelKey: "projects.open", class: "border-accent/25 bg-accent/[0.08] text-accent-300" },
+  private: { icon: Lock, labelKey: "projects.private", class: "border-amber-400/25 bg-amber-400/[0.08] text-amber-300" },
+  invite_only: { icon: UserPlus, labelKey: "projects.inviteOnly", class: "border-purple-400/25 bg-purple-400/[0.08] text-purple-300" },
 };
 
 export function ProjectPageHero({ project, isMember, currentUserId, userRole, members, allCategories }: ProjectPageHeroProps) {
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [restorePending, startRestoreTransition] = useTransition();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -99,7 +102,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
             <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] bg-surface border-border-strong text-ink-400">
               <span className={`flex h-2 w-2 rounded-full ${visConfig.class.split(" ")[0]}`} />
               <VisIcon size={12} />
-              {visConfig.label}
+              {t(visConfig.labelKey)}
             </div>
                 {project.branch ? (
                   <Link
@@ -126,18 +129,12 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
                 {lifecycle === "ARCHIVED" ? (
                   <>
                     <Archive size={15} className="shrink-0" />
-                    <span>
-                      This project has been archived due to inactivity. It remains accessible to
-                      members but is hidden from discovery.
-                    </span>
+                    <span>{t("projects.pageArchived")}</span>
                   </>
                 ) : (
                   <>
                     <Clock size={15} className="shrink-0" />
-                    <span>
-                      This project has been inactive for a while and will be archived soon if no
-                      new activity happens.
-                    </span>
+                    <span>{t("projects.pageInactive")}</span>
                   </>
                 )}
               </div>
@@ -148,7 +145,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
                   onClick={handleRestore}
                   disabled={restorePending}
                 >
-                  {restorePending ? "Restoring..." : "Restore project"}
+                  {restorePending ? t("projects.restoring") : t("projects.restore")}
                 </Button>
               ) : null}
             </div>
@@ -188,7 +185,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
             {project.team ? <span className="hidden text-ink-600 sm:inline">·</span> : null}
             <span className="inline-flex items-center gap-1.5">
               <Users size={14} className="text-accent-400" />
-              {project.member_count} {project.member_count === 1 ? "member" : "members"}
+              {project.member_count} {project.member_count === 1 ? t("teams.memberOne") : t("teams.memberMany")}
             </span>
           </div>
         </Reveal>
@@ -199,16 +196,16 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
               <>
                 <Button size="lg" onClick={handleJoinLeave} variant={isMember ? "secondary" : "primary"} disabled={isPending}>
                   {isPending ? (
-                    <span>{isMember ? "Leaving..." : "Joining..."}</span>
+                    <span>{isMember ? t("projects.leaving") : t("projects.joining")}</span>
                   ) : isMember ? (
                     <>
                       <LogOut size={16} />
-                      Leave
+                      {t("projects.leave")}
                     </>
                   ) : (
                     <>
                       <Plus size={16} />
-                      Join
+                      {t("projects.join")}
                     </>
                   )}
                 </Button>
@@ -247,7 +244,7 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
-              Scroll to explore
+              {t("common.scrollToExplore")}
             </span>
           </div>
         </Reveal>

@@ -7,11 +7,7 @@ import { FeedComposer } from "@/components/feed/feed-composer";
 import { FeedList } from "@/components/feed/feed-list";
 import { getFeedItems } from "@/actions/feed.actions";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
-
-export const metadata: Metadata = {
-  title: "Feed — Azenion",
-  description: "Stay up to date with projects, teams, and branches across Azenion.",
-};
+import { serverT } from "@/lib/translation/server";
 
 export default async function FeedPage() {
   const supabase = createClient();
@@ -30,10 +26,10 @@ export default async function FeedPage() {
         <div className="relative mx-auto max-w-[720px] px-5 sm:px-8">
           <div className="mb-8">
             <h1 className="text-[2rem] font-semibold tracking-tight text-ink-50 sm:text-[2.5rem]">
-              Feed
+              {serverT("feed.title")}
             </h1>
             <p className="mt-2 text-[1.02rem] leading-relaxed text-ink-400">
-              Stay up to date with projects, teams, and branches across Azenion.
+              {serverT("feed.subtitle")}
             </p>
           </div>
 

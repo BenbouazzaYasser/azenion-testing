@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
+import { serverT } from "@/lib/translation/server";
 
 export function CreateTeam() {
   return (
@@ -24,20 +25,17 @@ export function CreateTeam() {
                   id="create-team-heading"
                   className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
                 >
-                  Start Your Own Team
+                  {serverT("teams.ctaTitle")}
                 </h2>
 
                 <p className="mt-4 max-w-lg text-[1.02rem] leading-relaxed text-ink-400">
-                  Anyone can create a team around an idea, project, startup,
-                  competition, research initiative, or shared passion. If you
-                  can dream it, you can build it — with the right people beside
-                  you.
+                  {serverT("teams.ctaSub")}
                 </p>
 
                 <div className="mt-8">
                   <Button size="lg" asChild>
                     <Link href="/teams/create">
-                      Create Team
+                      {serverT("teams.ctaButton")}
                       <Plus size={16} />
                     </Link>
                   </Button>

@@ -8,8 +8,10 @@ import { DeleteAccountModal } from "@/components/sections/profile/delete-account
 import { signOutEverywhere } from "@/actions/settings.actions";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 export function DangerZoneSection() {
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [signedOutEverywhere, setSignedOutEverywhere] = useState(false);
 
@@ -17,7 +19,7 @@ export function DangerZoneSection() {
     startTransition(async () => {
       const res = await signOutEverywhere();
       if (res && "unavailable" in res && res.unavailable) {
-        toast.info("Signing out everywhere isn't available yet — coming soon.");
+        toast.info(t("settings.signOutEverywhereToast"));
         setSignedOutEverywhere(true);
       }
     });
@@ -32,9 +34,9 @@ export function DangerZoneSection() {
           </div>
           <div className="flex flex-1 flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
-              <h3 className="text-sm font-medium text-red-400">Delete Account</h3>
+              <h3 className="text-sm font-medium text-red-400">{t("settings.deleteAccount")}</h3>
               <p className="mt-1 max-w-md text-sm text-ink-400">
-                Permanently remove your account and all associated data. This action cannot be undone.
+                {t("settings.deleteAccountDesc")}
               </p>
             </div>
             <DeleteAccountModal />
@@ -49,15 +51,15 @@ export function DangerZoneSection() {
           </div>
           <div className="flex flex-1 flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <h3 className="text-sm font-medium text-ink-50">Sign out everywhere</h3>
+              <h3 className="text-sm font-medium text-ink-50">{t("settings.signOutEverywhere")}</h3>
               <p className="mt-1 text-sm text-ink-400">
                 {signedOutEverywhere
-                  ? "Remote session revocation is not available yet."
-                  : "End all active sessions across every device."}
+                  ? t("settings.signOutEverywhereUnavailable")
+                  : t("settings.signOutEverywhereDesc")}
               </p>
             </div>
             <Button variant="secondary" size="sm" onClick={handleSignOutEverywhere} disabled={isPending || signedOutEverywhere}>
-              {isPending ? "Waiting…" : signedOutEverywhere ? "Unavailable" : "Sign out everywhere"}
+              {isPending ? t("settings.waiting") : signedOutEverywhere ? t("settings.unavailable") : t("settings.signOutEverywhere")}
             </Button>
           </div>
         </div>
@@ -70,8 +72,8 @@ export function DangerZoneSection() {
           </div>
           <div className="flex flex-1 flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <h3 className="text-sm font-medium text-ink-50">Sign out of this device</h3>
-              <p className="mt-1 text-sm text-ink-400">End your current session and return to the login screen.</p>
+              <h3 className="text-sm font-medium text-ink-50">{t("settings.signOutThisDevice")}</h3>
+              <p className="mt-1 text-sm text-ink-400">{t("settings.signOutThisDeviceDesc")}</p>
             </div>
             <Button
               variant="secondary"
@@ -82,7 +84,7 @@ export function DangerZoneSection() {
                 window.location.href = "/";
               }}
             >
-              Sign out
+              {t("auth.signOut")}
             </Button>
           </div>
         </div>

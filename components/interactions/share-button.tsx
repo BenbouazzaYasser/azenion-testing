@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 type ShareStatus = "idle" | "copied" | "failed";
 
@@ -13,6 +14,7 @@ interface ShareButtonProps {
 export function ShareButton({ postId }: ShareButtonProps) {
   const [status, setStatus] = useState<ShareStatus>("idle");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     return () => {
@@ -47,8 +49,8 @@ export function ShareButton({ postId }: ShareButtonProps) {
     <button
       type="button"
       onClick={handleShare}
-      aria-label={status === "copied" ? "Link copied" : "Copy post link"}
-      title={status === "copied" ? "Copied!" : "Share"}
+      aria-label={status === "copied" ? t("feed.linkCopied") : t("feed.share")}
+      title={status === "copied" ? t("feed.copied") : t("feed.share")}
       className={cn(
         "flex items-center gap-1.5 rounded-full text-xs transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
         status === "copied"
@@ -64,7 +66,11 @@ export function ShareButton({ postId }: ShareButtonProps) {
         <Share2 size={14} />
       )}
       <span className="hidden sm:inline">
-        {status === "copied" ? "Copied!" : status === "failed" ? "Copy failed" : "Share"}
+        {status === "copied"
+          ? t("feed.copied")
+          : status === "failed"
+            ? t("feed.copyFailed")
+            : t("feed.share")}
       </span>
     </button>
   );

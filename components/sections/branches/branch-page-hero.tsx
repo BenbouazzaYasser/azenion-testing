@@ -7,6 +7,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { BranchJoinButton } from "./branch-join-button";
 import { BranchSettingsDialog } from "./branch-settings-dialog";
 import { formatDate } from "@/lib/date";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface LeaderProfile {
   id: string;
@@ -41,6 +42,7 @@ export function BranchPageHero({
   isPlatformAdmin,
   leaderProfiles,
 }: BranchHeroProps) {
+  const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const canManage = isPlatformAdmin || isBranchLeader;
 
@@ -82,12 +84,12 @@ export function BranchPageHero({
           <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
               <span className="flex h-2 w-2 rounded-full bg-accent-400" />
-              Active Branch
+              {t("branches.activeBranch")}
             </div>
             {isBranchLeader ? (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08] px-3 py-1.5 text-[12px] font-medium text-emerald-300">
                 <ShieldCheck size={12} />
-                Branch Leader
+                {t("branches.branchLeader")}
               </span>
             ) : null}
             {branch.city ? (
@@ -123,14 +125,14 @@ export function BranchPageHero({
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
             <span className="inline-flex items-center gap-1.5">
               <Users size={14} className="text-accent-400" />
-              {branch.memberCount} {branch.memberCount === 1 ? "member" : "members"}
+              {branch.memberCount} {branch.memberCount === 1 ? t("teams.memberOne") : t("teams.memberMany")}
             </span>
             {branch.created_at ? (
               <>
                 <span className="hidden text-ink-600 sm:inline">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar size={14} className="text-accent-400" />
-                  Founded {formatDate(branch.created_at)}
+                  {t("branches.founded")} {formatDate(branch.created_at)}
                 </span>
               </>
             ) : null}
@@ -160,7 +162,7 @@ export function BranchPageHero({
                 )}
               </div>
               <span className="text-xs text-ink-400">
-                Led by {leaderProfiles.slice(0, 3).map((m) => m.full_name || `@${m.username}`).join(", ")}
+                {t("branches.ledBy")} {leaderProfiles.slice(0, 3).map((m) => m.full_name || `@${m.username}`).join(", ")}
                 {leaderProfiles.length > 3 ? ` +${leaderProfiles.length - 3}` : ""}
               </span>
             </div>
@@ -172,12 +174,12 @@ export function BranchPageHero({
             <BranchJoinButton
               branchId={branch.id}
               isMember={isMember}
-              label={isMember ? "Your Branch" : "Join Branch"}
+              label={isMember ? t("branches.yourBranch") : t("branches.joinCta")}
               cosmic
               helperText={
                 isMember
-                  ? "You are a member of this branch."
-                  : "Joining a branch connects you with its community."
+                  ? t("branches.youAreMember")
+                  : t("branches.joinConnects")
               }
             />
             {canManage ? (
@@ -198,7 +200,7 @@ export function BranchPageHero({
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
-              Scroll to explore
+              {t("common.scrollToExplore")}
             </span>
           </div>
         </Reveal>

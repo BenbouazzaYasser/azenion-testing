@@ -6,6 +6,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { TeamCategoryBadge } from "./team-category-badge";
 import { formatDistanceToNow } from "@/lib/date";
 import { getTeamStatus, isTeamHidden } from "@/lib/lifecycle";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 export interface TeamOpenRole {
   title: string;
@@ -41,6 +42,7 @@ interface TeamCardProps {
 }
 
 export function TeamCard({ team, index }: TeamCardProps) {
+  const { t } = useTranslation();
   const techs = team.technologies ?? [];
   const visibleTechs = techs.slice(0, 5);
   const techOverflow = techs.length - visibleTechs.length;
@@ -78,7 +80,7 @@ export function TeamCard({ team, index }: TeamCardProps) {
                 </h3>
                 {team.owner ? (
                   <p className="mt-0.5 text-sm text-ink-500">
-                    by {team.owner.full_name || `@${team.owner.username}`}
+                    {t("common.by")} {team.owner.full_name || `@${team.owner.username}`}
                   </p>
                 ) : null}
               </div>
@@ -89,12 +91,12 @@ export function TeamCard({ team, index }: TeamCardProps) {
               <div className="mt-4 flex flex-wrap items-center gap-1.5">
                 {inactive ? (
                   <span className="inline-flex rounded-full border border-amber-500/25 bg-amber-500/[0.07] px-2.5 py-0.5 text-[11px] font-medium text-amber-400">
-                    Inactive
+                    {t("teams.inactive")}
                   </span>
                 ) : null}
                 {hidden ? (
                   <span className="inline-flex rounded-full border border-red-500/25 bg-red-500/[0.07] px-2.5 py-0.5 text-[11px] font-medium text-red-400">
-                    Hidden from discovery
+                    {t("teams.hidden")}
                   </span>
                 ) : null}
               </div>
@@ -142,7 +144,7 @@ export function TeamCard({ team, index }: TeamCardProps) {
             {/* Recruiting */}
             {roles.length > 0 ? (
               <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] text-ink-500">Looking for:</span>
+                <span className="text-[11px] text-ink-500">{t("teams.lookingFor")}</span>
                 {visibleRoles.map((role, i) => (
                   <span
                     key={`${role.title}-${i}`}
@@ -166,32 +168,32 @@ export function TeamCard({ team, index }: TeamCardProps) {
             <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-ink-500">
               <span className="inline-flex items-center gap-1.5">
                 <Users size={13} className="text-accent-400" />
-                {team.member_count} {team.member_count === 1 ? "member" : "members"}
+                {team.member_count} {team.member_count === 1 ? t("teams.memberOne") : t("teams.memberMany")}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <FolderKanban size={13} className="text-accent-400" />
-                {team.project_count} {team.project_count === 1 ? "project" : "projects"}
+                {team.project_count} {team.project_count === 1 ? t("teams.projectOne") : t("teams.projectMany")}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <MessageSquare size={13} className="text-accent-400" />
-                {team.update_count} {team.update_count === 1 ? "update" : "updates"}
+                {team.update_count} {team.update_count === 1 ? t("teams.updateOne") : t("teams.updateMany")}
               </span>
               {team.updated_at ? (
                 <span className="inline-flex items-center gap-1.5" suppressHydrationWarning>
                   <span className="h-1 w-1 rounded-full bg-ink-600" />
-                  Updated {formatDistanceToNow(new Date(team.updated_at))}
+                  {t("common.updated")} {formatDistanceToNow(new Date(team.updated_at))}
                 </span>
               ) : team.created_at ? (
                 <span className="inline-flex items-center gap-1.5" suppressHydrationWarning>
                   <span className="h-1 w-1 rounded-full bg-ink-600" />
-                  Created {formatDistanceToNow(new Date(team.created_at))}
+                  {t("common.created")} {formatDistanceToNow(new Date(team.created_at))}
                 </span>
               ) : null}
             </div>
 
             {/* Footer */}
             <div className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-accent-400 opacity-0 transition-all duration-300 group-hover:opacity-100">
-              View Team
+              {t("teams.viewTeam")}
               <ArrowUpRight size={14} />
             </div>
           </div>

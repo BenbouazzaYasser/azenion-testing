@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { Activity, FolderKanban, Users, UsersRound } from "lucide-react";
+import { Activity, Bookmark, FolderKanban, Users, UsersRound } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 
 interface ProfileStatsProps {
@@ -8,6 +8,7 @@ interface ProfileStatsProps {
   teamsCount: number;
   projectsCount: number;
   activitiesCount: number;
+  savedPostsCount: number;
   cardClass: string;
 }
 
@@ -27,6 +28,7 @@ export function ProfileStats({
   teamsCount,
   projectsCount,
   activitiesCount,
+  savedPostsCount,
   cardClass,
 }: ProfileStatsProps) {
   const cards: StatCard[] = [
@@ -53,10 +55,16 @@ export function ProfileStats({
       value: formatCount(activitiesCount),
       icon: Activity,
     },
+    {
+      label: "Saved",
+      value: formatCount(savedPostsCount),
+      icon: Bookmark,
+      href: "/profile/saved-posts",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
       {cards.map((card, index) => {
         const Icon = card.icon;
         const content = (

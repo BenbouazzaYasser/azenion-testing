@@ -7,6 +7,7 @@ import {
   updateProjectUpdate,
   deleteProjectUpdate,
 } from "@/actions/project.actions";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface ProjectPageUpdatesProps {
   projectId: string;
@@ -16,17 +17,6 @@ interface ProjectPageUpdatesProps {
   isMember: boolean;
 }
 
-const projectLabels: FeedLabels = {
-  badge: "Progress",
-  heading: "Current Progress",
-  createPlaceholder: "What did you accomplish?",
-  emptyTitle: "No progress has been shared yet.",
-  emptyMemberDescription: "Be the first member to post an update.",
-  emptyNonMemberDescription: "Check back later for updates.",
-  entityIdField: "project_id",
-  interactionType: "project_update",
-};
-
 export function ProjectPageUpdates({
   projectId,
   projectSlug,
@@ -34,6 +24,19 @@ export function ProjectPageUpdates({
   currentUserId,
   isMember,
 }: ProjectPageUpdatesProps) {
+  const { t } = useTranslation();
+
+  const projectLabels: FeedLabels = {
+    badge: t("projects.feedBadge"),
+    heading: t("projects.feedHeading"),
+    createPlaceholder: t("projects.feedPlaceholder"),
+    emptyTitle: t("projects.feedEmptyTitle"),
+    emptyMemberDescription: t("projects.feedEmptyMember"),
+    emptyNonMemberDescription: t("projects.feedEmptyVisitor"),
+    entityIdField: "project_id",
+    interactionType: "project_update",
+  };
+
   return (
     <EntityUpdatesFeed
       entityId={projectId}

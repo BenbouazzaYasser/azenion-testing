@@ -3,8 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/translation/translation-provider";
 import { submitInstructorVerification } from "@/actions/instructor-verification.actions";
 import type { EducationEntry, CertificationEntry } from "@/lib/validations/instructor-verification.schema";
+
+const GITHUB_HOSTS = ["github.com", "www.github.com"];
+const LINKEDIN_HOSTS = ["linkedin.com", "www.linkedin.com", "linkedin.in", "www.linkedin.in"];
+function isValidUrl(str: string) { try { new URL(str); return true; } catch { return false; } }
+function getHost(str: string) { try { return new URL(str).hostname.toLowerCase(); } catch { return ""; } }
+function digitsOnly(v: string) { return v.replace(/\D/g, "").slice(0, 4); }
 
 const emptyEducation: EducationEntry = {
   institution: "",
@@ -23,6 +30,7 @@ const emptyCertification: CertificationEntry = {
 };
 
 export default function InstructorVerificationForm() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +106,21 @@ export default function InstructorVerificationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.portfolio_url && isValidUrl(formData.portfolio_url)) {
+      const ph = getHost(formData.portfolio_url);
+      if (GITHUB_HOSTS.includes(ph) || LINKEDIN_HOSTS.includes(ph)) {
+        setError(t("settings.urlWarningPortfolio"));
+        return;
+      }
+    }
+    if (formData.github_url && isValidUrl(formData.github_url) && !GITHUB_HOSTS.includes(getHost(formData.github_url))) {
+      setError(t("settings.urlWarningGithub"));
+      return;
+    }
+    if (formData.linkedin_url && isValidUrl(formData.linkedin_url) && !LINKEDIN_HOSTS.includes(getHost(formData.linkedin_url))) {
+      setError(t("settings.urlWarningLinkedin"));
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -117,7 +140,7 @@ export default function InstructorVerificationForm() {
       setError(result.error);
       setLoading(false);
     } else {
-      toast.success("Verification request submitted! We'll review it shortly.");
+      toast.success(t("settings.instructorSubmitToast"));
       router.refresh();
     }
   };
@@ -131,12 +154,12 @@ export default function InstructorVerificationForm() {
       )}
 
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
-        <h2 className="mb-4 text-xl font-semibold text-ink-50">Basic Information</h2>
+        <h2 className="mb-4 text-xl font-semibold text-ink-50">{t("settings.instructorBasicInfo")}</h2>
 
         <div className="space-y-4">
           <div>
             <label htmlFor="full_name" className="mb-2 block text-sm font-medium text-ink-200">
-              Full Name *
+              {t("settings.instructorFullNameRequired")}
             </label>
             <input
               id="full_name"
@@ -150,7 +173,7 @@ export default function InstructorVerificationForm() {
 
           <div>
             <label htmlFor="bio" className="mb-2 block text-sm font-medium text-ink-200">
-              Bio *
+              {t("settings.instructorBioRequired")}
             </label>
             <textarea
               id="bio"
@@ -158,14 +181,14 @@ export default function InstructorVerificationForm() {
               rows={4}
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder="Tell us about yourself and your teaching philosophy..."
+              placeholder={t("settings.instructorBioPlaceholder")}
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />
           </div>
 
           <div>
             <label className="mb-2 block text-sm font-medium text-ink-200">
-              Expertise Areas *
+              {t("settings.instructorExpertiseRequired")}
             </label>
             <div className="flex gap-2">
               <input
@@ -186,7 +209,7 @@ export default function InstructorVerificationForm() {
                 onClick={handleAddExpertise}
                 className="rounded-lg bg-accent px-4 py-2 font-medium text-white hover:bg-accent-500"
               >
-                Add
+                {t("settings.instructorAdd")}
               </button>
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -213,14 +236,14 @@ export default function InstructorVerificationForm() {
               htmlFor="teaching_experience"
               className="mb-2 block text-sm font-medium text-ink-200"
             >
-              Teaching Experience
+              {t("settings.instructorTeaching")}
             </label>
             <textarea
               id="teaching_experience"
               rows={3}
               value={formData.teaching_experience}
               onChange={(e) => setFormData({ ...formData, teaching_experience: e.target.value })}
-              placeholder="Describe your teaching background..."
+              placeholder={t("settings.instructorTeachingPlaceholder")}
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />
           </div>
@@ -229,18 +252,18 @@ export default function InstructorVerificationForm() {
 
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-ink-50">Education</h2>
+          <h2 className="text-xl font-semibold text-ink-50">{t("settings.instructorEducation")}</h2>
           <button
             type="button"
             onClick={handleAddEducation}
             className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-500"
           >
-            + Add
+            {t("settings.instructorAddMore")}
           </button>
         </div>
 
         {formData.education.length === 0 ? (
-          <p className="text-sm text-ink-500">No education entries added yet.</p>
+          <p className="text-sm text-ink-500">{t("settings.instructorNoEducation")}</p>
         ) : (
           <div className="space-y-4">
             {formData.education.map((edu, index) => (
@@ -264,7 +287,7 @@ export default function InstructorVerificationForm() {
                       onChange={(e) => handleUpdateEducation(index, "self_taught", e.target.checked)}
                       className="rounded border-ink-600 bg-void-800 text-accent focus:ring-accent"
                     />
-                    Self-taught
+                    {t("settings.instructorSelfTaught")}
                   </label>
                 </div>
 
@@ -272,7 +295,7 @@ export default function InstructorVerificationForm() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="sm:col-span-2">
                       <label className="mb-1 block text-xs font-medium text-ink-400">
-                        Institution *
+                        {t("settings.instructorInstitutionRequired")}
                       </label>
                       <input
                         type="text"
@@ -283,7 +306,7 @@ export default function InstructorVerificationForm() {
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-ink-400">Degree</label>
+                      <label className="mb-1 block text-xs font-medium text-ink-400">{t("settings.instructorDegree")}</label>
                       <input
                         type="text"
                         value={edu.degree ?? ""}
@@ -294,7 +317,7 @@ export default function InstructorVerificationForm() {
                     </div>
                     <div>
                       <label className="mb-1 block text-xs font-medium text-ink-400">
-                        Field of Study
+                        {t("settings.instructorFieldStudy")}
                       </label>
                       <input
                         type="text"
@@ -306,26 +329,28 @@ export default function InstructorVerificationForm() {
                     </div>
                     <div>
                       <label className="mb-1 block text-xs font-medium text-ink-400">
-                        Start Year
+                        {t("settings.instructorStartYear")}
                       </label>
                       <input
                         type="text"
                         value={edu.start_year ?? ""}
-                        onChange={(e) => handleUpdateEducation(index, "start_year", e.target.value)}
+                        onChange={(e) => handleUpdateEducation(index, "start_year", digitsOnly(e.target.value))}
                         placeholder="2020"
+                        inputMode="numeric"
                         maxLength={4}
                         className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
                       />
                     </div>
                     <div>
                       <label className="mb-1 block text-xs font-medium text-ink-400">
-                        End Year
+                        {t("settings.instructorEndYear")}
                       </label>
                       <input
                         type="text"
                         value={edu.end_year ?? ""}
-                        onChange={(e) => handleUpdateEducation(index, "end_year", e.target.value)}
+                        onChange={(e) => handleUpdateEducation(index, "end_year", digitsOnly(e.target.value))}
                         placeholder="2024 or leave blank if current"
+                        inputMode="numeric"
                         maxLength={4}
                         className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
                       />
@@ -340,18 +365,18 @@ export default function InstructorVerificationForm() {
 
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-ink-50">Certifications</h2>
+          <h2 className="text-xl font-semibold text-ink-50">{t("settings.instructorCertifications")}</h2>
           <button
             type="button"
             onClick={handleAddCertification}
             className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-500"
           >
-            + Add
+            {t("settings.instructorAddMore")}
           </button>
         </div>
 
         {formData.certifications.length === 0 ? (
-          <p className="text-sm text-ink-500">No certifications added yet.</p>
+          <p className="text-sm text-ink-500">{t("settings.instructorNoCertifications")}</p>
         ) : (
           <div className="space-y-4">
             {formData.certifications.map((cert, index) => (
@@ -370,7 +395,7 @@ export default function InstructorVerificationForm() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="sm:col-span-2">
                     <label className="mb-1 block text-xs font-medium text-ink-400">
-                      Certification Name *
+                      {t("settings.instructorCertificationName")}
                     </label>
                     <input
                       type="text"
@@ -382,7 +407,7 @@ export default function InstructorVerificationForm() {
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-ink-400">
-                      Issuing Organization
+                      {t("settings.instructorIssuingOrg")}
                     </label>
                     <input
                       type="text"
@@ -393,19 +418,20 @@ export default function InstructorVerificationForm() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-ink-400">Year</label>
+                    <label className="mb-1 block text-xs font-medium text-ink-400">{t("settings.instructorYear")}</label>
                     <input
                       type="text"
                       value={cert.year ?? ""}
-                      onChange={(e) => handleUpdateCertification(index, "year", e.target.value)}
+                      onChange={(e) => handleUpdateCertification(index, "year", digitsOnly(e.target.value))}
                       placeholder="2024"
+                      inputMode="numeric"
                       maxLength={4}
                       className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
                     />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="mb-1 block text-xs font-medium text-ink-400">
-                      Credential URL (optional)
+                      {t("settings.instructorCredentialUrl")}
                     </label>
                     <input
                       type="url"
@@ -423,18 +449,27 @@ export default function InstructorVerificationForm() {
       </div>
 
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
-        <h2 className="mb-4 text-xl font-semibold text-ink-50">Links (Optional)</h2>
+        <h2 className="mb-4 text-xl font-semibold text-ink-50">{t("settings.instructorLinks")}</h2>
 
         <div className="space-y-4">
           <div>
             <label htmlFor="portfolio_url" className="mb-2 block text-sm font-medium text-ink-200">
-              Portfolio URL
+              {t("settings.instructorPortfolioUrl")}
             </label>
             <input
               id="portfolio_url"
               type="url"
               value={formData.portfolio_url}
-              onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormData({ ...formData, portfolio_url: val });
+                if (val && isValidUrl(val)) {
+                  const host = getHost(val);
+                  if (GITHUB_HOSTS.includes(host) || LINKEDIN_HOSTS.includes(host)) {
+                    setError(t("settings.urlWarningPortfolio"));
+                  } else { setError(null); }
+                } else { setError(null); }
+              }}
               placeholder="https://yourportfolio.com"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />
@@ -448,7 +483,13 @@ export default function InstructorVerificationForm() {
               id="linkedin_url"
               type="url"
               value={formData.linkedin_url}
-              onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormData({ ...formData, linkedin_url: val });
+                if (val && isValidUrl(val) && !LINKEDIN_HOSTS.includes(getHost(val))) {
+                  setError(t("settings.urlWarningLinkedin"));
+                } else { setError(null); }
+              }}
               placeholder="https://linkedin.com/in/yourprofile"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />
@@ -462,7 +503,13 @@ export default function InstructorVerificationForm() {
               id="github_url"
               type="url"
               value={formData.github_url}
-              onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormData({ ...formData, github_url: val });
+                if (val && isValidUrl(val) && !GITHUB_HOSTS.includes(getHost(val))) {
+                  setError(t("settings.urlWarningGithub"));
+                } else { setError(null); }
+              }}
               placeholder="https://github.com/yourusername"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />
@@ -475,7 +522,7 @@ export default function InstructorVerificationForm() {
         disabled={loading || formData.expertise_areas.length === 0}
         className="w-full rounded-lg bg-accent px-6 py-3 font-medium text-white hover:bg-accent-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? "Submitting..." : "Submit Application"}
+        {loading ? t("settings.instructorSubmitting") : t("settings.instructorSubmitApplication")}
       </button>
     </form>
   );

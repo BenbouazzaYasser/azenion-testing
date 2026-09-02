@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { DashboardButton } from "@/components/shared/dashboard-button";
+import { serverT } from "@/lib/translation/server";
 
 export function AcademyClosingCta() {
   return (
@@ -12,22 +13,21 @@ export function AcademyClosingCta() {
             id="academy-closing-heading"
             className="text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
           >
-            Shape <span className="text-accent-400">the Academy.</span>
+            {serverT("academy.closingH2")} <span className="text-accent-400">{serverT("academy.closingH2Accent")}</span>
           </h2>
         </Reveal>
 
         <Reveal delay={100}>
           <p className="mx-auto mt-6 max-w-xl text-balance text-[1.05rem] leading-relaxed text-ink-400">
-            The best sessions come from the community. Request what you want to
-            learn, and grow with Azenion.
+            {serverT("academy.closingSub")}
           </p>
         </Reveal>
 
         <Reveal delay={200}>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <DashboardButton size="lg" label="Join Azenion" />
+            <DashboardButton size="lg" label={serverT("academy.joinAzenion")} />
             <Button variant="secondary" size="lg" asChild>
-              <Link href="/branches">Explore Branches</Link>
+              <Link href="/branches">{serverT("academy.exploreBranches")}</Link>
             </Button>
           </div>
         </Reveal>

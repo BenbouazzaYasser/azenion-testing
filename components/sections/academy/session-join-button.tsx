@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LogOut, Plus, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/components/translation/translation-provider";
 import { joinLiveSession, leaveLiveSession } from "@/actions/live-session.actions";
 
 interface SessionJoinButtonProps {
@@ -24,6 +25,7 @@ export function SessionJoinButton({
   className,
 }: SessionJoinButtonProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +65,7 @@ export function SessionJoinButton({
     return (
       <div>
         <Button variant="secondary" disabled className={className}>
-          Recording Soon
+          {t("academy.recordingSoon")}
         </Button>
       </div>
     );
@@ -74,7 +76,7 @@ export function SessionJoinButton({
       <div>
         <Button variant="secondary" onClick={handleLeave} disabled={loading} className={className}>
           {loading ? <Loader2 size={14} className="animate-spin" /> : <LogOut size={14} />}
-          Leave Session
+          {t("academy.leaveSession")}
         </Button>
         {error ? <p className="mt-2 text-xs text-red-400">{error}</p> : null}
       </div>
@@ -86,7 +88,7 @@ export function SessionJoinButton({
       <div>
         <Button variant="secondary" disabled className={className}>
           <Users size={14} />
-          Session Full
+          {t("academy.sessionFull")}
         </Button>
       </div>
     );
@@ -96,7 +98,7 @@ export function SessionJoinButton({
     <div>
       <Button variant="primary" onClick={handleJoin} disabled={loading} className={className}>
         {loading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-        {isLive ? "Join Live" : "Join Session"}
+        {isLive ? t("academy.joinLive") : t("academy.joinSession")}
       </Button>
       {error ? <p className="mt-2 text-xs text-red-400">{error}</p> : null}
     </div>

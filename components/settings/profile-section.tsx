@@ -3,6 +3,7 @@
 import { EditProfileDialog } from "@/components/sections/profile/edit-profile-dialog";
 import { SettingsPanel } from "./settings-panel";
 import { Github, Linkedin, Sparkles, Building2, UserCircle, Link2 } from "lucide-react";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface ProfileSheetProps {
   profile: {
@@ -24,6 +25,7 @@ interface ProfileSheetProps {
  * social links) while surfacing an at-a-glance summary of the public profile.
  */
 export function ProfileSection({ profile, branch }: ProfileSheetProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <SettingsPanel>
@@ -39,9 +41,9 @@ export function ProfileSection({ profile, branch }: ProfileSheetProps) {
               )}
             </div>
             <div className="min-w-0">
-              <h3 className="truncate text-[15px] font-semibold text-ink-50">{profile.full_name || "Your name"}</h3>
+              <h3 className="truncate text-[15px] font-semibold text-ink-50">{profile.full_name || t("settings.yourName")}</h3>
               <p className="truncate text-sm text-ink-400">
-                {profile.username ? `@${profile.username}` : "Set a username"}
+                {profile.username ? `@${profile.username}` : t("settings.setUsername")}
               </p>
             </div>
           </div>
@@ -51,17 +53,17 @@ export function ProfileSection({ profile, branch }: ProfileSheetProps) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <SettingsPanel>
-          <SummaryRow icon={<UserCircle size={16} className="text-accent-300" />} label="Bio">
-            {profile.bio ? <span className="text-ink-200">{profile.bio}</span> : <span className="text-ink-500">No bio yet</span>}
+          <SummaryRow icon={<UserCircle size={16} className="text-accent-300" />} label={t("settings.bio")}>
+            {profile.bio ? <span className="text-ink-200">{profile.bio}</span> : <span className="text-ink-500">{t("settings.noBio")}</span>}
           </SummaryRow>
         </SettingsPanel>
         <SettingsPanel>
-          <SummaryRow icon={<Building2 size={16} className="text-accent-300" />} label="Institution">
-            {profile.institution ? <span className="text-ink-200">{profile.institution}</span> : <span className="text-ink-500">Not set</span>}
+          <SummaryRow icon={<Building2 size={16} className="text-accent-300" />} label={t("settings.institutionLabel")}>
+            {profile.institution ? <span className="text-ink-200">{profile.institution}</span> : <span className="text-ink-500">{t("settings.notSet")}</span>}
           </SummaryRow>
         </SettingsPanel>
         <SettingsPanel>
-          <SummaryRow icon={<Sparkles size={16} className="text-accent-300" />} label="Skills">
+          <SummaryRow icon={<Sparkles size={16} className="text-accent-300" />} label={t("settings.skillsLabel")}>
             {profile.skills.length ? (
               <div className="flex flex-wrap gap-1.5">
                 {profile.skills.slice(0, 6).map((skill) => (
@@ -76,26 +78,26 @@ export function ProfileSection({ profile, branch }: ProfileSheetProps) {
                 ) : null}
               </div>
             ) : (
-              <span className="text-ink-500">No skills yet</span>
+              <span className="text-ink-500">{t("settings.noSkills")}</span>
             )}
           </SummaryRow>
         </SettingsPanel>
         <SettingsPanel>
-          <SummaryRow icon={<Link2 size={16} className="text-accent-300" />} label="Social links">
+          <SummaryRow icon={<Link2 size={16} className="text-accent-300" />} label={t("settings.socialLinks")}>
             <div className="flex gap-3 text-ink-300">
               {profile.github_url ? (
                 <a href={profile.github_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs hover:text-ink-50" aria-label="GitHub profile">
                   <Github size={14} /> GitHub
                 </a>
               ) : (
-                <span className="text-ink-500">No GitHub</span>
+                <span className="text-ink-500">{t("settings.noGithub")}</span>
               )}
               {profile.linkedin_url ? (
                 <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs hover:text-ink-50" aria-label="LinkedIn profile">
                   <Linkedin size={14} /> LinkedIn
                 </a>
               ) : (
-                <span className="text-ink-500">No LinkedIn</span>
+                <span className="text-ink-500">{t("settings.noLinkedin")}</span>
               )}
             </div>
           </SummaryRow>

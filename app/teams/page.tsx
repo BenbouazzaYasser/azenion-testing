@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isTeamHidden } from "@/lib/lifecycle";
+import { serverT } from "@/lib/translation/server";
 
 export const metadata: Metadata = {
   title: "Teams | Azenion — The Limitless Network",
@@ -249,11 +250,11 @@ export default async function TeamsPage() {
         {user && myTeams.length === 0 ? (
           <EmptyState
             icon={<Users size={32} />}
-            title="You haven't joined any teams yet."
-            description="Explore the teams below and join one."
-            eyebrow="Your workspace"
+            title={serverT("teams.personalEmptyTitle")}
+            description={serverT("teams.personalEmptyDesc")}
+            eyebrow={serverT("teams.workspace")}
             scrollToId="teams"
-            actionLabel="Explore Teams"
+            actionLabel={serverT("teams.exploreTeams")}
           />
         ) : (
           <TeamsHero />

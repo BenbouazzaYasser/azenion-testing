@@ -21,6 +21,7 @@ import {
   deleteBranchEvent,
 } from "@/actions/branch.actions";
 import { formatShortDate, formatTime } from "@/lib/date";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface BranchEvent {
   id: string;
@@ -68,6 +69,7 @@ function toScheduleFallback(value: string | null) {
 
 export function BranchPageEvents({ events, branchId, branchSlug, branchName, branchLogoUrl, canManage }: BranchPageEventsProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -132,7 +134,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
         resetForm();
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+        setError(err instanceof Error ? err.message : t("common.unexpectedError"));
       }
     });
   }
@@ -220,7 +222,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                   {status === "upcoming" ? (
                     <span className="inline-flex items-center gap-1 rounded-full border border-accent/25 bg-accent/[0.08] px-2.5 py-0.5 text-[11px] font-medium text-accent-300">
                       <span className="h-1.5 w-1.5 rounded-full bg-accent-400" />
-                      Upcoming
+                      {t("branches.sectionUpcoming")}
                     </span>
                   ) : status === "live" ? (
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
@@ -228,22 +230,22 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
                       </span>
-                      Live
+                      {t("feed.live")}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 rounded-full border border-ink-700/50 bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-500">
-                      Completed
+                      {t("feed.completed")}
                     </span>
                   )}
                   {event.visibility === "public" ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
                       <Globe size={10} />
-                      Public
+                      {t("feed.public")}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-400">
                       <Users size={10} />
-                      Members
+                      {t("feed.members")}
                     </span>
                   )}
                 </div>
@@ -257,7 +259,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                   <button
                     type="button"
                     onClick={() => openEdit(event)}
-                    aria-label="Edit event"
+                    aria-label={t("branches.editEvent")}
                     className="rounded-lg bg-surface p-2 text-ink-400 transition-colors hover:bg-surface-hover hover:text-accent-400"
                   >
                     <Pencil size={13} />
@@ -265,7 +267,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                   <button
                     type="button"
                     onClick={() => handleDelete(event.id)}
-                    aria-label="Delete event"
+                    aria-label={t("branches.deleteEvent")}
                     className="rounded-lg border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-colors hover:bg-red-500/20"
                   >
                     <Trash2 size={13} />
@@ -299,7 +301,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                 className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-400 transition-colors hover:text-accent-300"
               >
                 <Link2 size={13} />
-                Register
+                {t("feed.register")}
               </a>
             ) : null}
           </div>
@@ -315,7 +317,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
           <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
               <Calendar size={12} />
-              Events
+              {t("branches.eventsEyebrow")}
             </div>
             {canManage ? (
               <Button
@@ -327,7 +329,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                 }}
               >
                 <Plus size={14} />
-                Add Event
+                {t("branches.addEvent")}
               </Button>
             ) : null}
           </div>
@@ -338,13 +340,13 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
             id="branch-events-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Branch events
+            {t("branches.eventsTitle")}
           </h2>
         </Reveal>
 
         <Reveal delay={120}>
           <p className="mt-3 max-w-2xl text-[0.95rem] leading-relaxed text-ink-400">
-            Upcoming events come first, past events below.
+            {t("branches.eventsSub")}
           </p>
         </Reveal>
 
@@ -359,7 +361,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
             <div className="mt-8 overflow-hidden rounded-2xl card-surface p-6 shadow-card sm:p-8">
               <div className="mb-6 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-ink-50">
-                  {editingId ? "Edit Event" : "New Event"}
+                  {editingId ? t("branches.editEvent") : t("branches.newEvent")}
                 </h3>
                 <button
                   type="button"
@@ -373,7 +375,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="event-title" className={labelClass}>
-                    Title <span className="text-accent-400">*</span>
+                    {t("common.title")} <span className="text-accent-400">*</span>
                   </label>
                   <input
                     id="event-title"
@@ -388,7 +390,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
 
                 <div>
                   <label htmlFor="event-schedule" className={labelClass}>
-                    Schedule <span className="text-accent-400">*</span>
+                    {t("branches.eventSchedule")} <span className="text-accent-400">*</span>
                   </label>
                   <input
                     id="event-schedule"
@@ -400,14 +402,14 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                     className={inputClass}
                   />
                   <p className="mt-1.5 text-xs text-ink-500">
-                    Free-text date and time — anything that reads naturally.
+                    {t("branches.scheduleHint")}
                   </p>
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <label htmlFor="event-location" className={labelClass}>
-                      Location
+                      {t("common.location")}
                     </label>
                     <input
                       id="event-location"
@@ -420,7 +422,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                   </div>
                   <div>
                     <label htmlFor="event-registration" className={labelClass}>
-                      Registration URL
+                      {t("branches.registrationUrl")}
                     </label>
                     <input
                       id="event-registration"
@@ -434,7 +436,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
 
                 <div>
                   <label htmlFor="event-description" className={labelClass}>
-                    Description
+                    {t("common.description")}
                   </label>
                   <textarea
                     id="event-description"
@@ -447,7 +449,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                 </div>
 
                 <div>
-                  <label className={labelClass}>Visibility</label>
+                  <label className={labelClass}>{t("branches.visibility")}</label>
                   <div className="mt-2 flex gap-4">
                     {(["public", "members"] as const).map((opt) => (
                       <label
@@ -461,7 +463,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                           onChange={(e) => setFormVisibility(e.target.value)}
                           className="h-4 w-4 accent-accent-400"
                         />
-                        {opt === "public" ? "Public" : "Members only"}
+                        {opt === "public" ? t("feed.public") : t("branches.membersOnly")}
                       </label>
                     ))}
                   </div>
@@ -478,10 +480,10 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                       !formSchedule.trim()
                     }
                   >
-                    {isPending ? "Saving..." : editingId ? "Save Changes" : "Add Event"}
+                    {isPending ? t("common.saving") : editingId ? t("branches.saveChanges") : t("branches.addEvent")}
                   </Button>
                   <Button type="button" variant="secondary" size="sm" onClick={resetForm} disabled={isPending}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                 </div>
               </form>
@@ -495,7 +497,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
               <>
                 <Reveal delay={120}>
                   <h3 className="text-sm font-medium uppercase tracking-[0.15em] text-ink-500">
-                    Upcoming
+                    {t("branches.sectionUpcoming")}
                   </h3>
                 </Reveal>
                 {upcoming.map((event, i) => renderEvent(event, i))}
@@ -506,7 +508,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
               <>
                 <Reveal delay={120}>
                   <h3 className="pt-6 text-sm font-medium uppercase tracking-[0.15em] text-ink-500">
-                    Past Events
+                    {t("branches.sectionPast")}
                   </h3>
                 </Reveal>
                 {history.map((event, i) => renderEvent(event, i))}
@@ -521,8 +523,8 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
               </div>
               <p className="max-w-xs text-sm text-ink-600">
                 {canManage
-                  ? "No events yet. Add the branch's first event."
-                  : "No events have been scheduled yet."}
+                  ? t("branches.noEventsManage")
+                  : t("branches.noEventsVisitor")}
               </p>
             </div>
           </Reveal>

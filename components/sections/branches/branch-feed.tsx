@@ -29,6 +29,7 @@ import { FeedCard } from "@/components/feed/feed-card";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface BranchFeedProps {
   branchId: string;
@@ -64,6 +65,7 @@ export function BranchFeed({
   canManage,
 }: BranchFeedProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -156,7 +158,7 @@ export function BranchFeed({
         clearForm();
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred");
+        setError(err instanceof Error ? err.message : t("common.unexpectedError"));
       }
     });
   }
@@ -254,7 +256,7 @@ export function BranchFeed({
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Announcements & Highlights
+            {t("branches.feedEyebrow")}
           </div>
         </Reveal>
 
@@ -263,13 +265,13 @@ export function BranchFeed({
             id="branch-feed-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Branch Feed
+            {t("branches.feedTitle")}
           </h2>
         </Reveal>
 
         <Reveal delay={120}>
           <p className="mt-3 max-w-2xl text-[0.95rem] leading-relaxed text-ink-400">
-            The latest from this branch — announcements, highlights, team updates, and project progress.
+            {t("branches.feedSub")}
           </p>
         </Reveal>
 
@@ -277,7 +279,7 @@ export function BranchFeed({
           <Reveal delay={160}>
             <div className="mt-8 rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-base font-medium text-ink-200">Share with the branch</h3>
+                <h3 className="text-base font-medium text-ink-200">{t("branches.shareWith")}</h3>
                 <div className="flex rounded-xl bg-surface p-1">
                   {(["announcement", "highlight"] as const).map((m) => (
                     <button
@@ -292,7 +294,7 @@ export function BranchFeed({
                       )}
                     >
                       {m === "announcement" ? <MessageSquare size={14} /> : <Sparkles size={14} />}
-                      {m === "announcement" ? "Announcement" : "Highlight"}
+                      {m === "announcement" ? t("branches.tabAnnouncement") : t("branches.tabHighlight")}
                     </button>
                   ))}
                 </div>
@@ -307,7 +309,7 @@ export function BranchFeed({
               <div className="mt-5 space-y-4">
                 <div>
                   <label className={labelClass}>
-                    {mode === "announcement" ? "Title" : "Title"}
+                    {t("common.title")}
                   </label>
                   <input
                     type="text"
@@ -315,7 +317,7 @@ export function BranchFeed({
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder={
                       mode === "announcement"
-                        ? "What's new with the branch?"
+                        ? t("branches.feedTitlePlaceholder")
                         : "e.g. Hackathon Champion 2026"
                     }
                     maxLength={200}
@@ -325,15 +327,17 @@ export function BranchFeed({
 
                 <div>
                   <label className={labelClass}>
-                    {mode === "announcement" ? "Details (optional)" : "Description (optional)"}
+                    {mode === "announcement"
+                      ? `${t("branches.detailsLabel")} (${t("common.optional")})`
+                      : `${t("branches.descriptionLabel")} (${t("common.optional")})`}
                   </label>
                   <textarea
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     placeholder={
                       mode === "announcement"
-                        ? "Add more detail..."
-                        : "What makes this a highlight?"
+                        ? t("branches.feedBodyPlaceholder")
+                        : t("branches.highlightPlaceholder")
                     }
                     rows={3}
                     maxLength={5000}
@@ -343,7 +347,7 @@ export function BranchFeed({
 
                 {mode === "highlight" ? (
                   <div>
-                    <label className={labelClass}>Link URL (optional)</label>
+                    <label className={labelClass}>{t("branches.linkOptional")}</label>
                     <input
                       type="text"
                       value={linkUrl}
@@ -364,7 +368,7 @@ export function BranchFeed({
                       className="h-4 w-4 accent-accent-400"
                     />
                     <Pin size={14} className="text-accent-400" />
-                    Pin to top of the branch feed
+                    {t("branches.pinTop")}
                   </label>
                 ) : null}
 
@@ -402,7 +406,7 @@ export function BranchFeed({
                     className="inline-flex h-9 items-center gap-1.5 text-sm text-ink-400 transition-colors hover:text-accent-400"
                   >
                     <ImagePlus size={16} />
-                    Add image
+                    {t("branches.addImage")}
                   </button>
 
                   <Button
@@ -413,7 +417,7 @@ export function BranchFeed({
                     disabled={isPending || !title.trim()}
                   >
                     <Send size={14} />
-                    {isPending ? "Publishing..." : "Publish"}
+                    {isPending ? t("branches.publishing") : t("branches.publish")}
                   </Button>
                 </div>
               </div>
@@ -432,7 +436,7 @@ export function BranchFeed({
                   {editingId === item.source_id ? (
                     <div className="rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
                       <h3 className="text-base font-medium text-ink-200">
-                        Edit {editingType === "branch_highlight" ? "highlight" : "announcement"}
+                        {editingType === "branch_highlight" ? t("branches.editHighlight") : t("branches.editAnnouncement")}
                       </h3>
                       <div className="mt-4 space-y-4">
                         <input
@@ -472,7 +476,7 @@ export function BranchFeed({
                             onClick={handleSaveEdit}
                             disabled={isPending || !editTitle.trim()}
                           >
-                            {isPending ? "Saving..." : "Save"}
+                            {isPending ? t("common.saving") : t("feed.save")}
                           </Button>
                           <button
                             type="button"
@@ -482,7 +486,7 @@ export function BranchFeed({
                             }}
                             className="inline-flex h-9 items-center text-sm text-ink-500 transition-colors hover:text-ink-300"
                           >
-                            Cancel
+                            {t("common.cancel")}
                           </button>
                         </div>
                       </div>
@@ -501,7 +505,7 @@ export function BranchFeed({
                                   setMenuOpenId(menuOpenId === item.source_id ? null : item.source_id)
                                 }
                                 className="rounded-lg bg-surface p-1.5 text-ink-500 transition-colors hover:bg-surface-hover hover:text-ink-200"
-                                aria-label="Manage post"
+                                aria-label={t("branches.managePost")}
                               >
                                 <MoreHorizontal size={16} />
                               </button>
@@ -514,7 +518,7 @@ export function BranchFeed({
                                       className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink-300 transition-colors hover:bg-accent/[0.08] hover:text-accent-300"
                                     >
                                       <Pin size={13} />
-                                      {item.is_pinned ? "Unpin" : "Pin"}
+                                      {item.is_pinned ? t("feed.unpin") : t("feed.pin")}
                                     </button>
                                   ) : null}
                                   {manageable ? (
@@ -525,7 +529,7 @@ export function BranchFeed({
                                         className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink-300 transition-colors hover:bg-accent/[0.08] hover:text-accent-300"
                                       >
                                         <Pencil size={13} />
-                                        Edit
+                                        {t("common.edit")}
                                       </button>
                                       <button
                                         type="button"
@@ -533,7 +537,7 @@ export function BranchFeed({
                                         className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-400 transition-colors hover:bg-red-500/[0.08]"
                                       >
                                         <Trash2 size={13} />
-                                        Delete
+                                        {t("common.delete")}
                                       </button>
                                     </>
                                   ) : null}
@@ -556,11 +560,11 @@ export function BranchFeed({
                 <MessageSquare className="h-7 w-7 text-accent-300" />
               </div>
               <div>
-                <p className="text-base font-medium text-ink-200">No posts in this branch yet.</p>
+                <p className="text-base font-medium text-ink-200">{t("branches.feedEmptyTitle")}</p>
                 <p className="mt-1.5 text-sm text-ink-600">
                   {canManage
-                    ? "Publish the first announcement or highlight to get things moving."
-                    : "Check back later for announcements and updates."}
+                    ? t("branches.feedEmptyManage")
+                    : t("branches.feedEmptyVisitor")}
                 </p>
               </div>
             </div>
@@ -574,7 +578,7 @@ export function BranchFeed({
               onClick={handleLoadMore}
               className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
             >
-              Load More
+              {t("feed.loadMore")}
             </button>
           </div>
         ) : null}

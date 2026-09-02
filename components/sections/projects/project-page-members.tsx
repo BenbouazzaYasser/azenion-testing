@@ -1,5 +1,6 @@
 import { Users, Star, Shield, GitPullRequest } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
+import { serverT } from "@/lib/translation/server";
 
 interface ProjectMemberWithProfile {
   role: string;
@@ -24,7 +25,7 @@ export function ProjectPageMembers({ members }: ProjectPageMembersProps) {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            People
+            {serverT("projects.peopleEyebrow")}
           </div>
         </Reveal>
 
@@ -33,7 +34,7 @@ export function ProjectPageMembers({ members }: ProjectPageMembersProps) {
             id="project-members-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Members
+            {serverT("projects.membersTitle")}
             <span className="ml-3 text-lg font-normal text-ink-500">({members.length})</span>
           </h2>
         </Reveal>
@@ -79,7 +80,7 @@ export function ProjectPageMembers({ members }: ProjectPageMembersProps) {
                         member.role === "admin" ? "text-accent-300" :
                         "text-blue-300"
                       }`}>
-                        {member.role}
+                        {member.role === "owner" ? serverT("common.owner") : member.role === "admin" ? serverT("common.admin") : member.role}
                       </span>
                     </div>
                   </div>

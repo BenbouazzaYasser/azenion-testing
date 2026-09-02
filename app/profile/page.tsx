@@ -16,6 +16,7 @@ import {
   getUserActivities,
   getUserInvitations,
 } from "@/lib/profile-data";
+import { getSavedPostsCount } from "@/data/interactions";
 
 export const metadata: Metadata = {
   title: "Profile | Azenion",
@@ -27,13 +28,14 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
-  const [profile, branch, teams, projects, activities, invitations] = await Promise.all([
+  const [profile, branch, teams, projects, activities, invitations, savedPostsCount] = await Promise.all([
     getOrCreateProfile(user),
     getUserBranch(user.id),
     getUserTeams(user.id),
     getUserProjects(user.id),
     getUserActivities(user.id),
     getUserInvitations(),
+    getSavedPostsCount(user.id),
   ]);
 
   const headerProps = {
@@ -57,6 +59,7 @@ export default async function ProfilePage() {
         teamsCount={teams.length}
         projectsCount={projects.length}
         activitiesCount={activities.length}
+        savedPostsCount={savedPostsCount}
         cardClass={statCardClass}
       />
       <PendingInvitations invitations={invitations} cardClass={sectionCardClass} />

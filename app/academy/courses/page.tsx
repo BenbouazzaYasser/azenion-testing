@@ -9,6 +9,7 @@ import { AcademyClosingCta } from "@/components/sections/academy/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
 import type { CourseRow } from "@/lib/validations/course.schema";
+import { serverT } from "@/lib/translation/server";
 
 export const metadata: Metadata = {
   title: "Courses | Azenion Academy — The Limitless Network",
@@ -57,10 +58,10 @@ export default async function CoursesPage() {
       <main className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyHero
-          eyebrow="Academy · Courses"
-          title="Learn at Your"
-          accent="Own Pace."
-          subtitle="Self-paced learning paths crafted for every level — dive in whenever you are ready."
+          eyebrow={serverT("academy.coursesEyebrow")}
+          title={serverT("academy.coursesH1")}
+          accent={serverT("academy.coursesH1Accent")}
+          subtitle={serverT("academy.coursesSubtitle")}
         />
         <CoursesBrowser courses={courses} canManage={canManage} />
         <AcademyClosingCta />

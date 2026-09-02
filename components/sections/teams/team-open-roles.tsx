@@ -5,6 +5,7 @@ import { UserPlus, Plus, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { saveOpenRole, deleteOpenRole } from "@/actions/team.actions";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface OpenRole {
   id: string;
@@ -31,6 +32,7 @@ function OpenRoleCard({
   teamSlug: string;
   canManage: boolean;
 }) {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [title, setTitle] = useState(role.title);
@@ -70,7 +72,7 @@ function OpenRoleCard({
       <div className="rounded-2xl border border-accent-400/40 bg-accent/[0.04] p-6 sm:p-8">
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink-200">Title</label>
+            <label className="mb-1 block text-sm font-medium text-ink-200">{t("teams.roleTitle")}</label>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -80,7 +82,7 @@ function OpenRoleCard({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink-200">Description</label>
+            <label className="mb-1 block text-sm font-medium text-ink-200">{t("common.description")}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -90,7 +92,7 @@ function OpenRoleCard({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-ink-200">Quantity Needed</label>
+            <label className="mb-1 block text-sm font-medium text-ink-200">{t("teams.roleQuantity")}</label>
             <input
               type="number"
               value={quantity}
@@ -102,10 +104,10 @@ function OpenRoleCard({
           </div>
           <div className="flex gap-3">
             <Button size="sm" onClick={handleSave} disabled={isPending}>
-              {isPending ? "Saving..." : "Save"}
+              {isPending ? t("common.saving") : t("common.save")}
             </Button>
             <Button size="sm" variant="secondary" onClick={() => setIsEditing(false)} disabled={isPending}>
-              Cancel
+              {t("common.cancel")}
             </Button>
           </div>
         </div>
@@ -125,14 +127,14 @@ function OpenRoleCard({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-ink-50">{role.title}</h3>
-              <p className="text-sm text-ink-400">Need: {role.quantity}</p>
+              <p className="text-sm text-ink-400">{t("teams.need")} {role.quantity}</p>
             </div>
           </div>
 
           {canManage ? (
             <div className="flex gap-2">
               <Button size="sm" variant="secondary" onClick={() => setIsEditing(true)}>
-                Edit
+                {t("common.edit")}
               </Button>
               <Button size="sm" variant="secondary" onClick={handleDelete} disabled={isPending}>
                 <X size={14} />
@@ -150,6 +152,7 @@ function OpenRoleCard({
 }
 
 export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRolesProps) {
+  const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [title, setTitle] = useState("");
@@ -180,7 +183,7 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Recruiting
+            {t("teams.rolesEyebrow")}
           </div>
         </Reveal>
 
@@ -190,12 +193,12 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
               id="team-open-roles-heading"
               className="text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
             >
-              Open Roles
+              {t("teams.rolesTitle")}
             </h2>
             {canManage ? (
               <Button size="sm" variant="secondary" onClick={() => setIsAdding(true)}>
                 <Plus size={14} />
-                Add Role
+                {t("teams.addRole")}
               </Button>
             ) : null}
           </div>
@@ -206,29 +209,29 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
             <div className="rounded-2xl border border-accent-400/40 bg-accent/[0.04] p-6 sm:p-8">
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-ink-200">Title</label>
+                  <label className="mb-1 block text-sm font-medium text-ink-200">{t("teams.roleTitle")}</label>
                   <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     maxLength={100}
                     required
-                    placeholder="e.g. Frontend Developer"
+                    placeholder={t("teams.roleTitlePlaceholder")}
                     className="w-full rounded-xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-ink-200">Description</label>
+                  <label className="mb-1 block text-sm font-medium text-ink-200">{t("common.description")}</label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     maxLength={500}
                     rows={3}
-                    placeholder="What are you looking for?"
+                    placeholder={t("teams.roleDescPlaceholder")}
                     className="w-full resize-none rounded-xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-ink-200">Quantity Needed</label>
+                  <label className="mb-1 block text-sm font-medium text-ink-200">{t("teams.roleQuantity")}</label>
                   <input
                     type="number"
                     value={quantity}
@@ -240,10 +243,10 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
                 </div>
                 <div className="flex gap-3">
                   <Button size="sm" onClick={handleAdd} disabled={isPending}>
-                    {isPending ? "Adding..." : "Add Role"}
+                    {isPending ? t("teams.adding") : t("teams.addRole")}
                   </Button>
                   <Button size="sm" variant="secondary" onClick={() => setIsAdding(false)} disabled={isPending}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                 </div>
               </div>
@@ -256,9 +259,9 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
                 <UserPlus className="h-6 w-6 text-accent-300" />
               </div>
               <div>
-                <p className="text-sm font-medium text-ink-200">No open roles yet</p>
+                <p className="text-sm font-medium text-ink-200">{t("teams.noRoles")}</p>
                 <p className="mt-1 max-w-xs text-sm text-ink-600">
-                  {canManage ? "Add roles your team is looking for." : "Check back later."}
+                  {canManage ? t("teams.noRolesManage") : t("common.checkLater")}
                 </p>
               </div>
             </div>

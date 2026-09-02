@@ -12,6 +12,7 @@ import {
   toggleCommentLike,
 } from "@/actions/interactions.actions";
 import { LikeButton } from "@/components/interactions/like-button";
+import { useTranslation } from "@/components/translation/translation-provider";
 import type { CommentWithAuthor } from "@/data/interactions";
 
 interface CommentSectionProps {
@@ -37,6 +38,7 @@ export function CommentSection({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [totalComments, setTotalComments] = useState(0);
   const [loadedCount, setLoadedCount] = useState(0);
+  const { t } = useTranslation();
 
   const hasMore = loadedCount < totalComments;
 
@@ -245,7 +247,9 @@ export function CommentSection({
             </div>
           ) : (
             <p className="py-3 text-center text-sm text-ink-600">
-              {currentUserId ? "No comments yet. Start the discussion." : "No comments yet."}
+              {currentUserId
+                ? `${t("feed.noComments")}. ${t("feed.noCommentsStart")}`
+                : t("feed.noComments")}
             </p>
           )}
 
@@ -260,7 +264,7 @@ export function CommentSection({
                 {isLoadingMore ? (
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" />
                 ) : (
-                  "Load More"
+                  t("feed.loadMore")
                 )}
               </button>
             </div>
@@ -270,7 +274,7 @@ export function CommentSection({
             <div className="mt-3 flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Write a comment..."
+                placeholder={t("feed.commentPlaceholder")}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -287,7 +291,7 @@ export function CommentSection({
                 disabled={!input.trim() || isPending}
                 className="rounded-lg bg-accent px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
               >
-                Post
+                {t("feed.commentPost")}
               </button>
             </div>
           )}
@@ -325,6 +329,7 @@ function CommentItem({
   const [replyDraft, setReplyDraft] = useState("");
   const [isSaving, startSaveTransition] = useTransition();
   const [isDeleting, startDeleteTransition] = useTransition();
+  const { t } = useTranslation();
 
   const timeAgo = comment.created_at
     ? formatDistanceToNow(new Date(comment.created_at))
@@ -398,7 +403,7 @@ function CommentItem({
           </span>
           <span className="text-[10px] text-ink-600">
             {timeAgo}
-            {isEdited && " (edited)"}
+            {isEdited && ` (${t("feed.edited")})`}
           </span>
 
           <div className="ml-auto flex items-center gap-3">
@@ -410,7 +415,7 @@ function CommentItem({
                 className="flex items-center gap-1 text-[10px] text-ink-600 transition-colors hover:text-accent-300"
               >
                 <Reply size={11} />
-                Reply
+                {t("feed.reply")}
               </button>
             )}
 
@@ -422,7 +427,7 @@ function CommentItem({
                   className="flex items-center gap-1 text-[10px] text-ink-600 transition-colors hover:text-accent-300"
                 >
                   <Pencil size={11} />
-                  Edit
+                  {t("common.edit")}
                 </button>
                 <button
                   type="button"
@@ -430,7 +435,7 @@ function CommentItem({
                   className="flex items-center gap-1 text-[10px] text-ink-600 transition-colors hover:text-red-400"
                 >
                   <Trash2 size={11} />
-                  Delete
+                  {t("common.delete")}
                 </button>
               </div>
             )}
@@ -453,7 +458,7 @@ function CommentItem({
                 disabled={!draft.trim() || isSaving}
                 className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
               >
-                Save
+                {t("common.save")}
               </button>
               <button
                 type="button"
@@ -461,14 +466,14 @@ function CommentItem({
                 disabled={isSaving}
                 className="rounded-lg px-3 py-1.5 text-xs text-ink-400 transition-colors hover:text-ink-200"
               >
-                Cancel
+                {t("common.cancel")}
               </button>
             </div>
           </div>
         ) : isConfirmingDelete ? (
           <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-red-400/20 bg-red-400/[0.06] px-3 py-2">
             <p className="text-xs text-ink-400">
-              Delete this comment? This action cannot be undone.
+              {t("feed.commentDeleteConfirm")}
             </p>
             <button
               type="button"
@@ -476,7 +481,7 @@ function CommentItem({
               disabled={isDeleting}
               className="rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-medium text-white transition-all duration-300 hover:bg-red-500 disabled:opacity-50"
             >
-              Delete
+              {t("common.delete")}
             </button>
             <button
               type="button"
@@ -484,7 +489,7 @@ function CommentItem({
               disabled={isDeleting}
               className="rounded-lg px-2 py-1.5 text-xs text-ink-400 transition-colors hover:text-ink-200"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           </div>
         ) : (
@@ -508,7 +513,7 @@ function CommentItem({
           <div className="mt-2 flex items-center gap-2">
             <input
               type="text"
-              placeholder="Write a reply..."
+              placeholder={t("feed.commentReplyPlaceholder")}
               value={replyDraft}
               onChange={(e) => setReplyDraft(e.target.value)}
               onKeyDown={(e) => {
@@ -526,14 +531,14 @@ function CommentItem({
               disabled={!replyDraft.trim() || isPending}
               className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
             >
-              Reply
+              {t("feed.reply")}
             </button>
             <button
               type="button"
               onClick={() => setIsReplying(false)}
               className="rounded-lg px-2 py-1.5 text-xs text-ink-400 transition-colors hover:text-ink-200"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           </div>
         )}
@@ -546,8 +551,8 @@ function CommentItem({
             className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-accent-400 transition-colors hover:text-accent-300"
           >
             {repliesExpanded
-              ? "Hide replies"
-              : `Show ${comment.reply_count} ${comment.reply_count === 1 ? "reply" : "replies"}`}
+              ? t("feed.hideReplies")
+              : `${t("feed.showReplies")} ${comment.reply_count} ${comment.reply_count === 1 ? t("feed.replyOne") : t("feed.replyMany")}`}
           </button>
         )}
 

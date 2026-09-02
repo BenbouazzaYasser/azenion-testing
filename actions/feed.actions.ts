@@ -492,6 +492,52 @@ export async function getFeedItemById(
 }
 
 /**
+ * Saved posts: the posts the current user has bookmarked, newest save first.
+ * Each post is re-checked for visibility before being returned so saved posts
+ * the user can no longer see are filtered out.
+ */
+export async function getSavedFeedItems(
+  _userId?: string | null,
+): Promise<{ items: FeedItem[]; total: number }> {
+  const supabase = createAdminClient();
+  const userId = _userId === null ? null : await getSessionUserId();
+  if (!userId) return { items: [], total: 0 };
+
+  const { data: saved } = await supabase
+    .from("saved_posts")
+    .select("post_id")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  const postIds = (saved ?? []).map((r) => r.post_id);
+  if (postIds.length === 0) return { items: [], total: 0 };
+
+  const { data: posts } = await supabase
+    .from("posts")
+    .select("id, author_id, title, body, images, videos, source_type, source_id, created_at, updated_at")
+    .in("id", postIds);
+
+  const postById = new Map((posts ?? []).map((p) => [p.id, p]));
+  const ordered = postIds
+    .map((id) => postById.get(id))
+    .filter((p): p is PostRow => Boolean(p));
+
+  const items = await enrichPosts(supabase, ordered, userId, new Set<string>());
+
+  const visibleItems: FeedItem[] = [];
+  for (const item of items) {
+    const { data: visible } = await supabase.rpc("is_feed_post_visible", {
+      p_source_type: item.source_type,
+      p_source_id: item.source_id,
+      p_user_id: userId,
+    });
+    if (visible === true) visibleItems.push(item);
+  }
+
+  return { items: visibleItems, total: visibleItems.length };
+}
+
+/**
  * Branch-scoped feed: announcements + highlights + events from the branch plus
  * team updates / project updates from teams & projects that belong to it.
  * Posts pinned in THIS branch stay on top, then everything else newest first.

@@ -1,3 +1,5 @@
+import { serverT } from "@/lib/translation/server";
+
 export function PageBridge() {
   return (
     <div className="relative h-40 overflow-hidden sm:h-48 lg:h-56" aria-hidden>
@@ -22,7 +24,7 @@ export function PageBridge() {
         <div className="flex flex-col items-center gap-3">
           <span className="h-10 w-px bg-gradient-to-b from-accent-400/40 to-transparent" />
           <span className="animate-pulse text-[11px] font-medium uppercase tracking-[0.18em] text-ink-600">
-            The journey continues
+            {serverT("home.journeyContinues")}
           </span>
         </div>
       </div>

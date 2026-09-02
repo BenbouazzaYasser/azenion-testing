@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { SettingToggle } from "./setting-toggle";
 import { SettingsPanel, SaveIndicator, type SaveState } from "./settings-panel";
+import { useTranslation } from "@/components/translation/translation-provider";
+import type { DictKey } from "@/lib/translation/types";
 
 export interface PrefItem {
   key: string;
-  label: string;
-  description?: string;
+  labelKey: DictKey;
+  descriptionKey?: DictKey;
 }
 
 interface TogglePreferencesProps {
@@ -21,6 +23,7 @@ interface TogglePreferencesProps {
  * status pill mirrors the server state so saves are always visible.
  */
 export function TogglePreferences({ items, initial, saveAction }: TogglePreferencesProps) {
+  const { t } = useTranslation();
   const [values, setValues] = useState<Record<string, boolean>>({ ...initial });
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +45,7 @@ export function TogglePreferences({ items, initial, saveAction }: TogglePreferen
       })
       .catch(() => {
         setSaveState("idle");
-        setError("Something went wrong while saving.");
+        setError(t("settings.saveError"));
       });
   }
 
@@ -54,8 +57,8 @@ export function TogglePreferences({ items, initial, saveAction }: TogglePreferen
             <SettingToggle
               checked={!!values[item.key]}
               onChange={(checked) => update(item.key, checked)}
-              label={item.label}
-              description={item.description}
+              label={t(item.labelKey)}
+              description={item.descriptionKey ? t(item.descriptionKey) : undefined}
             />
           </div>
         ))}
@@ -65,7 +68,7 @@ export function TogglePreferences({ items, initial, saveAction }: TogglePreferen
           {error ? (
             <p className="text-xs text-red-300">{error}</p>
           ) : (
-            <p className="text-xs text-ink-600">Changes save automatically.</p>
+            <p className="text-xs text-ink-600">{t("settings.changesAutoSave")}</p>
           )}
         </div>
         <SaveIndicator state={saveState} />

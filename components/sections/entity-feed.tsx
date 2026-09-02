@@ -23,6 +23,7 @@ import {
   MAX_ASSET_SIZE,
 } from "@/lib/validations/project.schema";
 import type { FeedItemWithAuthor } from "@/actions/feed.actions";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface UpdateAuthor {
   id: string;
@@ -157,6 +158,7 @@ export function EntityUpdatesFeed({
   wide = false,
 }: EntityUpdatesFeedProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -226,11 +228,11 @@ export function EntityUpdatesFeed({
     const valid: File[] = [];
     for (const file of Array.from(selected)) {
       if (!ALLOWED_ASSET_TYPES.includes(file.type)) {
-        message = `"${file.name}" isn't a PNG, JPEG, or WebP image.`;
+        message = `"${file.name}" ${t("entityFeed.invalidType")}`;
         continue;
       }
       if (file.size > MAX_ASSET_SIZE) {
-        message = `"${file.name}" exceeds the 2MB limit.`;
+        message = `"${file.name}" ${t("entityFeed.limitExceeded")}`;
         continue;
       }
       valid.push(file);
@@ -238,7 +240,7 @@ export function EntityUpdatesFeed({
 
     const remaining = MAX_IMAGES - previews.length;
     if (valid.length > remaining) {
-      message = message ?? `You can attach up to ${MAX_IMAGES} images.`;
+      message = message ?? `${t("entityFeed.maxImagesPrefix")} ${MAX_IMAGES} ${t("entityFeed.imageSuffix")}`;
     }
     const accepted = valid.slice(0, Math.max(remaining, 0));
 
@@ -271,7 +273,7 @@ export function EntityUpdatesFeed({
       }
       const postId = "id" in created ? created.id : null;
       if (!postId) {
-        setError("Something went wrong while posting. Please try again.");
+        setError(t("entityFeed.postError"));
         return;
       }
 
@@ -292,7 +294,7 @@ export function EntityUpdatesFeed({
       reset();
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(err instanceof Error ? err.message : t("common.unexpectedError"));
     } finally {
       setSubmitting(false);
       setUploadStep(null);
@@ -388,7 +390,7 @@ export function EntityUpdatesFeed({
               <div className="flex items-center gap-2">
                 <Sparkles size={16} className="shrink-0 text-accent-400" />
                 <h3 className="text-sm font-medium text-ink-300">
-                  {labels.formHeading ?? "Share an update\u2026"}
+                  {labels.formHeading ?? t("entityFeed.formHeading")}
                 </h3>
               </div>
 
@@ -399,7 +401,7 @@ export function EntityUpdatesFeed({
                     <button
                       type="button"
                       onClick={() => setError(null)}
-                      aria-label="Dismiss error"
+                      aria-label={t("feed.composerDismissError")}
                       className="shrink-0 text-rose-400/70 transition-colors hover:text-rose-300"
                     >
                       <X size={14} />
@@ -413,7 +415,7 @@ export function EntityUpdatesFeed({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Headline (optional)\u2026"
+                  placeholder={t("feed.composerHeadlinePlaceholder")}
                   maxLength={MAX_TITLE_LENGTH}
                   disabled={submitting}
                   className={inputClass}
@@ -464,7 +466,7 @@ export function EntityUpdatesFeed({
                           type="button"
                           onClick={() => removeImage(i)}
                           disabled={submitting}
-                          aria-label={`Remove image ${i + 1}`}
+                          aria-label={`${t("entityFeed.removeImage")} ${i + 1}`}
                           className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
                         >
                           <X size={14} />
@@ -498,10 +500,10 @@ export function EntityUpdatesFeed({
                   onClick={() => fileInputRef.current?.click()}
                   disabled={submitting || previews.length >= MAX_IMAGES}
                   className="inline-flex h-9 items-center gap-1.5 text-sm text-ink-400 transition-colors hover:text-accent-400 disabled:pointer-events-none disabled:opacity-40"
-                  title="PNG, JPEG, or WebP \u2014 up to 2MB each"
+                  title={t("entityFeed.imageTitle")}
                 >
                   <ImagePlus size={16} />
-                  Add images
+                  {t("entityFeed.addImages")}
                   {previews.length > 0 ? (
                     <span className="rounded-full bg-surface px-1.5 py-0.5 text-[0.68rem] font-medium text-ink-400">
                       {previews.length}/{MAX_IMAGES}
@@ -521,14 +523,14 @@ export function EntityUpdatesFeed({
                       <Loader2 size={14} className="animate-spin" />
                       {uploadStep
                         ? uploadStep.total > 1
-                          ? `Uploading ${uploadStep.index}/${uploadStep.total}`
-                          : "Uploading image\u2026"
-                        : "Posting\u2026"}
+                          ? `${t("entityFeed.uploading")} ${uploadStep.index}/${uploadStep.total}`
+                          : `${t("entityFeed.uploading")}…`
+                        : t("feed.composerSubmitting")}
                     </>
                   ) : (
                     <>
                       <Send size={14} />
-                      Post
+                      {t("feed.composerSubmit")}
                     </>
                   )}
                 </Button>
@@ -543,7 +545,7 @@ export function EntityUpdatesFeed({
               <Reveal key={update.id} delay={Math.min(i, 4) * 60}>
                 {editingId === update.id ? (
                   <div className="rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
-                    <h3 className="text-base font-medium text-ink-200">Edit update</h3>
+                    <h3 className="text-base font-medium text-ink-200">{t("entityFeed.editHeading")}</h3>
                     <div className="mt-4 space-y-4">
                       <input
                         type="text"
@@ -572,7 +574,7 @@ export function EntityUpdatesFeed({
                           onClick={handleSaveEdit}
                           disabled={isPending || !editTitle.trim()}
                         >
-                          {isPending ? "Saving..." : "Save"}
+                          {isPending ? t("common.saving") : t("common.save")}
                         </Button>
                         <button
                           type="button"
@@ -582,7 +584,7 @@ export function EntityUpdatesFeed({
                           }}
                           className="inline-flex h-9 items-center text-sm text-ink-500 transition-colors hover:text-ink-300"
                         >
-                          Cancel
+                          {t("common.cancel")}
                         </button>
                       </div>
                     </div>
@@ -600,7 +602,7 @@ export function EntityUpdatesFeed({
                               setMenuOpenId(menuOpenId === update.id ? null : update.id)
                             }
                             className="rounded-lg bg-surface p-1.5 text-ink-500 transition-colors hover:bg-surface-hover hover:text-ink-200"
-                            aria-label="Manage update"
+                            aria-label={t("entityFeed.manageUpdate")}
                           >
                             <MoreHorizontal size={16} />
                           </button>
@@ -614,7 +616,7 @@ export function EntityUpdatesFeed({
                                   className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink-300 transition-colors hover:bg-accent/[0.08] hover:text-accent-300"
                                 >
                                   <Pin size={13} />
-                                  {update.is_pinned ? "Unpin" : "Pin"}
+                                  {update.is_pinned ? t("feed.unpin") : t("feed.pin")}
                                 </button>
                               ) : null}
                               {currentUserId === update.author.id ? (
@@ -625,7 +627,7 @@ export function EntityUpdatesFeed({
                                     className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-ink-300 transition-colors hover:bg-accent/[0.08] hover:text-accent-300"
                                   >
                                     <Pencil size={13} />
-                                    Edit
+                                    {t("common.edit")}
                                   </button>
                                   <button
                                     type="button"
@@ -633,7 +635,7 @@ export function EntityUpdatesFeed({
                                     className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-400 transition-colors hover:bg-red-500/[0.08]"
                                   >
                                     <Trash2 size={13} />
-                                    Delete
+                                    {t("common.delete")}
                                   </button>
                                 </>
                               ) : null}

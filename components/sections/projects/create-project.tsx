@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
+import { serverT } from "@/lib/translation/server";
 
 export function CreateProject() {
   return (
@@ -24,19 +25,17 @@ export function CreateProject() {
                   id="create-project-heading"
                   className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
                 >
-                  Have an Idea? Start Building.
+                  {serverT("projects.ctaTitle")}
                 </h2>
 
                 <p className="mt-4 max-w-lg text-[1.02rem] leading-relaxed text-ink-400">
-                  Every great innovation starts with someone willing to take
-                  the first step. Launch your project, find your team, and turn
-                  your vision into something real.
+                  {serverT("projects.ctaSub")}
                 </p>
 
                 <div className="mt-8">
                   <Button size="lg" asChild>
                     <Link href="/projects/create">
-                      Create Project
+                      {serverT("projects.ctaButton")}
                       <Plus size={16} />
                     </Link>
                   </Button>

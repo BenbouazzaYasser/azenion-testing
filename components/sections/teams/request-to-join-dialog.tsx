@@ -8,6 +8,7 @@ import { X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { requestTeamJoin } from "@/actions/team-membership.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
@@ -22,6 +23,7 @@ interface RequestToJoinDialogProps {
 
 export function RequestToJoinDialog({ teamId, teamName, open, onClose, onSuccess }: RequestToJoinDialogProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -63,7 +65,7 @@ export function RequestToJoinDialog({ teamId, teamName, open, onClose, onSuccess
 
       onClose();
       resetForm();
-      toast.success("Request sent. Once approved, you'll be added to the team's server channels.");
+      toast.success(t("teams.requestSentToast"));
       onSuccess();
       router.refresh();
     });
@@ -77,11 +79,11 @@ export function RequestToJoinDialog({ teamId, teamName, open, onClose, onSuccess
               className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8"
               role="dialog"
               aria-modal="true"
-              aria-label="Request to join team"
+              aria-label={t("teams.requestJoinAria")}
             >
               <button
                 type="button"
-                aria-label="Close"
+                aria-label={t("common.close")}
                 className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-200"
                 style={{ opacity: mounted ? 1 : 0 }}
                 onClick={onClose}
@@ -98,17 +100,16 @@ export function RequestToJoinDialog({ teamId, teamName, open, onClose, onSuccess
               >
                 <div className="flex items-start justify-between border-b border-border px-8 py-5">
                   <div>
-                    <h2 className="text-xl font-semibold text-ink-50">Request to join</h2>
+                    <h2 className="text-xl font-semibold text-ink-50">{t("teams.requestDialogTitle")}</h2>
                     <p className="mt-1 text-sm text-ink-400">
-                      Send a request to join <span className="font-medium text-ink-200">{teamName}</span>. The
-                      team owner will review it before you become a member — once approved,
-                      you&apos;ll be added to the team&apos;s server channels automatically.
+                      {t("teams.requestDialogSub")} <span className="font-medium text-ink-200">{teamName}</span>.{" "}
+                      {t("teams.requestDialogSubAfter")}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={onClose}
-                    aria-label="Close"
+                    aria-label={t("common.close")}
                     className="-mr-1.5 -mt-1.5 rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
@@ -125,7 +126,7 @@ export function RequestToJoinDialog({ teamId, teamName, open, onClose, onSuccess
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                       <label htmlFor="join-request-message" className="mb-1.5 block text-sm font-medium text-ink-200">
-                        Message <span className="text-ink-600">(optional)</span>
+                        {t("teams.requestMessageLabel")} <span className="text-ink-600">(optional)</span>
                       </label>
                       <textarea
                         id="join-request-message"
@@ -133,7 +134,7 @@ export function RequestToJoinDialog({ teamId, teamName, open, onClose, onSuccess
                         onChange={(e) => setMessage(e.target.value)}
                         rows={4}
                         maxLength={300}
-                        placeholder="Tell the team who you are and what you'd like to contribute."
+                        placeholder={t("teams.requestMessagePlaceholder")}
                         className={`${inputClass} resize-none`}
                       />
                       <p className="mt-1.5 text-xs text-ink-500">{message.length}/300</p>
@@ -151,7 +152,7 @@ export function RequestToJoinDialog({ teamId, teamName, open, onClose, onSuccess
                       </Button>
                       <Button type="submit" variant="primary" size="sm" disabled={isPending}>
                         <Send size={14} />
-                        {isPending ? "Sending..." : "Send Request"}
+                        {isPending ? t("teams.requestSending") : t("teams.requestSendBtn")}
                       </Button>
                     </div>
                   </form>

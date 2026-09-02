@@ -6,6 +6,7 @@ import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { InfinityHeroArt } from "@/components/graphics/infinity-hero-art";
 import { Reveal } from "@/components/ui/reveal";
+import { serverT } from "@/lib/translation/server";
 
 interface BranchesHeroProps {
   branchCount: number;
@@ -30,7 +31,7 @@ export function BranchesHero({ branchCount, memberCount }: BranchesHeroProps) {
         <Reveal>
           <Badge className="mb-6 inline-flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-            The Limitless Network — Branches
+            {serverT("branches.heroBadge")}
           </Badge>
         </Reveal>
 
@@ -39,15 +40,14 @@ export function BranchesHero({ branchCount, memberCount }: BranchesHeroProps) {
             id="branches-hero-heading"
             className="text-balance text-4xl font-semibold tracking-tight text-ink-50 sm:text-6xl"
           >
-            Every branch is its own hub.
-            <br className="hidden sm:block" /> Together, they&apos;re infinite.
+            {serverT("branches.heroLine1")}
+            <br className="hidden sm:block" /> {serverT("branches.heroLine2")}
           </h1>
         </Reveal>
 
         <Reveal delay={200}>
           <p className="mt-6 max-w-xl text-balance text-base text-ink-400 sm:text-lg">
-            Azenion runs on campus branches — local communities of builders, engineers, and
-            innovators who bring the Limitless Network to life where they study. Find yours below.
+            {serverT("branches.heroSub")}
           </p>
         </Reveal>
 
@@ -55,19 +55,19 @@ export function BranchesHero({ branchCount, memberCount }: BranchesHeroProps) {
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row">
             <Button asChild size="lg" variant="primary">
               <Link href="#branches">
-                Explore branches
+                {serverT("branches.exploreBranches")}
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="ghost">
-              <Link href="#coming-soon">Request a Branch</Link>
+              <Link href="#coming-soon">{serverT("branches.requestBranch")}</Link>
             </Button>
           </div>
         </Reveal>
 
         <Reveal delay={400}>
           <p className="mt-6 text-xs uppercase tracking-[0.2em] text-ink-600">
-            {branchCount} active branches · {memberCount}+ members and counting
+            {branchCount} {serverT("branches.activeBranches")} · {memberCount}+ {serverT("branches.membersAndCounting")}
           </p>
         </Reveal>
       </div>

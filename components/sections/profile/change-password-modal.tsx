@@ -2,15 +2,19 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { X, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { updatePassword } from "@/actions/profile.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-2.5 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 export function ChangePasswordModal() {
+  const { t } = useTranslation();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -48,14 +52,17 @@ export function ChangePasswordModal() {
         return;
       }
       setSuccess(true);
-      setTimeout(() => setOpen(false), 2000);
+      setTimeout(() => {
+        setOpen(false);
+        router.refresh();
+      }, 2000);
     });
   }
 
   return (
     <>
       <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
-        Change Password
+        {t("settings.changePassword")}
       </Button>
 
       {open
@@ -64,11 +71,11 @@ export function ChangePasswordModal() {
               className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8"
               role="dialog"
               aria-modal="true"
-              aria-label="Change password"
+              aria-label={t("settings.changePassword")}
             >
               <button
                 type="button"
-                aria-label="Close"
+                aria-label={t("settings.closeAria")}
                 className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-200"
                 style={{ opacity: mounted ? 1 : 0 }}
                 onClick={() => setOpen(false)}
@@ -84,11 +91,11 @@ export function ChangePasswordModal() {
                 }}
               >
                 <div className="flex items-center justify-between border-b border-border px-8 py-6">
-                  <h2 className="text-lg font-semibold text-ink-50">Change Password</h2>
+                  <h2 className="text-lg font-semibold text-ink-50">{t("settings.changePassword")}</h2>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    aria-label="Close"
+                    aria-label={t("settings.closeAria")}
                     className="-mr-1.5 -mt-1.5 rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
@@ -105,26 +112,26 @@ export function ChangePasswordModal() {
 
                     {success ? (
                       <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
-                        Password updated successfully.
+                        {t("settings.passwordUpdated")}
                       </div>
                     ) : null}
 
                     <label className="block space-y-1.5">
-                      <span className="text-sm font-medium text-ink-200">New Password</span>
+                      <span className="text-sm font-medium text-ink-200">{t("settings.newPassword")}</span>
                       <div className="relative">
                         <input
                           name="password"
                           type={showPassword ? "text" : "password"}
                           required
                           minLength={6}
-                          placeholder="Enter new password"
+                          placeholder={t("settings.passwordPlaceholder")}
                           autoFocus
                           className={`${inputClass} pr-10`}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword((v) => !v)}
-                          aria-label={showPassword ? "Hide new password" : "Show new password"}
+                          aria-label={showPassword ? t("settings.hidePassword") : t("settings.showPassword")}
                           className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-400 transition-colors hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                         >
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -133,20 +140,20 @@ export function ChangePasswordModal() {
                     </label>
 
                     <label className="block space-y-1.5">
-                      <span className="text-sm font-medium text-ink-200">Confirm New Password</span>
+                      <span className="text-sm font-medium text-ink-200">{t("settings.confirmNewPassword")}</span>
                       <div className="relative">
                         <input
                           name="confirm_password"
                           type={showConfirm ? "text" : "password"}
                           required
                           minLength={6}
-                          placeholder="Confirm new password"
+                          placeholder={t("settings.confirmPasswordPlaceholder")}
                           className={`${inputClass} pr-10`}
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirm((v) => !v)}
-                          aria-label={showConfirm ? "Hide confirmation" : "Show confirmation"}
+                          aria-label={showConfirm ? t("settings.hideConfirmation") : t("settings.showConfirmation")}
                           className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-400 transition-colors hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                         >
                           {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -163,10 +170,10 @@ export function ChangePasswordModal() {
                       onClick={() => setOpen(false)}
                       disabled={isPending}
                     >
-                      Cancel
+                      {t("settings.cancel")}
                     </Button>
                     <Button type="submit" variant="primary" size="sm" disabled={isPending || success}>
-                      {isPending ? "Updating..." : "Update Password"}
+                      {isPending ? t("settings.updatingDots") : t("settings.updatePassword")}
                     </Button>
                   </div>
                 </form>

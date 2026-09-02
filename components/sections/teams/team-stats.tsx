@@ -2,6 +2,8 @@ import { Users, FolderKanban, Calendar, UserPlus } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { formatDate } from "@/lib/date";
 import { TeamCategoryBadge } from "./team-category-badge";
+import { serverT } from "@/lib/translation/server";
+import type { DictKey } from "@/lib/translation/types";
 
 interface TeamStatsProps {
   memberCount: number;
@@ -13,10 +15,10 @@ interface TeamStatsProps {
 
 export function TeamStats({ memberCount, projectsCount, openRolesCount, createdAt, categories }: TeamStatsProps) {
   const stats = [
-    { icon: Users, label: "Members", value: memberCount },
-    { icon: FolderKanban, label: "Projects", value: projectsCount },
-    { icon: UserPlus, label: "Open Roles", value: openRolesCount },
-    { icon: Calendar, label: "Created", value: createdAt ? formatDate(createdAt) : "-" },
+    { icon: Users, labelKey: "teams.statsMembers" as DictKey, value: memberCount },
+    { icon: FolderKanban, labelKey: "teams.statsProjects" as DictKey, value: projectsCount },
+    { icon: UserPlus, labelKey: "teams.statsOpenRoles" as DictKey, value: openRolesCount },
+    { icon: Calendar, labelKey: "teams.statsCreated" as DictKey, value: createdAt ? formatDate(createdAt) : "-" },
   ];
 
   const visibleCats = categories.slice(0, 3);
@@ -28,7 +30,7 @@ export function TeamStats({ memberCount, projectsCount, openRolesCount, createdA
         <Reveal>
           <div className="flex flex-wrap items-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-              Overview
+              {serverT("teams.statsEyebrow")}
             </div>
             {categories.map((cat) => (
               <TeamCategoryBadge key={cat.id} name={cat.name} />
@@ -46,13 +48,13 @@ export function TeamStats({ memberCount, projectsCount, openRolesCount, createdA
             id="team-stats-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Team Stats
+            {serverT("teams.statsTitle")}
           </h2>
         </Reveal>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
-            <Reveal key={stat.label} delay={120 + i * 60}>
+            <Reveal key={stat.labelKey} delay={120 + i * 60}>
               <div className="group flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                 <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
@@ -63,7 +65,7 @@ export function TeamStats({ memberCount, projectsCount, openRolesCount, createdA
                     </div>
                     <div>
                       <p className="text-2xl font-semibold text-ink-50">{stat.value}</p>
-                      <p className="text-sm text-ink-400">{stat.label}</p>
+                      <p className="text-sm text-ink-400">{serverT(stat.labelKey)}</p>
                     </div>
                   </div>
                 </div>

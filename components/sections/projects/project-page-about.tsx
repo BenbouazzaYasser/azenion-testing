@@ -1,6 +1,8 @@
 import { Globe, Github, Eye, Lock, Users } from "lucide-react";
 import Link from "next/link";
 import { Reveal } from "@/components/ui/reveal";
+import { serverT } from "@/lib/translation/server";
+import type { DictKey } from "@/lib/translation/types";
 
 interface ProjectPageAboutProps {
   description: string;
@@ -13,10 +15,10 @@ interface ProjectPageAboutProps {
   visibility: string;
 }
 
-const visibilityConfig: Record<string, { icon: typeof Eye; label: string; class: string }> = {
-  open: { icon: Eye, label: "Open", class: "border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-400" },
-  invite_only: { icon: Lock, label: "Invite only", class: "border-amber-500/30 bg-amber-500/[0.08] text-amber-400" },
-  private: { icon: Lock, label: "Private", class: "border-rose-500/30 bg-rose-500/[0.08] text-rose-400" },
+const visibilityConfig: Record<string, { icon: typeof Eye; labelKey: DictKey; class: string }> = {
+  open: { icon: Eye, labelKey: "projects.open", class: "border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-400" },
+  invite_only: { icon: Lock, labelKey: "projects.inviteOnly", class: "border-amber-500/30 bg-amber-500/[0.08] text-amber-400" },
+  private: { icon: Lock, labelKey: "projects.private", class: "border-rose-500/30 bg-rose-500/[0.08] text-rose-400" },
 };
 
 export function ProjectPageAbout({ description, descriptionLong, website, githubUrl, technologies, categories, team, visibility }: ProjectPageAboutProps) {
@@ -30,7 +32,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
       <div className="mx-auto max-w-[920px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Overview
+            {serverT("projects.aboutEyebrow")}
           </div>
         </Reveal>
 
@@ -39,7 +41,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
             id="project-about-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            About this project
+            {serverT("projects.aboutTitle")}
           </h2>
         </Reveal>
 
@@ -103,7 +105,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
                     const Icon = visibilityConfig[visibility]?.icon ?? Eye;
                     return <Icon size={12} />;
                   })()}
-                  {visibilityConfig[visibility]?.label ?? visibility}
+                  {visibilityConfig[visibility] ? serverT(visibilityConfig[visibility].labelKey) : visibility}
                 </span>
               ) : null}
             </div>

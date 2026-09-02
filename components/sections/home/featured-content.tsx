@@ -4,6 +4,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { TeamCard, type TeamCardTeam } from "@/components/sections/teams/team-card";
 import { ProjectCard, type ProjectCardProject } from "@/components/sections/projects/project-card";
+import { serverT } from "@/lib/translation/server";
 
 interface FeaturedContentProps {
   teams: TeamCardTeam[];
@@ -22,18 +23,18 @@ export function FeaturedContent({ teams, projects }: FeaturedContentProps) {
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
               <span className="inline-flex items-center rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-                Featured
+                {serverT("home.featuredEyebrow")}
               </span>
               <h2
                 id="featured-content-heading"
                 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[2.9rem]"
               >
-                What the network is <span className="text-accent-400">building right now.</span>
+                {serverT("home.featuredTitle")}<span className="text-accent-400">{serverT("home.featuredAccent")}</span>
               </h2>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
               <a href="/teams">
-                Browse all teams
+                {serverT("home.browseAllTeams")}
                 <ArrowUpRight size={16} />
               </a>
             </Button>
@@ -60,11 +61,13 @@ export function FeaturedContent({ teams, projects }: FeaturedContentProps) {
                     <Plus size={20} />
                   </span>
                   <p className="text-lg font-semibold text-ink-50">
-                    {projectOverflow > 0 ? `${projectOverflow} more projects` : "More projects"}
+                    {projectOverflow > 0
+                      ? `${projectOverflow} ${serverT("home.moreProjectsSuffix")}`
+                      : serverT("home.moreProjects")}
                   </p>
-                  <p className="text-sm text-ink-400">Explore the full showcase</p>
+                  <p className="text-sm text-ink-400">{serverT("home.exploreShowcase")}</p>
                   <span className="mt-1 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-400">
-                    View all projects
+                    {serverT("home.viewAllProjects")}
                     <ArrowUpRight size={14} />
                   </span>
                 </div>

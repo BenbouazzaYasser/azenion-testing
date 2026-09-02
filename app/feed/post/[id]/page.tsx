@@ -9,6 +9,7 @@ import { CommentSection } from "@/components/interactions/comment-section";
 import { PostViewTracker } from "@/components/interactions/post-view-tracker";
 import { getFeedItemById } from "@/actions/feed.actions";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
+import { serverT } from "@/lib/translation/server";
 
 interface FeedPostPageProps {
   params: { id: string };
@@ -65,7 +66,7 @@ async function FeedPost({ id }: { id: string }) {
 
       <section className="rounded-2xl card-surface-soft p-5 shadow-card backdrop-blur-xl sm:p-6">
         <h2 className="mb-3 text-sm font-semibold tracking-tight text-ink-200">
-          Comments
+          {serverT("feed.comments")}
         </h2>
         <CommentSection
           targetType={item.source_type}

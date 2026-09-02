@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface DashboardButtonProps {
   variant?: "primary" | "secondary" | "ghost";
@@ -17,10 +18,11 @@ export function DashboardButton({
   variant = "primary",
   size = "lg",
   className,
-  label = "Join Azenion",
+  label,
   showArrow = true,
 }: DashboardButtonProps) {
   const { user, loading } = useUser();
+  const { t } = useTranslation();
 
   if (loading) return null;
 
@@ -28,7 +30,7 @@ export function DashboardButton({
     return (
       <Button variant={variant} size={size} className={className} asChild>
         <Link href="/teams">
-          Join a Team
+          {t("nav.joinTeam")}
           {showArrow ? <ArrowUpRight size={16} /> : null}
         </Link>
       </Button>
@@ -38,7 +40,7 @@ export function DashboardButton({
   return (
     <Button variant={variant} size={size} className={className} asChild>
       <Link href="/join">
-        {label}
+        {label ?? t("nav.join")}
         {showArrow ? <ArrowUpRight size={16} /> : null}
       </Link>
     </Button>

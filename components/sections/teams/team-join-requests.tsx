@@ -8,6 +8,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { reviewTeamJoinRequest } from "@/actions/team-membership.actions";
 import { formatDistanceToNow } from "@/lib/date";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 export interface JoinRequest {
   id: string;
@@ -28,6 +29,7 @@ interface TeamJoinRequestsProps {
 
 export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
 
@@ -42,7 +44,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
       if (result && "error" in result && result.error) {
         toast.error(result.error);
       } else {
-        toast.success(accept ? "Request accepted. New member added." : "Request declined.");
+        toast.success(accept ? t("teams.requestAccepted") : t("teams.requestDeclined"));
       }
       setBusyRequestId(null);
       router.refresh();
@@ -55,7 +57,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-yellow-400">
             <Hourglass size={12} />
-            Pending Requests
+            {t("teams.pendingRequests")}
           </div>
         </Reveal>
 
@@ -64,14 +66,14 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
             id="team-join-requests-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Join requests
+            {t("teams.joinRequests")}
             <span className="ml-3 text-lg font-normal text-ink-500">({pending.length})</span>
           </h2>
         </Reveal>
 
         <Reveal delay={160}>
           <p className="mt-4 max-w-2xl text-[1rem] leading-relaxed text-ink-400">
-            People who want to join this team. Accepting a request adds them as a member.
+            {t("teams.joinRequestsSub")}
           </p>
         </Reveal>
 
@@ -79,7 +81,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
           {pending.map((request, i) => {
             const displayName = request.full_name || `@${request.username}`;
             const initials = displayName.charAt(0).toUpperCase();
-            const requestedAgo = request.created_at ? formatDistanceToNow(new Date(request.created_at)) : "Recently";
+            const requestedAgo = request.created_at ? formatDistanceToNow(new Date(request.created_at)) : t("common.recently");
             const isBusy = isPending && busyRequestId === request.id;
 
             return (
@@ -107,7 +109,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
                       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-400">
                         {request.institution ? <span>{request.institution}</span> : null}
                         <span className="text-ink-600">•</span>
-                        <span>Requested {requestedAgo}</span>
+                        <span>{t("teams.requestedAgo")} {requestedAgo}</span>
                       </div>
 
                       {request.message ? (
@@ -127,7 +129,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
                       disabled={isPending}
                     >
                       <X size={14} />
-                      Decline
+                      {t("teams.decline")}
                     </Button>
                     <Button
                       size="sm"
@@ -136,7 +138,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
                       disabled={isPending}
                     >
                       <Check size={14} />
-                      {isBusy ? "Working..." : "Accept"}
+                      {isBusy ? t("teams.working") : t("teams.accept")}
                     </Button>
                   </div>
                 </div>

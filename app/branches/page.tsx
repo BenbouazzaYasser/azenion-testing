@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { mapBranchRow } from "@/data/branches";
 import { createClient } from "@/lib/supabase/server";
+import { serverT } from "@/lib/translation/server";
 
 export const metadata: Metadata = {
   title: "Branches | Azenion — The Limitless Network",
@@ -78,11 +79,11 @@ export default async function BranchesPage() {
         {user && !isBranchMember ? (
           <EmptyState
             icon={<Landmark size={32} />}
-            title="You haven't joined any branches yet."
-            description="Explore the communities below and join one."
-            eyebrow="Your branches"
+            title={serverT("branches.emptyTitle")}
+            description={serverT("branches.emptySub")}
+            eyebrow={serverT("branches.emptyEyebrow")}
             scrollToId="branches"
-            actionLabel="Explore Branches"
+            actionLabel={serverT("branches.exploreBranches")}
           />
         ) : (
           <BranchesHero branchCount={branchCount} memberCount={totalMembers} />

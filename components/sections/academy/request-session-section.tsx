@@ -2,9 +2,15 @@ import Link from "next/link";
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { RequestSessionDialog } from "./request-session-dialog";
+import { serverT } from "@/lib/translation/server";
 import type { BranchOption } from "./request-session-dialog";
 
-const TOPICS = ["Workshops", "Talks", "Deep Dives", "Q&A Sessions"];
+const TOPICS = [
+  "academy.topicWorkshops",
+  "academy.topicTalks",
+  "academy.topicDeepDives",
+  "academy.topicQa",
+] as const;
 
 export function RequestSessionSection({
   branches,
@@ -22,7 +28,7 @@ export function RequestSessionSection({
       <div className="mx-auto max-w-[720px] px-5 text-center sm:px-8">
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Academy · Request
+            {serverT("academy.requestEyebrow")}
           </span>
         </Reveal>
 
@@ -31,14 +37,13 @@ export function RequestSessionSection({
             id="request-session-heading"
             className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
           >
-            Request a <span className="text-accent-400">Session.</span>
+            {serverT("academy.requestH2")} <span className="text-accent-400">{serverT("academy.requestH2Accent")}</span>
           </h2>
         </Reveal>
 
         <Reveal delay={160}>
           <p className="mx-auto mt-6 max-w-xl text-balance text-[1.05rem] leading-relaxed text-ink-400">
-            Missing a session you need? Tell us what you want to learn and the
-            Academy team will bring it to life — hosted online or at your branch.
+            {serverT("academy.requestSub")}
           </p>
         </Reveal>
 
@@ -49,7 +54,7 @@ export function RequestSessionSection({
                 key={topic}
                 className="rounded-full bg-surface px-3.5 py-1.5 text-xs font-medium tracking-wide text-ink-200"
               >
-                {topic}
+                {serverT(topic)}
               </span>
             ))}
           </div>
@@ -61,7 +66,7 @@ export function RequestSessionSection({
               <RequestSessionDialog branches={branches} />
             ) : (
               <Button variant="secondary" size="lg" asChild>
-                <Link href="/login">Sign in to request a session</Link>
+                <Link href="/login">{serverT("academy.requestSignIn")}</Link>
               </Button>
             )}
           </div>

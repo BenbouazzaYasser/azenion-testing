@@ -1,6 +1,7 @@
 import { Users, Building2, FolderKanban, MessageSquare, Calendar } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { formatDate } from "@/lib/date";
+import { serverT } from "@/lib/translation/server";
 
 interface BranchStatsProps {
   memberCount: number;
@@ -13,11 +14,11 @@ interface BranchStatsProps {
 
 export function BranchPageStats({ memberCount, teamsCount, projectsCount, postsCount, eventsCount, createdAt }: BranchStatsProps) {
   const stats = [
-    { icon: Users, label: "Members", value: memberCount },
-    { icon: Building2, label: "Teams", value: teamsCount },
-    { icon: FolderKanban, label: "Projects", value: projectsCount },
-    { icon: MessageSquare, label: "Posts", value: postsCount },
-    { icon: Calendar, label: "Upcoming Events", value: eventsCount },
+    { icon: Users, label: serverT("branches.statMembers"), value: memberCount },
+    { icon: Building2, label: serverT("branches.statTeams"), value: teamsCount },
+    { icon: FolderKanban, label: serverT("branches.statProjects"), value: projectsCount },
+    { icon: MessageSquare, label: serverT("branches.statPosts"), value: postsCount },
+    { icon: Calendar, label: serverT("branches.statUpcomingEvents"), value: eventsCount },
   ];
 
   return (
@@ -25,7 +26,7 @@ export function BranchPageStats({ memberCount, teamsCount, projectsCount, postsC
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Overview
+            {serverT("branches.statsOverview")}
           </div>
         </Reveal>
 
@@ -34,7 +35,7 @@ export function BranchPageStats({ memberCount, teamsCount, projectsCount, postsC
             id="branch-stats-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Branch Hub
+            {serverT("branches.branchHub")}
           </h2>
         </Reveal>
 
@@ -63,7 +64,7 @@ export function BranchPageStats({ memberCount, teamsCount, projectsCount, postsC
         {createdAt ? (
           <Reveal delay={380}>
             <p className="mt-6 text-center text-xs text-ink-600">
-              This branch has been active since {formatDate(createdAt)}.
+              {serverT("branches.activeSince")} {formatDate(createdAt)}.
             </p>
           </Reveal>
         ) : null}

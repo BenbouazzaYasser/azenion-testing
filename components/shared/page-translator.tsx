@@ -2,15 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Languages, LoaderCircle, Undo2, Settings2 } from "lucide-react";
+import { Languages, Undo2, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/translation/translation-provider";
 import { getLanguage } from "@/lib/translation/languages";
 
-const QUICK_LANGS = ["fr", "es", "de", "ar", "zh", "ja"];
+const QUICK_LANGS = ["fr", "ar"];
 
 export function PageTranslator() {
-  const { language, setLanguage, isTranslating, isTranslated } = useTranslation();
+  const { language, setLanguage, t, isTranslated } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -29,9 +29,10 @@ export function PageTranslator() {
     setOpen(false);
   }
 
-  const title = isTranslated
-    ? `Currently ${current?.nativeLabel ?? language} — restore English`
-    : "Translate site";
+  function handleSelect(code: string) {
+    setLanguage(code);
+    setOpen(false);
+  }
 
   return (
     <div ref={ref} className="relative">
@@ -44,17 +45,12 @@ export function PageTranslator() {
           }
           setOpen((v) => !v);
         }}
-        disabled={isTranslating}
         aria-pressed={isTranslated}
         aria-expanded={open}
         aria-haspopup="menu"
-        title={title}
-        aria-label={title}
         className="flex h-11 w-11 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:pointer-events-none"
       >
-        {isTranslating ? (
-          <LoaderCircle size={18} className={cn("animate-spin")} />
-        ) : isTranslated ? (
+        {isTranslated ? (
           <Undo2 size={17} />
         ) : (
           <span className="relative flex items-center justify-center">
@@ -76,7 +72,7 @@ export function PageTranslator() {
           />
           <div className="px-3 pb-2 pt-3">
             <p className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
-              Quick translate
+              Choose language
             </p>
             <div data-no-translate translate="no" className="grid grid-cols-2 gap-1.5">
               {QUICK_LANGS.map((code) => {
@@ -86,10 +82,7 @@ export function PageTranslator() {
                   <button
                     key={code}
                     type="button"
-                    onClick={() => {
-                      setLanguage(code);
-                      setOpen(false);
-                    }}
+                    onClick={() => handleSelect(code)}
                     className={cn(
                       "flex items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-xs font-medium transition-colors",
                       active
@@ -109,10 +102,10 @@ export function PageTranslator() {
               className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-accent-400/20 bg-accent/[0.06] px-3 py-2 text-xs font-medium text-accent-300 transition-colors hover:bg-accent/[0.1]"
             >
               <Settings2 size={12} />
-              All languages in Settings
+              {t("nav.settings")}
             </Link>
             <p className="mt-2 px-1 text-center text-[10px] leading-relaxed text-ink-600">
-              Covers the whole site including courses.
+              {t("settings.handTranslatedNote")}
             </p>
           </div>
         </div>

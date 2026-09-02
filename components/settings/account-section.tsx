@@ -8,6 +8,7 @@ import { SettingsPanel } from "./settings-panel";
 import { changeEmail, changeUsername } from "@/actions/settings.actions";
 import { formatDate } from "@/lib/date";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-2.5 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
@@ -31,6 +32,7 @@ export function AccountSection({
   lastSignInAt,
   onDirty,
 }: AccountSectionProps) {
+  const { t } = useTranslation();
   const [emailValue, setEmailValue] = useState("");
   const [usernameValue, setUsernameValue] = useState(currentUsername ?? "");
   const [isPendingEmail, startEmail] = useTransition();
@@ -51,7 +53,7 @@ export function AccountSection({
         toast.error(res.error);
         return;
       }
-      toast.success(res?.message ?? "Verification email sent");
+      toast.success(res?.message ?? t("settings.emailChangeToast"));
       setEmailValue("");
       onDirty(false);
     });
@@ -67,7 +69,7 @@ export function AccountSection({
         return;
       }
       setUsernameValue(res?.username ?? usernameValue);
-      toast.success("Username updated");
+      toast.success(t("settings.usernameUpdatedToast"));
       onDirty(false);
     });
   }
@@ -82,15 +84,15 @@ export function AccountSection({
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-medium text-ink-50">Email</h3>
+                <h3 className="text-sm font-medium text-ink-50">{t("auth.email")}</h3>
                 {emailVerified ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-[11px] font-medium text-green-400">
                     <CheckCircle size={11} />
-                    Verified
+                    {t("settings.verified")}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-300">
-                    Unverified
+                    {t("settings.unverified")}
                   </span>
                 )}
               </div>
@@ -99,7 +101,7 @@ export function AccountSection({
 </div>
           <form onSubmit={handleEmail} className="w-full sm:w-[320px]">
             <label htmlFor="new-email-input" className="block text-xs font-medium text-ink-300">
-              New email
+              {t("settings.newEmail")}
             </label>
             <div className="mt-1.5 flex gap-2">
               <input
@@ -115,7 +117,7 @@ export function AccountSection({
                 className={inputClass}
               />
               <Button type="submit" variant="secondary" size="sm" disabled={!emailDirty || isPendingEmail}>
-                {isPendingEmail ? "Sending…" : "Update"}
+                {isPendingEmail ? t("settings.emailSending") : t("settings.emailUpdate")}
               </Button>
             </div>
           </form>
@@ -129,9 +131,9 @@ export function AccountSection({
               <UserCircle size={18} className="text-accent-300" />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-ink-50">Username</h3>
+              <h3 className="text-sm font-medium text-ink-50">{t("settings.username")}</h3>
               <p className="mt-1 text-sm text-ink-400">
-                {currentUsername ? `@${currentUsername}` : "No username set"}
+                {currentUsername ? `@${currentUsername}` : t("settings.noUsername")}
               </p>
             </div>
           </div>
@@ -148,7 +150,7 @@ export function AccountSection({
               maxLength={20}
             />
             <Button type="submit" variant="secondary" size="sm" disabled={!usernameDirty || isPendingUsername}>
-              {isPendingUsername ? "Saving…" : "Save"}
+              {isPendingUsername ? t("settings.usernameSaving") : t("settings.usernameSave")}
             </Button>
           </form>
         </div>
@@ -161,8 +163,8 @@ export function AccountSection({
           </div>
           <div className="flex flex-1 items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-medium text-ink-50">Password</h3>
-              <p className="mt-1 text-sm text-ink-400">Change your current password.</p>
+              <h3 className="text-sm font-medium text-ink-50">{t("auth.password")}</h3>
+              <p className="mt-1 text-sm text-ink-400">{t("settings.changePasswordHint")}</p>
             </div>
             <ChangePasswordModal />
           </div>
@@ -175,24 +177,24 @@ export function AccountSection({
             <Pencil size={18} className="text-accent-300" />
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-medium text-ink-50">Account Information</h3>
+            <h3 className="text-sm font-medium text-ink-50">{t("settings.accountInformation")}</h3>
             <div className="mt-4 space-y-3">
               <div className="flex items-center gap-2.5 text-sm">
                 <UserCircle size={14} className="shrink-0 text-ink-600" />
-                <span className="text-ink-400">User ID:</span>
+                <span className="text-ink-400">{t("settings.userIdLabel")}</span>
                 <code className="rounded-md bg-surface px-2 py-0.5 text-xs text-ink-200">
                   {userId.slice(0, 12)}…
                 </code>
               </div>
               <div className="flex items-center gap-2.5 text-sm">
                 <Calendar size={14} className="shrink-0 text-ink-600" />
-                <span className="text-ink-400">Member since:</span>
+                <span className="text-ink-400">{t("settings.memberSince")}</span>
                 <span className="text-ink-200">{createdAt ? formatDate(createdAt) : "—"}</span>
               </div>
               {lastSignInAt ? (
                 <div className="flex items-center gap-2.5 text-sm">
                   <LogIn size={14} className="shrink-0 text-ink-600" />
-                  <span className="text-ink-400">Last sign in:</span>
+                  <span className="text-ink-400">{t("settings.lastSignIn")}</span>
                   <span className="text-ink-200">{formatDate(lastSignInAt)}</span>
                 </div>
               ) : null}

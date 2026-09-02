@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { sendChannelMessage } from "@/actions/server.actions";
 import type { ChannelMessageWithSender } from "@/data/servers";
+import type { DictKey } from "@/lib/translation/types";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface ChannelChatProps {
   channelId: string;
@@ -23,13 +25,15 @@ function startOfDay(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
-function getDayLabel(dateStr: string | null): string | null {
+type TranslateFn = (key: DictKey, fallback?: string) => string;
+
+function getDayLabel(dateStr: string | null, t: TranslateFn): string | null {
   if (!dateStr) return null;
   const date = new Date(dateStr);
   const now = new Date();
   const diffDays = Math.round((startOfDay(now) - startOfDay(date)) / 86_400_000);
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
+  if (diffDays === 0) return t("servers.today");
+  if (diffDays === 1) return t("servers.yesterday");
   if (diffDays < 7) return date.toLocaleDateString(undefined, { weekday: "long" });
   return date.toLocaleDateString();
 }
@@ -41,6 +45,7 @@ export function ChannelChat({
   currentUserId,
   initialMessages,
 }: ChannelChatProps) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<ChannelMessageWithSender[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -103,8 +108,8 @@ export function ChannelChat({
     return messages.map((msg, i) => {
       const prevMsg = messages[i - 1];
       const nextMsg = messages[i + 1];
-      const label = getDayLabel(msg.created_at);
-      const showDivider = label !== null && label !== getDayLabel(prevMsg?.created_at ?? null);
+      const label = getDayLabel(msg.created_at, t);
+      const showDivider = label !== null && label !== getDayLabel(prevMsg?.created_at ?? null, t);
       const ts = new Date(msg.created_at ?? 0).getTime();
       const groupsWithPrev =
         !!prevMsg &&
@@ -118,7 +123,7 @@ export function ChannelChat({
         new Date(nextMsg.created_at ?? 0).getTime() - ts < FIVE_MIN;
       return { msg, showDivider, label, isGrouped: groupsWithPrev, showAvatar: !nextContinues };
     });
-  }, [messages]);
+  }, [messages, t]);
 
   const handleSend = async () => {
     if (!input.trim() || isSending) return;
@@ -169,9 +174,9 @@ export function ChannelChat({
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-input">
               <Hash size={26} />
             </div>
-            <h2 className="mt-5 text-lg font-semibold text-ink-50">Welcome to #{channelName}</h2>
+            <h2 className="mt-5 text-lg font-semibold text-ink-50">{t("servers.welcomeTo")} #{channelName}</h2>
             <p className="mt-1.5 max-w-xs text-sm text-ink-400">
-              This is the start of the channel. Say hello to everyone.
+              {t("servers.chatEmptySub")}
             </p>
           </div>
         ) : (
@@ -216,15 +221,15 @@ export function ChannelChat({
         >
           <input
             type="text"
-            aria-label={`Message #${channelName}`}
-            placeholder={`Message #${channelName}`}
+            aria-label={`${t("servers.messageTo")} #${channelName}`}
+            placeholder={`${t("servers.messageTo")} #${channelName}`}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="min-w-0 flex-1 rounded-2xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none"
           />
           <Button
             type="submit"
-            aria-label="Send message"
+            aria-label={t("servers.sendMessage")}
             disabled={!input.trim() || isSending}
             className="h-12 w-12 shrink-0 rounded-2xl p-0"
           >

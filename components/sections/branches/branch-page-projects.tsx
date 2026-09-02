@@ -1,6 +1,7 @@
 import { FolderKanban } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { ProjectCard, type ProjectCardProject } from "@/components/sections/projects/project-card";
+import { serverT } from "@/lib/translation/server";
 
 interface BranchPageProjectsProps {
   projects: ProjectCardProject[];
@@ -14,7 +15,7 @@ export function BranchPageProjects({ projects }: BranchPageProjectsProps) {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Builds
+            {serverT("branches.buildsEyebrow")}
           </div>
         </Reveal>
 
@@ -23,7 +24,7 @@ export function BranchPageProjects({ projects }: BranchPageProjectsProps) {
             id="branch-projects-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Projects in this branch
+            {serverT("branches.branchProjectsTitle")}
           </h2>
         </Reveal>
 
@@ -37,7 +38,7 @@ export function BranchPageProjects({ projects }: BranchPageProjectsProps) {
           <Reveal delay={120}>
             <p className="mt-6 text-center text-xs text-ink-600">
               <FolderKanban size={12} className="mr-1 inline" />
-              Showing a selection — explore all projects from the Projects page.
+              {serverT("branches.showingProjectsSelection")}
             </p>
           </Reveal>
         ) : null}

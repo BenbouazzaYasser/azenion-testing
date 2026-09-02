@@ -5,14 +5,17 @@ import { Monitor, SunMedium, Moon, CheckCircle2 } from "lucide-react";
 import { useTheme, type Theme } from "@/components/theme/theme-provider";
 import { SettingsPanel, SaveIndicator, type SaveState } from "./settings-panel";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/components/translation/translation-provider";
+import type { DictKey } from "@/lib/translation/types";
 
-const OPTIONS: { value: Theme; label: string; description: string; icon: typeof Monitor }[] = [
-  { value: "system", label: "System", description: "Follow your device setting", icon: Monitor },
-  { value: "light", label: "Light", description: "Light canvas", icon: SunMedium },
-  { value: "dark", label: "Dark", description: "The Azenion signature", icon: Moon },
+const OPTIONS: { value: Theme; labelKey: DictKey; descriptionKey: DictKey; icon: typeof Monitor }[] = [
+  { value: "system", labelKey: "settings.appearanceSystem", descriptionKey: "settings.appearanceSystemDesc", icon: Monitor },
+  { value: "light", labelKey: "settings.appearanceLight", descriptionKey: "settings.appearanceLightDesc", icon: SunMedium },
+  { value: "dark", labelKey: "settings.appearanceDark", descriptionKey: "settings.appearanceDarkDesc", icon: Moon },
 ];
 
 export function AppearanceSection() {
+  const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
@@ -55,8 +58,8 @@ export function AppearanceSection() {
               >
                 <option.icon size={18} />
               </span>
-              <span className="mt-3 block text-sm font-medium text-ink-50">{option.label}</span>
-              <span className="mt-0.5 block text-xs text-ink-500">{option.description}</span>
+              <span className="mt-3 block text-sm font-medium text-ink-50">{t(option.labelKey)}</span>
+              <span className="mt-0.5 block text-xs text-ink-500">{t(option.descriptionKey)}</span>
             </button>
           );
         })}
@@ -65,9 +68,9 @@ export function AppearanceSection() {
       <SettingsPanel>
         <div className="flex items-center justify-between gap-3 p-5">
           <div>
-            <h3 className="text-sm font-medium text-ink-50">Appearance</h3>
+            <h3 className="text-sm font-medium text-ink-50">{t("settings.sectionAppearance")}</h3>
             <p className="mt-0.5 text-xs text-ink-500">
-              Your theme applies instantly and syncs across your devices.
+              {t("settings.appearanceDesc")}
             </p>
           </div>
           <SaveIndicator state={saveState} />

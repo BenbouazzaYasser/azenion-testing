@@ -3,6 +3,7 @@ import { Rocket } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { DashboardButton } from "@/components/shared/dashboard-button";
+import { serverT } from "@/lib/translation/server";
 
 export function FinalCta() {
   return (
@@ -17,25 +18,24 @@ export function FinalCta() {
             <div className="relative mx-auto max-w-3xl">
               <span className="inline-flex items-center justify-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
                 <Rocket size={13} />
-                Join the network
+                {serverT("home.finalCtaEyebrow")}
               </span>
               <h2
                 id="final-cta-heading"
                 className="mt-6 text-balance text-[2.25rem] font-semibold leading-[1.05] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
               >
-                Ready to build something{" "}
-                <span className="text-accent-400">limitless?</span>
+                {serverT("home.finalCtaTitle")}
+                <span className="text-accent-400">{serverT("home.finalCtaAccent")}</span>
               </h2>
               <p className="mx-auto mt-6 max-w-xl text-[1.02rem] leading-relaxed text-ink-400">
-                Your community, your teams, your projects are waiting. Join Azenion and start
-                building alongside people who push you further.
+                {serverT("home.finalCtaSub")}
               </p>
 
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <DashboardButton label="Join Now" />
+                <DashboardButton label={serverT("home.joinNow")} />
                 <Button asChild variant="secondary" size="lg">
                   <a href="/teams">
-                    Explore the Platform
+                    {serverT("home.explorePlatform")}
                   </a>
                 </Button>
               </div>

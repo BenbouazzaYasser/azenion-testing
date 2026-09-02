@@ -6,27 +6,9 @@ import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { FeedCard } from "@/components/feed/feed-card";
 import { getFeedItems, toggleFeedPin, type FeedItemWithAuthor } from "@/actions/feed.actions";
 import { cn } from "@/lib/utils";
-
-const FILTERS = [
-  { id: "all", label: "All" },
-  { id: "project_update", label: "Projects" },
-  { id: "team_update", label: "Teams" },
-  { id: "branch_announcement", label: "Branches" },
-  { id: "branch_event", label: "Events" },
-];
+import { useTranslation } from "@/components/translation/translation-provider";
 
 const PAGE_SIZE = 20;
-
-const FILTER_LABELS: Record<string, string> = {
-  project_update: "project",
-  team_update: "team",
-  branch_announcement: "branch",
-  branch_event: "event",
-};
-
-function filterDisplay(filter: string): string {
-  return FILTER_LABELS[filter] ?? "post";
-}
 
 interface FeedListProps {
   initialItems: FeedItemWithAuthor[];
@@ -47,6 +29,16 @@ export function FeedList({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pinPendingId, setPinPendingId] = useState<string | null>(null);
+
+  const { t } = useTranslation();
+
+  const FILTERS = [
+    { id: "all", label: t("feed.filterAll") },
+    { id: "project_update", label: t("feed.filterProjects") },
+    { id: "team_update", label: t("feed.filterTeams") },
+    { id: "branch_announcement", label: t("feed.filterBranches") },
+    { id: "branch_event", label: t("feed.filterEvents") },
+  ];
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -76,13 +68,13 @@ export function FeedList({
         setHasMore(hasMoreRef.current);
       } catch {
         if (generation !== generationRef.current) return;
-        setError("Couldn't load feed items. Please try again.");
+        setError(t("feed.errorLoad"));
       } finally {
         isFetchingRef.current = false;
         setIsLoadingMore(false);
       }
     },
-    [currentUserId],
+    [currentUserId, t],
   );
 
   const loadNextPage = useCallback(async () => {
@@ -104,12 +96,12 @@ export function FeedList({
       setHasMore(hasMoreRef.current);
     } catch {
       if (generation !== generationRef.current) return;
-      setError("Couldn't load more posts. Please try again.");
+      setError(t("feed.errorLoadMore"));
     } finally {
       isFetchingRef.current = false;
       setIsLoadingMore(false);
     }
-  }, [currentUserId]);
+  }, [currentUserId, t]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -175,14 +167,10 @@ export function FeedList({
             </div>
             <div>
               <p className="text-base font-medium text-ink-200">
-                {filter !== "all"
-                  ? `No ${filterDisplay(filter)} posts yet`
-                  : "No feed items yet"}
+                {filter !== "all" ? t("feed.noFiltered") : t("feed.noItems")}
               </p>
               <p className="mt-1.5 text-sm text-ink-600">
-                {filter !== "all"
-                  ? "Try a different filter to see more posts."
-                  : "Posts, updates, and branch events will appear here."}
+                {filter !== "all" ? t("feed.noFilteredHint") : t("feed.noItemsEmpty")}
               </p>
             </div>
             {filter !== "all" ? (
@@ -191,7 +179,7 @@ export function FeedList({
                 onClick={() => handleFilter("all")}
                 className="mt-1 rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
               >
-                Show all posts
+                {t("feed.showAll")}
               </button>
             ) : null}
           </div>
@@ -205,7 +193,7 @@ export function FeedList({
               onClick={handleRetry}
               className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
             >
-              Retry
+              {t("feed.retry")}
             </button>
           </div>
         )}
@@ -227,10 +215,10 @@ export function FeedList({
                       ? "bg-accent/[0.12] text-accent-300 hover:bg-accent/[0.16]"
                       : "bg-surface text-ink-500 hover:bg-surface-hover hover:text-ink-200",
                   )}
-                  aria-label={item.is_pinned ? "Unpin from global feed" : "Pin to global feed"}
+                  aria-label={item.is_pinned ? t("feed.unpinFromGlobal") : t("feed.pinToGlobal")}
                 >
                   <Pin size={13} className={item.is_pinned ? "fill-accent-400 text-accent-400" : ""} />
-                  {item.is_pinned ? "Unpin" : "Pin"}
+                  {item.is_pinned ? t("feed.unpin") : t("feed.pin")}
                 </button>
               ) : undefined
             }
@@ -245,7 +233,7 @@ export function FeedList({
               onClick={handleRetry}
               className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
             >
-              Retry
+              {t("feed.retry")}
             </button>
           </div>
         )}

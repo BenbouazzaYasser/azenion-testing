@@ -10,49 +10,51 @@ import {
 } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
+import { serverT } from "@/lib/translation/server";
+import type { DictKey } from "@/lib/translation/types";
 
-const ECOSYSTEM = [
+const ECOSYSTEM: { href: string; icon: typeof Landmark; titleKey: DictKey; descKey: DictKey; ctaKey: DictKey }[] = [
   {
     href: "/branches",
     icon: Landmark,
-    title: "Branches",
-    description: "Campus hubs that anchor the network — events, mentorship and a home for every region.",
-    cta: "Explore branches",
+    titleKey: "nav.branches",
+    descKey: "home.ecosystemBranchesDesc",
+    ctaKey: "home.ecosystemBranchesCta",
   },
   {
     href: "/teams",
     icon: Users,
-    title: "Teams",
-    description: "Small, focused crews building products, startups and research together.",
-    cta: "Explore teams",
+    titleKey: "nav.teams",
+    descKey: "home.ecosystemTeamsDesc",
+    ctaKey: "home.ecosystemTeamsCta",
   },
   {
     href: "/projects",
     icon: Rocket,
-    title: "Projects",
-    description: "Real-world builds with clear goals, collaborators and momentum.",
-    cta: "Explore projects",
+    titleKey: "nav.projects",
+    descKey: "home.ecosystemProjectsDesc",
+    ctaKey: "home.ecosystemProjectsCta",
   },
   {
     href: "/academy",
     icon: GraduationCap,
-    title: "Academy",
-    description: "Courses, live sessions and labs that turn curiosity into capability.",
-    cta: "Visit academy",
+    titleKey: "nav.academy",
+    descKey: "home.ecosystemAcademyDesc",
+    ctaKey: "home.ecosystemAcademyCta",
   },
   {
     href: "/feed",
     icon: Newspaper,
-    title: "Feed",
-    description: "The pulse of the network — updates, announcements and moments from every community.",
-    cta: "Open feed",
+    titleKey: "nav.feed",
+    descKey: "home.ecosystemFeedDesc",
+    ctaKey: "home.ecosystemFeedCta",
   },
   {
     href: "/showcase",
     icon: Sparkles,
-    title: "Showcase",
-    description: "A curated stage for the best work the community is proud to share.",
-    cta: "View showcase",
+    titleKey: "nav.showcase",
+    descKey: "home.ecosystemShowcaseDesc",
+    ctaKey: "home.ecosystemShowcaseCta",
   },
 ];
 
@@ -71,17 +73,16 @@ export function Ecosystem() {
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-              The Ecosystem
+              {serverT("home.ecosystemEyebrow")}
             </span>
             <h2
               id="ecosystem-heading"
               className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem]"
             >
-              Six ways to <span className="text-accent-400">go further.</span>
+              {serverT("home.ecosystemTitle")}<span className="text-accent-400">{serverT("home.ecosystemAccent")}</span>
             </h2>
             <p className="mt-5 text-balance text-[1.02rem] leading-relaxed text-ink-400">
-              Every part of Azenion is designed to move you forward — explore the
-              ecosystem and find where you belong.
+              {serverT("home.ecosystemSub")}
             </p>
           </div>
         </Reveal>
@@ -102,14 +103,14 @@ export function Ecosystem() {
                   </div>
 
                   <h3 className="relative mt-5 text-lg font-semibold text-ink-50 transition-colors duration-300 group-hover:text-accent-300">
-                    {item.title}
+                    {serverT(item.titleKey)}
                   </h3>
                   <p className="relative mt-2.5 flex-1 text-sm leading-relaxed text-ink-400">
-                    {item.description}
+                    {serverT(item.descKey)}
                   </p>
 
                   <span className="relative mt-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-400 opacity-80 transition-all duration-300 group-hover:gap-2.5 group-hover:opacity-100">
-                    {item.cta}
+                    {serverT(item.ctaKey)}
                     <ArrowUpRight size={14} />
                   </span>
                 </Link>

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { createSessionRequest } from "@/actions/session-request.actions";
 import { SESSION_REQUEST_FORMATS } from "@/lib/validations/session-request.schema";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useTranslation } from "@/components/translation/translation-provider";
 import { cn } from "@/lib/utils";
 
 export interface BranchOption {
@@ -25,16 +26,35 @@ const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 const FORMAT_OPTIONS: {
   value: (typeof SESSION_REQUEST_FORMATS)[number];
-  label: string;
-  description: string;
+  labelKey: "academy.formatOnline" | "academy.formatInPerson" | "academy.formatEither";
+  descKey:
+    | "academy.formatOnlineDesc"
+    | "academy.formatInPersonDesc"
+    | "academy.formatEitherDesc";
   icon: typeof Video;
 }[] = [
-  { value: "ONLINE", label: "Online", description: "Virtual session", icon: Video },
-  { value: "IN_PERSON", label: "In-person", description: "On-campus session", icon: MapPin },
-  { value: "EITHER", label: "Either", description: "No preference", icon: Shuffle },
+  {
+    value: "ONLINE",
+    labelKey: "academy.formatOnline",
+    descKey: "academy.formatOnlineDesc",
+    icon: Video,
+  },
+  {
+    value: "IN_PERSON",
+    labelKey: "academy.formatInPerson",
+    descKey: "academy.formatInPersonDesc",
+    icon: MapPin,
+  },
+  {
+    value: "EITHER",
+    labelKey: "academy.formatEither",
+    descKey: "academy.formatEitherDesc",
+    icon: Shuffle,
+  },
 ];
 
 export function RequestSessionDialog({ branches }: { branches: BranchOption[] }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +111,7 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
 
       setOpen(false);
       resetForm();
-      toast.success("Your request has been submitted.");
+      toast.success(t("academy.requestSubmitted"));
       router.refresh();
     });
   }
@@ -100,7 +120,7 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
     <>
       <Button variant="primary" size="lg" onClick={() => setOpen(true)}>
         <CalendarPlus size={17} />
-        Request a Session
+        {t("academy.requestSession")}
       </Button>
 
       {open
@@ -109,11 +129,11 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
               className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8"
               role="dialog"
               aria-modal="true"
-              aria-label="Request a session"
+              aria-label={t("academy.requestSession")}
             >
               <button
                 type="button"
-                aria-label="Close"
+                aria-label={t("common.close")}
                 className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-200"
                 style={{ opacity: mounted ? 1 : 0 }}
                 onClick={() => setOpen(false)}
@@ -130,16 +150,15 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
               >
                 <div className="flex items-start justify-between border-b border-border px-8 py-5">
                   <div>
-                    <h2 className="text-xl font-semibold text-ink-50">Request a Session</h2>
+                    <h2 className="text-xl font-semibold text-ink-50">{t("academy.requestSession")}</h2>
                     <p className="mt-1 text-sm text-ink-400">
-                      Tell us what you want to learn. Our team will review it and schedule a live
-                      session.
+                      {t("academy.requestDialogSub")}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    aria-label="Close"
+                    aria-label={t("common.close")}
                     className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
@@ -156,7 +175,7 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                       <label htmlFor="session-title" className={labelClass}>
-                        Session title
+                        {t("academy.sessionTitle")}
                       </label>
                       <input
                         id="session-title"
@@ -164,14 +183,14 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                         onChange={(e) => setTitle(e.target.value)}
                         required
                         maxLength={200}
-                        placeholder="e.g. Intro to Web Development"
+                        placeholder={t("academy.sessionTitlePlaceholder")}
                         className={inputClass}
                       />
                     </div>
 
                     <div>
                       <label htmlFor="session-description" className={labelClass}>
-                        Description
+                        {t("common.description")}
                       </label>
                       <textarea
                         id="session-description"
@@ -180,14 +199,14 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                         required
                         maxLength={5000}
                         rows={4}
-                        placeholder="What do you want to cover? Who is it for?"
+                        placeholder={t("academy.requestDescPlaceholder")}
                         className={`${inputClass} resize-none`}
                       />
                       <p className="mt-1.5 text-xs text-ink-500">{description.length}/5000</p>
                     </div>
 
                     <fieldset>
-                      <legend className={labelClass}>Preferred format</legend>
+                      <legend className={labelClass}>{t("academy.preferredFormat")}</legend>
                       <div className="grid gap-3 sm:grid-cols-3">
                         {FORMAT_OPTIONS.map((option) => {
                           const Icon = option.icon;
@@ -217,10 +236,10 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                               </span>
                               <span>
                                 <span className="block text-sm font-medium text-ink-50">
-                                  {option.label}
+                                  {t(option.labelKey)}
                                 </span>
                                 <span className="block text-xs text-ink-500">
-                                  {option.description}
+                                  {t(option.descKey)}
                                 </span>
                               </span>
                             </button>
@@ -231,7 +250,7 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
 
                     <div>
                       <label htmlFor="session-branch" className={labelClass}>
-                        Preferred branch <span className="text-ink-600">(optional)</span>
+                        {t("academy.preferredBranch")} <span className="text-ink-600">({t("common.optional")})</span>
                       </label>
                       <div className="relative">
                         <select
@@ -240,7 +259,7 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                           onChange={(e) => setBranchId(e.target.value)}
                           className={selectClass}
                         >
-                          <option value="">Any branch</option>
+                          <option value="">{t("academy.anyBranch")}</option>
                           {branches.map((branch) => (
                             <option key={branch.id} value={branch.id}>
                               {branch.name}
@@ -265,10 +284,10 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                         }}
                         disabled={isPending}
                       >
-                        Cancel
+                        {t("common.cancel")}
                       </Button>
                       <Button type="submit" variant="primary" size="sm" disabled={isPending}>
-                        {isPending ? "Submitting..." : "Submit Request"}
+                        {isPending ? t("academy.saving") : t("academy.submitRequest")}
                       </Button>
                     </div>
                   </form>

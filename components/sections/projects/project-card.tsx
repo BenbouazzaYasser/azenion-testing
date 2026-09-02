@@ -5,6 +5,8 @@ import { ArrowUpRight, Users, Eye, Lock, UserPlus, Globe } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { formatDistanceToNow } from "@/lib/date";
 import { getProjectLifecycleStatus } from "@/lib/lifecycle";
+import { useTranslation } from "@/components/translation/translation-provider";
+import type { DictKey } from "@/lib/translation/types";
 
 export interface RecruitmentRole {
   id: string;
@@ -38,10 +40,10 @@ export interface ProjectCardProject {
   role?: "owner" | "admin" | "member" | null;
 }
 
-const visibilityConfig: Record<string, { icon: typeof Globe; label: string }> = {
-  open: { icon: Globe, label: "Open" },
-  invite_only: { icon: UserPlus, label: "Invite only" },
-  private: { icon: Lock, label: "Private" },
+const visibilityConfig: Record<string, { icon: typeof Globe; labelKey: DictKey }> = {
+  open: { icon: Globe, labelKey: "projects.open" },
+  invite_only: { icon: UserPlus, labelKey: "projects.inviteOnly" },
+  private: { icon: Lock, labelKey: "projects.private" },
 };
 
 interface ProjectCardProps {
@@ -50,6 +52,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, index }: ProjectCardProps) {
+  const { t } = useTranslation();
   const techs = project.technologies ?? [];
   const visibleTechs = techs.slice(0, 4);
   const techOverflow = techs.length - visibleTechs.length;
@@ -82,11 +85,11 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
                 </h3>
                 {project.team ? (
                   <p className="mt-0.5 text-sm text-ink-500">
-                    {`by ${project.team.name}`}
+                    {`${t("common.by")} ${project.team.name}`}
                   </p>
                 ) : project.owner ? (
                   <p className="mt-0.5 text-sm text-ink-500">
-                    {`by ${project.owner.full_name || `@${project.owner.username}`}`}
+                    {`${t("common.by")} ${project.owner.full_name || `@${project.owner.username}`}`}
                   </p>
                 ) : null}
               </div>
@@ -131,7 +134,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
 
             {roles.length > 0 ? (
               <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] text-ink-500">Looking for:</span>
+                <span className="text-[11px] text-ink-500">{t("teams.lookingFor")}:</span>
                 {visibleRoles.map((role) => (
                   <span
                     key={role.id}
@@ -156,16 +159,16 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
                       const Icon = vis.icon;
                       return <Icon size={10} />;
                     })()}
-                    {vis.label}
+                    {t(vis.labelKey)}
                   </span>
                 ) : null}
                 {lifecycle === "ARCHIVED" ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-red-500/25 bg-red-500/[0.07] px-2 py-0.5 font-medium text-red-400">
-                    Archived
+                    {t("common.archived")}
                   </span>
                 ) : lifecycle === "INACTIVE" ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/25 bg-amber-500/[0.07] px-2 py-0.5 font-medium text-amber-400">
-                    Inactive
+                    {t("common.inactive")}
                   </span>
                 ) : null}
                 <span className="inline-flex items-center gap-1">
@@ -173,15 +176,15 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
                   {project.member_count}
                 </span>
                 {project.updated_at ? (
-                  <span suppressHydrationWarning>Updated {formatDistanceToNow(new Date(project.updated_at))}</span>
+                  <span suppressHydrationWarning>{t("common.updated")} {formatDistanceToNow(new Date(project.updated_at))}</span>
                 ) : project.created_at ? (
-                  <span suppressHydrationWarning>Created {formatDistanceToNow(new Date(project.created_at))}</span>
+                  <span suppressHydrationWarning>{t("common.created")} {formatDistanceToNow(new Date(project.created_at))}</span>
                 ) : null}
               </div>
             </div>
 
             <div className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-accent-400 opacity-0 transition-all duration-300 group-hover:opacity-100">
-              View project
+              {t("projects.viewProject")}
               <ArrowUpRight size={14} />
             </div>
           </div>

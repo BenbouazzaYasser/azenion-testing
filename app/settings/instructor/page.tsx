@@ -6,6 +6,7 @@ import {
 } from "@/actions/instructor-verification.actions";
 import InstructorVerificationForm from "@/components/instructor/instructor-verification-form";
 import InstructorVerificationStatus from "@/components/instructor/instructor-verification-status";
+import { serverT } from "@/lib/translation/server";
 
 export const metadata = {
   title: "Become an Instructor",
@@ -31,9 +32,9 @@ export default async function InstructorVerificationPage() {
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-ink-50">Become an Instructor</h1>
+        <h1 className="text-3xl font-bold text-ink-50">{serverT("settings.becomeInstructorTitle")}</h1>
         <p className="mt-2 text-ink-400">
-          Apply to become a verified instructor and create courses, labs, and live sessions
+          {serverT("settings.becomeInstructorDesc")}
         </p>
       </div>
 
@@ -55,11 +56,10 @@ export default async function InstructorVerificationPage() {
             </svg>
             <div>
               <h2 className="text-lg font-semibold text-success">
-                You&apos;re a Verified Instructor!
+                {serverT("settings.instructorVerifiedHeading")}
               </h2>
               <p className="mt-1 text-ink-300">
-                You can now create courses, labs, and host live sessions. Visit the Academy
-                section to get started.
+                {serverT("settings.instructorVerifiedDescAlt")}
               </p>
             </div>
           </div>

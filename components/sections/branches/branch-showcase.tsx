@@ -6,6 +6,7 @@ import { Landmark, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/ui/reveal";
 import type { Branch } from "@/data/branches";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 import { BranchSpotlight } from "./branch-spotlight";
 
@@ -15,6 +16,7 @@ interface BranchShowcaseProps {
 }
 
 export function BranchShowcase({ branches, membershipBySlug }: BranchShowcaseProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -42,11 +44,10 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
               id="branches-showcase-heading"
               className="text-3xl font-semibold text-ink-50 sm:text-4xl"
             >
-              Meet the branches
+              {t("branches.meetBranches")}
             </h2>
             <p className="mt-4 text-ink-400">
-              Each branch runs its own events, mentorship, and build culture — all connected back
-              to the same Limitless Network.
+              {t("branches.showcaseSub")}
             </p>
           </div>
         </Reveal>
@@ -61,8 +62,8 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search branches..."
-              aria-label="Search branches"
+              placeholder={t("branches.searchBranches")}
+              aria-label={t("branches.searchBranches")}
               className={cn(
                 "w-full rounded-full bg-surface px-11 py-3 text-sm text-ink-50",
                 "placeholder:text-ink-600 outline-none backdrop-blur-xl transition-colors",
@@ -80,12 +81,12 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
               </div>
               <div>
                 <p className="text-base font-medium text-ink-50">
-                  {query.trim() ? "No branches match your search" : "No branches yet"}
+                  {query.trim() ? t("branches.noMatch") : t("branches.noneYet")}
                 </p>
                 <p className="mt-1.5 text-sm text-ink-500">
                   {query.trim()
-                    ? "Try a different name or location."
-                    : "Branches are being launched campus by campus. Check back soon."}
+                    ? t("branches.noMatchSub")
+                    : t("branches.noneYetSub")}
                 </p>
               </div>
             </div>

@@ -1,56 +1,52 @@
 import { CheckCircle2, Hourglass, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/ui/reveal";
+import { serverT } from "@/lib/translation/server";
+import type { DictKey } from "@/lib/translation/types";
 
 interface RoadmapItem {
-  title: string;
-  description: string;
+  titleKey: DictKey;
+  descKey: DictKey;
   status: "done" | "next" | "planned";
 }
 
 const ROADMAP: RoadmapItem[] = [
   {
-    title: "Platform foundation",
-    description:
-      "Profiles, authentication and the core building blocks that make Azenion feel like home.",
+    titleKey: "home.roadmapPlatform",
+    descKey: "home.roadmapPlatformDesc",
     status: "done",
   },
   {
-    title: "Community system",
-    description:
-      "Branches, teams, projects and the shared feed that keep the network connected.",
+    titleKey: "home.roadmapCommunity",
+    descKey: "home.roadmapCommunityDesc",
     status: "done",
   },
   {
-    title: "Teams & projects",
-    description:
-      "Memberships, open roles, recruitment and the collaboration layer between builders.",
+    titleKey: "home.roadmapTeamsProjects",
+    descKey: "home.roadmapTeamsProjectsDesc",
     status: "done",
   },
   {
-    title: "Academy expansion",
-    description:
-      "Courses, labs and a richer learning experience built around the community.",
+    titleKey: "home.roadmapAcademy",
+    descKey: "home.roadmapAcademyDesc",
     status: "next",
   },
   {
-    title: "Mobile app",
-    description:
-      "Take the network anywhere with a native Azenion experience on your phone.",
+    titleKey: "home.roadmapMobile",
+    descKey: "home.roadmapMobileDesc",
     status: "planned",
   },
   {
-    title: "Global community",
-    description:
-      "More branches, more regions and a truly limitless network across the world.",
+    titleKey: "home.roadmapGlobal",
+    descKey: "home.roadmapGlobalDesc",
     status: "planned",
   },
 ];
 
-const STATUS_LABEL: Record<RoadmapItem["status"], string> = {
-  done: "Shipped",
-  next: "Up next",
-  planned: "Planned",
+const STATUS_LABEL_KEY: Record<RoadmapItem["status"], DictKey> = {
+  done: "home.statusShipped",
+  next: "home.statusUpNext",
+  planned: "home.statusPlanned",
 };
 
 export function Roadmap() {
@@ -60,16 +56,16 @@ export function Roadmap() {
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-              Roadmap
+              {serverT("home.roadmapEyebrow")}
             </span>
             <h2
               id="roadmap-heading"
               className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[3rem]"
             >
-              Where Azenion is <span className="text-accent-400">heading.</span>
+              {serverT("home.roadmapTitle")}<span className="text-accent-400">{serverT("home.roadmapAccent")}</span>
             </h2>
             <p className="mt-5 text-[1.02rem] leading-relaxed text-ink-400">
-              A look at what we&apos;ve shipped and what&apos;s coming next.
+              {serverT("home.roadmapSub")}
             </p>
           </div>
         </Reveal>
@@ -83,7 +79,7 @@ export function Roadmap() {
           {ROADMAP.map((item, i) => {
             const Icon = item.status === "done" ? CheckCircle2 : Hourglass;
             return (
-              <li key={item.title} className="relative pb-10 last:pb-0">
+              <li key={item.titleKey} className="relative pb-10 last:pb-0">
                 <Reveal delay={i * 80}>
                   <div className="flex gap-5">
                     <span
@@ -100,7 +96,7 @@ export function Roadmap() {
                     </span>
                     <div className="min-w-0 flex-1 rounded-[1.5rem] card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 className="text-lg font-semibold text-ink-50">{item.title}</h3>
+                        <h3 className="text-lg font-semibold text-ink-50">{serverT(item.titleKey)}</h3>
                         <span
                           className={cn(
                             "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider",
@@ -112,11 +108,11 @@ export function Roadmap() {
                           )}
                         >
                           {item.status === "done" ? <CheckCircle2 size={10} /> : null}
-                          {STATUS_LABEL[item.status]}
+                          {serverT(STATUS_LABEL_KEY[item.status])}
                         </span>
                       </div>
                       <p className="mt-2 text-sm leading-relaxed text-ink-400">
-                        {item.description}
+                        {serverT(item.descKey)}
                       </p>
                     </div>
                   </div>
@@ -129,7 +125,7 @@ export function Roadmap() {
         <Reveal delay={ROADMAP.length * 60}>
           <p className="mx-auto mt-12 flex max-w-3xl items-center justify-center gap-2 text-center text-sm text-ink-500">
             <Sparkles size={14} className="shrink-0 text-accent-400" />
-            This roadmap evolves with the community. Have an idea? Share it in a team or branch.
+            {serverT("home.roadmapNote")}
           </p>
         </Reveal>
       </div>

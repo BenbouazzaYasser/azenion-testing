@@ -6,6 +6,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { removeMember } from "@/actions/team.actions";
 import { InviteMemberDialog } from "./invite-member-dialog";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface MemberWithProfile {
   role: string;
@@ -29,6 +30,7 @@ interface TeamMembersProps {
 }
 
 export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId, canInvite, canRemoveMembers }: TeamMembersProps) {
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   if (members.length === 0) return null;
@@ -49,7 +51,7 @@ export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Team
+            {t("teams.membersEyebrow")}
           </div>
         </Reveal>
 
@@ -59,7 +61,7 @@ export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId
               id="team-members-heading"
               className="text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
             >
-              Meet the team
+              {t("teams.membersTitle")}
               <span className="ml-3 text-lg font-normal text-ink-500">
                 ({members.length})
               </span>
@@ -67,7 +69,7 @@ export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId
             {canInvite ? (
               <Button size="sm" variant="secondary" onClick={() => setShowInviteDialog(true)}>
                 <UserPlus size={14} />
-                Invite
+                {t("teams.invite")}
               </Button>
             ) : null}
           </div>
@@ -111,13 +113,13 @@ export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId
                       {member.role === "owner" ? (
                         <span className="inline-flex items-center gap-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2.5 py-0.5 text-[11px] font-medium text-yellow-400">
                           <Crown size={11} />
-                          Owner
+                          {t("common.owner")}
                         </span>
                       ) : null}
                       {member.role === "admin" ? (
                         <span className="inline-flex items-center gap-1 rounded-full border border-accent-400/30 bg-accent/[0.08] px-2.5 py-0.5 text-[11px] font-medium text-accent-300">
                           <Shield size={11} />
-                          Admin
+                          {t("common.admin")}
                         </span>
                       ) : null}
                     </div>
@@ -131,7 +133,7 @@ export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId
                           disabled={isPending}
                         >
                           <X size={12} />
-                          Remove
+                          {t("teams.remove")}
                         </Button>
                       </div>
                     ) : null}
