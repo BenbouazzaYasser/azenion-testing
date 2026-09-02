@@ -35,6 +35,7 @@ import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { EmojiPicker } from "@/components/chat/emoji-picker";
 import { GifPicker } from "@/components/chat/gif-picker";
 import { StickerPicker } from "@/components/chat/sticker-picker";
+import { AttachmentMenu } from "@/components/chat/attachment-menu";
 import type { GifResult } from "@/lib/gif/provider";
 import type { Sticker as StickerType } from "@/lib/stickers/catalog";
 
@@ -124,10 +125,12 @@ export function ChatConversation({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [showStickerPicker, setShowStickerPicker] = useState(false);
+  const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const emojiContainerRef = useRef<HTMLDivElement>(null);
   const voice = useVoiceRecorder();
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
@@ -176,16 +179,17 @@ export function ChatConversation({
   }, [queued]);
 
   useEffect(() => {
-    if (!showEmojiPicker && !showGifPicker && !showStickerPicker) return;
+    if (!showEmojiPicker && !showGifPicker && !showStickerPicker && !showAttachmentMenu) return;
     function handleOutside(e: MouseEvent) {
       if (
-        (showEmojiPicker || showGifPicker || showStickerPicker) &&
+        (showEmojiPicker || showGifPicker || showStickerPicker || showAttachmentMenu) &&
         emojiContainerRef.current &&
         !emojiContainerRef.current.contains(e.target as Node)
       ) {
         setShowEmojiPicker(false);
         setShowGifPicker(false);
         setShowStickerPicker(false);
+        setShowAttachmentMenu(false);
       }
     }
     function handleEsc(e: KeyboardEvent) {
@@ -193,6 +197,7 @@ export function ChatConversation({
         setShowEmojiPicker(false);
         setShowGifPicker(false);
         setShowStickerPicker(false);
+        setShowAttachmentMenu(false);
       }
     }
     document.addEventListener("mousedown", handleOutside);
@@ -201,7 +206,7 @@ export function ChatConversation({
       document.removeEventListener("mousedown", handleOutside);
       document.removeEventListener("keydown", handleEsc);
     };
-  }, [showEmojiPicker, showGifPicker, showStickerPicker]);
+  }, [showEmojiPicker, showGifPicker, showStickerPicker, showAttachmentMenu]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -423,6 +428,7 @@ export function ChatConversation({
       setShowGifPicker(false);
       setShowEmojiPicker(false);
       setShowStickerPicker(false);
+      setShowAttachmentMenu(false);
       if (isSending) return;
       if (queued.length > 0) {
         toast.error("Please send or remove attached files before sending a GIF");
@@ -556,6 +562,7 @@ export function ChatConversation({
       setShowStickerPicker(false);
       setShowEmojiPicker(false);
       setShowGifPicker(false);
+      setShowAttachmentMenu(false);
       if (isSending) return;
       if (queued.length > 0) {
         toast.error("Please send or remove attached files before sending a sticker");
@@ -661,6 +668,10 @@ export function ChatConversation({
 
   // Voice helpers
   const handleMicClick = async () => {
+    setShowAttachmentMenu(false);
+    setShowEmojiPicker(false);
+    setShowGifPicker(false);
+    setShowStickerPicker(false);
     if (voice.isRecording) {
       voice.stop();
       return;
@@ -815,6 +826,12 @@ export function ChatConversation({
     const hasText = input.trim().length > 0;
     const hasFiles = queued.length > 0;
     if ((!hasText && !hasFiles) || isSending) return;
+
+    // Close pickers on send
+    setShowAttachmentMenu(false);
+    setShowEmojiPicker(false);
+    setShowGifPicker(false);
+    setShowStickerPicker(false);
 
     // Validate queued files still valid (size check again)
     for (const q of queued) {
@@ -1249,24 +1266,50 @@ export function ChatConversation({
               }}
             >
               <input
-                ref={fileInputRef}
+                ref={imageInputRef}
                 type="file"
                 multiple
-                accept={[...CHAT_IMAGE_MIMES, ...CHAT_FILE_MIMES].join(",")}
+                accept={CHAT_IMAGE_MIMES.join(",")}
                 className="hidden"
                 onChange={handleFileInputChange}
               />
-              <Button
-                type="button"
-                variant="secondary"
-                size="default"
-                aria-label="Attach file"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={!!voice.blob || voice.isRecording}
-                className="h-12 w-12 shrink-0 rounded-2xl p-0"
-              >
-                <Paperclip size={18} />
-              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept={CHAT_FILE_MIMES.join(",")}
+                className="hidden"
+                onChange={handleFileInputChange}
+              />
+              <div className="relative">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="default"
+                  aria-label="Attach file"
+                  aria-expanded={showAttachmentMenu}
+                  aria-haspopup="menu"
+                  onClick={() => {
+                    setShowAttachmentMenu((v) => !v);
+                    setShowEmojiPicker(false);
+                    setShowGifPicker(false);
+                    setShowStickerPicker(false);
+                  }}
+                  disabled={!!voice.blob || voice.isRecording}
+                  className="h-12 w-12 shrink-0 rounded-2xl p-0"
+                >
+                  <Paperclip size={18} />
+                </Button>
+                {showAttachmentMenu && (
+                  <div className="absolute bottom-full left-0 z-30 mb-2">
+                    <AttachmentMenu
+                      onSelectImages={() => imageInputRef.current?.click()}
+                      onSelectFiles={() => fileInputRef.current?.click()}
+                      onClose={() => setShowAttachmentMenu(false)}
+                    />
+                  </div>
+                )}
+              </div>
               <Button
                 type="button"
                 variant="secondary"
@@ -1276,6 +1319,7 @@ export function ChatConversation({
                   setShowEmojiPicker((v) => !v);
                   setShowGifPicker(false);
                   setShowStickerPicker(false);
+                  setShowAttachmentMenu(false);
                 }}
                 disabled={!!voice.blob || voice.isRecording}
                 className="h-12 w-12 shrink-0 rounded-2xl p-0"
@@ -1291,6 +1335,7 @@ export function ChatConversation({
                   setShowGifPicker((v) => !v);
                   setShowEmojiPicker(false);
                   setShowStickerPicker(false);
+                  setShowAttachmentMenu(false);
                 }}
                 disabled={!!voice.blob || voice.isRecording}
                 className="h-12 w-12 shrink-0 rounded-2xl p-0"
@@ -1306,22 +1351,29 @@ export function ChatConversation({
                   setShowStickerPicker((v) => !v);
                   setShowEmojiPicker(false);
                   setShowGifPicker(false);
+                  setShowAttachmentMenu(false);
                 }}
                 disabled={!!voice.blob || voice.isRecording}
                 className="h-12 w-12 shrink-0 rounded-2xl p-0"
               >
                 <StickerIcon size={18} />
               </Button>
-              <input
+              <textarea
                 ref={inputRef}
-                type="text"
                 aria-label="Type a message"
                 placeholder="Type a message..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onPaste={handlePaste}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
                 disabled={!!voice.blob || voice.isRecording}
-                className="min-w-0 flex-1 rounded-2xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none disabled:opacity-50"
+                rows={1}
+                className="min-w-0 flex-1 resize-none rounded-2xl bg-surface px-4 py-3 text-sm leading-5 text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none disabled:opacity-50 max-h-24 overflow-y-auto"
               />
               {canSend ? (
                 <Button type="submit" aria-label="Send message" disabled={isSending} className="h-12 w-12 shrink-0 rounded-2xl p-0">
