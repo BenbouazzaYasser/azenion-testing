@@ -11,6 +11,7 @@ const GITHUB_HOSTS = ["github.com", "www.github.com"];
 const LINKEDIN_HOSTS = ["linkedin.com", "www.linkedin.com", "linkedin.in", "www.linkedin.in"];
 function isValidUrl(str: string) { try { new URL(str); return true; } catch { return false; } }
 function getHost(str: string) { try { return new URL(str).hostname.toLowerCase(); } catch { return ""; } }
+function digitsOnly(v: string) { return v.replace(/\D/g, "").slice(0, 4); }
 
 const emptyEducation: EducationEntry = {
   institution: "",
@@ -105,12 +106,19 @@ export default function InstructorVerificationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.portfolio_url && isValidUrl(formData.portfolio_url)) {
+      const ph = getHost(formData.portfolio_url);
+      if (GITHUB_HOSTS.includes(ph) || LINKEDIN_HOSTS.includes(ph)) {
+        setError(t("settings.urlWarningPortfolio"));
+        return;
+      }
+    }
     if (formData.github_url && isValidUrl(formData.github_url) && !GITHUB_HOSTS.includes(getHost(formData.github_url))) {
-      setError("The GitHub URL should link to github.com.");
+      setError(t("settings.urlWarningGithub"));
       return;
     }
     if (formData.linkedin_url && isValidUrl(formData.linkedin_url) && !LINKEDIN_HOSTS.includes(getHost(formData.linkedin_url))) {
-      setError("The LinkedIn URL should link to linkedin.com.");
+      setError(t("settings.urlWarningLinkedin"));
       return;
     }
     setLoading(true);
@@ -326,8 +334,9 @@ export default function InstructorVerificationForm() {
                       <input
                         type="text"
                         value={edu.start_year ?? ""}
-                        onChange={(e) => handleUpdateEducation(index, "start_year", e.target.value)}
+                        onChange={(e) => handleUpdateEducation(index, "start_year", digitsOnly(e.target.value))}
                         placeholder="2020"
+                        inputMode="numeric"
                         maxLength={4}
                         className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
                       />
@@ -339,8 +348,9 @@ export default function InstructorVerificationForm() {
                       <input
                         type="text"
                         value={edu.end_year ?? ""}
-                        onChange={(e) => handleUpdateEducation(index, "end_year", e.target.value)}
+                        onChange={(e) => handleUpdateEducation(index, "end_year", digitsOnly(e.target.value))}
                         placeholder="2024 or leave blank if current"
+                        inputMode="numeric"
                         maxLength={4}
                         className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
                       />
@@ -412,8 +422,9 @@ export default function InstructorVerificationForm() {
                     <input
                       type="text"
                       value={cert.year ?? ""}
-                      onChange={(e) => handleUpdateCertification(index, "year", e.target.value)}
+                      onChange={(e) => handleUpdateCertification(index, "year", digitsOnly(e.target.value))}
                       placeholder="2024"
+                      inputMode="numeric"
                       maxLength={4}
                       className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-primary focus:outline-none"
                     />
@@ -449,7 +460,16 @@ export default function InstructorVerificationForm() {
               id="portfolio_url"
               type="url"
               value={formData.portfolio_url}
-              onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormData({ ...formData, portfolio_url: val });
+                if (val && isValidUrl(val)) {
+                  const host = getHost(val);
+                  if (GITHUB_HOSTS.includes(host) || LINKEDIN_HOSTS.includes(host)) {
+                    setError(t("settings.urlWarningPortfolio"));
+                  } else { setError(null); }
+                } else { setError(null); }
+              }}
               placeholder="https://yourportfolio.com"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />
@@ -467,7 +487,7 @@ export default function InstructorVerificationForm() {
                 const val = e.target.value;
                 setFormData({ ...formData, linkedin_url: val });
                 if (val && isValidUrl(val) && !LINKEDIN_HOSTS.includes(getHost(val))) {
-                  setError("The LinkedIn URL should link to linkedin.com.");
+                  setError(t("settings.urlWarningLinkedin"));
                 } else { setError(null); }
               }}
               placeholder="https://linkedin.com/in/yourprofile"
@@ -487,7 +507,7 @@ export default function InstructorVerificationForm() {
                 const val = e.target.value;
                 setFormData({ ...formData, github_url: val });
                 if (val && isValidUrl(val) && !GITHUB_HOSTS.includes(getHost(val))) {
-                  setError("The GitHub URL should link to github.com.");
+                  setError(t("settings.urlWarningGithub"));
                 } else { setError(null); }
               }}
               placeholder="https://github.com/yourusername"

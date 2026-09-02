@@ -1165,6 +1165,11 @@ export const fr: TranslationResource = {
   "settings.becomeInstructorDesc": "Postulez pour devenir un instructeur vérifié et créer des cours, des labs et des sessions en direct",
   "settings.openApplication": "Ouvrir la page de candidature",
   "settings.instructorVerifiedDescAlt": "Vous pouvez désormais créer des cours, des labs et animer des sessions en direct. Consultez la section Académie pour commencer.",
+  "settings.urlWarningGithub": "L'URL GitHub doit pointer vers github.com.",
+  "settings.urlWarningLinkedin": "L'URL LinkedIn doit pointer vers linkedin.com.",
+  "settings.urlWarningGithubOther": "L'URL GitHub doit pointer vers github.com — vous avez indiqué un autre site.",
+  "settings.urlWarningLinkedinOther": "L'URL LinkedIn doit pointer vers linkedin.com — vous avez indiqué un autre site.",
+  "settings.urlWarningPortfolio": "L'URL du portfolio doit être un site personnel, pas un profil GitHub ou LinkedIn.",
 
   "message.notFound": "Introuvable",
   "message.timeAgo": "il y a",

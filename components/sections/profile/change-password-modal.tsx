@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { X, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { updatePassword } from "@/actions/profile.actions";
@@ -13,6 +14,7 @@ const inputClass =
 
 export function ChangePasswordModal() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -50,7 +52,10 @@ export function ChangePasswordModal() {
         return;
       }
       setSuccess(true);
-      setTimeout(() => setOpen(false), 2000);
+      setTimeout(() => {
+        setOpen(false);
+        router.refresh();
+      }, 2000);
     });
   }
 

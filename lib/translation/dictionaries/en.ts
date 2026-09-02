@@ -1166,7 +1166,12 @@ export const en: TranslationResource = {
   "settings.becomeInstructorDesc": "Apply to become a verified instructor and create courses, labs, and live sessions",
   "settings.openApplication": "Open application page",
   "settings.instructorVerifiedDescAlt": "You can now create courses, labs, and host live sessions. Visit the Academy section to get started.",
-
+  "settings.urlWarningGithub": "The GitHub URL should link to github.com.",
+  "settings.urlWarningLinkedin": "The LinkedIn URL should link to linkedin.com.",
+  "settings.urlWarningGithubOther": "The GitHub URL should link to github.com — you entered a different site.",
+  "settings.urlWarningLinkedinOther": "The LinkedIn URL should link to linkedin.com — you entered a different site.",
+  "settings.urlWarningPortfolio": "The portfolio URL should be a personal site, not a GitHub or LinkedIn profile.",
+ 
   "message.notFound": "Not found",
   "message.timeAgo": "ago",
 };

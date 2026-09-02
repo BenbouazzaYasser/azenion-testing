@@ -1161,6 +1161,11 @@ export const ar: TranslationResource = {
   "settings.becomeInstructorDesc": "تقدّم لتصبح مدرّباً معتمداً وأنشئ دورات ومختبرات وجلسات مباشرة",
   "settings.openApplication": "فتح صفحة الطلب",
   "settings.instructorVerifiedDescAlt": "يمكنك الآن إنشاء دورات ومختبرات واستضافة جلسات مباشرة. تفضل بزيارة قسم الأكاديمية للبدء.",
+  "settings.urlWarningGithub": "يجب أن يشير رابط GitHub إلى github.com.",
+  "settings.urlWarningLinkedin": "يجب أن يشير رابط LinkedIn إلى linkedin.com.",
+  "settings.urlWarningGithubOther": "يجب أن يشير رابط GitHub إلى github.com — لقد أدخلت موقعًا مختلفًا.",
+  "settings.urlWarningLinkedinOther": "يجب أن يشير رابط LinkedIn إلى linkedin.com — لقد أدخلت موقعًا مختلفًا.",
+  "settings.urlWarningPortfolio": "يجب أن يكون رابط الملف الشخصي موقعًا شخصيًا، وليس ملف GitHub أو LinkedIn الشخصي.",
 
   "message.notFound": "غير موجود",
   "message.timeAgo": "منذ",

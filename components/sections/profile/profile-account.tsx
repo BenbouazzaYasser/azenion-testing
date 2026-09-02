@@ -1,6 +1,7 @@
-import { CheckCircle, KeyRound, Mail, Sparkles, UserCircle, Calendar, LogIn } from "lucide-react";
+import { KeyRound, Sparkles, UserCircle, Calendar, LogIn } from "lucide-react";
 import { ChangePasswordModal } from "./change-password-modal";
 import { DeleteAccountModal } from "./delete-account-modal";
+import { EmailEditor } from "./email-editor";
 import { RestartOnboardingButton } from "@/components/onboarding/restart-onboarding-button";
 import { formatDate } from "@/lib/date";
 
@@ -42,21 +43,7 @@ export function ProfileAccount({
       <div className="space-y-4">
         <div className={cardClass}>
           <div className="flex items-center justify-between">
-            <div className="flex items-start gap-4">
-              <div className={iconContainerClass}>
-                <Mail size={18} className="text-accent-400" />
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-ink-50">Email</h3>
-                <p className="mt-1 text-sm text-ink-400">{email}</p>
-              </div>
-            </div>
-            {emailVerified ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-medium text-green-400">
-                <CheckCircle size={12} />
-                Verified
-              </span>
-            ) : null}
+            <EmailEditor currentEmail={email} emailVerified={emailVerified} />
           </div>
         </div>
 

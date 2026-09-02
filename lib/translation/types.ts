@@ -1084,6 +1084,11 @@ export const dictKeys = [
   "settings.becomeInstructorDesc",
   "settings.openApplication",
   "settings.instructorVerifiedDescAlt",
+  "settings.urlWarningGithub",
+  "settings.urlWarningLinkedin",
+  "settings.urlWarningGithubOther",
+  "settings.urlWarningLinkedinOther",
+  "settings.urlWarningPortfolio",
 
   // Empty / messaging
   "message.notFound",

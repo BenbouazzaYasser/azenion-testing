@@ -75,14 +75,14 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
     if (githubRaw && isValidUrl(githubRaw)) {
       const host = getHost(githubRaw);
       if (!GITHUB_HOSTS.includes(host)) {
-        setUrlWarning("The GitHub URL should link to github.com — you entered a different site.");
+        setUrlWarning(t("settings.urlWarningGithubOther"));
         return;
       }
     }
     if (linkedinRaw && isValidUrl(linkedinRaw)) {
       const host = getHost(linkedinRaw);
       if (!LINKEDIN_HOSTS.includes(host)) {
-        setUrlWarning("The LinkedIn URL should link to linkedin.com — you entered a different site.");
+        setUrlWarning(t("settings.urlWarningLinkedinOther"));
         return;
       }
     }
@@ -228,7 +228,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                           onChange={(e) => {
                             const val = e.target.value.trim();
                             if (val && isValidUrl(val) && !GITHUB_HOSTS.includes(getHost(val))) {
-                              setUrlWarning("The GitHub URL should link to github.com.");
+                              setUrlWarning(t("settings.urlWarningGithub"));
                             } else {
                               setUrlWarning(null);
                             }
@@ -246,7 +246,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                           onChange={(e) => {
                             const val = e.target.value.trim();
                             if (val && isValidUrl(val) && !LINKEDIN_HOSTS.includes(getHost(val))) {
-                              setUrlWarning("The LinkedIn URL should link to linkedin.com.");
+                              setUrlWarning(t("settings.urlWarningLinkedin"));
                             } else {
                               setUrlWarning(null);
                             }
