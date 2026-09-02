@@ -64,12 +64,15 @@ export async function sendMessage(conversationId: string, content: string) {
 }
 
 export interface SendMessageAttachmentInput {
-  type: "image" | "file" | "audio";
-  storage_path: string;
-  filename: string;
-  mime_type: string;
-  file_size: number;
+  type: "image" | "file" | "audio" | "gif";
+  storage_path?: string | null;
+  filename?: string | null;
+  mime_type?: string | null;
+  file_size?: number | null;
   duration_seconds?: number | null;
+  provider?: string | null;
+  external_id?: string | null;
+  metadata?: Record<string, unknown> | null;
 }
 
 export async function sendMessageWithAttachments(
@@ -125,18 +128,27 @@ export async function sendMessageWithAttachments(
   for (const att of attachments) {
     const result = validateChatAttachmentInput({
       type: att.type,
-      filename: att.filename,
-      mimeType: att.mime_type,
-      fileSize: att.file_size,
+      filename: att.filename ?? null,
+      mimeType: att.mime_type ?? null,
+      fileSize: att.file_size ?? null,
       durationSeconds: att.duration_seconds ?? null,
-      storagePath: att.storage_path,
+      storagePath: att.storage_path ?? null,
+      provider: att.provider ?? null,
+      externalId: att.external_id ?? null,
+      metadata: att.metadata ?? null,
     });
     if (!result.valid) {
       return { error: result.error ?? "Invalid attachment." };
     }
-    // Ensure path is conversation-scoped to the target conversation
-    if (!att.storage_path.startsWith(`chat/${conversationId}/`)) {
-      return { error: "Attachment path does not match conversation." };
+    // Ensure storage-backed paths are conversation-scoped
+    if (att.type === "image" || att.type === "file" || att.type === "audio") {
+      if (!att.storage_path || !att.storage_path.startsWith(`chat/${conversationId}/`)) {
+        return { error: "Attachment path does not match conversation." };
+      }
+    }
+    // For gif, ensure provider is allowed (already validated) and external_id present
+    if (att.type === "gif" && att.provider !== "giphy" && att.provider !== "tenor") {
+      return { error: "Invalid GIF provider." };
     }
   }
 
@@ -167,23 +179,25 @@ export async function sendMessageWithAttachments(
     conversation_id: conversationId,
     uploader_id: user.id,
     type: att.type,
-    storage_path: att.storage_path,
-    filename: att.filename,
-    mime_type: att.mime_type,
-    file_size: att.file_size,
+    storage_path: att.storage_path ?? null,
+    filename: att.filename ?? null,
+    mime_type: att.mime_type ?? null,
+    file_size: att.file_size ?? null,
     duration_seconds: att.type === "audio" ? (att.duration_seconds ?? null) : null,
-    metadata: {},
+    provider: att.provider ?? null,
+    external_id: att.external_id ?? null,
+    metadata: att.metadata ?? {},
   }));
 
   const { error: attError } = await supabase.from("chat_message_attachments").insert(rows);
 
   if (attError) {
-    // Roll back message to avoid orphan; best-effort clean storage objects
+    // Roll back message to avoid orphan; best-effort clean storage objects (only for storage-backed)
     await supabase.from("messages").delete().eq("id", msg.id).eq("sender_id", user.id);
     try {
       const admin = createAdminClient();
-      const paths = attachments.map((a) => a.storage_path);
-      await admin.storage.from(CHAT_MEDIA_BUCKET).remove(paths);
+      const paths = attachments.map((a) => a.storage_path).filter((p): p is string => !!p);
+      if (paths.length > 0) await admin.storage.from(CHAT_MEDIA_BUCKET).remove(paths);
     } catch {
       // best effort, ignore
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile } from "lucide-react";
+import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Film } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
@@ -33,6 +33,8 @@ import {
 } from "@/lib/chat-media";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { EmojiPicker } from "@/components/chat/emoji-picker";
+import { GifPicker } from "@/components/chat/gif-picker";
+import type { GifResult } from "@/lib/gif/provider";
 
 interface Message {
   id: string;
@@ -118,6 +120,7 @@ export function ChatConversation({
   const [queued, setQueued] = useState<QueuedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -170,22 +173,30 @@ export function ChatConversation({
   }, [queued]);
 
   useEffect(() => {
-    if (!showEmojiPicker) return;
-    function handleEmojiOutside(e: MouseEvent) {
-      if (emojiContainerRef.current && !emojiContainerRef.current.contains(e.target as Node)) {
+    if (!showEmojiPicker && !showGifPicker) return;
+    function handleOutside(e: MouseEvent) {
+      if (
+        (showEmojiPicker || showGifPicker) &&
+        emojiContainerRef.current &&
+        !emojiContainerRef.current.contains(e.target as Node)
+      ) {
         setShowEmojiPicker(false);
+        setShowGifPicker(false);
       }
     }
-    function handleEmojiEsc(e: KeyboardEvent) {
-      if (e.key === "Escape") setShowEmojiPicker(false);
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setShowEmojiPicker(false);
+        setShowGifPicker(false);
+      }
     }
-    document.addEventListener("mousedown", handleEmojiOutside);
-    document.addEventListener("keydown", handleEmojiEsc);
+    document.addEventListener("mousedown", handleOutside);
+    document.addEventListener("keydown", handleEsc);
     return () => {
-      document.removeEventListener("mousedown", handleEmojiOutside);
-      document.removeEventListener("keydown", handleEmojiEsc);
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("keydown", handleEsc);
     };
-  }, [showEmojiPicker]);
+  }, [showEmojiPicker, showGifPicker]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -400,6 +411,138 @@ export function ChatConversation({
       });
     },
     [input],
+  );
+
+  const handleGifSelect = useCallback(
+    async (gif: GifResult) => {
+      setShowGifPicker(false);
+      setShowEmojiPicker(false);
+      if (isSending) return;
+      if (queued.length > 0) {
+        toast.error("Please send or remove attached files before sending a GIF");
+        return;
+      }
+      if (voice.isRecording || voice.blob) {
+        toast.error("Finish or cancel voice recording before sending GIF");
+        return;
+      }
+      // Client-side domain check (server re-validates)
+      try {
+        const host = new URL(gif.url).hostname.toLowerCase();
+        const allowed = [
+          "giphy.com",
+          "media.giphy.com",
+          "media0.giphy.com",
+          "media1.giphy.com",
+          "media2.giphy.com",
+          "media3.giphy.com",
+          "media4.giphy.com",
+          "i.giphy.com",
+          "tenor.com",
+          "media.tenor.com",
+        ];
+        const ok = allowed.some((h) => host === h || host.endsWith(`.${h}`));
+        if (!ok) {
+          toast.error("Invalid GIF provider");
+          return;
+        }
+      } catch {
+        toast.error("Invalid GIF");
+        return;
+      }
+
+      const content = input.trim();
+      setInput("");
+      setIsSending(true);
+      const supabase = createClient();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url, username")
+        .eq("id", currentUserId)
+        .single();
+
+      const gifAtt: ChatAttachmentForMessage = {
+        id: crypto.randomUUID(),
+        message_id: "optimistic",
+        conversation_id: conversationId,
+        uploader_id: currentUserId,
+        type: "gif",
+        storage_path: null,
+        filename: null,
+        mime_type: null,
+        file_size: null,
+        duration_seconds: null,
+        provider: gif.provider,
+        external_id: gif.id,
+        metadata: {
+          url: gif.url,
+          previewUrl: gif.previewUrl,
+          title: gif.title,
+          width: gif.width,
+          height: gif.height,
+        } as Record<string, unknown>,
+        created_at: new Date().toISOString(),
+        signedUrl: null,
+      };
+
+      const optimistic: Message = {
+        id: crypto.randomUUID(),
+        conversation_id: conversationId,
+        sender_id: currentUserId,
+        content,
+        image_url: null,
+        created_at: new Date().toISOString(),
+        edited_at: null,
+        received_at: null,
+        sender: profile,
+        attachments: [gifAtt],
+      };
+      setMessages((prev) => [...prev, optimistic]);
+
+      try {
+        const result = await sendMessageWithAttachments(conversationId, content, [
+          {
+            type: "gif",
+            provider: gif.provider,
+            external_id: gif.id,
+            metadata: {
+              url: gif.url,
+              previewUrl: gif.previewUrl,
+              title: gif.title,
+              width: gif.width,
+              height: gif.height,
+            },
+          } as unknown as import("@/actions/chat.actions").SendMessageAttachmentInput,
+        ]);
+
+        if (result && "error" in result && result.error) {
+          setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+          toast.error(result.error);
+          setInput(content);
+        } else if (result && "success" in result && result.id) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === optimistic.id
+                ? {
+                    ...m,
+                    id: result.id as string,
+                    created_at: (result.created_at as string) ?? m.created_at,
+                    attachments: [{ ...gifAtt, message_id: result.id as string }],
+                  }
+                : m,
+            ),
+          );
+        }
+      } catch {
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        toast.error("GIF could not be sent.");
+        setInput(content);
+      } finally {
+        setIsSending(false);
+        void markConversationRead(conversationId);
+      }
+    },
+    [input, isSending, queued.length, voice, conversationId, currentUserId],
   );
 
   // Voice helpers
@@ -974,6 +1117,11 @@ export function ChatConversation({
                 />
               </div>
             )}
+            {showGifPicker && (
+              <div className="absolute bottom-full left-12 z-30 mb-2 sm:left-16">
+                <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+              </div>
+            )}
             <form
               className="flex items-center gap-2 sm:gap-3"
               onSubmit={(e) => {
@@ -1005,11 +1153,28 @@ export function ChatConversation({
                 variant="secondary"
                 size="default"
                 aria-label="Open emoji picker"
-                onClick={() => setShowEmojiPicker((v) => !v)}
+                onClick={() => {
+                  setShowEmojiPicker((v) => !v);
+                  setShowGifPicker(false);
+                }}
                 disabled={!!voice.blob || voice.isRecording}
                 className="h-12 w-12 shrink-0 rounded-2xl p-0"
               >
                 <Smile size={18} />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="default"
+                aria-label="Open GIF picker"
+                onClick={() => {
+                  setShowGifPicker((v) => !v);
+                  setShowEmojiPicker(false);
+                }}
+                disabled={!!voice.blob || voice.isRecording}
+                className="h-12 w-12 shrink-0 rounded-2xl p-0"
+              >
+                <Film size={18} />
               </Button>
               <input
                 ref={inputRef}

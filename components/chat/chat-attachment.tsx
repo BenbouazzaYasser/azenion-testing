@@ -121,7 +121,49 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
   const [imgLoading, setImgLoading] = useState(true);
 
   const isAudio = attachment.type === "audio";
+  const isGif = attachment.type === "gif";
   const isImage = attachment.type === "image" && attachment.mime_type?.startsWith("image/");
+
+  if (isGif) {
+    const meta = (attachment.metadata ?? {}) as { url?: string; previewUrl?: string; title?: string };
+    const rawUrl = meta.url ?? meta.previewUrl;
+    const url = rawUrl && (() => {
+      try {
+        const host = new URL(rawUrl).hostname.toLowerCase();
+        const allowed = ["giphy.com", "media.giphy.com", "i.giphy.com", "tenor.com", "media.tenor.com"];
+        const ok = allowed.some((h) => host === h || host.endsWith(`.${h}`) || host.endsWith(h));
+        return ok ? rawUrl : null;
+      } catch {
+        return null;
+      }
+    })();
+    if (!url) {
+      return (
+        <div className="flex items-center gap-2 rounded-xl bg-surface/60 px-3 py-2 text-sm text-ink-400">
+          <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+          <span>Invalid GIF</span>
+        </div>
+      );
+    }
+    return (
+      <div className="overflow-hidden rounded-xl">
+        {imgLoading && (
+          <div className="flex h-32 w-48 items-center justify-center bg-surface/50">
+            <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
+          </div>
+        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt={meta.title ?? "GIF"}
+          className={cn("max-h-64 max-w-[260px] object-cover", imgLoading ? "hidden" : "block")}
+          onLoad={() => setImgLoading(false)}
+          onError={() => setImgLoading(false)}
+          loading="lazy"
+        />
+      </div>
+    );
+  }
 
   if (isAudio) {
     return <AudioPlayer attachment={attachment} isOwn={isOwn} />;
