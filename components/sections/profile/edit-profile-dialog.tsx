@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AvatarUpload } from "./avatar-upload";
 import { updateProfile } from "@/actions/profile.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface EditProfileDialogProps {
   profile: {
@@ -27,6 +28,7 @@ const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
 
 export function EditProfileDialog({ profile }: EditProfileDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
   return (
     <>
       <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
-        Edit Profile
+        {t("settings.editProfile")}
       </Button>
 
       {open ? (
@@ -75,11 +77,11 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
             className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8"
             role="dialog"
             aria-modal="true"
-            aria-label="Edit profile"
+            aria-label={t("settings.editProfile")}
           >
             <button
               type="button"
-              aria-label="Close"
+              aria-label={t("settings.closeAria")}
               className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-200"
               style={{ opacity: mounted ? 1 : 0 }}
               onClick={() => setOpen(false)}
@@ -96,13 +98,13 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
             >
               <div className="flex items-start justify-between border-b border-border px-10 py-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-ink-50">Edit Profile</h2>
-                  <p className="mt-1 text-sm text-ink-400">Manage your public profile information.</p>
+                  <h2 className="text-xl font-semibold text-ink-50">{t("settings.editProfile")}</h2>
+                  <p className="mt-1 text-sm text-ink-400">{t("settings.editProfileDesc")}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  aria-label="Close"
+                  aria-label={t("settings.closeAria")}
                   className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                 >
                   <X className="h-5 w-5" />
@@ -128,7 +130,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                   <div className="space-y-6">
                     <div className="grid gap-6 sm:grid-cols-2">
                       <label className="block space-y-1.5">
-                        <span className="text-sm font-medium text-ink-200">Full Name</span>
+                        <span className="text-sm font-medium text-ink-200">{t("settings.fullName")}</span>
                         <input
                           name="full_name"
                           defaultValue={profile.full_name}
@@ -138,35 +140,35 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                         />
                       </label>
                       <label className="block space-y-1.5">
-                        <span className="text-sm font-medium text-ink-200">Username</span>
+                        <span className="text-sm font-medium text-ink-200">{t("settings.username")}</span>
                         <input
                           name="username"
                           defaultValue={profile.username}
                           required
                           maxLength={30}
                           pattern="[a-zA-Z0-9_-]+"
-                          title="Letters, numbers, underscores, and hyphens only"
+                          title={t("settings.usernameHint")}
                           className={inputClass}
                         />
-                        <p className="text-xs text-ink-600">Letters, numbers, underscores, and hyphens only.</p>
+                        <p className="text-xs text-ink-600">{t("settings.usernameHint")}</p>
                       </label>
                     </div>
 
                     <label className="block space-y-1.5">
-                      <span className="text-sm font-medium text-ink-200">Bio</span>
+                      <span className="text-sm font-medium text-ink-200">{t("settings.bio")}</span>
                       <textarea
                         name="bio"
                         defaultValue={profile.bio ?? ""}
                         maxLength={500}
                         rows={5}
-                        placeholder="Tell the network a bit about yourself"
+                        placeholder={t("settings.bioPlaceholder")}
                         className={`${inputClass} resize-none`}
                       />
-                      <p className="text-xs text-ink-600">Brief description of your background and interests.</p>
+                      <p className="text-xs text-ink-600">{t("settings.bioHelper")}</p>
                     </label>
 
                     <label className="block space-y-1.5">
-                      <span className="text-sm font-medium text-ink-200">Institution</span>
+                      <span className="text-sm font-medium text-ink-200">{t("settings.institutionLabel")}</span>
                       <input
                         name="institution"
                         defaultValue={profile.institution ?? ""}
@@ -174,7 +176,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                         placeholder="e.g. EMSI Rabat"
                         className={inputClass}
                       />
-                      <p className="text-xs text-ink-600">Your school, university, or organization.</p>
+                      <p className="text-xs text-ink-600">{t("settings.institutionHelper")}</p>
                     </label>
 
                     <div className="grid gap-6 sm:grid-cols-2">
@@ -201,14 +203,14 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                     </div>
 
                     <label className="block space-y-1.5">
-                      <span className="text-sm font-medium text-ink-200">Skills</span>
+                      <span className="text-sm font-medium text-ink-200">{t("settings.skillsLabel")}</span>
                       <input
                         name="skills"
                         defaultValue={profile.skills.join(", ")}
                         placeholder="React, Figma, Product Strategy"
                         className={inputClass}
                       />
-                      <p className="text-xs text-ink-600">Separate skills with commas.</p>
+                      <p className="text-xs text-ink-600">{t("settings.skillsHelper")}</p>
                     </label>
                   </div>
                 </div>
@@ -221,10 +223,10 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                     onClick={() => setOpen(false)}
                     disabled={isPending}
                   >
-                    Cancel
+                    {t("settings.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" size="sm" disabled={isPending}>
-                    {isPending ? "Saving..." : "Save Changes"}
+                    {isPending ? t("settings.savingDots") : t("settings.saveChanges")}
                   </Button>
                 </div>
               </form>

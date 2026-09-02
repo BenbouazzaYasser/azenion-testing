@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface LikeButtonProps {
   initialCount: number;
@@ -20,6 +21,7 @@ export function LikeButton({
   const [liked, setLiked] = useState(initialLiked);
   const [count, setCount] = useState(initialCount);
   const [isPending, startTransition] = useTransition();
+  const { t } = useTranslation();
 
   const handleClick = () => {
     if (!currentUserId || isPending) return;
@@ -45,8 +47,8 @@ export function LikeButton({
       disabled={!currentUserId || isPending}
       onClick={handleClick}
       aria-pressed={liked}
-      aria-label={liked ? "Unlike post" : "Like post"}
-      title={liked ? "Unlike" : "Like"}
+      aria-label={liked ? t("feed.unlike") : t("feed.like")}
+      title={liked ? t("feed.unlike") : t("feed.like")}
       className={cn(
         "flex items-center gap-1.5 rounded-full text-xs transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
         liked

@@ -4,6 +4,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { SessionCard } from "@/components/sections/academy/session-card";
 import type { LiveSessionWithManage } from "@/lib/validations/live-session.schema";
+import { serverT } from "@/lib/translation/server";
 
 interface AcademyPreviewProps {
   sessions: LiveSessionWithManage[];
@@ -20,22 +21,21 @@ export function AcademyPreview({ sessions }: AcademyPreviewProps) {
             <div className="max-w-2xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
                 <GraduationCap size={13} />
-                Academy
+                {serverT("home.academyPreviewEyebrow")}
               </span>
               <h2
                 id="academy-preview-heading"
                 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[2.9rem]"
               >
-                Learn from <span className="text-accent-400">live sessions.</span>
+                {serverT("home.academyPreviewTitle")}<span className="text-accent-400">{serverT("home.academyPreviewAccent")}</span>
               </h2>
               <p className="mt-5 text-[1.02rem] leading-relaxed text-ink-400">
-                Workshops, talks and deep dives — online and in person — hosted
-                by the people building across the network.
+                {serverT("home.academyPreviewSub")}
               </p>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
               <a href="/academy/live-sessions">
-                Explore Academy
+                {serverT("home.exploreAcademy")}
                 <ArrowUpRight size={16} />
               </a>
             </Button>
@@ -56,10 +56,9 @@ export function AcademyPreview({ sessions }: AcademyPreviewProps) {
               <span className="flex h-12 w-12 items-center justify-center rounded-full border border-accent-400/30 bg-accent/[0.08] text-accent-300">
                 <GraduationCap size={20} />
               </span>
-              <p className="text-lg font-semibold text-ink-50">No live sessions scheduled yet</p>
+              <p className="text-lg font-semibold text-ink-50">{serverT("home.academyPreviewEmpty")}</p>
               <p className="max-w-md text-sm leading-relaxed text-ink-400">
-                Sessions are being lined up across branches and teams. Check back soon or follow a
-                branch to be the first to know.
+                {serverT("home.academyPreviewEmptySub")}
               </p>
             </div>
           </Reveal>

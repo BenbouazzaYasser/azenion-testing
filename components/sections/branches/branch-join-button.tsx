@@ -7,6 +7,7 @@ import { ArrowUpRight, Loader2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { joinBranch, leaveBranch } from "@/actions/branch.actions";
 import { useUser } from "@/hooks/use-user";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface BranchJoinButtonProps {
   branchId: string;
@@ -27,12 +28,13 @@ export function BranchJoinButton({
   const router = useRouter();
   const pathname = usePathname();
   const { user, loading } = useUser();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function redirectToSignIn() {
     const next = pathname ? `?next=${encodeURIComponent(pathname)}` : "";
-    toast.info("Sign in to join this branch.");
+    toast.info(t("branches.signInToJoin"));
     router.push(`/login${next}`);
   }
 
@@ -56,7 +58,7 @@ export function BranchJoinButton({
     }
 
     // The platform auto-added the user to the branch's chat server.
-    toast.success("You've been added to the branch server and its channels.");
+    toast.success(t("branches.joinedServer"));
   }
 
   async function handleLeave() {
@@ -84,7 +86,7 @@ export function BranchJoinButton({
           ) : (
             <LogOut size={16} />
           )}
-          Leave Branch
+          {t("branches.leaveCta")}
         </Button>
         {helperText && (
           <p className={`mt-3 text-xs ${cosmic ? "branch-hero-helper" : "text-ink-600"}`}>{helperText}</p>
@@ -108,7 +110,7 @@ export function BranchJoinButton({
         {label}
       </Button>
       <p className={`mt-3 text-xs ${cosmic ? "branch-hero-helper" : "text-ink-600"}`}>
-        You&apos;ll be added to the branch server&apos;s channels automatically.
+        {t("branches.autoAdded")}
       </p>
       {helperText && (
         <p className={`mt-1 text-xs ${cosmic ? "branch-hero-helper" : "text-ink-600"}`}>{helperText}</p>

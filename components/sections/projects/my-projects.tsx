@@ -4,21 +4,24 @@ import { FolderKanban } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Reveal } from "@/components/ui/reveal";
 import { ProjectCard, type ProjectCardProject } from "./project-card";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface MyProjectsProps {
   projects: ProjectCardProject[];
 }
 
 export function MyProjects({ projects }: MyProjectsProps) {
+  const { t } = useTranslation();
+
   if (projects.length === 0) {
     return (
       <EmptyState
         icon={<FolderKanban size={32} />}
-        title="No projects yet"
-        description="You haven't joined or created any projects yet."
-        eyebrow="Your workspace"
+        title={t("projects.emptyTitle")}
+        description={t("projects.emptySub")}
+        eyebrow={t("projects.workspace")}
         actionHref="/projects"
-        actionLabel="Explore Projects"
+        actionLabel={t("projects.exploreProjects")}
       />
     );
   }
@@ -28,7 +31,7 @@ export function MyProjects({ projects }: MyProjectsProps) {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Your Projects
+            {t("projects.myEyebrow")}
           </div>
         </Reveal>
 
@@ -37,7 +40,7 @@ export function MyProjects({ projects }: MyProjectsProps) {
             id="my-projects-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            My Projects
+            {t("projects.myTitle")}
           </h2>
         </Reveal>
 

@@ -6,6 +6,7 @@ import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Clock, Trash2, ArrowUpRight, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/components/translation/translation-provider";
 import { deleteLab } from "@/actions/academy-labs.actions";
 import type { LabRow } from "@/lib/validations/lab.schema";
 import { labTypeMeta, difficultyClass } from "./lab-type-meta";
@@ -19,6 +20,7 @@ interface LabCardProps {
 
 export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
   const meta = labTypeMeta(lab.type);
@@ -48,7 +50,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
         setConfirming(false);
         return;
       }
-      toast.success("Lab deleted");
+      toast.success(t("academy.labDeleted"));
       router.refresh();
     });
   }
@@ -82,7 +84,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
           <div className="flex items-center gap-2">
             {!lab.is_published ? (
               <span
-                title="Not published"
+                title={t("academy.notPublished")}
                 className="flex h-7 w-7 items-center justify-center rounded-full border border-border-strong text-ink-500"
               >
                 <EyeOff size={13} />
@@ -101,7 +103,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
           {lab.estimated_duration_minutes ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-400">
               <Clock size={11} />
-              {lab.estimated_duration_minutes} min
+              {lab.estimated_duration_minutes} {t("academy.minuteShort")}
             </span>
           ) : null}
           <span className={cn("inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium capitalize", difficultyClass(lab.difficulty))}>
@@ -136,8 +138,8 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
                 type="button"
                 onClick={handleDelete}
                 disabled={isPending}
-                aria-label="Delete lab"
-                title={confirming ? "Click again to confirm" : "Delete lab"}
+                aria-label={t("academy.deleteLabAria")}
+                title={confirming ? t("academy.clickAgain") : t("academy.deleteLabAria")}
                 className={cn(
                   "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
                   confirming
@@ -152,7 +154,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
               href={`/academy/labs/${lab.id}`}
               className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"
             >
-              Open
+              {t("academy.open")}
               <ArrowUpRight size={13} />
             </Link>
           </div>

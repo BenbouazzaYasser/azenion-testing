@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { ProjectCard, type ProjectCardProject } from "./project-card";
 import { filterAndSort, type SortKey, SORT_OPTIONS } from "@/lib/filter-sort";
+import { useTranslation } from "@/components/translation/translation-provider";
+import type { DictKey } from "@/lib/translation/types";
 
 interface AllProjectsProps {
   initialProjects: ProjectCardProject[];
@@ -15,7 +17,15 @@ interface AllProjectsProps {
   categories: { id: string; name: string; slug: string }[];
 }
 
+const SORT_LABEL_KEYS: Record<SortKey, DictKey> = {
+  newest: "teams.sortNewest",
+  oldest: "teams.sortOldest",
+  members: "teams.sortMembers",
+  alpha: "teams.sortAlpha",
+};
+
 export function AllProjects({ initialProjects, technologies, categories }: AllProjectsProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
   const [techFilter, setTechFilter] = useState<string[]>([]);
@@ -63,7 +73,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Projects
+            {t("projects.allEyebrow")}
           </div>
         </Reveal>
 
@@ -72,7 +82,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
             id="all-projects-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Explore projects
+            {t("projects.allTitle")}
           </h2>
         </Reveal>
 
@@ -83,7 +93,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
                 <input
                   type="text"
-                  placeholder="Search projects..."
+                  placeholder={t("projects.searchProjects")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full rounded-xl bg-surface px-11 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input"
@@ -99,7 +109,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value} className="bg-surface text-ink-50">
-                      {opt.label}
+                      {t(SORT_LABEL_KEYS[opt.value])}
                     </option>
                   ))}
                 </select>
@@ -153,18 +163,18 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
               <div>
                 <p className="text-base font-medium text-ink-200">
                   {search || techFilter.length > 0 || categoryFilter.length > 0
-                    ? "No projects match your filters"
-                    : "No projects have been created yet"}
+                    ? t("projects.noMatch")
+                    : t("projects.noneYet")}
                 </p>
                 <p className="mt-1.5 text-sm text-ink-600">
                   {search || techFilter.length > 0 || categoryFilter.length > 0
-                    ? "Try adjusting your search or filters."
-                    : "Create the first project and start building the Azenion network."}
+                    ? t("projects.noMatchSub")
+                    : t("projects.noneYetSub")}
                 </p>
               </div>
               {!search && techFilter.length === 0 && categoryFilter.length === 0 ? (
                 <Button asChild variant="secondary" size="sm" className="mt-2">
-                  <Link href="/projects/create">Create the first project</Link>
+                  <Link href="/projects/create">{t("projects.createFirst")}</Link>
                 </Button>
               ) : null}
             </div>

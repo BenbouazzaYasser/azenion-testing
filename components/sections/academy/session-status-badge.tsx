@@ -1,22 +1,23 @@
 import { cn } from "@/lib/utils";
+import { serverT } from "@/lib/translation/server";
 import type { LiveSessionStatus } from "@/lib/validations/live-session.schema";
 
 const STATUS_CONFIG: Record<
   LiveSessionStatus,
-  { label: string; className: string; pulse?: boolean; dot?: boolean }
+  { labelKey: "academy.statusLive" | "academy.statusUpcoming" | "academy.statusEnded"; className: string; pulse?: boolean; dot?: boolean }
 > = {
   LIVE: {
-    label: "Live Now",
+    labelKey: "academy.statusLive",
     className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
     pulse: true,
   },
   UPCOMING: {
-    label: "Upcoming",
+    labelKey: "academy.statusUpcoming",
     className: "border-violet-500/30 bg-violet-500/10 text-violet-300",
     dot: true,
   },
   ENDED: {
-    label: "Ended",
+    labelKey: "academy.statusEnded",
     className: "border-ink-700/50 bg-surface text-ink-500",
   },
 };
@@ -39,7 +40,7 @@ export function SessionStatusBadge({ status }: { status: LiveSessionStatus }) {
       ) : config.dot ? (
         <span className="h-1.5 w-1.5 rounded-full bg-current" />
       ) : null}
-      {config.label}
+      {config.labelKey ? serverT(config.labelKey) : null}
     </span>
   );
 }

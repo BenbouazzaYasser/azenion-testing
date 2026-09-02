@@ -11,54 +11,52 @@ import {
 
 import { Reveal } from "@/components/ui/reveal";
 import { DashboardButton } from "@/components/shared/dashboard-button";
+import { serverT } from "@/lib/translation/server";
+import type { DictKey } from "@/lib/translation/types";
 
-const PILLARS = [
+const PILLARS: { icon: typeof Lightbulb; titleKey: DictKey; descKey: DictKey }[] = [
   {
     icon: GraduationCap,
-    title: "Learn",
-    description: "Grow through courses, sessions and shared knowledge.",
+    titleKey: "home.pillarLearn",
+    descKey: "home.pillarLearnDesc",
   },
   {
     icon: Users,
-    title: "Collaborate",
-    description: "Build with people who push your work further.",
+    titleKey: "home.pillarCollaborate",
+    descKey: "home.pillarCollaborateDesc",
   },
   {
     icon: Lightbulb,
-    title: "Innovate",
-    description: "Turn ideas into real products and lasting projects.",
+    titleKey: "home.pillarInnovate",
+    descKey: "home.pillarInnovateDesc",
   },
   {
     icon: TrendingUp,
-    title: "Elevate",
-    description: "Rise together and carry the network forward.",
+    titleKey: "home.pillarElevate",
+    descKey: "home.pillarElevateDesc",
   },
 ];
 
-const FOCUS_CARDS = [
+const FOCUS_CARDS: { icon: typeof Network; titleKey: DictKey; descKey: DictKey }[] = [
   {
     icon: Network,
-    title: "A network, not a platform",
-    description:
-      "Azenion is a living community. When you join, you plug into a web of ambitious people across branches, teams and projects — not a catalog of courses.",
+    titleKey: "home.focusNetwork",
+    descKey: "home.focusNetworkDesc",
   },
   {
     icon: HeartHandshake,
-    title: "Collaboration over competition",
-    description:
-      "We believe exceptional people are built together. Azenion rewards sharing, mentoring and building in the open instead of competing in silence.",
+    titleKey: "home.focusCollaboration",
+    descKey: "home.focusCollaborationDesc",
   },
   {
     icon: Rocket,
-    title: "For ambitious students",
-    description:
-      "Built for students who refuse to wait to be discovered. The network exists to connect you with the people and opportunities that accelerate your growth.",
+    titleKey: "home.focusStudents",
+    descKey: "home.focusStudentsDesc",
   },
   {
     icon: Layers,
-    title: "One continuous journey",
-    description:
-      "Learn a skill, find your community, collaborate on a project, and turn it into impact. Every part of Azenion feeds the next.",
+    titleKey: "home.focusJourney",
+    descKey: "home.focusJourneyDesc",
   },
 ];
 
@@ -72,29 +70,26 @@ export function WhyAzenion() {
             <div className="lg:sticky lg:top-32">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
                 <Network size={13} />
-                Why Azenion
+                {serverT("home.whyEyebrow")}
               </span>
 
               <h2
                 id="why-azenion-heading"
                 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[2.9rem]"
               >
-                Not just another learning platform.
-                <span className="text-accent-400"> A network.</span>
+                {serverT("home.whyTitle")}
+                <span className="text-accent-400">{serverT("home.whyTitleAccent")}</span>
               </h2>
 
               <p className="mt-5 max-w-xl text-[1.02rem] leading-8 text-ink-400">
-                Most platforms give you content and leave you alone. Azenion gives
-                you a community — ambitious students connecting through branches,
-                teams and projects, pushing each other to build meaningful work.
+                {serverT("home.whyParaA")}
               </p>
 
               <p className="mt-4 max-w-xl text-[1.02rem] leading-8 text-ink-400">
-                The belief is simple: collaboration beats competition, and talent
-                grows fastest when it is connected to other talent.
+                {serverT("home.whyParaB")}
               </p>
 
-              <DashboardButton size="lg" className="mt-8" label="Join the movement" />
+              <DashboardButton size="lg" className="mt-8" label={serverT("home.joinMovement")} />
             </div>
           </Reveal>
 
@@ -103,7 +98,7 @@ export function WhyAzenion() {
             {FOCUS_CARDS.map((card, i) => {
               const Icon = card.icon;
               return (
-                <Reveal key={card.title} delay={i * 80} className="h-full">
+                <Reveal key={card.titleKey} delay={i * 80} className="h-full">
                   <div className="group relative h-full overflow-hidden rounded-[1.6rem] card-surface-soft p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:card-surface hover:shadow-glow-sm sm:p-7">
                     <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[1.6rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.07),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
@@ -111,10 +106,10 @@ export function WhyAzenion() {
                       <Icon size={20} strokeWidth={1.75} />
                     </div>
                     <h3 className="relative mt-5 text-[1.05rem] font-semibold text-ink-50">
-                      {card.title}
+                      {serverT(card.titleKey)}
                     </h3>
                     <p className="relative mt-2.5 text-sm leading-relaxed text-ink-400">
-                      {card.description}
+                      {serverT(card.descKey)}
                     </p>
                   </div>
                 </Reveal>
@@ -132,7 +127,7 @@ export function WhyAzenion() {
               const Icon = pillar.icon;
               return (
                 <div
-                  key={pillar.title}
+                  key={pillar.titleKey}
                   className="group relative overflow-hidden rounded-[1.4rem] card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:card-surface hover:shadow-glow-sm"
                 >
                   <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[1.6rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.07),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
@@ -145,9 +140,9 @@ export function WhyAzenion() {
                       <Icon size={17} strokeWidth={1.75} />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[15px] font-semibold text-ink-50">{pillar.title}</p>
+                      <p className="text-[15px] font-semibold text-ink-50">{serverT(pillar.titleKey)}</p>
                       <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ink-500">
-                        {pillar.description}
+                        {serverT(pillar.descKey)}
                       </p>
                     </div>
                   </div>

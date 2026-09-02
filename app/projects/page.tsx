@@ -16,6 +16,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getProjectLifecycleStatus } from "@/lib/lifecycle";
 import { resolveMediaValue } from "@/lib/media";
+import { serverT } from "@/lib/translation/server";
 
 export const metadata: Metadata = {
   title: "Projects | Azenion — The Limitless Network",
@@ -249,11 +250,11 @@ export default async function ProjectsPage() {
         {user && myProjects.length === 0 ? (
           <EmptyState
             icon={<Rocket size={32} />}
-            title="No projects yet"
-            description="You haven't joined or created any projects yet."
-            eyebrow="Your workspace"
+            title={serverT("projects.emptyTitle")}
+            description={serverT("projects.emptySub")}
+            eyebrow={serverT("projects.workspace")}
             scrollToId="projects"
-            actionLabel="Explore Projects"
+            actionLabel={serverT("projects.exploreProjects")}
           />
         ) : (
           <ProjectsHero />

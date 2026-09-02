@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/navbar";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { getUserServers } from "@/data/servers";
+import { serverT } from "@/lib/translation/server";
 
 export const metadata: Metadata = {
   title: "Servers | Azenion — The Limitless Network",
@@ -13,9 +14,9 @@ export const metadata: Metadata = {
 };
 
 const KIND_LABEL = {
-  team: "Team server",
-  branch: "Branch server",
-  user: "Community server",
+  team: "servers.kindTeam",
+  branch: "servers.kindBranch",
+  user: "servers.kindCommunity",
 } as const;
 
 export default async function ServersPage() {
@@ -36,10 +37,9 @@ export default async function ServersPage() {
         <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-ink-50">Servers</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-ink-50">{serverT("servers.title")}</h1>
               <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-400">
-                Every team and branch gets its own server automatically — you&apos;re added to
-                the channels when you join. You can also create your own independent server.
+                {serverT("servers.welcomeSub")}
               </p>
             </div>
             <Link
@@ -47,7 +47,7 @@ export default async function ServersPage() {
               className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white shadow-glow transition-all duration-300 hover:bg-accent/90"
             >
               <Plus size={16} />
-              Create server
+              {serverT("servers.createServer")}
             </Link>
           </div>
 
@@ -56,9 +56,9 @@ export default async function ServersPage() {
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface card-surface-soft text-accent-300 shadow-input">
                 <Server size={24} />
               </div>
-              <p className="mt-4 text-lg font-semibold text-ink-50">No servers yet</p>
+              <p className="mt-4 text-lg font-semibold text-ink-50">{serverT("servers.noneYet")}</p>
               <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-ink-500">
-                Join a team or branch to get added to its server automatically, or create your own.
+                {serverT("servers.noneYetSub")}
               </p>
             </div>
           ) : (
@@ -84,7 +84,7 @@ export default async function ServersPage() {
                     <p className="truncate text-sm font-semibold text-ink-50">{server.name}</p>
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-500">
                       <Hash size={11} className="shrink-0" />
-                      {KIND_LABEL[server.kind]}
+                      {serverT(KIND_LABEL[server.kind])}
                     </p>
                   </div>
                 </Link>

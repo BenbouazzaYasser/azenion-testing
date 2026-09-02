@@ -4,6 +4,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { FeedCard } from "@/components/feed/feed-card";
 import type { FeedItem } from "@/actions/feed.actions";
+import { serverT } from "@/lib/translation/server";
 
 interface FeedPreviewProps {
   items: FeedItem[];
@@ -20,20 +21,21 @@ export function FeedPreview({ items }: FeedPreviewProps) {
             <div className="max-w-2xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
                 <Newspaper size={13} />
-                The Feed
+                {serverT("home.feedPreviewEyebrow")}
               </span>
               <h2
                 id="feed-preview-heading"
                 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[2.9rem]"
               >
-                What&apos;s happening <span className="text-accent-400">across the network.</span>              </h2>
+                {serverT("home.feedPreviewTitle")}<span className="text-accent-400">{serverT("home.feedPreviewAccent")}</span>
+              </h2>
               <p className="mt-5 text-[1.02rem] leading-relaxed text-ink-400">
-                Updates from teams, projects, branches and members — all in one place.
+                {serverT("home.feedPreviewSub")}
               </p>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
               <a href="/feed">
-                Open the feed
+                {serverT("home.openFeed")}
                 <ArrowUpRight size={16} />
               </a>
             </Button>
@@ -54,9 +56,9 @@ export function FeedPreview({ items }: FeedPreviewProps) {
               <span className="flex h-12 w-12 items-center justify-center rounded-full border border-accent-400/30 bg-accent/[0.08] text-accent-300">
                 <Newspaper size={20} />
               </span>
-              <p className="text-lg font-semibold text-ink-50">The feed is warming up</p>
+              <p className="text-lg font-semibold text-ink-50">{serverT("home.feedPreviewEmpty")}</p>
               <p className="max-w-md text-sm leading-relaxed text-ink-400">
-                Once teams and branches start posting updates, their activity will appear here.
+                {serverT("home.feedPreviewEmptySub")}
               </p>
             </div>
           </Reveal>

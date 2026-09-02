@@ -18,6 +18,7 @@ import {
   createFeedPost,
   uploadFeedPostMedia,
 } from "@/actions/feed.actions";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface FeedComposerProps {
   onPosted?: (postId: string) => void;
@@ -66,11 +67,12 @@ function formatVideoDuration(seconds: number): string {
 export function FeedComposer({
   onPosted,
   maxMedia = 6,
-  placeholder = "Share an update with Azenion\u2026",
+  placeholder,
   disabled = false,
   className,
 }: FeedComposerProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
@@ -221,7 +223,7 @@ export function FeedComposer({
       <div className="flex items-center gap-2">
         <Sparkles size={16} className="shrink-0 text-accent-400" />
         <h3 className="text-sm font-medium text-ink-300">
-          Share something with Azenion
+          {t("feed.composerHeadline")}
         </h3>
       </div>
 
@@ -232,7 +234,7 @@ export function FeedComposer({
             <button
               type="button"
               onClick={() => setError(null)}
-              aria-label="Dismiss error"
+              aria-label={t("feed.composerDismissError")}
               className="shrink-0 text-rose-400/70 transition-colors hover:text-rose-300"
             >
               <X size={14} />
@@ -246,7 +248,7 @@ export function FeedComposer({
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Headline (optional)\u2026"
+          placeholder={t("feed.composerHeadlinePlaceholder")}
           maxLength={MAX_TITLE_LENGTH}
           disabled={submitting || disabled}
           className={inputClass}
@@ -260,7 +262,7 @@ export function FeedComposer({
               setBody(e.target.value);
               autosize(e.target);
             }}
-            placeholder={placeholder}
+            placeholder={placeholder ?? t("feed.composePlaceholder")}
             rows={3}
             maxLength={MAX_BODY_LENGTH}
             disabled={submitting || disabled}
@@ -358,10 +360,10 @@ export function FeedComposer({
           onClick={() => fileInputRef.current?.click()}
           disabled={submitting || disabled || media.length >= maxMedia}
           className="inline-flex h-9 items-center gap-1.5 text-sm text-ink-400 transition-colors hover:text-accent-400 disabled:pointer-events-none disabled:opacity-40"
-          title="Images (PNG, JPEG, WebP up to 2MB) or videos (MP4, WebM, MOV up to 50MB)"
+          title={t("feed.composerMediaTitle")}
         >
           <ImagePlus size={16} />
-          Add media
+          {t("feed.composerAddMedia")}
           {media.length > 0 ? (
             <span className="rounded-full bg-surface px-1.5 py-0.5 text-[0.68rem] font-medium text-ink-400">
               {media.length}/{maxMedia}
@@ -382,13 +384,13 @@ export function FeedComposer({
               {uploadStep
                 ? uploadStep.total > 1
                   ? `Uploading ${uploadStep.index}/${uploadStep.total}`
-                  : "Uploading media\u2026"
-                : "Posting\u2026"}
+                  : t("feed.composerUploadingMedia")
+                : t("feed.composerSubmitting")}
             </>
           ) : (
             <>
               <Send size={14} />
-              Post
+              {t("feed.composerSubmit")}
             </>
           )}
         </Button>

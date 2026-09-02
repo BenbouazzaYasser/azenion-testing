@@ -8,6 +8,7 @@ import {
   deleteTeamUpdate,
   toggleTeamFeedPin,
 } from "@/actions/team.actions";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface TeamFeedProps {
   teamId: string;
@@ -19,17 +20,6 @@ interface TeamFeedProps {
   canPin: boolean;
 }
 
-const teamLabels: FeedLabels = {
-  badge: "Updates",
-  heading: "Team Feed",
-  createPlaceholder: "What\u2019s new with the team?",
-  emptyTitle: "No updates have been shared yet.",
-  emptyMemberDescription: "Be the first member to post an update.",
-  emptyNonMemberDescription: "Check back later for updates.",
-  entityIdField: "team_id",
-  interactionType: "team_update",
-};
-
 export function TeamFeed({
   teamId,
   teamSlug,
@@ -39,6 +29,19 @@ export function TeamFeed({
   canPost,
   canPin,
 }: TeamFeedProps) {
+  const { t } = useTranslation();
+
+  const teamLabels: FeedLabels = {
+    badge: t("teams.feedBadge"),
+    heading: t("teams.feedHeading"),
+    createPlaceholder: t("teams.feedPlaceholder"),
+    emptyTitle: t("teams.feedEmptyTitle"),
+    emptyMemberDescription: t("teams.feedEmptyMember"),
+    emptyNonMemberDescription: t("teams.feedEmptyVisitor"),
+    entityIdField: "team_id",
+    interactionType: "team_update",
+  };
+
   return (
     <EntityUpdatesFeed
       entityId={teamId}

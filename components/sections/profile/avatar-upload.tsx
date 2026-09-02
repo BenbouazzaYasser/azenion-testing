@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { uploadAvatar } from "@/actions/profile.actions";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface AvatarUploadProps {
   avatarUrl: string | null;
@@ -11,6 +12,7 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ avatarUrl, username }: AvatarUploadProps) {
+  const { t } = useTranslation();
   const [preview, setPreview] = useState<string | null>(avatarUrl);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,12 +25,12 @@ export function AvatarUpload({ avatarUrl, username }: AvatarUploadProps) {
     setError(null);
 
     if (file.size > 2 * 1024 * 1024) {
-      setError("File too large. Max 2MB.");
+      setError(t("settings.avatarTooLarge"));
       return;
     }
 
     if (!["image/png", "image/jpeg", "image/webp", "image/svg+xml"].includes(file.type)) {
-      setError("Use SVG, PNG, JPEG, or WebP.");
+      setError(t("settings.avatarType"));
       return;
     }
 

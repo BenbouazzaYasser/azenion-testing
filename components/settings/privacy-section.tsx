@@ -7,23 +7,23 @@ import { updateSettings } from "@/actions/settings.actions";
 const PRIVACY_ITEMS: PrefItem[] = [
   {
     key: "show_profile_publicly",
-    label: "Public profile",
-    description: "Let others view your profile on the network.",
+    labelKey: "settings.privacyPublicProfile",
+    descriptionKey: "settings.privacyPublicProfileDesc",
   },
   {
     key: "search_visibility",
-    label: "Search visibility",
-    description: "Appear in network and global search results.",
+    labelKey: "settings.privacySearchVisibility",
+    descriptionKey: "settings.privacySearchVisibilityDesc",
   },
   {
     key: "allow_dms",
-    label: "Allow DMs",
-    description: "Let other members start conversations with you.",
+    labelKey: "settings.privacyAllowDms",
+    descriptionKey: "settings.privacyAllowDmsDesc",
   },
   {
     key: "show_activity",
-    label: "Show activity",
-    description: "Display your recent activity on your profile.",
+    labelKey: "settings.privacyShowActivity",
+    descriptionKey: "settings.privacyShowActivityDesc",
   },
 ];
 

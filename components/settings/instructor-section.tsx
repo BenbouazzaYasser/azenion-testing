@@ -9,7 +9,11 @@ import {
 import type { InstructorVerificationRequest } from "@/actions/instructor-verification.actions";
 import type { EducationEntry, CertificationEntry } from "@/lib/validations/instructor-verification.schema";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "@/components/translation/translation-provider";
+import type { DictKey } from "@/lib/translation/types";
 
 const emptyEducation: EducationEntry = {
   institution: "",
@@ -28,6 +32,7 @@ const emptyCertification: CertificationEntry = {
 };
 
 export function InstructorSection() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -142,7 +147,7 @@ export function InstructorSection() {
       setError(result.error);
       setSubmitting(false);
     } else {
-      toast.success("Verification request submitted! We'll review it shortly.");
+      toast.success(t("settings.instructorSubmitToast"));
       router.refresh();
       const verificationResult = await getMyInstructorVerification();
       if (!verificationResult.error) {
@@ -178,9 +183,9 @@ export function InstructorSection() {
             />
           </svg>
           <div>
-            <h3 className="text-lg font-semibold text-success">You&apos;re a Verified Instructor!</h3>
+            <h3 className="text-lg font-semibold text-success">{t("settings.instructorVerifiedHeading")}</h3>
             <p className="mt-1 text-sm text-ink-300">
-              You can now create courses, labs, and host live sessions.
+              {t("settings.instructorVerifiedDesc")}
             </p>
           </div>
         </div>
@@ -189,62 +194,81 @@ export function InstructorSection() {
   }
 
   if (request) {
-    const statusConfig = {
+    const statusConfig: Record<
+      string,
+      {
+        icon: string;
+        titleKey: DictKey;
+        descriptionKey: DictKey;
+        borderClass: string;
+        bgClass: string;
+        textClass: string;
+      }
+    > = {
       pending: {
         icon: "⏳",
-        title: "Application Under Review",
-        description: "Your application is being reviewed by our team.",
+        titleKey: "settings.instructorStatusPending",
+        descriptionKey: "settings.instructorStatusPendingDesc",
         borderClass: "border-warning/20",
         bgClass: "bg-warning/5",
         textClass: "text-warning",
       },
       approved: {
         icon: "✓",
-        title: "Application Approved!",
-        description: "Your instructor role will be activated shortly.",
+        titleKey: "settings.instructorStatusApproved",
+        descriptionKey: "settings.instructorStatusApprovedDesc",
         borderClass: "border-success/20",
         bgClass: "bg-success/5",
         textClass: "text-success",
       },
       rejected: {
         icon: "✗",
-        title: "Application Not Approved",
-        description: "Your application was not approved at this time.",
+        titleKey: "settings.instructorStatusRejected",
+        descriptionKey: "settings.instructorStatusRejectedDesc",
         borderClass: "border-danger/20",
         bgClass: "bg-danger/5",
         textClass: "text-danger",
       },
       needs_info: {
         icon: "ℹ",
-        title: "Additional Information Needed",
-        description: "Please review the feedback and consider resubmitting.",
+        titleKey: "settings.instructorStatusNeedsInfo",
+        descriptionKey: "settings.instructorStatusNeedsInfoDesc",
         borderClass: "border-info/20",
         bgClass: "bg-info/5",
         textClass: "text-info",
       },
     };
 
-    const config = statusConfig[request.status];
+    const config = statusConfig[request.status]!;
 
     return (
       <div className="space-y-6">
+        <div className="flex justify-end">
+          <Link
+            href="/settings/instructor"
+            className="inline-flex items-center gap-1 text-sm font-medium text-accent transition-colors hover:text-accent-300"
+          >
+            {t("settings.openApplication")}
+            <ArrowUpRight size={14} />
+          </Link>
+        </div>
         <div className={`rounded-lg border ${config.borderClass} ${config.bgClass} p-6`}>
           <div className="flex items-start gap-3">
             <span className="text-2xl">{config.icon}</span>
             <div className="flex-1">
-              <h3 className={`text-lg font-semibold ${config.textClass}`}>{config.title}</h3>
-              <p className="mt-1 text-sm text-ink-400">{config.description}</p>
+              <h3 className={`text-lg font-semibold ${config.textClass}`}>{t(config.titleKey)}</h3>
+              <p className="mt-1 text-sm text-ink-400">{t(config.descriptionKey)}</p>
             </div>
           </div>
 
           <dl className="mt-6 space-y-3 border-t border-ink-800 pt-6">
             <div>
-              <dt className="text-xs font-medium uppercase text-ink-500">Full Name</dt>
+              <dt className="text-xs font-medium uppercase text-ink-500">{t("settings.fullName")}</dt>
               <dd className="mt-1 text-ink-50">{request.full_name}</dd>
             </div>
 
             <div>
-              <dt className="text-xs font-medium uppercase text-ink-500">Expertise Areas</dt>
+              <dt className="text-xs font-medium uppercase text-ink-500">{t("settings.instructorExpertise")}</dt>
               <dd className="mt-2 flex flex-wrap gap-2">
                 {request.expertise_areas.map((area) => (
                   <span
@@ -259,17 +283,17 @@ export function InstructorSection() {
 
             {request.education && request.education.length > 0 && (
               <div>
-                <dt className="text-xs font-medium uppercase text-ink-500">Education</dt>
+                <dt className="text-xs font-medium uppercase text-ink-500">{t("settings.instructorEducation")}</dt>
                 <dd className="mt-2 space-y-1">
                   {request.education.map((edu, i) => (
                     <p key={i} className="text-sm text-ink-300">
                       {edu.self_taught ? (
-                        "Self-taught"
+                        t("settings.instructorSelfTaught")
                       ) : (
                         <>
                           {edu.degree && <>{edu.degree} in {edu.field && <>{edu.field} — </>}</>}
                           {edu.institution}
-                          {edu.start_year && <> ({edu.start_year}{edu.end_year ? ` – ${edu.end_year}` : " – Present"})</>}
+                          {edu.start_year && <> ({edu.start_year}{edu.end_year ? ` – ${edu.end_year}` : ` – ${t("settings.instructorPresent")}`})</>}
                         </>
                       )}
                     </p>
@@ -280,7 +304,7 @@ export function InstructorSection() {
 
             {request.certifications && request.certifications.length > 0 && (
               <div>
-                <dt className="text-xs font-medium uppercase text-ink-500">Certifications</dt>
+                <dt className="text-xs font-medium uppercase text-ink-500">{t("settings.instructorCertifications")}</dt>
                 <dd className="mt-2 space-y-1">
                   {request.certifications.map((cert, i) => (
                     <p key={i} className="text-sm text-ink-300">
@@ -295,7 +319,7 @@ export function InstructorSection() {
 
             {request.review_notes && (
               <div className="mt-4 rounded-lg border border-ink-700 bg-void-800/50 p-4">
-                <dt className="text-xs font-medium uppercase text-ink-500">Reviewer Notes</dt>
+                <dt className="text-xs font-medium uppercase text-ink-500">{t("settings.instructorReviewerNotes")}</dt>
                 <dd className="mt-2 text-sm text-ink-300">{request.review_notes}</dd>
               </div>
             )}
@@ -306,7 +330,17 @@ export function InstructorSection() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <Link
+          href="/settings/instructor"
+          className="inline-flex items-center gap-1 text-sm font-medium text-accent transition-colors hover:text-accent-300"
+        >
+          {t("settings.openApplication")}
+          <ArrowUpRight size={14} />
+        </Link>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="rounded-lg border border-danger/20 bg-danger/5 p-4 text-sm text-danger">
           {error}
@@ -314,12 +348,12 @@ export function InstructorSection() {
       )}
 
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
-        <h3 className="mb-4 text-lg font-semibold text-ink-50">Basic Information</h3>
+        <h3 className="mb-4 text-lg font-semibold text-ink-50">{t("settings.instructorBasicInfo")}</h3>
 
         <div className="space-y-4">
           <div>
             <label htmlFor="full_name" className="mb-2 block text-sm font-medium text-ink-200">
-              Full Name *
+              {t("settings.instructorFullNameRequired")}
             </label>
             <input
               id="full_name"
@@ -333,7 +367,7 @@ export function InstructorSection() {
 
           <div>
             <label htmlFor="bio" className="mb-2 block text-sm font-medium text-ink-200">
-              Bio *
+              {t("settings.instructorBioRequired")}
             </label>
             <textarea
               id="bio"
@@ -341,14 +375,14 @@ export function InstructorSection() {
               rows={4}
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              placeholder="Tell us about yourself and your teaching philosophy..."
+              placeholder={t("settings.instructorBioPlaceholder")}
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none"
             />
           </div>
 
           <div>
             <label className="mb-2 block text-sm font-medium text-ink-200">
-              Expertise Areas * (at least 1)
+              {t("settings.instructorExpertiseRequiredHint")}
             </label>
             <div className="flex gap-2">
               <input
@@ -369,7 +403,7 @@ export function InstructorSection() {
                 onClick={handleAddExpertise}
                 className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-500"
               >
-                Add
+                {t("settings.instructorAdd")}
               </button>
             </div>
             {formData.expertise_areas.length > 0 && (
@@ -398,14 +432,14 @@ export function InstructorSection() {
               htmlFor="teaching_experience"
               className="mb-2 block text-sm font-medium text-ink-200"
             >
-              Teaching Experience (optional)
+              {t("settings.instructorTeachingOptional")}
             </label>
             <textarea
               id="teaching_experience"
               rows={3}
               value={formData.teaching_experience}
               onChange={(e) => setFormData({ ...formData, teaching_experience: e.target.value })}
-              placeholder="Describe your teaching background..."
+              placeholder={t("settings.instructorTeachingPlaceholder")}
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none"
             />
           </div>
@@ -414,18 +448,18 @@ export function InstructorSection() {
 
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-ink-50">Education</h3>
+          <h3 className="text-lg font-semibold text-ink-50">{t("settings.instructorEducation")}</h3>
           <button
             type="button"
             onClick={handleAddEducation}
             className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-500"
           >
-            + Add
+            {t("settings.instructorAddMore")}
           </button>
         </div>
 
         {formData.education.length === 0 ? (
-          <p className="text-sm text-ink-500">No education entries added yet.</p>
+          <p className="text-sm text-ink-500">{t("settings.instructorNoEducation")}</p>
         ) : (
           <div className="space-y-4">
             {formData.education.map((edu, index) => (
@@ -449,7 +483,7 @@ export function InstructorSection() {
                       onChange={(e) => handleUpdateEducation(index, "self_taught", e.target.checked)}
                       className="rounded border-ink-600 bg-void-800 text-accent focus:ring-accent"
                     />
-                    Self-taught
+                    {t("settings.instructorSelfTaught")}
                   </label>
                 </div>
 
@@ -457,7 +491,7 @@ export function InstructorSection() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="sm:col-span-2">
                       <label className="mb-1 block text-xs font-medium text-ink-400">
-                        Institution *
+                        {t("settings.instructorInstitutionRequired")}
                       </label>
                       <input
                         type="text"
@@ -468,7 +502,7 @@ export function InstructorSection() {
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-ink-400">Degree</label>
+                      <label className="mb-1 block text-xs font-medium text-ink-400">{t("settings.instructorDegree")}</label>
                       <input
                         type="text"
                         value={edu.degree ?? ""}
@@ -479,7 +513,7 @@ export function InstructorSection() {
                     </div>
                     <div>
                       <label className="mb-1 block text-xs font-medium text-ink-400">
-                        Field of Study
+                        {t("settings.instructorFieldStudy")}
                       </label>
                       <input
                         type="text"
@@ -491,7 +525,7 @@ export function InstructorSection() {
                     </div>
                     <div>
                       <label className="mb-1 block text-xs font-medium text-ink-400">
-                        Start Year
+                        {t("settings.instructorStartYear")}
                       </label>
                       <input
                         type="text"
@@ -504,7 +538,7 @@ export function InstructorSection() {
                     </div>
                     <div>
                       <label className="mb-1 block text-xs font-medium text-ink-400">
-                        End Year
+                        {t("settings.instructorEndYear")}
                       </label>
                       <input
                         type="text"
@@ -525,18 +559,18 @@ export function InstructorSection() {
 
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-ink-50">Certifications</h3>
+          <h3 className="text-lg font-semibold text-ink-50">{t("settings.instructorCertifications")}</h3>
           <button
             type="button"
             onClick={handleAddCertification}
             className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-500"
           >
-            + Add
+            {t("settings.instructorAddMore")}
           </button>
         </div>
 
         {formData.certifications.length === 0 ? (
-          <p className="text-sm text-ink-500">No certifications added yet.</p>
+          <p className="text-sm text-ink-500">{t("settings.instructorNoCertifications")}</p>
         ) : (
           <div className="space-y-4">
             {formData.certifications.map((cert, index) => (
@@ -555,7 +589,7 @@ export function InstructorSection() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="sm:col-span-2">
                     <label className="mb-1 block text-xs font-medium text-ink-400">
-                      Certification Name *
+                      {t("settings.instructorCertificationName")}
                     </label>
                     <input
                       type="text"
@@ -567,7 +601,7 @@ export function InstructorSection() {
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-ink-400">
-                      Issuing Organization
+                      {t("settings.instructorIssuingOrg")}
                     </label>
                     <input
                       type="text"
@@ -578,7 +612,7 @@ export function InstructorSection() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-ink-400">Year</label>
+                    <label className="mb-1 block text-xs font-medium text-ink-400">{t("settings.instructorYear")}</label>
                     <input
                       type="text"
                       value={cert.year ?? ""}
@@ -590,7 +624,7 @@ export function InstructorSection() {
                   </div>
                   <div className="sm:col-span-2">
                     <label className="mb-1 block text-xs font-medium text-ink-400">
-                      Credential URL (optional)
+                      {t("settings.instructorCredentialUrl")}
                     </label>
                     <input
                       type="url"
@@ -608,12 +642,12 @@ export function InstructorSection() {
       </div>
 
       <div className="rounded-lg border border-ink-800 bg-void-900/50 p-6">
-        <h3 className="mb-4 text-lg font-semibold text-ink-50">Links (Optional)</h3>
+        <h3 className="mb-4 text-lg font-semibold text-ink-50">{t("settings.instructorLinks")}</h3>
 
         <div className="space-y-4">
           <div>
             <label htmlFor="portfolio_url" className="mb-2 block text-sm font-medium text-ink-200">
-              Portfolio URL
+              {t("settings.instructorPortfolioUrl")}
             </label>
             <input
               id="portfolio_url"
@@ -660,8 +694,9 @@ export function InstructorSection() {
         disabled={submitting || formData.expertise_areas.length === 0}
         className="w-full rounded-lg bg-accent px-6 py-3 font-medium text-white hover:bg-accent-500 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {submitting ? "Submitting..." : "Submit Application"}
+        {submitting ? t("settings.instructorSubmitting") : t("settings.instructorSubmitApplication")}
       </button>
-    </form>
+      </form>
+    </div>
   );
 }

@@ -1,4 +1,5 @@
 import { Reveal } from "@/components/ui/reveal";
+import { serverT } from "@/lib/translation/server";
 import {
   ActivityRenderer,
   SUPPORTED_ACTIVITY_TYPES,
@@ -27,7 +28,7 @@ export function ProjectPageActivity({ activities }: ProjectPageActivityProps) {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Activity
+            {serverT("projects.activityEyebrow")}
           </div>
         </Reveal>
 
@@ -36,7 +37,7 @@ export function ProjectPageActivity({ activities }: ProjectPageActivityProps) {
             id="project-activity-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Recent activity
+            {serverT("projects.activityTitle")}
           </h2>
         </Reveal>
 

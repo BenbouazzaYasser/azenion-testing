@@ -4,21 +4,24 @@ import { Users } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Reveal } from "@/components/ui/reveal";
 import { TeamCard, type TeamCardTeam } from "./team-card";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface MyTeamsProps {
   teams: TeamCardTeam[];
 }
 
 export function MyTeams({ teams }: MyTeamsProps) {
+  const { t } = useTranslation();
+
   if (teams.length === 0) {
     return (
       <EmptyState
         icon={<Users size={32} />}
-        title="No teams yet"
-        description="You're not part of any teams yet."
-        eyebrow="Your workspace"
+        title={t("teams.noTeamsYet")}
+        description={t("teams.noTeamsDesc")}
+        eyebrow={t("teams.workspace")}
         actionHref="/teams"
-        actionLabel="Explore Teams"
+        actionLabel={t("teams.exploreTeams")}
       />
     );
   }
@@ -28,7 +31,7 @@ export function MyTeams({ teams }: MyTeamsProps) {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Your Teams
+            {t("teams.myTeamsEyebrow")}
           </div>
         </Reveal>
 
@@ -37,7 +40,7 @@ export function MyTeams({ teams }: MyTeamsProps) {
             id="my-teams-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            My Teams
+            {t("teams.myTeamsTitle")}
           </h2>
         </Reveal>
 

@@ -3,6 +3,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { SessionCard } from "./session-card";
 import { SessionFormDialog } from "./session-form-dialog";
+import { serverT } from "@/lib/translation/server";
 import type {
   LiveSessionWithManage,
   ManageableHostOption,
@@ -28,17 +29,16 @@ export function UpcomingSessions({ sessions, canCreate, hostOptions }: UpcomingS
           <div className="text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
               <CalendarClock size={12} />
-              Academy · Upcoming
+              {serverT("academy.upcomingEyebrow")}
             </span>
             <h2
               id="upcoming-sessions-heading"
               className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
             >
-              Upcoming <span className="text-accent-400">Sessions.</span>
+              {serverT("academy.upcomingH2")} <span className="text-accent-400">{serverT("academy.upcomingH2Accent")}</span>
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-balance text-[1.05rem] leading-relaxed text-ink-400">
-              Join live workshops, talks and deep dives — online and in person,
-              hosted by teams and branches across Azenion.
+              {serverT("academy.upcomingSub")}
             </p>
             {canCreate ? (
               <div className="mt-8 flex justify-center">
@@ -67,15 +67,14 @@ export function UpcomingSessions({ sessions, canCreate, hostOptions }: UpcomingS
                 <CalendarClock size={32} />
               </div>
               <h3 className="relative mt-8 text-2xl font-semibold text-ink-50 sm:text-3xl">
-                No live sessions scheduled.
+                {serverT("academy.noSessions")}
               </h3>
               <p className="relative mt-4 max-w-md text-balance text-[0.95rem] leading-relaxed text-ink-400">
-                New sessions are on the way. In the meantime, request the session
-                you want and we will bring it to life.
+                {serverT("academy.noSessionsSub")}
               </p>
               <div className="relative mt-8">
                 <Button asChild>
-                  <a href="#request-session">Request a Session</a>
+                  <a href="#request-session">{serverT("academy.requestSession")}</a>
                 </Button>
               </div>
             </div>

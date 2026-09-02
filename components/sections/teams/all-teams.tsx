@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { TeamCard, type TeamCardTeam } from "./team-card";
 import { filterAndSort, type SortKey, SORT_OPTIONS } from "@/lib/filter-sort";
+import { useTranslation } from "@/components/translation/translation-provider";
+import type { DictKey } from "@/lib/translation/types";
 
 interface Category {
   id: string;
@@ -20,7 +22,15 @@ interface AllTeamsProps {
   categories: Category[];
 }
 
+const SORT_LABEL_KEYS: Record<SortKey, DictKey> = {
+  newest: "teams.sortNewest",
+  oldest: "teams.sortOldest",
+  members: "teams.sortMembers",
+  alpha: "teams.sortAlpha",
+};
+
 export function AllTeams({ initialTeams, categories }: AllTeamsProps) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [sort, setSort] = useState<SortKey>("newest");
@@ -51,7 +61,7 @@ export function AllTeams({ initialTeams, categories }: AllTeamsProps) {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Teams
+            {t("teams.allEyebrow")}
           </div>
         </Reveal>
 
@@ -60,7 +70,7 @@ export function AllTeams({ initialTeams, categories }: AllTeamsProps) {
             id="all-teams-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Explore teams
+            {t("teams.allTitle")}
           </h2>
         </Reveal>
 
@@ -71,7 +81,7 @@ export function AllTeams({ initialTeams, categories }: AllTeamsProps) {
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
                 <input
                   type="text"
-                  placeholder="Search teams..."
+                  placeholder={t("teams.searchTeams")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full rounded-xl bg-surface px-11 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input"
@@ -87,7 +97,7 @@ export function AllTeams({ initialTeams, categories }: AllTeamsProps) {
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value} className="bg-surface text-ink-50">
-                      {opt.label}
+                      {t(SORT_LABEL_KEYS[opt.value])}
                     </option>
                   ))}
                 </select>
@@ -123,18 +133,18 @@ export function AllTeams({ initialTeams, categories }: AllTeamsProps) {
               <div>
                 <p className="text-base font-medium text-ink-200">
                   {search || categoryFilter.length > 0
-                    ? "No teams match your filters"
-                    : "No teams have been created yet"}
+                    ? t("teams.noMatch")
+                    : t("teams.noneYet")}
                 </p>
                 <p className="mt-1.5 text-sm text-ink-600">
                   {search || categoryFilter.length > 0
-                    ? "Try adjusting your search or filters."
-                    : "Create the first team and start building the Azenion network."}
+                    ? t("teams.noMatchSub")
+                    : t("teams.noneYetSub")}
                 </p>
               </div>
               {!search && categoryFilter.length === 0 ? (
                 <Button asChild variant="secondary" size="sm" className="mt-2">
-                  <Link href="/teams/create">Create the first team</Link>
+                  <Link href="/teams/create">{t("teams.createFirst")}</Link>
                 </Button>
               ) : null}
             </div>

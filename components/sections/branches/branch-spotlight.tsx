@@ -1,3 +1,5 @@
+"use client";
+
 import { Calendar, MapPin, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 
@@ -5,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Branch } from "@/data/branches";
 import { BranchJoinButton } from "./branch-join-button";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface BranchSpotlightProps {
   branch: Branch;
@@ -16,6 +19,7 @@ interface BranchSpotlightProps {
 }
 
 export function BranchSpotlight({ branch, index, reversed = false, isMember = false, branchId }: BranchSpotlightProps) {
+  const { t } = useTranslation();
   const order = String(index + 1).padStart(2, "0");
 
   return (
@@ -56,7 +60,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
               )}
             </div>
             <div>
-              <Badge>Active branch</Badge>
+              <Badge>{t("branches.activeBranch")}</Badge>
               {[branch.city, branch.country].some(Boolean) ? (
                 <div className="mt-2 flex items-center gap-1.5 text-xs text-ink-500">
                   <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
@@ -75,12 +79,12 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
           <div className="mt-6 flex items-center gap-6 pt-6">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-[rgb(40,40,255)]" aria-hidden="true" />
-              <span className="text-sm text-ink-300">{branch.memberCount} Member{branch.memberCount !== 1 ? 's' : ''}</span>
+              <span className="text-sm text-ink-300">{branch.memberCount} {branch.memberCount !== 1 ? t("teams.memberMany") : t("teams.memberOne")}</span>
             </div>
             {branch.founded ? (
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-[rgb(40,40,255)]" aria-hidden="true" />
-                <span className="text-sm text-ink-600">Since {branch.founded}</span>
+                <span className="text-sm text-ink-600">{t("branches.since")} {branch.founded}</span>
               </div>
             ) : null}
           </div>
@@ -91,20 +95,20 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
                 <BranchJoinButton
                   branchId={branchId}
                   isMember={isMember}
-                  label={branch.joinCta.label}
-                  helperText={branch.joinCta.helperText}
+                  label={t("branches.joinCta")}
+                  helperText={branch.name ? `${t("branches.becomeMemberOf")} ${branch.name}` : undefined}
                 />
                 <Button
                   asChild
                   variant="secondary"
                 >
-                  <Link href={`/branches/${branch.slug}`}>Explore branch hub</Link>
+                  <Link href={`/branches/${branch.slug}`}>{t("branches.exploreBranch")}</Link>
                 </Button>
               </div>
             ) : (
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-white opacity-50 shadow-glow-sm">
-                  {branch.joinCta.label}
+                  {t("branches.joinCta")}
                 </span>
                 {branch.joinCta.helperText && (
                   <p className="mt-3 text-xs text-ink-600">{branch.joinCta.helperText}</p>
@@ -119,7 +123,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
           <div className="rounded-2xl bg-surface p-6">
             <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-ink-500">
               <Calendar className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
-              Upcoming events
+              {t("branches.upcomingEvents")}
             </div>
             <ul className="flex flex-col gap-3">
               {branch.upcomingEvents.map((event) => (
@@ -133,7 +137,7 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
           <div className="rounded-2xl bg-surface p-6">
             <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-ink-500">
               <Sparkles className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
-              Branch highlights
+              {t("branches.branchHighlights")}
             </div>
             <ul className="flex flex-col gap-3">
               {branch.highlights.map((highlight) => (

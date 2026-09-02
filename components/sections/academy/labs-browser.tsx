@@ -5,6 +5,7 @@ import { Search, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/ui/reveal";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
+import { useTranslation } from "@/components/translation/translation-provider";
 import { LabCreateDialog } from "./lab-create-dialog";
 import { LabCard } from "./lab-card";
 import { LAB_CATEGORIES, LAB_DIFFICULTIES, LAB_TYPES, type LabRow } from "@/lib/validations/lab.schema";
@@ -22,6 +23,7 @@ interface LabsBrowserProps {
 }
 
 export function LabsBrowser({ labs, canCreate, isPlatformAdmin, currentUserId, availableCourses = [] }: LabsBrowserProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [type, setType] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -58,8 +60,8 @@ export function LabsBrowser({ labs, canCreate, isPlatformAdmin, currentUserId, a
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search labs..."
-                aria-label="Search labs"
+                placeholder={t("academy.searchLabs")}
+                aria-label={t("academy.searchLabs")}
                 className={cn(inputClass, "pl-12")}
               />
             </div>
@@ -70,11 +72,11 @@ export function LabsBrowser({ labs, canCreate, isPlatformAdmin, currentUserId, a
         <Reveal delay={80}>
           <div className="mt-6 flex flex-col items-center gap-3">
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-ink-600">Type</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-ink-600">{t("academy.filtersType")}</span>
               <FilterBubbles options={typeOptions} selected={type} onSelect={setType} />
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-ink-600">Difficulty</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-ink-600">{t("academy.filtersDifficulty")}</span>
               <FilterBubbles
                 options={LAB_DIFFICULTIES.map((d) => ({ id: d, label: d.charAt(0).toUpperCase() + d.slice(1) }))}
                 selected={difficulty}
@@ -82,7 +84,7 @@ export function LabsBrowser({ labs, canCreate, isPlatformAdmin, currentUserId, a
               />
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-ink-600">Category</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-ink-600">{t("academy.filtersCategory")}</span>
               <FilterBubbles options={LAB_CATEGORIES.map((c) => ({ id: c, label: c }))} selected={category} onSelect={setCategory} />
             </div>
           </div>
@@ -116,15 +118,15 @@ export function LabsBrowser({ labs, canCreate, isPlatformAdmin, currentUserId, a
                   <FlaskConical size={32} />
                 </div>
                 <h3 id="labs-browser-heading" className="mt-8 text-2xl font-semibold text-ink-50 sm:text-3xl">
-                  {labs.length === 0 ? "No labs available yet" : "No labs match your search"}
+                  {labs.length === 0 ? t("academy.listLabsNone") : t("academy.listLabsEmpty")}
                 </h3>
                 <p className="mt-4 max-w-md text-balance text-[0.95rem] leading-relaxed text-ink-400">
                   {labs.length === 0
-                    ? "Practical labs are currently being prepared. Check back soon."
-                    : "Try a different search term or filter."}
+                    ? t("academy.listLabsNoneSub")
+                    : t("academy.listLabsEmptySub")}
                 </p>
                 {labs.length === 0 ? (
-                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-ink-600">Coming to Azenion Academy</p>
+                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-ink-600">{t("academy.comingTo")}</p>
                 ) : null}
               </div>
             </div>

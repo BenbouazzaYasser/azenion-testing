@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Hash } from "lucide-react";
 import { getServerView } from "@/data/servers";
+import { serverT } from "@/lib/translation/server";
 
 interface ServerPageProps {
   params: { slug: string };
@@ -20,9 +21,9 @@ export default async function ServerPage({ params }: ServerPageProps) {
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-input">
         <Hash size={26} />
       </div>
-      <h2 className="mt-5 text-lg font-semibold text-ink-50">No channels yet</h2>
+      <h2 className="mt-5 text-lg font-semibold text-ink-50">{serverT("servers.noChannels")}</h2>
       <p className="mt-1.5 max-w-xs text-sm text-ink-400">
-        Channels will appear here as soon as they&apos;re created.
+        {serverT("servers.noChannelsSub")}
       </p>
     </div>
   );

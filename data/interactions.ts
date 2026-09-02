@@ -148,6 +148,18 @@ export async function getSavedPostIds(userId: string | null, postIds: string[]):
   return new Set(data?.map((r) => r.post_id) ?? []);
 }
 
+export async function getSavedPostsCount(userId: string): Promise<number> {
+  if (!userId) return 0;
+
+  const supabase = createClient();
+  const { count } = await supabase
+    .from("saved_posts")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  return count ?? 0;
+}
+
 /**
  * Batch-fetches up to `limit` liker display names per post.
  * Keys are `${target_type}-${target_id}`.

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatTime } from "@/lib/date";
 import { editChannelMessage, deleteChannelMessage } from "@/actions/server.actions";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface ChannelBubbleProps {
   id: string;
@@ -32,6 +33,7 @@ export function ChannelBubble({
   isGrouped = false,
   showAvatar = true,
 }: ChannelBubbleProps) {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(content);
 
@@ -83,7 +85,7 @@ export function ChannelBubble({
         {!isGrouped && (
           <p className="flex items-baseline gap-2">
             <span className={cn("text-sm font-semibold", isOwn ? "text-accent-300" : "text-ink-100")}>
-              {sender_name ?? "Member"}
+              {sender_name ?? t("servers.memberFallback")}
             </span>
             <span className="text-[10px] font-medium text-ink-600">
               {created_at ? formatTime(created_at) : ""}
@@ -106,7 +108,7 @@ export function ChannelBubble({
         ) : (
           <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-ink-200">
             {content}
-            {edited_at && <span className="ml-1.5 text-[10px] text-ink-600">(edited)</span>}
+            {edited_at && <span className="ml-1.5 text-[10px] text-ink-600">{t("servers.edited")}</span>}
           </p>
         )}
       </div>
@@ -120,7 +122,7 @@ export function ChannelBubble({
         >
           <button
             type="button"
-            aria-label="Edit message"
+            aria-label={t("servers.editMessage")}
             onClick={() => setIsEditing(true)}
             className="rounded-md p-1.5 text-ink-500 hover:bg-surface-hover hover:text-ink-100"
           >
@@ -128,7 +130,7 @@ export function ChannelBubble({
           </button>
           <button
             type="button"
-            aria-label="Delete message"
+            aria-label={t("servers.deleteMessage")}
             onClick={handleDelete}
             className="rounded-md p-1.5 text-ink-500 hover:bg-red-400/10 hover:text-red-300"
           >

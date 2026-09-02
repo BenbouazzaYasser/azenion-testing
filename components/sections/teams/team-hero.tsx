@@ -13,6 +13,7 @@ import { formatDate } from "@/lib/date";
 import { getTeamStatus, isTeamHidden } from "@/lib/lifecycle";
 import { reactivateTeam } from "@/actions/team.actions";
 import Link from "next/link";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 interface TeamHeroProps {
   team: {
@@ -44,6 +45,7 @@ interface TeamHeroProps {
 
 export function TeamHero({ team, isMember, currentUserId, requestStatus, categories }: TeamHeroProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const isOwner = currentUserId === team.owner.id;
   const visibleCats = team.categories.slice(0, 3);
@@ -80,7 +82,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
           <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
               <span className="flex h-2 w-2 rounded-full bg-accent-400" />
-              {team.visibility === "public" ? "Public" : "Private"}
+              {team.visibility === "public" ? t("teams.public") : t("teams.private")}
             </div>
             {team.categories.map((cat) => (
               <TeamCategoryBadge key={cat.id} name={cat.name} />
@@ -116,23 +118,21 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
                   <>
                     <Archive size={15} className="shrink-0" />
                     <span>
-                      This team has been inactive for a long time and is hidden from discovery. It
-                      stays accessible to members.
+                      {t("teams.heroHidden")}
                     </span>
                   </>
                 ) : (
                   <>
                     <Clock size={15} className="shrink-0" />
                     <span>
-                      This team has been inactive. It will be hidden from discovery if activity does
-                      not resume.
+                      {t("teams.heroInactive")}
                     </span>
                   </>
                 )}
               </div>
               {isOwner ? (
                 <Button size="sm" variant="secondary" onClick={handleReactivate} disabled={isPending}>
-                  {isPending ? "Reactivating..." : "Reactivate team"}
+                  {isPending ? t("teams.reactivating") : t("teams.reactivate")}
                 </Button>
               ) : null}
             </div>
@@ -174,14 +174,14 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
             <span className="hidden text-ink-700 dark:text-white/30 sm:inline">·</span>
             <span className="inline-flex items-center gap-1.5">
               <Users size={14} className="text-accent-400" />
-              {team.memberCount} {team.memberCount === 1 ? "member" : "members"}
+              {team.memberCount} {team.memberCount === 1 ? t("teams.memberOne") : t("teams.memberMany")}
             </span>
             {team.created_at ? (
               <>
                 <span className="hidden text-ink-700 dark:text-white/30 sm:inline">·</span>
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar size={14} className="text-accent-400" />
-                  Created {formatDate(team.created_at)}
+                  {t("common.created")} {formatDate(team.created_at)}
                 </span>
               </>
             ) : null}
@@ -203,7 +203,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
               <Link href={`/teams/${team.slug}/settings`}>
                 <Button size="lg" variant="secondary">
                   <Settings size={15} />
-                  Settings
+                  {t("teams.settings")}
                 </Button>
               </Link>
             ) : null}
@@ -216,7 +216,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-700 dark:text-white/35">
-              Scroll to explore
+              {t("common.scrollToExplore")}
             </span>
           </div>
         </Reveal>

@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { X, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 export function DeleteAccountModal() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
@@ -34,7 +36,7 @@ export function DeleteAccountModal() {
         className="border-red-500/40 text-red-400 hover:border-red-500/60 hover:bg-red-500/10 hover:text-red-300"
         onClick={() => setOpen(true)}
       >
-        Delete Account
+        {t("settings.deleteAccount")}
       </Button>
 
       {open ? (
@@ -42,11 +44,11 @@ export function DeleteAccountModal() {
           className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8"
           role="dialog"
           aria-modal="true"
-          aria-label="Delete account"
+          aria-label={t("settings.deleteAccount")}
         >
           <button
             type="button"
-            aria-label="Close"
+            aria-label={t("settings.closeAria")}
             className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-200"
             style={{ opacity: mounted ? 1 : 0 }}
             onClick={() => setOpen(false)}
@@ -62,11 +64,11 @@ export function DeleteAccountModal() {
             }}
           >
             <div className="flex items-center justify-between border-b border-border px-8 py-6">
-              <h2 className="text-lg font-semibold text-ink-50">Delete Account</h2>
+              <h2 className="text-lg font-semibold text-ink-50">{t("settings.deleteAccount")}</h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                aria-label="Close"
+                aria-label={t("settings.closeAria")}
                 className="-mr-1.5 -mt-1.5 rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
               >
                 <X className="h-5 w-5" />
@@ -80,12 +82,11 @@ export function DeleteAccountModal() {
                 </div>
 
                 <h3 className="mt-4 text-base font-semibold text-ink-50">
-                  Are you sure?
+                  {t("settings.areYouSure")}
                 </h3>
 
                 <p className="mt-2 text-sm leading-relaxed text-ink-400">
-                  This action is not yet available. Account deletion will be
-                  implemented in a future update. Your data is safe for now.
+                  {t("settings.deleteUnavailable")}
                 </p>
               </div>
 
@@ -96,7 +97,7 @@ export function DeleteAccountModal() {
                   size="sm"
                   onClick={() => setOpen(false)}
                 >
-                  Got it
+                  {t("settings.gotIt")}
                 </Button>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { Building2, CalendarClock, Users } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
+import { serverT } from "@/lib/translation/server";
 
 interface NetworkStatsProps {
   branchCount: number;
@@ -13,21 +14,21 @@ export function NetworkStats({ branchCount, memberCount, upcomingEvents }: Netwo
     {
       icon: Building2,
       value: `${branchCount}`,
-      label: "Active branches",
+      label: serverT("branches.statActiveBranches"),
     },
     {
       icon: Users,
       value: `${memberCount}+`,
-      label: "Combined members",
+      label: serverT("branches.statCombinedMembers"),
     },
     {
       icon: CalendarClock,
       value: `${upcomingEvents}`,
-      label: "Upcoming events",
+      label: serverT("branches.statUpcomingEvents"),
     },
   ] as const;
   return (
-    <section aria-label="Network at a glance" className="relative px-6 pb-16 sm:pb-24">
+    <section aria-label={serverT("branches.networkGlance")} className="relative px-6 pb-16 sm:pb-24">
       <Reveal>
         <div className="mx-auto grid max-w-4xl grid-cols-1 divide-y divide-border-strong card-surface rounded-[2rem] backdrop-blur-xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           {stats.map((stat) => (

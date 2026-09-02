@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { BarChart3, Building2, FolderKanban, Users } from "lucide-react";
 
 import { Reveal } from "@/components/ui/reveal";
+import { useTranslation } from "@/components/translation/translation-provider";
+import type { DictKey } from "@/lib/translation/types";
 
 interface Stat {
-  label: string;
+  id: string;
+  labelKey: DictKey;
   value: number;
   icon: typeof Users;
 }
@@ -56,7 +59,8 @@ function useCountUp(target: number, duration = 1400) {
 function StatCard({ stat, index }: { stat: Stat; index: number }) {
   const Icon = stat.icon;
   const { display, ref } = useCountUp(stat.value);
-  const formatter = FORMATTERS[stat.label.toLowerCase()] ?? ((v: number) => v.toLocaleString());
+  const { t } = useTranslation();
+  const formatter = FORMATTERS[stat.id] ?? ((v: number) => v.toLocaleString());
 
   return (
     <Reveal delay={index * 100}>
@@ -71,7 +75,7 @@ function StatCard({ stat, index }: { stat: Stat; index: number }) {
           {formatter(display)}
         </span>
         <span className="text-sm font-medium uppercase tracking-[0.16em] text-ink-400">
-          {stat.label}
+          {t(stat.labelKey)}
         </span>
       </div>
     </Reveal>
@@ -86,11 +90,13 @@ interface CommunityNumbersProps {
 }
 
 export function CommunityNumbers({ members, teams, projects, branches }: CommunityNumbersProps) {
+  const { t } = useTranslation();
+
   const stats: Stat[] = [
-    { label: "Members", value: members, icon: Users },
-    { label: "Teams", value: teams, icon: FolderKanban },
-    { label: "Projects", value: projects, icon: BarChart3 },
-    { label: "Branches", value: branches, icon: Building2 },
+    { id: "members", labelKey: "home.statMembers", value: members, icon: Users },
+    { id: "teams", labelKey: "home.statTeams", value: teams, icon: FolderKanban },
+    { id: "projects", labelKey: "home.statProjects", value: projects, icon: BarChart3 },
+    { id: "branches", labelKey: "home.statBranches", value: branches, icon: Building2 },
   ];
 
   return (
@@ -99,20 +105,20 @@ export function CommunityNumbers({ members, teams, projects, branches }: Communi
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-              The numbers
+              {t("home.numbersEyebrow")}
             </span>
             <h2
               id="community-numbers-heading"
               className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[3rem]"
             >
-              A network that keeps <span className="text-accent-400">growing.</span>
+              {t("home.numbersTitle")}<span className="text-accent-400">{t("home.numbersAccent")}</span>
             </h2>
           </div>
         </Reveal>
 
         <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
-            <StatCard key={stat.label} stat={stat} index={i} />
+            <StatCard key={stat.id} stat={stat} index={i} />
           ))}
         </div>
       </div>

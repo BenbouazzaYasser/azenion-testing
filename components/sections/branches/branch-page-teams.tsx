@@ -1,6 +1,7 @@
 import { Users } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { TeamCard, type TeamCardTeam } from "@/components/sections/teams/team-card";
+import { serverT } from "@/lib/translation/server";
 
 interface BranchPageTeamsProps {
   teams: TeamCardTeam[];
@@ -14,7 +15,7 @@ export function BranchPageTeams({ teams }: BranchPageTeamsProps) {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Ecosystem
+            {serverT("branches.ecosystemEyebrow")}
           </div>
         </Reveal>
 
@@ -23,7 +24,7 @@ export function BranchPageTeams({ teams }: BranchPageTeamsProps) {
             id="branch-teams-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Teams in this branch
+            {serverT("branches.branchTeamsTitle")}
           </h2>
         </Reveal>
 
@@ -37,7 +38,7 @@ export function BranchPageTeams({ teams }: BranchPageTeamsProps) {
           <Reveal delay={120}>
             <p className="mt-6 text-center text-xs text-ink-600">
               <Users size={12} className="mr-1 inline" />
-              Showing a selection — explore all teams from the Teams page.
+              {serverT("branches.showingTeamsSelection")}
             </p>
           </Reveal>
         ) : null}

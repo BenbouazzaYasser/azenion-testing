@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, Globe, Languages, LoaderCircle, Search } from "lucide-react";
+import { CheckCircle2, Globe, Languages, Search } from "lucide-react";
 import { useTranslation } from "@/components/translation/translation-provider";
 import { LANGUAGES } from "@/lib/translation/languages";
 import { SettingsPanel, SaveIndicator, type SaveState } from "./settings-panel";
 import { cn } from "@/lib/utils";
 
 export function LanguageSection() {
-  const { language, setLanguage, isTranslating } = useTranslation();
+  const { language, setLanguage, t } = useTranslation();
   const [query, setQuery] = useState("");
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
@@ -23,7 +23,7 @@ export function LanguageSection() {
     );
   }, [query]);
 
-  const activeLang = LANGUAGES.find((l) => l.code === language);
+  const activeLang = LANGUAGES.find((l) => l.code === language) ?? { code: "en", label: "English", nativeLabel: "English", flag: "🇬🇧" };
 
   function handleSelect(code: string) {
     setLanguage(code);
@@ -43,26 +43,19 @@ export function LanguageSection() {
               <Globe size={16} />
             </span>
             <div>
-              <h3 className="text-sm font-medium text-ink-50">Language</h3>
+              <h3 className="text-sm font-medium text-ink-50">{t("settings.language")}</h3>
               <p className="mt-0.5 text-xs text-ink-500">
-                {activeLang ? (
-                  <>
-                    Current: <span data-no-translate translate="no" className="font-medium text-ink-200">{activeLang.flag} {activeLang.nativeLabel}</span> · Translation applies site-wide including courses
-                  </>
-                ) : (
-                  "Choose your preferred language — it applies everywhere."
-                )}
+                <span className="font-medium text-ink-200">
+                  {t("settings.languageCurrent")}:
+                </span>{" "}
+                <span data-no-translate translate="no">
+                  {activeLang.flag} {activeLang.nativeLabel}
+                </span>{" "}
+                · {t("settings.appliesSiteWide")}
               </p>
             </div>
           </div>
-          {isTranslating ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-accent/[0.08] px-2.5 py-1 text-xs font-medium text-accent-300">
-              <LoaderCircle size={12} className="animate-spin" />
-              Translating…
-            </span>
-          ) : (
-            <SaveIndicator state={saveState} />
-          )}
+          <SaveIndicator state={saveState} />
         </div>
       </SettingsPanel>
 
@@ -71,9 +64,11 @@ export function LanguageSection() {
           <div className="flex items-center justify-between gap-3">
             <h4 className="flex items-center gap-2 text-sm font-medium text-ink-50">
               <Languages size={14} className="text-accent-300" />
-              Choose language
+              {t("settings.chooseLanguage")}
             </h4>
-            <span className="text-xs text-ink-500">{LANGUAGES.length} languages</span>
+            <span className="text-xs text-ink-500">
+              {LANGUAGES.length} {t("settings.languagesCount")}
+            </span>
           </div>
 
           <div className="relative mt-4">
@@ -82,8 +77,8 @@ export function LanguageSection() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search languages…"
-              aria-label="Search languages"
+              placeholder={t("settings.searchLanguages")}
+              aria-label={t("settings.searchLanguages")}
               className="w-full rounded-xl border border-border bg-surface px-9 py-2.5 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/40 focus:ring-2 focus:ring-accent-400/20"
             />
           </div>
@@ -120,11 +115,13 @@ export function LanguageSection() {
           </div>
 
           {filtered.length === 0 ? (
-            <p className="mt-6 text-center text-sm text-ink-500">No languages match “{query}”.</p>
+            <p className="mt-6 text-center text-sm text-ink-500">
+              {t("settings.noLanguagesMatch")} &quot;{query}&quot;.
+            </p>
           ) : null}
 
-          <p className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-3 py-2.5 text-xs leading-relaxed text-amber-200/90">
-            Translation is automatic and covers the entire website including courses, labs and live sessions. Original English is restored instantly when you switch back to English.
+          <p className="mt-4 rounded-xl border border-accent-400/20 bg-accent/[0.06] px-3 py-2.5 text-xs leading-relaxed text-ink-300">
+            {t("settings.handTranslatedNote")}
           </p>
         </div>
       </SettingsPanel>

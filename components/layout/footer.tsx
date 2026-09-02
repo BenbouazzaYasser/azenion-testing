@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Mail, MessageCircle, Linkedin, Github, Instagram, Twitter } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
 import { CONTACT } from "@/data/contact";
+import { serverT } from "@/lib/translation/server";
 
 const SOCIAL_ICONS: Record<string, typeof Twitter> = {
   "X (Twitter)": Twitter,
@@ -29,34 +30,33 @@ export function Footer() {
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-400">
-              United by purpose.
+              {serverT("footer.taglineTop")}
               <br />
-              <span className="text-accent-400">Driven by impact.</span>
+              <span className="text-accent-400">{serverT("footer.taglineBottom")}</span>
             </p>
             <p className="mt-4 text-sm leading-relaxed text-ink-400">
-              A global network where ambitious minds connect, collaborate,
-              and create the future together.
+              {serverT("footer.description")}
             </p>
           </div>
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
-              Quick Links
+              {serverT("footer.quickLinks")}
             </h3>
             <ul className="mt-5 space-y-3">
               {[
-                { label: "Teams", href: "/teams" },
-                { label: "Projects", href: "/projects" },
-                { label: "Branches", href: "/branches" },
-                { label: "Feed", href: "/feed" },
-                { label: "Chat", href: "/chat" },
+                { labelKey: "nav.teams" as const, href: "/teams" },
+                { labelKey: "nav.projects" as const, href: "/projects" },
+                { labelKey: "nav.branches" as const, href: "/branches" },
+                { labelKey: "nav.feed" as const, href: "/feed" },
+                { labelKey: "nav.chat" as const, href: "/chat" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-sm text-ink-400 transition-colors hover:text-ink-50"
                   >
-                    {link.label}
+                    {serverT(link.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -65,21 +65,21 @@ export function Footer() {
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
-              Legal
+              {serverT("footer.legal")}
             </h3>
             <ul className="mt-5 space-y-3">
               {[
-                { label: "About", href: "/about" },
-                { label: "Contact", href: "/contact" },
-                { label: "Terms of Service", href: "/terms" },
-                { label: "Privacy Policy", href: "/privacy" },
+                { labelKey: "footer.about" as const, href: "/about" },
+                { labelKey: "footer.contact" as const, href: "/contact" },
+                { labelKey: "footer.terms" as const, href: "/terms" },
+                { labelKey: "footer.privacy" as const, href: "/privacy" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-sm text-ink-400 transition-colors hover:text-ink-50"
                   >
-                    {link.label}
+                    {serverT(link.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -88,7 +88,7 @@ export function Footer() {
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
-              Connect
+              {serverT("footer.connect")}
             </h3>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -142,10 +142,10 @@ export function Footer() {
       <div className="relative">
         <div className="mx-auto max-w-[1320px] px-5 py-6 sm:px-8 lg:px-12">
           <p className="text-center text-xs text-ink-600 sm:text-left">
-            &copy; {new Date().getFullYear()} Azenion. All rights reserved.
+            &copy; {new Date().getFullYear()} Azenion. {serverT("footer.rights")}
           </p>
           <p className="mt-2 text-center text-xs text-ink-600/80 sm:text-left">
-            Founded by Ziyad
+            {serverT("footer.founded")} Ziyad
           </p>
         </div>
       </div>

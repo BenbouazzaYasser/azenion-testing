@@ -9,6 +9,7 @@ import { leaveTeam } from "@/actions/team.actions";
 import { OwnershipLeaveModal } from "@/components/shared/ownership-leave-modal";
 import { RequestToJoinDialog } from "./request-to-join-dialog";
 import { useUser } from "@/hooks/use-user";
+import { useTranslation } from "@/components/translation/translation-provider";
 
 export type TeamRequestStatus = "PENDING" | "ACCEPTED" | "DECLINED" | null;
 
@@ -33,6 +34,7 @@ export function TeamJoinButton({
   onGoToSettings,
   className,
 }: TeamJoinButtonProps) {
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showRequestDialog, setShowRequestDialog] = useState(false);
@@ -61,7 +63,7 @@ export function TeamJoinButton({
 
     if (!loading && !user) {
       const next = pathname ? `?next=${encodeURIComponent(pathname)}` : "";
-      toast.info("Sign in to join this team.");
+      toast.info(t("teams.signInToJoin"));
       router.push(`/login${next}`);
       return;
     }
@@ -73,16 +75,16 @@ export function TeamJoinButton({
     return (
       <Button size="lg" disabled>
         <Loader2 size={16} className="animate-spin" />
-        Leaving...
+        {t("teams.leaving")}
       </Button>
     );
   }
 
   if (isRequestPending && !isMember) {
     return (
-      <Button size="lg" variant="secondary" disabled className={className} title="Your request is awaiting review">
+      <Button size="lg" variant="secondary" disabled className={className} title={t("teams.requestAwaitingReview")}>
         <Hourglass size={16} />
-        Request Sent
+        {t("teams.requestSent")}
       </Button>
     );
   }
@@ -93,12 +95,12 @@ export function TeamJoinButton({
         {isMember ? (
           <>
             <LogOut size={16} />
-            Leave Team
+            {t("teams.leaveTeam")}
           </>
         ) : (
           <>
             <Plus size={16} />
-            Join Team
+            {t("teams.joinTeam")}
           </>
         )}
       </Button>

@@ -10,6 +10,7 @@ import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
 import { getLabsAuthContext } from "@/lib/labs/authorization";
 import type { LabRow } from "@/lib/validations/lab.schema";
+import { serverT } from "@/lib/translation/server";
 
 export const metadata: Metadata = {
   title: "Labs | Azenion Academy — The Limitless Network",
@@ -68,10 +69,10 @@ export default async function LabsPage() {
       <main className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyHero
-          eyebrow="Academy · Labs"
-          title="Practice What You"
-          accent="Learn."
-          subtitle="Hands-on labs across OSINT, Linux and coding — investigate, solve, and prove what you know."
+          eyebrow={serverT("academy.labsEyebrow")}
+          title={serverT("academy.labsH1")}
+          accent={serverT("academy.labsH1Accent")}
+          subtitle={serverT("academy.labsSubtitle")}
         />
         <LabsBrowser
           labs={labs}

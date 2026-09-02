@@ -1,15 +1,17 @@
 import { Briefcase, Users, Target } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
+import { serverT } from "@/lib/translation/server";
+import type { DictKey } from "@/lib/translation/types";
 import type { RecruitmentRole } from "./recruitment-editor";
 
 interface ProjectPageRecruitmentProps {
   roles: RecruitmentRole[];
 }
 
-const EXPERIENCE_LABELS: Record<string, string> = {
-  beginner: "Beginner-friendly",
-  intermediate: "Intermediate",
-  advanced: "Advanced",
+const EXPERIENCE_LABELS: Record<string, DictKey> = {
+  beginner: "projects.expBeginner",
+  intermediate: "projects.expIntermediate",
+  advanced: "projects.expAdvanced",
 };
 
 const EXPERIENCE_COLORS: Record<string, string> = {
@@ -26,7 +28,7 @@ export function ProjectPageRecruitment({ roles }: ProjectPageRecruitmentProps) {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            Hiring
+            {serverT("projects.hiringEyebrow")}
           </div>
         </Reveal>
 
@@ -35,7 +37,7 @@ export function ProjectPageRecruitment({ roles }: ProjectPageRecruitmentProps) {
             id="project-recruitment-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            Open positions
+            {serverT("projects.positionsTitle")}
             <span className="ml-3 text-lg font-normal text-ink-500">({roles.length})</span>
           </h2>
         </Reveal>
@@ -59,11 +61,11 @@ export function ProjectPageRecruitment({ roles }: ProjectPageRecruitmentProps) {
                         <div className="mt-1 flex items-center gap-3 text-sm text-ink-500">
                           <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${EXPERIENCE_COLORS[role.experience] || EXPERIENCE_COLORS.intermediate}`}>
                             <Target size={10} />
-                            {EXPERIENCE_LABELS[role.experience] || role.experience}
+                            {serverT(EXPERIENCE_LABELS[role.experience] || "projects.expIntermediate")}
                           </span>
                           <span className="inline-flex items-center gap-1">
                             <Users size={12} className="text-accent-400" />
-                            {role.positions} {role.positions === 1 ? "position" : "positions"}
+                            {role.positions} {role.positions === 1 ? serverT("projects.positionOne") : serverT("projects.positionMany")}
                           </span>
                         </div>
                       </div>

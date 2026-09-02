@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import {
-  Bookmark,
   Calendar,
   GitBranch,
   Globe,
@@ -11,7 +10,6 @@ import {
   MapPin,
   Pin,
   Rocket,
-  Share2,
   User,
   Users,
 } from "lucide-react";
@@ -21,8 +19,12 @@ import { ImageGallery } from "@/components/feed/image-gallery";
 import { VideoGallery } from "@/components/feed/video-gallery";
 import { LikeButton } from "@/components/interactions/like-button";
 import { CommentSection } from "@/components/interactions/comment-section";
+import { ShareButton } from "@/components/interactions/share-button";
+import { SaveButton } from "@/components/interactions/save-button";
 import { toggleLike } from "@/actions/interactions.actions";
 import type { FeedItemWithAuthor } from "@/actions/feed.actions";
+import { useTranslation } from "@/components/translation/translation-provider";
+import type { DictKey } from "@/lib/translation/types";
 
 const INTERACTIONLESS_TYPES = new Set<FeedItemWithAuthor["source_type"]>([
   "branch_highlight",
@@ -75,13 +77,16 @@ function initialFor(name: string | null | undefined): string {
   return name?.trim()?.[0]?.toUpperCase() ?? "A";
 }
 
-function likedByText(item: FeedItemWithAuthor): string | null {
+function likedByText(
+  item: FeedItemWithAuthor,
+  t: (key: DictKey) => string,
+): string | null {
   const names = item.liked_by_names ?? [];
   if (names.length === 0) return null;
-  if (names.length === 1) return `Liked by ${names[0]}`;
-  if (names.length === 2) return `Liked by ${names[0]} and ${names[1]}`;
+  if (names.length === 1) return `${t("feed.likedBy")} ${names[0]}`;
+  if (names.length === 2) return `${t("feed.likedBy")} ${names[0]} and ${names[1]}`;
   const others = Math.max(0, item.like_count - 1);
-  return `Liked by ${names[0]} and ${others} ${others === 1 ? "other" : "others"}`;
+  return `${t("feed.likedBy")} ${names[0]} and ${others} ${others === 1 ? "other" : "others"}`;
 }
 
 function getEventStatus(
@@ -111,9 +116,17 @@ interface FeedCardProps {
 }
 
 export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
+  const { t } = useTranslation();
   const entityType = entityTypeFor(item);
   const config = ENTITY_CONFIG[entityType];
   const EntityIcon = config.icon;
+
+  const ENTITY_LABELS: Record<EntityType, string> = {
+    TEAM: t("feed.team"),
+    PROJECT: t("feed.project"),
+    BRANCH: t("feed.branch"),
+    POST: t("feed.post"),
+  };
 
   const noInteractions = INTERACTIONLESS_TYPES.has(item.source_type);
   const isBranch = entityType === "BRANCH";
@@ -125,7 +138,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
   const showAuthor = Boolean(item.author_name) && entityType !== "POST";
 
   const timeAgo = item.created_at ? formatDistanceToNow(new Date(item.created_at)) : "";
-  const likedBy = likedByText(item);
+  const likedBy = likedByText(item, t);
 
   const eventStatus = isEvent
     ? getEventStatus(item.event_starts_at, item.event_ends_at)
@@ -169,7 +182,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
               {item.event_visibility ? (
                 <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-[11px] font-medium text-ink-400">
                   {item.event_visibility === "public" ? <Globe size={11} /> : <Users size={11} />}
-                  {item.event_visibility === "public" ? "Public" : "Members"}
+                  {item.event_visibility === "public" ? t("feed.public") : t("feed.members")}
                 </span>
               ) : null}
             </div>
@@ -185,7 +198,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
             )}
           >
             <EntityIcon size={11} />
-            {config.label}
+            {ENTITY_LABELS[entityType]}
           </span>
 
           {isEvent && eventStatus === "live" ? (
@@ -194,18 +207,18 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
               </span>
-              Live
+              {t("feed.live")}
             </span>
           ) : isEvent && eventStatus === "completed" ? (
             <span className="inline-flex items-center gap-1 rounded-full border border-ink-700/50 bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink-500">
-              Completed
+              {t("feed.completed")}
             </span>
           ) : null}
 
           {item.is_pinned ? (
             <span className="inline-flex items-center gap-1 rounded-full border border-accent/25 bg-accent/[0.08] px-2.5 py-0.5 text-[11px] font-medium text-accent-300">
               <Pin size={10} />
-              Pinned
+              {t("feed.pinned")}
             </span>
           ) : null}
 
@@ -226,7 +239,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
               </span>
             )}
             <span className="text-xs text-ink-400">
-              Posted by {item.author_name}
+              {t("feed.postedBy")} {item.author_name}
               {item.author_username ? ` @${item.author_username}` : ""}
             </span>
           </div>
@@ -268,7 +281,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
             className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-400 transition-colors hover:text-accent-300"
           >
             <Link2 size={13} />
-            Register
+            {t("feed.register")}
           </a>
         ) : null}
 
@@ -291,7 +304,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
             rel="noopener noreferrer"
             className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-400 transition-colors hover:text-accent-300"
           >
-            Learn more
+            {t("feed.learnMore")}
             <Link2 size={12} />
           </a>
         ) : null}
@@ -322,24 +335,12 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
             </div>
 
             <div className="flex min-w-0 items-center gap-4">
-              <button
-                type="button"
-                disabled
-                title="Coming Soon"
-                className="flex items-center gap-1.5 text-xs text-ink-600 transition-colors duration-300 ease-premium hover:text-ink-200 disabled:pointer-events-none disabled:opacity-50"
-              >
-                <Share2 size={14} />
-                <span className="hidden sm:inline">Share</span>
-              </button>
-              <button
-                type="button"
-                disabled
-                title="Coming Soon"
-                className="flex items-center gap-1.5 text-xs text-ink-600 transition-colors duration-300 ease-premium hover:text-ink-200 disabled:pointer-events-none disabled:opacity-50"
-              >
-                <Bookmark size={14} />
-                <span className="hidden sm:inline">Save</span>
-              </button>
+              <ShareButton postId={item.id} />
+              <SaveButton
+                postId={item.id}
+                initialSaved={item.saved_by_user}
+                currentUserId={currentUserId}
+              />
             </div>
           </div>
         ) : null}

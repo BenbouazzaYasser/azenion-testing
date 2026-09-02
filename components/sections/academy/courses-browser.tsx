@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/ui/reveal";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
+import { useTranslation } from "@/components/translation/translation-provider";
 import { CourseCreateDialog } from "./course-create-dialog";
 import { CourseEditDialog } from "./course-edit-dialog";
 import { deleteCourse } from "@/actions/academy-courses.actions";
@@ -65,6 +66,7 @@ interface CoursesBrowserProps {
 
 export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
 
@@ -94,8 +96,8 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search courses..."
-                aria-label="Search courses"
+                placeholder={t("academy.searchCourses")}
+                aria-label={t("academy.searchCourses")}
                 className={cn(inputClass, "pl-12")}
               />
             </div>
@@ -140,17 +142,17 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
                   className="mt-8 text-2xl font-semibold text-ink-50 sm:text-3xl"
                 >
                   {courses.length === 0
-                    ? "No courses available yet"
-                    : "No courses match your search"}
+                    ? t("academy.listCoursesNone")
+                    : t("academy.listCoursesEmpty")}
                 </h3>
                 <p className="mt-4 max-w-md text-balance text-[0.95rem] leading-relaxed text-ink-400">
                   {courses.length === 0
-                    ? "Courses are currently being prepared. Check back soon."
-                    : "Try a different search term or category."}
+                    ? t("academy.listCoursesNoneSub")
+                    : t("academy.listCoursesEmptySub")}
                 </p>
                 {courses.length === 0 ? (
                   <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-ink-600">
-                    Coming to Azenion Academy
+                    {t("academy.comingTo")}
                   </p>
                 ) : null}
               </div>
@@ -170,6 +172,7 @@ function CourseCard({
   canManage: boolean;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
   const isPdf = course.content_type === "pdf";
@@ -189,7 +192,7 @@ function CourseCard({
         setConfirming(false);
         return;
       }
-      toast.success("Course deleted");
+      toast.success(t("academy.courseDeleted"));
       router.refresh();
     });
   }
@@ -284,8 +287,8 @@ function CourseCard({
                 type="button"
                 onClick={handleDelete}
                 disabled={isPending}
-                aria-label="Delete course"
-                title={confirming ? "Click again to confirm" : "Delete course"}
+                aria-label={t("academy.deleteCourseAria")}
+                title={confirming ? t("academy.clickAgain") : t("academy.deleteCourseAria")}
                 className={cn(
                   "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
                   confirming
@@ -302,7 +305,7 @@ function CourseCard({
               rel="noopener noreferrer"
               className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"
             >
-              Open
+              {t("academy.open")}
               <ArrowUpRight size={13} />
             </a>
           </div>

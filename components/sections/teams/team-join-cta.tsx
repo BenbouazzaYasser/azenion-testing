@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/ui/reveal";
 import { TeamJoinButton, type TeamRequestStatus } from "./team-join-button";
+import { serverT } from "@/lib/translation/server";
 
 interface TeamJoinCtaProps {
   teamId: string;
@@ -21,17 +22,17 @@ export function TeamJoinCta({ teamId, teamName, teamSlug, isMember, isOwner, req
             id="team-join-heading"
             className="text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
           >
-            {isMember ? "Part of the team?" : isRequestPending ? "Request in review" : "Ready to build?"}
+            {isMember ? serverT("teams.ctaMember") : isRequestPending ? serverT("teams.ctaPending") : serverT("teams.ctaReady")}
           </h2>
         </Reveal>
 
         <Reveal delay={100}>
           <p className="mx-auto mt-6 max-w-xl text-balance text-[1.05rem] leading-relaxed text-ink-400">
             {isMember
-              ? "You're already a member of this team."
+              ? serverT("teams.ctaMemberSub")
               : isRequestPending
-                ? "Your request to join is waiting for the team owner to review it. We'll let you know once it's accepted."
-                : "If you share the vision and want to contribute — request to join the team and start building together."}
+                ? serverT("teams.ctaPendingSub")
+                : serverT("teams.ctaReadySub")}
           </p>
         </Reveal>
 

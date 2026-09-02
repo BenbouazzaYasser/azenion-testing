@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { InfinityHeroArt } from "@/components/graphics/infinity-hero-art";
 import { DashboardButton } from "@/components/shared/dashboard-button";
+import { serverT } from "@/lib/translation/server";
 
 export function Hero() {
   return (
@@ -24,32 +25,31 @@ export function Hero() {
           <Reveal delay={0}>
             <Badge className="inline-flex">
               <Globe2 size={13} className="text-accent-400" />
-              The Limitless Network
+              {serverT("home.heroBadge")}
             </Badge>
           </Reveal>
 
           <Reveal delay={80}>
             <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[3.75rem]">
-              Infinite minds.
+              {serverT("home.heroTitleA")}
               <br />
-              Limitless <span className="text-accent-400">impact.</span>
+              {serverT("home.heroTitleB")}<span className="text-accent-400">{serverT("home.heroImpact")}</span>
             </h1>
           </Reveal>
 
           <Reveal delay={160}>
             <p className="mt-6 text-balance text-[1.05rem] leading-relaxed text-ink-400">
-              The Limitless Network brings ambitious minds together through learning,
-              collaboration and innovation.
+              {serverT("home.heroSubA")}
               <br className="hidden sm:block" />
-              Together, we build. Together, we elevate.
+              {serverT("home.heroSubB")}
             </p>
           </Reveal>
 
           <Reveal delay={240}>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <DashboardButton size="lg" label="Join the Network" />
+            <DashboardButton size="lg" label={serverT("home.heroJoinCta")} />
               <Button variant="secondary" size="lg" asChild>
-                <Link href="/projects">Explore Projects</Link>
+                <Link href="/projects">{serverT("home.exploreProjects")}</Link>
               </Button>
             </div>
           </Reveal>
@@ -61,10 +61,9 @@ export function Hero() {
                 className="absolute -inset-x-4 -inset-y-6 rounded-[2rem] bg-accent-400/[0.14] blur-[60px]"
               />
               <div className="relative rounded-[1.6rem] card-surface-soft p-5 shadow-card backdrop-blur-xl">
-                <p className="text-sm font-medium text-ink-50">Quick overview</p>
+                <p className="text-sm font-medium text-ink-50">{serverT("home.heroQuickOverview")}</p>
                 <p className="mt-2 text-sm leading-6 text-ink-400">
-                  Azenion connects learners, builders, and innovators in one global
-                  community to create opportunities and grow together.
+                  {serverT("home.heroOverviewSub")}
                 </p>
               </div>
             </div>
@@ -75,7 +74,7 @@ export function Hero() {
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
-              Scroll to explore
+              {serverT("home.heroScroll")}
             </span>
           </div>
         </div>
@@ -89,7 +88,7 @@ export function Hero() {
             The inner "art" is anchored to the same resting spot the symbol
             already had; only the wrapper's occupancy is expanded. */}
         <div className="pointer-events-none absolute inset-0 hidden lg:block overflow-visible">
-          <div className="absolute right-[2%] top-[0%] aspect-[800/520] w-[44rem] translate-y-[10%]">
+          <div className="absolute end-[2%] top-[0%] aspect-[800/520] w-[44rem] translate-y-[10%]">
             <InfinityHeroArt className="absolute inset-0 h-full w-full opacity-95" />
           </div>
         </div>

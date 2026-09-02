@@ -3,8 +3,9 @@ import { Rocket } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Reveal } from "@/components/ui/reveal";
 import { CONTACT } from "@/data/contact";
+import { serverT } from "@/lib/translation/server";
 
-const ghostSlots = ["Your campus", "Your city", "Your network"] as const;
+const ghostSlots = ["branches.yourCampus", "branches.yourCity", "branches.yourNetwork"] as const;
 
 export function ComingSoonTeaser() {
   return (
@@ -24,15 +25,14 @@ export function ComingSoonTeaser() {
             <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center">
               <Badge className="mb-6 inline-flex items-center gap-1.5">
                 <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
-                More branches, launching soon
+                {serverT("branches.moreComing")}
               </Badge>
 
               <h2 id="coming-soon-heading" className="text-2xl font-semibold text-ink-50 sm:text-3xl">
-                The network is just getting started.
+                {serverT("branches.networkStarted")}
               </h2>
               <p className="mt-4 text-sm text-ink-400 sm:text-base">
-                New branches are opening across campuses as the Azenion community grows. If yours
-                isn&apos;t here yet, help us bring the Limitless Network to your school.
+                {serverT("branches.networkStartedSub")}
               </p>
 
               <div className="mt-8 grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
@@ -44,7 +44,7 @@ export function ComingSoonTeaser() {
                     <span className="text-2xl font-light" aria-hidden="true">
                       ∞
                     </span>
-                    <span className="text-xs uppercase tracking-[0.15em]">{slot}</span>
+                    <span className="text-xs uppercase tracking-[0.15em]">{serverT(slot)}</span>
                   </div>
                 ))}
               </div>
@@ -53,7 +53,7 @@ export function ComingSoonTeaser() {
                 href={`${CONTACT.emailHref}?subject=Starting%20a%20new%20Azenion%20branch`}
                 className="mt-8 text-sm font-medium text-accent-500 underline-offset-4 transition-colors duration-500 ease-premium hover:text-accent-300 hover:underline"
               >
-                Nominate your campus →
+                {serverT("branches.nominate")} →
               </a>
             </div>
           </div>
