@@ -1,3 +1,5 @@
+import "server-only";
+
 // GIF provider abstraction — server-side only (API keys never reach client)
 // Currently implements Giphy; Tenor can be added behind same interface.
 
@@ -35,9 +37,7 @@ export function isAllowedGifUrl(url: string, provider: GifProviderId): boolean {
 }
 
 function getGiphyKey(): string | null {
-  // Server-only: Next.js will inline process.env on server, never on client because this file is only imported server-side via API routes/actions
-  const key = process.env.GIPHY_API_KEY || process.env.NEXT_PUBLIC_GIPHY_API_KEY || null;
-  // Also support TENOR key as fallback if someone configured Tenor but we still treat as giphy? No, require explicit GIPHY key
+  const key = process.env.GIPHY_API_KEY || null;
   return key && key.trim().length > 0 ? key.trim() : null;
 }
 
