@@ -7,6 +7,11 @@ import { useTranslation } from "@/components/translation/translation-provider";
 import { submitInstructorVerification } from "@/actions/instructor-verification.actions";
 import type { EducationEntry, CertificationEntry } from "@/lib/validations/instructor-verification.schema";
 
+const GITHUB_HOSTS = ["github.com", "www.github.com"];
+const LINKEDIN_HOSTS = ["linkedin.com", "www.linkedin.com", "linkedin.in", "www.linkedin.in"];
+function isValidUrl(str: string) { try { new URL(str); return true; } catch { return false; } }
+function getHost(str: string) { try { return new URL(str).hostname.toLowerCase(); } catch { return ""; } }
+
 const emptyEducation: EducationEntry = {
   institution: "",
   degree: "",
@@ -100,6 +105,14 @@ export default function InstructorVerificationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.github_url && isValidUrl(formData.github_url) && !GITHUB_HOSTS.includes(getHost(formData.github_url))) {
+      setError("The GitHub URL should link to github.com.");
+      return;
+    }
+    if (formData.linkedin_url && isValidUrl(formData.linkedin_url) && !LINKEDIN_HOSTS.includes(getHost(formData.linkedin_url))) {
+      setError("The LinkedIn URL should link to linkedin.com.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -450,7 +463,13 @@ export default function InstructorVerificationForm() {
               id="linkedin_url"
               type="url"
               value={formData.linkedin_url}
-              onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormData({ ...formData, linkedin_url: val });
+                if (val && isValidUrl(val) && !LINKEDIN_HOSTS.includes(getHost(val))) {
+                  setError("The LinkedIn URL should link to linkedin.com.");
+                } else { setError(null); }
+              }}
               placeholder="https://linkedin.com/in/yourprofile"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />
@@ -464,7 +483,13 @@ export default function InstructorVerificationForm() {
               id="github_url"
               type="url"
               value={formData.github_url}
-              onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFormData({ ...formData, github_url: val });
+                if (val && isValidUrl(val) && !GITHUB_HOSTS.includes(getHost(val))) {
+                  setError("The GitHub URL should link to github.com.");
+                } else { setError(null); }
+              }}
               placeholder="https://github.com/yourusername"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />

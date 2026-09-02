@@ -1,3 +1,4 @@
+import "server-only";
 import { cookies } from "next/headers";
 import { lookup } from "@/lib/translation/dictionaries";
 import { DEFAULT_LANGUAGE, isValidLanguage } from "@/lib/translation/languages";

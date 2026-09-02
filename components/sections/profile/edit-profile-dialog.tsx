@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AvatarUpload } from "./avatar-upload";
 import { updateProfile } from "@/actions/profile.actions";
@@ -27,16 +27,30 @@ interface EditProfileDialogProps {
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950";
 
+const GITHUB_HOSTS = ["github.com", "www.github.com"];
+const LINKEDIN_HOSTS = ["linkedin.com", "www.linkedin.com", "linkedin.in", "www.linkedin.in"];
+
+function isValidUrl(str: string) {
+  try { new URL(str); return true; } catch { return false; }
+}
+
+function getHost(str: string) {
+  try { return new URL(str).hostname.toLowerCase(); } catch { return ""; }
+}
+
 export function EditProfileDialog({ profile }: EditProfileDialogProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
   const [error, setError] = useState<string | null>(null);
+  const [urlWarning, setUrlWarning] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (!open) return;
+    setError(null);
+    setUrlWarning(null);
     document.body.style.overflow = "hidden";
     const frame = requestAnimationFrame(() => setMounted(true));
     function handleKeyDown(e: KeyboardEvent) {
@@ -54,7 +68,24 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setUrlWarning(null);
     const formData = new FormData(e.currentTarget);
+    const githubRaw = (formData.get("github_url") as string ?? "").trim();
+    const linkedinRaw = (formData.get("linkedin_url") as string ?? "").trim();
+    if (githubRaw && isValidUrl(githubRaw)) {
+      const host = getHost(githubRaw);
+      if (!GITHUB_HOSTS.includes(host)) {
+        setUrlWarning("The GitHub URL should link to github.com — you entered a different site.");
+        return;
+      }
+    }
+    if (linkedinRaw && isValidUrl(linkedinRaw)) {
+      const host = getHost(linkedinRaw);
+      if (!LINKEDIN_HOSTS.includes(host)) {
+        setUrlWarning("The LinkedIn URL should link to linkedin.com — you entered a different site.");
+        return;
+      }
+    }
     startTransition(async () => {
       const result = await updateProfile(formData);
       if (result && "error" in result && result.error) {
@@ -116,6 +147,12 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                   {error ? (
                     <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                       {error}
+                    </div>
+                  ) : null}
+                  {urlWarning ? (
+                    <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{urlWarning}</span>
                     </div>
                   ) : null}
 
@@ -188,6 +225,14 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                           defaultValue={profile.github_url ?? ""}
                           placeholder="https://github.com/username"
                           className={inputClass}
+                          onChange={(e) => {
+                            const val = e.target.value.trim();
+                            if (val && isValidUrl(val) && !GITHUB_HOSTS.includes(getHost(val))) {
+                              setUrlWarning("The GitHub URL should link to github.com.");
+                            } else {
+                              setUrlWarning(null);
+                            }
+                          }}
                         />
                       </label>
                       <label className="block space-y-1.5">
@@ -198,6 +243,14 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                           defaultValue={profile.linkedin_url ?? ""}
                           placeholder="https://linkedin.com/in/username"
                           className={inputClass}
+                          onChange={(e) => {
+                            const val = e.target.value.trim();
+                            if (val && isValidUrl(val) && !LINKEDIN_HOSTS.includes(getHost(val))) {
+                              setUrlWarning("The LinkedIn URL should link to linkedin.com.");
+                            } else {
+                              setUrlWarning(null);
+                            }
+                          }}
                         />
                       </label>
                     </div>
