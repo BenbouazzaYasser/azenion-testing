@@ -1,55 +1,73 @@
 "use client";
 
-import { Image as ImageIcon, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Image as ImageIcon, FileText, Film, Sticker as StickerIcon } from "lucide-react";
 
 interface AttachmentMenuProps {
   onSelectImages: () => void;
   onSelectFiles: () => void;
+  onSelectGif: () => void;
+  onSelectSticker: () => void;
   onClose: () => void;
 }
 
-export function AttachmentMenu({ onSelectImages, onSelectFiles, onClose }: AttachmentMenuProps) {
+export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onSelectSticker, onClose }: AttachmentMenuProps) {
   return (
     <div
       role="menu"
       aria-label="Attachment options"
-      className="w-56 overflow-hidden rounded-2xl border border-border bg-glass-strong shadow-dropdown backdrop-blur-2xl"
+      className="flex items-center gap-1.5"
     >
       <button
         type="button"
         role="menuitem"
+        aria-label="Photos and images"
+        title="Photos & images"
         onClick={() => {
           onSelectImages();
           onClose();
         }}
-        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-ink-50 hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
+        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-          <ImageIcon size={16} />
-        </span>
-        <span className="flex flex-col items-start">
-          <span className="font-medium">Photos & images</span>
-          <span className="text-xs text-ink-500">JPG, PNG, WebP, GIF, HEIC</span>
-        </span>
+        <ImageIcon size={16} />
       </button>
-      <div className="h-px bg-border/50" aria-hidden />
       <button
         type="button"
         role="menuitem"
+        aria-label="Files and documents"
+        title="Files & documents"
         onClick={() => {
           onSelectFiles();
           onClose();
         }}
-        className="flex w-full items-center gap-3 px-4 py-3 text-sm text-ink-50 hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
+        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-          <FileText size={16} />
-        </span>
-        <span className="flex flex-col items-start">
-          <span className="font-medium">Files & documents</span>
-          <span className="text-xs text-ink-500">PDF, DOCX, XLSX, ZIP, TXT</span>
-        </span>
+        <FileText size={16} />
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        aria-label="GIF"
+        title="GIF"
+        onClick={() => {
+          onSelectGif();
+          onClose();
+        }}
+        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+      >
+        <Film size={16} />
+      </button>
+      <button
+        type="button"
+        role="menuitem"
+        aria-label="Stickers"
+        title="Stickers"
+        onClick={() => {
+          onSelectSticker();
+          onClose();
+        }}
+        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+      >
+        <StickerIcon size={16} />
       </button>
     </div>
   );

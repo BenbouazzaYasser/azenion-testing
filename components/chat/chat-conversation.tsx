@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Film, Sticker as StickerIcon } from "lucide-react";
+import { Send, MessageSquare, Users, Menu, Ban, Mic, Square, Trash2, Play, Pause, Smile, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
@@ -1249,17 +1249,17 @@ export function ChatConversation({
               </div>
             )}
             {showGifPicker && (
-              <div className="absolute bottom-full left-12 z-30 mb-2 sm:left-16">
+              <div className="absolute bottom-full left-0 z-30 mb-2">
                 <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
               </div>
             )}
             {showStickerPicker && (
-              <div className="absolute bottom-full left-24 z-30 mb-2 sm:left-32">
+              <div className="absolute bottom-full left-0 z-30 mb-2">
                 <StickerPicker onSelect={handleStickerSelect} onClose={() => setShowStickerPicker(false)} />
               </div>
             )}
             <form
-              className="flex items-center gap-2 sm:gap-3"
+              className="flex items-center gap-1.5 sm:gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSend();
@@ -1281,34 +1281,55 @@ export function ChatConversation({
                 className="hidden"
                 onChange={handleFileInputChange}
               />
-              <div className="relative">
+              {/* + menu - Messenger compact */}
+              <div className="flex items-center">
+                <div
+                  className={cn(
+                    "flex items-center gap-1 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                    showAttachmentMenu ? "max-w-[220px] opacity-100 sm:max-w-[260px]" : "max-w-0 opacity-0",
+                  )}
+                  aria-hidden={!showAttachmentMenu}
+                >
+                  <AttachmentMenu
+                    onSelectImages={() => imageInputRef.current?.click()}
+                    onSelectFiles={() => fileInputRef.current?.click()}
+                    onSelectGif={() => {
+                      setShowGifPicker(true);
+                      setShowAttachmentMenu(false);
+                    }}
+                    onSelectSticker={() => {
+                      setShowStickerPicker(true);
+                      setShowAttachmentMenu(false);
+                    }}
+                    onClose={() => setShowAttachmentMenu(false)}
+                  />
+                </div>
                 <Button
                   type="button"
                   variant="secondary"
                   size="default"
-                  aria-label="Attach file"
+                  aria-label={showAttachmentMenu ? "Close attachment menu" : "Open attachment menu"}
                   aria-expanded={showAttachmentMenu}
                   aria-haspopup="menu"
                   onClick={() => {
-                    setShowAttachmentMenu((v) => !v);
-                    setShowEmojiPicker(false);
-                    setShowGifPicker(false);
-                    setShowStickerPicker(false);
+                    const next = !showAttachmentMenu;
+                    setShowAttachmentMenu(next);
+                    if (next) {
+                      setShowEmojiPicker(false);
+                      setShowGifPicker(false);
+                      setShowStickerPicker(false);
+                    }
                   }}
                   disabled={!!voice.blob || voice.isRecording}
-                  className="h-12 w-12 shrink-0 rounded-2xl p-0"
+                  className={cn(
+                    "h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                    showAttachmentMenu
+                      ? "bg-accent text-white shadow-md rotate-45"
+                      : "bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border",
+                  )}
                 >
-                  <Paperclip size={18} />
+                  <Plus size={18} className={cn("transition-transform duration-300", showAttachmentMenu && "rotate-90")} />
                 </Button>
-                {showAttachmentMenu && (
-                  <div className="absolute bottom-full left-0 z-30 mb-2">
-                    <AttachmentMenu
-                      onSelectImages={() => imageInputRef.current?.click()}
-                      onSelectFiles={() => fileInputRef.current?.click()}
-                      onClose={() => setShowAttachmentMenu(false)}
-                    />
-                  </div>
-                )}
               </div>
               <Button
                 type="button"
@@ -1316,47 +1337,18 @@ export function ChatConversation({
                 size="default"
                 aria-label="Open emoji picker"
                 onClick={() => {
-                  setShowEmojiPicker((v) => !v);
-                  setShowGifPicker(false);
-                  setShowStickerPicker(false);
-                  setShowAttachmentMenu(false);
+                  const next = !showEmojiPicker;
+                  setShowEmojiPicker(next);
+                  if (next) {
+                    setShowAttachmentMenu(false);
+                    setShowGifPicker(false);
+                    setShowStickerPicker(false);
+                  }
                 }}
                 disabled={!!voice.blob || voice.isRecording}
-                className="h-12 w-12 shrink-0 rounded-2xl p-0"
+                className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border disabled:opacity-50"
               >
-                <Smile size={18} />
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="default"
-                aria-label="Open GIF picker"
-                onClick={() => {
-                  setShowGifPicker((v) => !v);
-                  setShowEmojiPicker(false);
-                  setShowStickerPicker(false);
-                  setShowAttachmentMenu(false);
-                }}
-                disabled={!!voice.blob || voice.isRecording}
-                className="h-12 w-12 shrink-0 rounded-2xl p-0"
-              >
-                <Film size={18} />
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="default"
-                aria-label="Open sticker picker"
-                onClick={() => {
-                  setShowStickerPicker((v) => !v);
-                  setShowEmojiPicker(false);
-                  setShowGifPicker(false);
-                  setShowAttachmentMenu(false);
-                }}
-                disabled={!!voice.blob || voice.isRecording}
-                className="h-12 w-12 shrink-0 rounded-2xl p-0"
-              >
-                <StickerIcon size={18} />
+                <Smile size={17} />
               </Button>
               <textarea
                 ref={inputRef}
@@ -1373,11 +1365,16 @@ export function ChatConversation({
                 }}
                 disabled={!!voice.blob || voice.isRecording}
                 rows={1}
-                className="min-w-0 flex-1 resize-none rounded-2xl bg-surface px-4 py-3 text-sm leading-5 text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none disabled:opacity-50 max-h-24 overflow-y-auto"
+                className="min-w-0 flex-1 resize-none rounded-full bg-surface px-4 py-2.5 text-sm leading-5 text-ink-50 placeholder:text-ink-500 border-0 shadow-sm ring-1 ring-border focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent-400/40 disabled:opacity-50 max-h-24 overflow-y-auto"
               />
               {canSend ? (
-                <Button type="submit" aria-label="Send message" disabled={isSending} className="h-12 w-12 shrink-0 rounded-2xl p-0">
-                  <Send size={18} />
+                <Button
+                  type="submit"
+                  aria-label="Send message"
+                  disabled={isSending}
+                  className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0"
+                >
+                  <Send size={16} />
                 </Button>
               ) : (
                 <Button
@@ -1386,10 +1383,10 @@ export function ChatConversation({
                   aria-label="Record voice message"
                   onClick={handleMicClick}
                   disabled={!voice.isSupported || isSending}
-                  className="h-12 w-12 shrink-0 rounded-2xl p-0"
+                  className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover shadow-sm ring-1 ring-border disabled:opacity-50"
                   title={!voice.isSupported ? "Voice not supported in this browser" : "Record voice message"}
                 >
-                  <Mic size={18} />
+                  <Mic size={17} />
                 </Button>
               )}
             </form>
