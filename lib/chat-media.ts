@@ -59,13 +59,6 @@ export const CHAT_AUDIO_MIMES = [
   "audio/webm;codecs=opus",
 ] as const;
 
-const IMAGE_SET = new Set<string>(CHAT_IMAGE_MIMES);
-const FILE_SET = new Set<string>(CHAT_FILE_MIMES);
-const AUDIO_SET = new Set<string>(CHAT_AUDIO_MIMES);
-
-// Union of all storage-backed mime types (gif/sticker are provider-backed)
-const ALL_STORAGE_MIMES = new Set<string>([...CHAT_IMAGE_MIMES, ...CHAT_FILE_MIMES, ...CHAT_AUDIO_MIMES]);
-
 // ── helpers ─────────────────────────────────────────────────────────────────
 
 export function formatChatFileSize(bytes: number): string {
