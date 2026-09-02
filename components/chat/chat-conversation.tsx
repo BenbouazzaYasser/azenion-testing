@@ -1,15 +1,17 @@
 "use client";
 
-import { Fragment, useMemo, useRef, useState, useEffect } from "react";
-import { Send, MessageSquare, Users, Menu, Ban } from "lucide-react";
+import { Fragment, useMemo, useRef, useState, useEffect, useCallback } from "react";
+import { Send, MessageSquare, Users, Menu, Ban, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
+import { QueuedAttachmentCard } from "@/components/chat/chat-attachment";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import {
   sendMessage,
+  sendMessageWithAttachments,
   markConversationRead,
   markMessagesReceived,
   getConversationRecipientReadAt,
@@ -18,6 +20,15 @@ import { setActiveConversation } from "@/lib/chat-unread";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
 import { formatDate } from "@/lib/date";
 import { useMobileConversations } from "@/components/chat/mobile-conversations-context";
+import type { ChatAttachmentForMessage } from "@/data/chat";
+import {
+  CHAT_IMAGE_MIMES,
+  CHAT_FILE_MIMES,
+  CHAT_MAX_IMAGE_SIZE,
+  CHAT_MAX_FILE_SIZE,
+  getChatMediaObjectPath,
+  sanitizeFilename,
+} from "@/lib/chat-media";
 
 interface Message {
   id: string;
@@ -34,15 +45,23 @@ interface Message {
     avatar_url: string | null;
     username: string;
   } | null;
+  attachments: ChatAttachmentForMessage[];
 }
 
 interface ChatConversationProps {
   conversationId: string;
   initialMessages: Message[];
   currentUserId: string;
-  /** True when the other participant has blocked the current user. */
   amBlocked?: boolean;
 }
+
+type QueuedFile = {
+  id: string;
+  file: File;
+  previewUrl: string | null;
+  status: "queued" | "uploading" | "error";
+  error?: string;
+};
 
 function startOfDay(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
@@ -59,6 +78,27 @@ function getDayLabel(dateStr: string | null): string | null {
   return formatDate(dateStr);
 }
 
+function classifyFile(file: File): { type: "image" | "file"; valid: boolean; error?: string } {
+  const mime = file.type;
+  const size = file.size;
+  const isImageMime = (CHAT_IMAGE_MIMES as readonly string[]).includes(mime);
+  const isFileMime = (CHAT_FILE_MIMES as readonly string[]).includes(mime);
+  // Fallback: treat any image/* as image for preview, but still validate allowlist
+  if (isImageMime) {
+    if (size > CHAT_MAX_IMAGE_SIZE) return { type: "image", valid: false, error: `Image too large (max ${Math.round(CHAT_MAX_IMAGE_SIZE / 1024 / 1024)}MB)` };
+    return { type: "image", valid: true };
+  }
+  if (isFileMime) {
+    if (size > CHAT_MAX_FILE_SIZE) return { type: "file", valid: false, error: `File too large (max ${Math.round(CHAT_MAX_FILE_SIZE / 1024 / 1024)}MB)` };
+    return { type: "file", valid: true };
+  }
+  // Allow generic image/* that still might be in allowlist variation (e.g., heic) — if not in list, reject
+  if (mime.startsWith("image/")) {
+    return { type: "image", valid: false, error: `Image type ${mime} not supported` };
+  }
+  return { type: "file", valid: false, error: `File type ${mime} not supported` };
+}
+
 export function ChatConversation({
   conversationId,
   initialMessages,
@@ -71,8 +111,11 @@ export function ChatConversation({
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [actionsMessageId, setActionsMessageId] = useState<string | null>(null);
   const [otherLastReadAt, setOtherLastReadAt] = useState<string | null>(null);
+  const [queued, setQueued] = useState<QueuedFile[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -89,7 +132,7 @@ export function ChatConversation({
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, queued]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -107,6 +150,15 @@ export function ChatConversation({
     }
   }
 
+  // Cleanup object URLs
+  useEffect(() => {
+    return () => {
+      queued.forEach((q) => {
+        if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
+      });
+    };
+  }, [queued]);
+
   useEffect(() => {
     const supabase = createClient();
 
@@ -122,6 +174,7 @@ export function ChatConversation({
         },
         async (payload) => {
           const newMsg = payload.new as Message;
+          // Ignore own messages — already handled via optimistic reconciliation
           if (newMsg.sender_id === currentUserId) return;
 
           const { data: profile } = await supabase
@@ -132,10 +185,30 @@ export function ChatConversation({
 
           void markMessagesReceived(conversationId);
 
-          setMessages((prev) => [
-            ...prev,
-            { ...newMsg, sender: profile },
-          ]);
+          // Fetch attachments for this message (if any) — enrich via signed URLs client-side
+          let attachments: ChatAttachmentForMessage[] = [];
+          try {
+            const { data: rows } = await supabase
+              .from("chat_message_attachments")
+              .select("id, message_id, conversation_id, uploader_id, type, storage_path, filename, mime_type, file_size, duration_seconds, provider, external_id, metadata, created_at")
+              .eq("message_id", newMsg.id);
+            if (rows && rows.length > 0) {
+              attachments = await Promise.all(
+                (rows as ChatAttachmentForMessage[]).map(async (att) => {
+                  if (!att.storage_path) return { ...att, signedUrl: null };
+                  const { data } = await supabase.storage.from("chat-media").createSignedUrl(att.storage_path, 60);
+                  return { ...att, signedUrl: data?.signedUrl ?? null };
+                }),
+              );
+            }
+          } catch {
+            // ignore
+          }
+
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === newMsg.id)) return prev;
+            return [...prev, { ...newMsg, sender: profile, attachments }];
+          });
         },
       )
       .on(
@@ -216,8 +289,81 @@ export function ChatConversation({
     return "sent";
   }
 
+  const addFiles = useCallback((files: FileList | File[]) => {
+    const list = Array.from(files);
+    if (list.length === 0) return;
+    if (queued.length + list.length > 10) {
+      toast.error("Too many files. Max 10 per message.");
+      return;
+    }
+    const next: QueuedFile[] = [];
+    for (const file of list) {
+      const cls = classifyFile(file);
+      if (!cls.valid) {
+        toast.error(cls.error ?? "Unsupported file type");
+        continue;
+      }
+      const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
+      next.push({ id: crypto.randomUUID(), file, previewUrl, status: "queued" });
+    }
+    if (next.length > 0) setQueued((prev) => [...prev, ...next]);
+  }, [queued.length]);
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      addFiles(e.target.files);
+      e.target.value = "";
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      addFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items;
+    const files: File[] = [];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item && item.kind === "file") {
+        const f = item.getAsFile();
+        if (f) files.push(f);
+      }
+    }
+    if (files.length > 0) {
+      e.preventDefault();
+      addFiles(files);
+    }
+  };
+
+  const removeQueued = (id: string) => {
+    setQueued((prev) => {
+      const item = prev.find((q) => q.id === id);
+      if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      return prev.filter((q) => q.id !== id);
+    });
+  };
+
+  const retryQueued = async (id: string) => {
+    setQueued((prev) => prev.map((q) => (q.id === id ? { ...q, status: "queued" as const, error: undefined } : q)));
+  };
+
   const handleSend = async () => {
-    if (!input.trim() || isSending) return;
+    const hasText = input.trim().length > 0;
+    const hasFiles = queued.length > 0;
+    if ((!hasText && !hasFiles) || isSending) return;
+
+    // Validate queued files still valid (size check again)
+    for (const q of queued) {
+      if (q.status === "error") {
+        toast.error("Please remove or retry failed files before sending");
+        return;
+      }
+    }
 
     setIsSending(true);
     const content = input.trim();
@@ -230,6 +376,28 @@ export function ChatConversation({
       .eq("id", currentUserId)
       .single();
 
+    // Prepare optimistic attachments with preview URLs
+    const optimisticAttachments: ChatAttachmentForMessage[] = queued.map((q) => {
+      const cls = classifyFile(q.file);
+      return {
+        id: q.id,
+        message_id: "optimistic",
+        conversation_id: conversationId,
+        uploader_id: currentUserId,
+        type: cls.type,
+        storage_path: null,
+        filename: q.file.name,
+        mime_type: q.file.type,
+        file_size: q.file.size,
+        duration_seconds: null,
+        provider: null,
+        external_id: null,
+        metadata: null,
+        created_at: new Date().toISOString(),
+        signedUrl: q.previewUrl,
+      };
+    });
+
     const optimistic: Message = {
       id: crypto.randomUUID(),
       conversation_id: conversationId,
@@ -240,17 +408,117 @@ export function ChatConversation({
       edited_at: null,
       received_at: null,
       sender: profile,
+      attachments: optimisticAttachments,
     };
 
     setMessages((prev) => [...prev, optimistic]);
+
+    // Snapshot queued files for upload
+    const toUpload = [...queued];
+    // Mark uploading
+    setQueued((prev) => prev.map((q) => ({ ...q, status: "uploading" as const })));
+
     try {
-      const result = await sendMessage(conversationId, content);
+      let attachmentInputs: { type: "image" | "file"; storage_path: string; filename: string; mime_type: string; file_size: number }[] = [];
+
+      if (toUpload.length > 0) {
+        // Upload each file to chat-media
+        const uploadResults = await Promise.all(
+          toUpload.map(async (q) => {
+            const cls = classifyFile(q.file);
+            const attachmentId = q.id; // reuse queued id as attachment id for path determinism
+            const safeName = sanitizeFilename(q.file.name);
+            const path = getChatMediaObjectPath(conversationId, attachmentId, safeName);
+            const { error } = await supabase.storage.from("chat-media").upload(path, q.file, {
+              contentType: q.file.type,
+              upsert: false,
+            });
+            if (error) {
+              return { error: error.message, q };
+            }
+            return {
+              type: cls.type as "image" | "file",
+              storage_path: path,
+              filename: q.file.name,
+              mime_type: q.file.type || "application/octet-stream",
+              file_size: q.file.size,
+            };
+          }),
+        );
+
+        const failed = uploadResults.filter((r) => "error" in r) as { error: string; q: QueuedFile }[];
+        if (failed.length > 0) {
+          // Mark failed in queue, keep optimistic but remove it after failure? For now remove optimistic and keep queue with error
+          setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+          setQueued((prev) =>
+            prev.map((q) => {
+              const f = failed.find((x) => x.q.id === q.id);
+              return f ? { ...q, status: "error" as const, error: f.error } : q;
+            }),
+          );
+          toast.error(`Upload failed for ${failed.length} file(s)`);
+          // Attempt cleanup of successful uploads to avoid orphans
+          const succeeded = uploadResults.filter((r) => !("error" in r)) as typeof attachmentInputs;
+          if (succeeded.length > 0) {
+            const paths = succeeded.map((s) => s.storage_path);
+            await supabase.storage.from("chat-media").remove(paths).catch(() => {});
+          }
+          return;
+        }
+
+        attachmentInputs = uploadResults as typeof attachmentInputs;
+      }
+
+      // Clear queue optimistically (will be cleared on success)
+      setQueued([]);
+
+      let result;
+      if (attachmentInputs.length > 0) {
+        result = await sendMessageWithAttachments(conversationId, content, attachmentInputs);
+      } else {
+        result = await sendMessage(conversationId, content);
+      }
+
       if (result && "error" in result && result.error) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        // Restore queue for retry if it was attachments
+        if (toUpload.length > 0) {
+          setQueued(toUpload.map((q) => ({ ...q, status: "queued" as const })));
+        }
         toast.error(result.error);
+        // Cleanup uploaded storage if DB insert failed (sendMessageWithAttachments already tries, but for safety)
+        if (attachmentInputs.length > 0) {
+          const paths = attachmentInputs.map((a) => a.storage_path);
+          await supabase.storage.from("chat-media").remove(paths).catch(() => {});
+        }
+      } else if (result && "success" in result && result.id) {
+        // Reconcile optimistic id -> real id, and update attachments with real message_id and signedUrls
+        // We already cleared queue, but we need to update optimistic message's id and attachments
+        // Fetch the created attachments' signedUrls via a quick refetch? Instead, keep optimistic attachments but update id.
+        // The server's getMessages will have proper signedUrls on next refresh; for now keep local preview.
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === optimistic.id
+              ? {
+                  ...m,
+                  id: result.id as string,
+                  created_at: (result.created_at as string) ?? m.created_at,
+                  attachments: optimisticAttachments.map((att) => ({
+                    ...att,
+                    message_id: result.id as string,
+                  })),
+                }
+              : m,
+          ),
+        );
+        // Revoke object URLs after a delay? Keep for optimistic display
+        toUpload.forEach((q) => {
+          if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
+        });
       }
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+      setQueued(toUpload.map((q) => ({ ...q, status: "queued" as const })));
       toast.error("Message could not be sent. Please try again.");
     } finally {
       setIsSending(false);
@@ -262,10 +530,21 @@ export function ChatConversation({
   const participantInitial = (participant?.full_name?.[0] ?? participant?.username?.[0] ?? "?").toUpperCase();
   const mobileConversations = useMobileConversations();
 
+  const canSend = input.trim().length > 0 || queued.length > 0;
+
   return (
     <div
       ref={conversationRef}
       onBlur={handleBlur}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        if (e.currentTarget === e.target) setIsDragging(false);
+      }}
+      onDrop={handleDrop}
       className="relative flex h-full min-h-0 flex-col overflow-hidden"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -316,15 +595,13 @@ export function ChatConversation({
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
           <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1">
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
-            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">
-              Private
-            </span>
+            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">Private</span>
           </div>
         </div>
       </header>
 
       <div className={cn("relative z-10 flex-1 min-h-0 overflow-y-auto p-5 sm:p-6", SCROLLBAR_CLASSES)}>
-        {messages.length === 0 && (
+        {messages.length === 0 && queued.length === 0 && (
           <div className="relative flex h-full min-h-0 flex-col items-center justify-center px-6 text-center">
             <div
               aria-hidden
@@ -334,9 +611,7 @@ export function ChatConversation({
               <MessageSquare size={26} />
             </div>
             <h2 className="mt-5 text-lg font-semibold text-ink-50">No messages yet</h2>
-            <p className="mt-1.5 max-w-xs text-sm text-ink-400">
-              Send a message to start the conversation.
-            </p>
+            <p className="mt-1.5 max-w-xs text-sm text-ink-400">Send a message to start the conversation.</p>
           </div>
         )}
 
@@ -382,6 +657,7 @@ export function ChatConversation({
                     statusAvatarName={participantName}
                     active={msg.id === activeMessageId}
                     showActions={actionsMessageId === msg.id}
+                    attachments={msg.attachments}
                     onSelect={(id) => {
                       setActiveMessageId(id);
                       setActionsMessageId(null);
@@ -399,6 +675,14 @@ export function ChatConversation({
         </div>
       </div>
 
+      {isDragging && (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-accent/10 backdrop-blur-sm">
+          <div className="rounded-2xl border-2 border-dashed border-accent bg-void-900/80 px-6 py-4 text-sm font-medium text-ink-50 shadow-lg">
+            Drop files to attach
+          </div>
+        </div>
+      )}
+
       <div className="relative z-10 shrink-0 border-0 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4 sm:pt-3">
         {amBlocked ? (
           <div
@@ -411,30 +695,66 @@ export function ChatConversation({
             </p>
           </div>
         ) : (
-          <form
-            className="flex items-center gap-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSend();
-            }}
-          >
-            <input
-              type="text"
-              aria-label="Type a message"
-              placeholder="Type a message..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="min-w-0 flex-1 rounded-2xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none"
-            />
-            <Button
-              type="submit"
-              aria-label="Send message"
-              disabled={!input.trim() || isSending}
-              className="h-12 w-12 shrink-0 rounded-2xl p-0"
+          <>
+            {queued.length > 0 && (
+              <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+                {queued.map((q) => (
+                  <QueuedAttachmentCard
+                    key={q.id}
+                    file={q.file}
+                    previewUrl={q.previewUrl}
+                    status={q.status}
+                    error={q.error}
+                    onRemove={() => removeQueued(q.id)}
+                    onRetry={() => retryQueued(q.id)}
+                  />
+                ))}
+              </div>
+            )}
+            <form
+              className="flex items-center gap-2 sm:gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSend();
+              }}
             >
-              <Send size={18} />
-            </Button>
-          </form>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept={[...CHAT_IMAGE_MIMES, ...CHAT_FILE_MIMES].join(",")}
+                className="hidden"
+                onChange={handleFileInputChange}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="default"
+                aria-label="Attach file"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-12 w-12 shrink-0 rounded-2xl p-0"
+              >
+                <Paperclip size={18} />
+              </Button>
+              <input
+                type="text"
+                aria-label="Type a message"
+                placeholder="Type a message..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onPaste={handlePaste}
+                className="min-w-0 flex-1 rounded-2xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none"
+              />
+              <Button
+                type="submit"
+                aria-label="Send message"
+                disabled={!canSend || isSending}
+                className="h-12 w-12 shrink-0 rounded-2xl p-0"
+              >
+                <Send size={18} />
+              </Button>
+            </form>
+          </>
         )}
       </div>
     </div>

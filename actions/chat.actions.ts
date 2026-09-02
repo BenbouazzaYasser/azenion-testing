@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getConversations, type ConversationWithMeta } from "@/data/chat";
+import {
+  validateChatAttachmentInput,
+  CHAT_MEDIA_BUCKET,
+} from "@/lib/chat-media";
 
 export async function sendMessage(conversationId: string, content: string) {
   const supabase = createClient();
@@ -57,6 +61,134 @@ export async function sendMessage(conversationId: string, content: string) {
 
   revalidatePath(`/chat/${conversationId}`);
   return { success: true, id: data.id, created_at: data.created_at };
+}
+
+export interface SendMessageAttachmentInput {
+  type: "image" | "file";
+  storage_path: string;
+  filename: string;
+  mime_type: string;
+  file_size: number;
+}
+
+export async function sendMessageWithAttachments(
+  conversationId: string,
+  content: string,
+  attachments: SendMessageAttachmentInput[],
+) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const hasText = content.trim().length > 0;
+  const hasAttachments = attachments.length > 0;
+
+  if (!hasText && !hasAttachments) {
+    return { error: "Message cannot be empty" };
+  }
+
+  if (attachments.length > 10) {
+    return { error: "Too many attachments. Max 10 per message." };
+  }
+
+  // Block guard (same as sendMessage)
+  const { data: members } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  // Verify caller is member (defense in depth — RLS also checks)
+  const isMember = (members ?? []).some((m) => m.user_id === user.id);
+  if (!isMember) {
+    return { error: "You are not a member of this conversation." };
+  }
+
+  const otherMember = (members ?? []).find((m) => m.user_id !== user.id);
+  if (otherMember) {
+    const { data: blocked } = await supabase.rpc("is_user_blocked", {
+      p_blocker_id: otherMember.user_id,
+      p_blocked_id: user.id,
+    });
+    if (blocked) {
+      return { error: "You can't send messages to this user because they blocked you." };
+    }
+  }
+
+  // Validate each attachment server-side via centralized helpers
+  for (const att of attachments) {
+    const result = validateChatAttachmentInput({
+      type: att.type,
+      filename: att.filename,
+      mimeType: att.mime_type,
+      fileSize: att.file_size,
+      storagePath: att.storage_path,
+    });
+    if (!result.valid) {
+      return { error: result.error ?? "Invalid attachment." };
+    }
+    // Ensure path is conversation-scoped to the target conversation
+    if (!att.storage_path.startsWith(`chat/${conversationId}/`)) {
+      return { error: "Attachment path does not match conversation." };
+    }
+  }
+
+  // Create message (allow empty content when attachments present)
+  const messageContent = hasText ? content.trim() : "";
+  const { data: msg, error: msgError } = await supabase
+    .from("messages")
+    .insert({
+      conversation_id: conversationId,
+      sender_id: user.id,
+      content: messageContent,
+    })
+    .select("id, created_at")
+    .single();
+
+  if (msgError || !msg) {
+    return { error: msgError?.message ?? "Failed to create message." };
+  }
+
+  if (attachments.length === 0) {
+    revalidatePath(`/chat/${conversationId}`);
+    return { success: true, id: msg.id, created_at: msg.created_at };
+  }
+
+  // Insert attachment rows
+  const rows = attachments.map((att) => ({
+    message_id: msg.id,
+    conversation_id: conversationId,
+    uploader_id: user.id,
+    type: att.type,
+    storage_path: att.storage_path,
+    filename: att.filename,
+    mime_type: att.mime_type,
+    file_size: att.file_size,
+    metadata: {},
+  }));
+
+  const { error: attError } = await supabase.from("chat_message_attachments").insert(rows);
+
+  if (attError) {
+    // Roll back message to avoid orphan; best-effort clean storage objects
+    await supabase.from("messages").delete().eq("id", msg.id).eq("sender_id", user.id);
+    try {
+      const admin = createAdminClient();
+      const paths = attachments.map((a) => a.storage_path);
+      await admin.storage.from(CHAT_MEDIA_BUCKET).remove(paths);
+    } catch {
+      // best effort, ignore
+    }
+    return { error: attError.message };
+  }
+
+  revalidatePath(`/chat/${conversationId}`);
+  return { success: true, id: msg.id, created_at: msg.created_at };
 }
 
 export async function editMessage(messageId: string, content: string) {

@@ -1,5 +1,30 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  CHAT_MEDIA_BUCKET,
+  CHAT_MEDIA_PREFIX,
+  CHAT_MEDIA_SIGNED_URL_TTL,
+  isChatMediaMarker,
+} from "@/lib/chat-media";
+
+export interface ChatAttachmentForMessage {
+  id: string;
+  message_id: string;
+  conversation_id: string;
+  uploader_id: string;
+  type: string;
+  storage_path: string | null;
+  filename: string | null;
+  mime_type: string | null;
+  file_size: number | null;
+  duration_seconds: number | null;
+  provider: string | null;
+  external_id: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string | null;
+  /** Short-lived signed URL for private storage_path, null for provider types or if not resolvable */
+  signedUrl: string | null;
+}
 
 export interface MessageWithSender {
   id: string;
@@ -16,6 +41,7 @@ export interface MessageWithSender {
     avatar_url: string | null;
     username: string;
   } | null;
+  attachments: ChatAttachmentForMessage[];
 }
 
 export interface ConversationWithMeta {
@@ -178,22 +204,55 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
 
-  if (!messages) return [];
+  if (!messages || messages.length === 0) return [];
 
   const senderIds = [...new Set(messages.map((m) => m.sender_id))];
 
-  const { data: profiles } = await createAdminClient()
-    .from("profiles")
-    .select("id, full_name, avatar_url, username")
-    .in("id", senderIds);
+  const [{ data: profiles }, { data: attachments }] = await Promise.all([
+    createAdminClient()
+      .from("profiles")
+      .select("id, full_name, avatar_url, username")
+      .in("id", senderIds),
+    supabase
+      .from("chat_message_attachments")
+      .select("id, message_id, conversation_id, uploader_id, type, storage_path, filename, mime_type, file_size, duration_seconds, provider, external_id, metadata, created_at")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true }),
+  ]);
 
   const profileMap = new Map(
     (profiles ?? []).map((p) => [p.id, p]),
   );
 
+  // Group attachments by message_id and resolve signed URLs server-side
+  const attachmentsByMessage = new Map<string, ChatAttachmentForMessage[]>();
+  if (attachments && attachments.length > 0) {
+    const admin = createAdminClient();
+    const withUrls = await Promise.all(
+      (attachments as ChatAttachmentForMessage[]).map(async (att) => {
+        let signedUrl: string | null = null;
+        if (att.storage_path) {
+          const marker = `${CHAT_MEDIA_PREFIX}${att.storage_path}`;
+          // Use admin to generate signed URL; attachment RLS already ensured membership
+          if (isChatMediaMarker(marker)) {
+            const { data } = await admin.storage.from(CHAT_MEDIA_BUCKET).createSignedUrl(att.storage_path, CHAT_MEDIA_SIGNED_URL_TTL);
+            signedUrl = data?.signedUrl ?? null;
+          }
+        }
+        return { ...att, signedUrl };
+      }),
+    );
+    for (const att of withUrls) {
+      const arr = attachmentsByMessage.get(att.message_id) ?? [];
+      arr.push(att);
+      attachmentsByMessage.set(att.message_id, arr);
+    }
+  }
+
   return messages.map((msg) => ({
     ...msg,
     sender: profileMap.get(msg.sender_id) ?? null,
+    attachments: attachmentsByMessage.get(msg.id) ?? [],
   }));
 }
 

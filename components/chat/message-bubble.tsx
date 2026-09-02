@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { formatTime } from "@/lib/date";
 import { editMessage, deleteMessage } from "@/actions/chat.actions";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
+import { ChatAttachment } from "@/components/chat/chat-attachment";
+import type { ChatAttachmentForMessage } from "@/data/chat";
 
 interface MessageBubbleProps {
   id: string;
@@ -26,6 +28,7 @@ interface MessageBubbleProps {
   showActions?: boolean;
   onSelect?: (id: string) => void;
   onToggleActions?: (id: string) => void;
+  attachments?: ChatAttachmentForMessage[];
 }
 
 export function MessageBubble({
@@ -46,6 +49,7 @@ export function MessageBubble({
   showActions = false,
   onSelect,
   onToggleActions,
+  attachments = [],
 }: MessageBubbleProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(content);
@@ -139,7 +143,14 @@ export function MessageBubble({
                 : "rounded-bl-none bg-surface/80 text-ink-50 shadow-[0_8px_20px_-14px_rgba(0,0,0,0.7)] focus-visible:ring-accent-400/40",
             )}
           >
-            <p className="whitespace-pre-wrap break-words">{content}</p>
+            {attachments.length > 0 && (
+              <div className="mb-1 flex flex-col gap-2">
+                {attachments.map((att) => (
+                  <ChatAttachment key={att.id} attachment={att} isOwn={isOwn} />
+                ))}
+              </div>
+            )}
+            {content.trim().length > 0 && <p className="whitespace-pre-wrap break-words">{content}</p>}
             <div
               aria-hidden={!active}
               className="grid transition-[grid-template-rows] duration-200 ease-premium"
