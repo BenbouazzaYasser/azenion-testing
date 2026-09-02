@@ -5,6 +5,7 @@ import { FileText, Download, AlertCircle, Loader2, Image as ImageIcon, Play, Pau
 import { cn } from "@/lib/utils";
 import { formatChatFileSize } from "@/lib/chat-media";
 import type { ChatAttachmentForMessage } from "@/data/chat";
+import { getStickerById } from "@/lib/stickers/catalog";
 
 interface ChatAttachmentProps {
   attachment: ChatAttachmentForMessage;
@@ -120,9 +121,38 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
   const [imgError, setImgError] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
 
+  const isSticker = attachment.type === "sticker";
   const isAudio = attachment.type === "audio";
   const isGif = attachment.type === "gif";
   const isImage = attachment.type === "image" && attachment.mime_type?.startsWith("image/");
+
+  if (isSticker) {
+    const sticker = attachment.external_id ? getStickerById(attachment.external_id) : undefined;
+    const meta = (attachment.metadata ?? {}) as { url?: string; packId?: string; name?: string };
+    // Prefer catalog URL (authoritative) over metadata to prevent URL injection
+    const url = sticker?.url ?? (meta.url && typeof meta.url === "string" && meta.url.startsWith("/stickers/") ? meta.url : null);
+    if (!sticker || !url) {
+      return (
+        <div className="flex items-center gap-2 rounded-xl bg-surface/60 px-3 py-2 text-sm text-ink-400">
+          <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+          <span>Invalid sticker</span>
+        </div>
+      );
+    }
+    return (
+      <div className="overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt={sticker.name}
+          width={sticker.width}
+          height={sticker.height}
+          className="h-28 w-28 object-contain drop-shadow-sm sm:h-32 sm:w-32"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
 
   if (isGif) {
     const meta = (attachment.metadata ?? {}) as { url?: string; previewUrl?: string; title?: string };

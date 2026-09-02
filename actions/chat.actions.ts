@@ -8,6 +8,7 @@ import {
   validateChatAttachmentInput,
   CHAT_MEDIA_BUCKET,
 } from "@/lib/chat-media";
+import { isValidStickerId, getStickerById } from "@/lib/stickers/catalog";
 
 export async function sendMessage(conversationId: string, content: string) {
   const supabase = createClient();
@@ -64,7 +65,7 @@ export async function sendMessage(conversationId: string, content: string) {
 }
 
 export interface SendMessageAttachmentInput {
-  type: "image" | "file" | "audio" | "gif";
+  type: "image" | "file" | "audio" | "gif" | "sticker";
   storage_path?: string | null;
   filename?: string | null;
   mime_type?: string | null;
@@ -149,6 +150,25 @@ export async function sendMessageWithAttachments(
     // For gif, ensure provider is allowed (already validated) and external_id present
     if (att.type === "gif" && att.provider !== "giphy" && att.provider !== "tenor") {
       return { error: "Invalid GIF provider." };
+    }
+    if (att.type === "sticker") {
+      if (!att.external_id || !isValidStickerId(att.external_id)) {
+        return { error: "Invalid sticker." };
+      }
+      if (att.provider !== "local") {
+        return { error: "Invalid sticker provider." };
+      }
+      // Strict: metadata url must match catalog if provided (prevents arbitrary URL)
+      if (att.metadata && typeof att.metadata === "object") {
+        const metaUrl = (att.metadata as Record<string, unknown>).url as string | undefined;
+        const sticker = getStickerById(att.external_id);
+        if (metaUrl && sticker && metaUrl !== sticker.url) {
+          return { error: "Sticker URL mismatch." };
+        }
+        if (metaUrl && !metaUrl.startsWith("/stickers/")) {
+          return { error: "Sticker URL not allowed." };
+        }
+      }
     }
   }
 

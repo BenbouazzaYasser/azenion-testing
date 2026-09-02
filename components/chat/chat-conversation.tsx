@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Film } from "lucide-react";
+import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Film, Sticker as StickerIcon } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
@@ -34,7 +34,9 @@ import {
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { EmojiPicker } from "@/components/chat/emoji-picker";
 import { GifPicker } from "@/components/chat/gif-picker";
+import { StickerPicker } from "@/components/chat/sticker-picker";
 import type { GifResult } from "@/lib/gif/provider";
+import type { Sticker as StickerType } from "@/lib/stickers/catalog";
 
 interface Message {
   id: string;
@@ -121,6 +123,7 @@ export function ChatConversation({
   const [isDragging, setIsDragging] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -173,21 +176,23 @@ export function ChatConversation({
   }, [queued]);
 
   useEffect(() => {
-    if (!showEmojiPicker && !showGifPicker) return;
+    if (!showEmojiPicker && !showGifPicker && !showStickerPicker) return;
     function handleOutside(e: MouseEvent) {
       if (
-        (showEmojiPicker || showGifPicker) &&
+        (showEmojiPicker || showGifPicker || showStickerPicker) &&
         emojiContainerRef.current &&
         !emojiContainerRef.current.contains(e.target as Node)
       ) {
         setShowEmojiPicker(false);
         setShowGifPicker(false);
+        setShowStickerPicker(false);
       }
     }
     function handleEsc(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setShowEmojiPicker(false);
         setShowGifPicker(false);
+        setShowStickerPicker(false);
       }
     }
     document.addEventListener("mousedown", handleOutside);
@@ -196,7 +201,7 @@ export function ChatConversation({
       document.removeEventListener("mousedown", handleOutside);
       document.removeEventListener("keydown", handleEsc);
     };
-  }, [showEmojiPicker, showGifPicker]);
+  }, [showEmojiPicker, showGifPicker, showStickerPicker]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -417,6 +422,7 @@ export function ChatConversation({
     async (gif: GifResult) => {
       setShowGifPicker(false);
       setShowEmojiPicker(false);
+      setShowStickerPicker(false);
       if (isSending) return;
       if (queued.length > 0) {
         toast.error("Please send or remove attached files before sending a GIF");
@@ -536,6 +542,114 @@ export function ChatConversation({
       } catch {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
         toast.error("GIF could not be sent.");
+        setInput(content);
+      } finally {
+        setIsSending(false);
+        void markConversationRead(conversationId);
+      }
+    },
+    [input, isSending, queued.length, voice, conversationId, currentUserId],
+  );
+
+  const handleStickerSelect = useCallback(
+    async (sticker: StickerType) => {
+      setShowStickerPicker(false);
+      setShowEmojiPicker(false);
+      setShowGifPicker(false);
+      if (isSending) return;
+      if (queued.length > 0) {
+        toast.error("Please send or remove attached files before sending a sticker");
+        return;
+      }
+      if (voice.isRecording || voice.blob) {
+        toast.error("Finish or cancel voice recording before sending sticker");
+        return;
+      }
+      const content = input.trim();
+      setInput("");
+      setIsSending(true);
+      const supabase = createClient();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, full_name, avatar_url, username")
+        .eq("id", currentUserId)
+        .single();
+
+      const stickerAtt: ChatAttachmentForMessage = {
+        id: crypto.randomUUID(),
+        message_id: "optimistic",
+        conversation_id: conversationId,
+        uploader_id: currentUserId,
+        type: "sticker",
+        storage_path: null,
+        filename: null,
+        mime_type: null,
+        file_size: null,
+        duration_seconds: null,
+        provider: "local",
+        external_id: sticker.id,
+        metadata: {
+          url: sticker.url,
+          packId: sticker.packId,
+          name: sticker.name,
+          width: sticker.width,
+          height: sticker.height,
+        } as Record<string, unknown>,
+        created_at: new Date().toISOString(),
+        signedUrl: null,
+      };
+
+      const optimistic: Message = {
+        id: crypto.randomUUID(),
+        conversation_id: conversationId,
+        sender_id: currentUserId,
+        content,
+        image_url: null,
+        created_at: new Date().toISOString(),
+        edited_at: null,
+        received_at: null,
+        sender: profile,
+        attachments: [stickerAtt],
+      };
+      setMessages((prev) => [...prev, optimistic]);
+
+      try {
+        const result = await sendMessageWithAttachments(conversationId, content, [
+          {
+            type: "sticker",
+            provider: "local",
+            external_id: sticker.id,
+            metadata: {
+              url: sticker.url,
+              packId: sticker.packId,
+              name: sticker.name,
+              width: sticker.width,
+              height: sticker.height,
+            },
+          } as unknown as import("@/actions/chat.actions").SendMessageAttachmentInput,
+        ]);
+
+        if (result && "error" in result && result.error) {
+          setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+          toast.error(result.error);
+          setInput(content);
+        } else if (result && "success" in result && result.id) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === optimistic.id
+                ? {
+                    ...m,
+                    id: result.id as string,
+                    created_at: (result.created_at as string) ?? m.created_at,
+                    attachments: [{ ...stickerAtt, message_id: result.id as string }],
+                  }
+                : m,
+            ),
+          );
+        }
+      } catch {
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        toast.error("Sticker could not be sent.");
         setInput(content);
       } finally {
         setIsSending(false);
@@ -1122,6 +1236,11 @@ export function ChatConversation({
                 <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
               </div>
             )}
+            {showStickerPicker && (
+              <div className="absolute bottom-full left-24 z-30 mb-2 sm:left-32">
+                <StickerPicker onSelect={handleStickerSelect} onClose={() => setShowStickerPicker(false)} />
+              </div>
+            )}
             <form
               className="flex items-center gap-2 sm:gap-3"
               onSubmit={(e) => {
@@ -1156,6 +1275,7 @@ export function ChatConversation({
                 onClick={() => {
                   setShowEmojiPicker((v) => !v);
                   setShowGifPicker(false);
+                  setShowStickerPicker(false);
                 }}
                 disabled={!!voice.blob || voice.isRecording}
                 className="h-12 w-12 shrink-0 rounded-2xl p-0"
@@ -1170,11 +1290,27 @@ export function ChatConversation({
                 onClick={() => {
                   setShowGifPicker((v) => !v);
                   setShowEmojiPicker(false);
+                  setShowStickerPicker(false);
                 }}
                 disabled={!!voice.blob || voice.isRecording}
                 className="h-12 w-12 shrink-0 rounded-2xl p-0"
               >
                 <Film size={18} />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="default"
+                aria-label="Open sticker picker"
+                onClick={() => {
+                  setShowStickerPicker((v) => !v);
+                  setShowEmojiPicker(false);
+                  setShowGifPicker(false);
+                }}
+                disabled={!!voice.blob || voice.isRecording}
+                className="h-12 w-12 shrink-0 rounded-2xl p-0"
+              >
+                <StickerIcon size={18} />
               </Button>
               <input
                 ref={inputRef}
