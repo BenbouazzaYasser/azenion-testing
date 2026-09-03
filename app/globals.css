@@ -182,6 +182,19 @@
     }
   }
 
+  /* Incoming-call visual pulse (independent of any audio) */
+  @keyframes ring {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.15);
+      opacity: 0.75;
+    }
+  }
+
   .animate-shimmer {
     background-size: 1000px 100%;
     animation: shimmer 2s infinite;

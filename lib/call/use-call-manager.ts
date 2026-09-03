@@ -1,0 +1,728 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { callSignaling } from "@/lib/call/signaling";
+import type { CallEventRow } from "@/lib/call/signaling";
+import {
+  closePeerConnection,
+  createPeerConnection,
+  stopTracks,
+} from "@/lib/call/peer";
+import {
+  getScreenStream,
+  getStream,
+  getRtcSupport,
+  supportsGetDisplayMedia,
+} from "@/lib/call/media";
+import type {
+  CallKind,
+  CallPeer,
+  CallPhase,
+  CallSession,
+  IncomingCallInfo,
+  OfferPayload,
+  IcePayload,
+} from "@/lib/call/types";
+
+const RING_TIMEOUT_MS = 45_000; // caller gives up ringing after 45s
+const INCOMING_TIMEOUT_MS = 45_000; // recipient auto-cancels an un-answered offer
+const CONNECT_TIMEOUT_MS = 30_000; // no ICE connection within 30s -> fail
+
+export interface CallRequestEvent {
+  conversationId: string;
+  peer: CallPeer;
+  kind: CallKind;
+  autoScreen?: boolean;
+}
+
+/**
+ * Manages the full lifecycle of exactly one call at a time: global incoming
+ * listener, outgoing ring, offer/answer/ICE exchange, media controls, screen
+ * share and complete teardown. Only one active call (any phase) is permitted.
+ */
+function useCallManager() {
+  const [activeCall, setActiveCall] = useState<CallSession | null>(null);
+  const [incomingCall, setIncomingCall] = useState<
+    (IncomingCallInfo & { offer?: OfferPayload }) | null
+  >(null);
+
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const screenSenderRef = useRef<RTCRtpSender | null>(null);
+  const screenReplacedTrackRef = useRef(false); // true if we swapped an existing camera sender
+  const negotiatingRef = useRef(false); // guards concurrent (re)negotiation
+  const activeRef = useRef<boolean>(false); // a call (any phase) is in flight
+  const onCameraVideoRef = useRef(false); // is the local cam running (for screen-share restore)
+  const autoScreenRef = useRef(false); // start screen sharing once the call connects
+  const startTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const incomingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const connectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const signalChannelRef = useRef<{ unsubscribe: () => void } | null>(null);
+
+  const userIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      userIdRef.current = data.user?.id ?? null;
+    });
+  }, []);
+
+  const clearTimeouts = useCallback(() => {
+    [startTimeoutRef, incomingTimeoutRef, connectTimeoutRef].forEach((r) => {
+      if (r.current) {
+        clearTimeout(r.current);
+        r.current = null;
+      }
+    });
+  }, []);
+
+  const setPhase = useCallback((phase: CallPhase) => {
+    setActiveCall((prev) => (prev ? { ...prev, phase } : prev));
+  }, []);
+
+  const patchActive = useCallback((patch: Partial<CallSession>) => {
+    setActiveCall((prev) => (prev ? { ...prev, ...patch } : prev));
+  }, []);
+
+  const teardown = useCallback(() => {
+    if (signalChannelRef.current) {
+      try {
+        signalChannelRef.current.unsubscribe();
+      } catch {
+        /* noop */
+      }
+      signalChannelRef.current = null;
+    }
+    closePeerConnection(pcRef.current);
+    pcRef.current = null;
+    stopTracks(localStreamRef.current);
+    localStreamRef.current = null;
+    stopTracks(screenStreamRef.current);
+    screenStreamRef.current = null;
+    screenSenderRef.current = null;
+    screenReplacedTrackRef.current = false;
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach((t) => {
+        try {
+          t.stop();
+        } catch {
+          /* noop */
+        }
+      });
+      remoteStreamRef.current = null;
+    }
+  }, []);
+
+  const finishCall = useCallback(
+    (endReason: CallSession["endReason"], error?: string) => {
+      clearTimeouts();
+      teardown();
+      activeRef.current = false;
+      setActiveCall((prev) =>
+        prev ? { ...prev, phase: "ended", endReason, error, endedAt: Date.now() } : prev,
+      );
+    },
+    [clearTimeouts, teardown],
+  );
+
+  // ── Global incoming listener (arrives on any page) ────────────────────────
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("calls-global")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "call_events" },
+        async (payload) => {
+          const row = payload.new as CallEventRow;
+          const myId = userIdRef.current;
+          if (!myId || row.sender_id === myId) return;
+
+          if (row.event_type === "offer") {
+            if (activeRef.current) {
+              void callSignaling.sendBusy(row.conversation_id, row.call_id);
+              return;
+            }
+            const offer = row.payload as unknown as OfferPayload;
+            setIncomingCall((prev) => {
+              if (prev && prev.callId === row.call_id) return prev;
+              return {
+                callId: row.call_id,
+                conversationId: row.conversation_id,
+                senderId: row.sender_id,
+                kind: offer?.kind ?? "audio",
+                offer,
+              };
+            });
+            if (incomingTimeoutRef.current) clearTimeout(incomingTimeoutRef.current);
+            incomingTimeoutRef.current = setTimeout(() => {
+              setIncomingCall((prev) => (prev && prev.callId === row.call_id ? null : prev));
+            }, INCOMING_TIMEOUT_MS);
+          }
+        },
+      );
+    channel.subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // External request to start a call (fired by the chat page ?call= param).
+  useEffect(() => {
+    function onRequest(e: Event) {
+      const detail = (e as CustomEvent<CallRequestEvent>).detail;
+      if (detail) {
+        autoScreenRef.current = !!detail.autoScreen;
+        void startCall(detail.conversationId, detail.peer, detail.kind);
+      }
+    }
+    function onError(e: Event) {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail) {
+        window.dispatchEvent(
+          new CustomEvent("azenion:call-error", { detail }),
+        );
+      }
+    }
+    window.addEventListener("azenion:call-request", onRequest as EventListener);
+    window.addEventListener("azenion:call-signal-error", onError as EventListener);
+    return () => {
+      window.removeEventListener("azenion:call-request", onRequest as EventListener);
+      window.removeEventListener("azenion:call-signal-error", onError as EventListener);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Outgoing call (caller) ────────────────────────────────────────────────
+  const startCall = useCallback(
+    async (conversationId: string, peer: CallPeer, kind: CallKind): Promise<{ error?: string }> => {
+      const support = getRtcSupport();
+      if (!support.supported)
+        return { error: support.reason ?? "Calls are unavailable." };
+      if (activeRef.current || incomingCall) return { error: "You are already in a call." };
+
+      // 1. Acquire media first so permission failures surface before ringing.
+      if (kind === "video") {
+        const { stream, error } = await getStream(true, true);
+        if (error) return { error };
+        if (stream) {
+          localStreamRef.current = stream;
+          onCameraVideoRef.current = true;
+        }
+      } else {
+        const { stream, error } = await getStream(false, true);
+        if (error) return { error };
+        if (stream) localStreamRef.current = stream;
+      }
+
+      const callId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+      activeRef.current = true;
+      setIncomingCall(null);
+      setActiveCall({
+        callId,
+        conversationId,
+        kind,
+        phase: "ringing",
+        role: "caller",
+        peer,
+        localStream: localStreamRef.current ?? undefined,
+        remoteStream: undefined,
+        screenActive: false,
+        connectionState: "new",
+        muted: false,
+        cameraOff: false,
+        startedAt: null,
+        endedAt: null,
+      });
+
+      // 2. Build the peer connection + add local tracks. The caller's
+      //    onnegotiationneeded handler creates and sends the offer (also used
+      //    for later renegotiation, e.g. when adding a screen-share track).
+      const pc = await establishPeer(conversationId, callId, "caller");
+      if (!pc) {
+        finishCall("error", "Could not initialize the call.");
+        return { error: "Could not initialize the call." };
+      }
+
+      // 3. Ring-timeout safety net.
+      if (startTimeoutRef.current) clearTimeout(startTimeoutRef.current);
+      startTimeoutRef.current = setTimeout(() => {
+        setActiveCall((prev) => {
+          if (prev?.phase !== "ringing") return prev;
+          activeRef.current = false;
+          void callSignaling.sendCancel(prev.conversationId, prev.callId);
+          teardown();
+          return { ...prev, phase: "ended", endReason: "timeout", endedAt: Date.now() };
+        });
+      }, RING_TIMEOUT_MS);
+
+      return {};
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeRef, incomingCall, finishCall, teardown],
+  );
+
+  // ── Accept incoming (callee) ──────────────────────────────────────────────
+  const acceptCall = useCallback(async (): Promise<{ error?: string }> => {
+    const info = incomingCall;
+    if (!info) return { error: "No incoming call." };
+    const support = getRtcSupport();
+    if (!support.supported) return { error: support.reason ?? "Calls are unavailable." };
+
+    const { data: userData } = await createClient().auth.getUser();
+    const myId = userData.user?.id;
+    if (!myId) return { error: "Not signed in." };
+
+    const { peer, error: peerError } = await callSignaling.getCallPeer(
+      info.conversationId,
+      info.senderId,
+    );
+    if (peerError || !peer) return { error: peerError ?? "Could not reach the caller." };
+
+    // Media before answering.
+    if (info.kind === "video") {
+      const { stream, error } = await getStream(true, true);
+      if (error) {
+        void callSignaling.sendDecline(info.conversationId, info.callId);
+        clearIncoming();
+        return { error };
+      }
+      if (stream) {
+        localStreamRef.current = stream;
+        onCameraVideoRef.current = true;
+      }
+    } else {
+      const { stream, error } = await getStream(false, true);
+      if (error) {
+        void callSignaling.sendDecline(info.conversationId, info.callId);
+        clearIncoming();
+        return { error };
+      }
+      if (stream) localStreamRef.current = stream;
+    }
+
+    if (incomingTimeoutRef.current) clearTimeout(incomingTimeoutRef.current);
+    setIncomingCall(null);
+    activeRef.current = true;
+
+    setActiveCall({
+      callId: info.callId,
+      conversationId: info.conversationId,
+      kind: info.kind,
+      phase: "connecting",
+      role: "callee",
+      peer,
+      localStream: localStreamRef.current ?? undefined,
+      remoteStream: undefined,
+      screenActive: false,
+      connectionState: "new",
+      muted: false,
+      cameraOff: false,
+      startedAt: null,
+      endedAt: null,
+    });
+
+    const pc = await establishPeer(info.conversationId, info.callId, "callee");
+    if (!pc) {
+      finishCall("error", "Could not initialize the connection.");
+      return { error: "Could not initialize the connection." };
+    }
+
+    // Apply the caller's offer, then answer.
+    const offer = info.offer;
+    if (!offer?.sdp) {
+      finishCall("error", "The call invitation could not be parsed.");
+      return { error: "The call invitation could not be parsed." };
+    }
+    try {
+      await pc.setRemoteDescription({ type: "offer", sdp: offer.sdp });
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      const result = await callSignaling.sendAnswer(info.conversationId, info.callId, {
+        sdp: answer.sdp ?? "",
+      });
+      if (result.error) {
+        finishCall("error", "Signaling failed. Please try again.");
+        return { error: result.error };
+      }
+    } catch {
+      finishCall("error", "Could not establish the connection.");
+      return { error: "Could not establish the connection." };
+    }
+
+    return {};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incomingCall, finishCall]);
+
+  // Creates + wires the peer connection and attaches local tracks. Sets up the
+  // per-call signaling listener that handles the peer's events. The CALLER
+  // negotiates (creates/sends offers) for both the initial connection and any
+  // later track additions (e.g. screen share from a voice call); the callee
+  // answers offers that arrive.
+  const establishPeer = useCallback(
+    async (
+      conversationId: string,
+      callId: string,
+      role: "caller" | "callee",
+    ): Promise<RTCPeerConnection | null> => {
+      const supabase = createClient();
+
+      const pc = createPeerConnection({
+        onIceCandidate: (candidate) => {
+          const payload: IcePayload = { candidate: candidate.toJSON() };
+          void callSignaling.sendIce(conversationId, callId, payload);
+        },
+        onTrack: (stream) => {
+          remoteStreamRef.current = stream;
+          patchActive({ remoteStream: stream });
+        },
+        onConnectionStateChange: (state) => {
+          patchActive({ connectionState: state });
+          if (state === "connected") {
+            patchActive({ phase: "active", startedAt: Date.now() });
+            if (connectTimeoutRef.current) {
+              clearTimeout(connectTimeoutRef.current);
+              connectTimeoutRef.current = null;
+            }
+          } else if (state === "failed") {
+            if (activeRef.current) finishCall("error", "The connection was lost.");
+          } else if (state === "disconnected") {
+            // Tolerate transient disconnects; 'failed' is terminal.
+          }
+        },
+      });
+      pcRef.current = pc;
+
+      // The caller drives negotiation (initial offer + renegotiation when it
+      // adds tracks such as a screen-share video track).
+      if (role === "caller") {
+        pc.onnegotiationneeded = () => {
+          void (async () => {
+            if (negotiatingRef.current) return;
+            if (pc.signalingState !== "stable") return;
+            negotiatingRef.current = true;
+            try {
+              const offer = await pc.createOffer();
+              await pc.setLocalDescription(offer);
+              const res = await callSignaling.sendOffer(
+                conversationId,
+                callId,
+                { kind: activeCallRef.current?.kind ?? "audio", sdp: offer.sdp ?? "" },
+              );
+              if (res.error && activeRef.current) {
+                finishCall("error", "Signaling failed.");
+              }
+            } catch {
+              if (activeRef.current) finishCall("error", "Could not update the connection.");
+            } finally {
+              negotiatingRef.current = false;
+            }
+          })();
+        };
+      }
+
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => {
+          pc.addTrack(track, localStreamRef.current!);
+        });
+      }
+
+      // Per-call signaling listener.
+      const channel = supabase
+        .channel(`call-${callId}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "call_events" },
+          async (payload) => {
+            const row = payload.new as CallEventRow;
+            if (row.sender_id === userIdRef.current) return;
+            if (row.call_id !== callId) return;
+
+            switch (row.event_type) {
+              case "offer": {
+                // Renegotiation offer (e.g. the caller started sharing a new
+                // track). Roll back any pending local description and answer.
+                const pc = pcRef.current;
+                const sdp = (row.payload as { sdp?: string }).sdp;
+                if (!pc || !sdp) break;
+                try {
+                  if (pc.signalingState !== "stable") {
+                    await pc.setLocalDescription({ type: "rollback" });
+                  }
+                  await pc.setRemoteDescription({ type: "offer", sdp });
+                  const answer = await pc.createAnswer();
+                  await pc.setLocalDescription(answer);
+                  void callSignaling.sendAnswer(conversationId, callId, { sdp: answer.sdp ?? "" });
+                } catch {
+                  if (activeRef.current) finishCall("error", "Could not update the connection.");
+                }
+                break;
+              }
+              case "answer": {
+                if (pcRef.current && activeCallRef.current?.role === "caller") {
+                  const sdp = (row.payload as { sdp?: string }).sdp;
+                  if (!sdp) break;
+                  if (pcRef.current.signalingState !== "have-local-offer") break; // stale/duplicate
+                  setPhase("connecting");
+                  try {
+                    await pcRef.current.setRemoteDescription({ type: "answer", sdp });
+                  } catch {
+                    if (activeRef.current) finishCall("error", "Could not establish the connection.");
+                  }
+                }
+                break;
+              }
+              case "ice": {
+                const cand = (row.payload as unknown as IcePayload).candidate;
+                if (!pcRef.current || !cand) break;
+                try {
+                  await pcRef.current.addIceCandidate(cand);
+                } catch {
+                  /* ignore late/duplicate candidates */
+                }
+                break;
+              }
+              case "cancel": {
+                if (activeCallRef.current?.role === "callee") finishCall("canceled");
+                break;
+              }
+              case "decline": {
+                if (
+                  activeCallRef.current?.role === "caller" &&
+                  activeCallRef.current?.phase === "ringing"
+                ) {
+                  finishCall("declined");
+                }
+                break;
+              }
+              case "busy": {
+                if (
+                  activeCallRef.current?.role === "caller" &&
+                  activeCallRef.current?.phase === "ringing"
+                ) {
+                  finishCall("busy");
+                }
+                break;
+              }
+              case "end": {
+                if (activeRef.current) finishCall("peer-left");
+                break;
+              }
+              case "screen": {
+                patchActive({ screenActive: !!(row.payload as { start?: boolean }).start });
+                break;
+              }
+              default:
+                break;
+            }
+          },
+        );
+      channel.subscribe();
+      signalChannelRef.current = {
+        unsubscribe: () => {
+          void supabase.removeChannel(channel);
+        },
+      };
+
+      // Connection timeout safety net.
+      if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+      connectTimeoutRef.current = setTimeout(() => {
+        setActiveCall((prev) => {
+          if (!prev || prev.phase === "active") return prev;
+          if (pcRef.current?.connectionState === "connected") return prev;
+          if (activeRef.current) finishCall("error", "Could not connect the call.");
+          return prev;
+        });
+      }, CONNECT_TIMEOUT_MS);
+
+      return pc;
+    },
+    [finishCall, patchActive, setPhase],
+  );
+
+  // Keep a ref mirror of activeCall for use inside the signaling channel handler.
+  const activeCallRef = useRef<CallSession | null>(null);
+  useEffect(() => {
+    activeCallRef.current = activeCall;
+  }, [activeCall]);
+
+  const clearIncoming = useCallback(() => {
+    if (incomingTimeoutRef.current) clearTimeout(incomingTimeoutRef.current);
+    setIncomingCall(null);
+  }, []);
+
+  const declineCall = useCallback(() => {
+    const info = incomingCall;
+    if (info) {
+      void callSignaling.sendDecline(info.conversationId, info.callId);
+      clearIncoming();
+    }
+  }, [incomingCall, clearIncoming]);
+
+  const endCall = useCallback(() => {
+    if (activeRef.current && activeCall) {
+      const ringing = activeCall.phase === "ringing";
+      if (ringing) {
+        void callSignaling.sendCancel(activeCall.conversationId, activeCall.callId);
+        finishCall("canceled");
+      } else {
+        void callSignaling.sendEnd(activeCall.conversationId, activeCall.callId);
+        finishCall("ended");
+      }
+    }
+  }, [activeCall, finishCall]);
+
+  const toggleMute = useCallback(() => {
+    setActiveCall((prev) => {
+      if (!prev || !prev.localStream) return prev;
+      const nextMuted = !prev.muted;
+      prev.localStream.getAudioTracks().forEach((t) => (t.enabled = !nextMuted));
+      return { ...prev, muted: nextMuted };
+    });
+  }, []);
+
+  const toggleCamera = useCallback(() => {
+    setActiveCall((prev) => {
+      if (!prev || !prev.localStream) return prev;
+      const nextOff = !prev.cameraOff;
+      prev.localStream.getVideoTracks().forEach((t) => (t.enabled = !nextOff));
+      return { ...prev, cameraOff: nextOff };
+    });
+  }, []);
+
+  const toggleScreenShare = useCallback(async (): Promise<{ error?: string }> => {
+    const call = activeCall;
+    if (!call) return { error: "No active call." };
+
+    // Stop screen share:
+    if (call.screenActive) {
+      stopTracks(screenStreamRef.current);
+      screenStreamRef.current = null;
+      if (screenReplacedTrackRef.current) {
+        // Restore the camera track onto the existing video sender.
+        restoreCameraTrack();
+      } else if (screenSenderRef.current && pcRef.current) {
+        // Voice-call path: we added a dedicated video sender, remove it.
+        try {
+          pcRef.current.removeTrack(screenSenderRef.current);
+        } catch {
+          /* noop */
+        }
+      }
+      screenSenderRef.current = null;
+      screenReplacedTrackRef.current = false;
+      patchActive({ screenActive: false });
+      void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
+      return {};
+    }
+
+    // Start screen share:
+    if (!supportsGetDisplayMedia()) {
+      return { error: "Screen sharing is not supported in this browser." };
+    }
+    const { stream, error } = await getScreenStream();
+    if (error) return { error };
+    if (!stream) return { error: "Could not capture the screen." };
+    const screenTrack = stream.getVideoTracks()[0];
+    if (!screenTrack) {
+      stopTracks(stream);
+      return { error: "Could not capture the screen." };
+    }
+    screenStreamRef.current = stream;
+    patchActive({ screenActive: true });
+    void callSignaling.sendScreen(call.conversationId, call.callId, { start: true });
+
+    const pc = pcRef.current;
+    let sender: RTCRtpSender | undefined;
+    const camSender = pc?.getSenders().find((s) => s.track?.kind === "video");
+    if (camSender) {
+      // Video call: swap the camera sender's track with the screen track.
+      await camSender.replaceTrack(screenTrack);
+      sender = camSender;
+      screenReplacedTrackRef.current = true;
+    } else if (pc) {
+      // Voice call: add a fresh video sender for the screen.
+      try {
+        sender = pc.addTrack(screenTrack, stream);
+      } catch {
+        /* noop */
+      }
+      screenReplacedTrackRef.current = false;
+    }
+    screenSenderRef.current = sender ?? null;
+
+    // When the browser reports the user stopped sharing, clean up.
+    const onScreenEnded = () => {
+      if (!activeRef.current) return;
+      stopTracks(screenStreamRef.current);
+      screenStreamRef.current = null;
+      if (screenReplacedTrackRef.current) {
+        restoreCameraTrack();
+      } else if (sender && pcRef.current) {
+        try {
+          pcRef.current.removeTrack(sender);
+        } catch {
+          /* noop */
+        }
+      }
+      screenSenderRef.current = null;
+      screenReplacedTrackRef.current = false;
+      patchActive({ screenActive: false });
+      void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
+    };
+    screenTrack.addEventListener("ended", onScreenEnded, { once: true });
+
+    return {};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCall, patchActive]);
+
+  // Restore the camera track after screen sharing ends (if a camera call).
+  const restoreCameraTrack = useCallback(() => {
+    if (!onCameraVideoRef.current || !pcRef.current) return;
+    const camTrack = localStreamRef.current?.getVideoTracks().find((t) => t.readyState === "live");
+    if (!camTrack) return;
+    const sender = pcRef.current.getSenders().find((s) => s.track?.kind === "video");
+    if (sender) void sender.replaceTrack(camTrack);
+  }, []);
+
+  // Clear the ended-call UI after a short delay.
+  useEffect(() => {
+    if (!activeCall || activeCall.phase !== "ended") return;
+    const t = setTimeout(() => {
+      teardown();
+      setActiveCall(null);
+    }, 4000);
+    return () => clearTimeout(t);
+  }, [activeCall, teardown]);
+
+  // Auto-start screen sharing once the call connects (used by "Share screen").
+  useEffect(() => {
+    if (!activeCall || activeCall.phase !== "active") return;
+    if (!autoScreenRef.current) return;
+    autoScreenRef.current = false;
+    void toggleScreenShare();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCall?.phase]);
+
+  return {
+    activeCall,
+    incomingCall,
+    startCall,
+    acceptCall,
+    declineCall,
+    endCall,
+    toggleMute,
+    toggleCamera,
+    toggleScreenShare,
+    resetIncoming: clearIncoming,
+  };
+}
+
+export { useCallManager };
