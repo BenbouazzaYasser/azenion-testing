@@ -251,7 +251,7 @@ export function NotificationCenter() {
         prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)),
       );
       setUnreadCount((c) => Math.max(0, c - 1));
-      void markNotificationRead(n.id);
+      markNotificationRead(n.id).catch(() => loadUnread());
     }
 
     const path = await resolveNotificationTarget(n.type, n.target_type, n.target_id);

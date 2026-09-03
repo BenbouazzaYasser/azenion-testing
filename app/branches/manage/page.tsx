@@ -89,7 +89,7 @@ export default async function ManageBranchesPage() {
     logo_url: b.logo_url,
     member_count: memberCountMap.get(b.id) ?? 0,
     leaders: (leaderRows ?? [])
-      .filter((r) => r.branch_id === b.id)
+      .filter((r) => r.branch_id === b.id && r.user)
       .map((r) => r.user as unknown as {
         id: string;
         username: string;

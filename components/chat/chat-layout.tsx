@@ -26,6 +26,7 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
 
   useEffect(() => {
     if (!open) return;
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frame = requestAnimationFrame(() => setMounted(true));
     function handleKeyDown(e: KeyboardEvent) {
@@ -34,7 +35,7 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       cancelAnimationFrame(frame);
-      document.body.style.overflow = "";
+      document.body.style.overflow = originalOverflow;
       document.removeEventListener("keydown", handleKeyDown);
       setMounted(false);
     };

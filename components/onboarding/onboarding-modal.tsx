@@ -80,6 +80,7 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
   }
 
   useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frame = requestAnimationFrame(() => setMounted(true));
     setError(null);
@@ -91,7 +92,7 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
 
     return () => {
       cancelAnimationFrame(frame);
-      document.body.style.overflow = "";
+      document.body.style.overflow = originalOverflow;
       document.removeEventListener("keydown", handleKeyDown);
       setMounted(false);
     };

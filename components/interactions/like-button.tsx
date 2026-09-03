@@ -25,15 +25,16 @@ export function LikeButton({
 
   const handleClick = () => {
     if (!currentUserId || isPending) return;
+    const prevLiked = liked;
     setLiked((v) => !v);
-    setCount((c) => (liked ? c - 1 : c + 1));
+    setCount((c) => (prevLiked ? c - 1 : c + 1));
 
     startTransition(async () => {
       const result = await onToggle();
       if (!result) return;
       if ("error" in result) {
         setLiked((v) => !v);
-        setCount((c) => (liked ? c + 1 : c - 1));
+        setCount((c) => (prevLiked ? c + 1 : c - 1));
       } else {
         setLiked(result.liked);
         setCount(result.count);

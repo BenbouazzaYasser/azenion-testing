@@ -51,6 +51,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
     if (!open) return;
     setError(null);
     setUrlWarning(null);
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frame = requestAnimationFrame(() => setMounted(true));
     function handleKeyDown(e: KeyboardEvent) {
@@ -59,7 +60,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       cancelAnimationFrame(frame);
-      document.body.style.overflow = "";
+      document.body.style.overflow = originalOverflow;
       document.removeEventListener("keydown", handleKeyDown);
       setMounted(false);
     };

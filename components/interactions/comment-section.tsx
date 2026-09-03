@@ -104,7 +104,7 @@ export function CommentSection({
     setComments((prev) => {
       const existingIds = new Set(prev.map((c) => c.id));
       const fresh = result.comments.filter((c) => !existingIds.has(c.id));
-      return [...prev.slice(0, loadedCount), ...fresh, ...prev.slice(loadedCount)];
+      return [...prev, ...fresh];
     });
 
     setLoadedCount((c) => c + result.comments.length);
@@ -173,9 +173,12 @@ export function CommentSection({
     const removed = findComment(id);
     if (!removed) return;
 
-    if (!removed.parent_comment_id) {
-      const idx = comments.findIndex((c) => c.id === id);
-      if (idx >= 0 && idx < loadedCount) {
+    const isTopLevel = !removed.parent_comment_id;
+    const idx = isTopLevel ? comments.findIndex((c) => c.id === id) : -1;
+    const wasInLoadedRange = idx >= 0 && idx < loadedCount;
+
+    if (isTopLevel) {
+      if (wasInLoadedRange) {
         setLoadedCount((c) => c - 1);
       }
       setTotalComments((t) => Math.max(0, t - 1));
@@ -189,10 +192,9 @@ export function CommentSection({
       if (result?.error) {
         setComments((prev) => reinsertComment(prev, removed));
         setCommentCount((c) => c + 1);
-        if (!removed.parent_comment_id) {
+        if (isTopLevel) {
           setTotalComments((t) => t + 1);
-          const idx = comments.findIndex((c) => c.id === id);
-          if (idx >= 0 && idx < loadedCount) {
+          if (wasInLoadedRange) {
             setLoadedCount((c) => c + 1);
           }
         }

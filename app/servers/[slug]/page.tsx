@@ -4,11 +4,12 @@ import { getServerView } from "@/data/servers";
 import { serverT } from "@/lib/translation/server";
 
 interface ServerPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default async function ServerPage({ params }: ServerPageProps) {
-  const view = await getServerView(params.slug);
+  const { slug } = await params;
+  const view = await getServerView(slug);
 
   if (!view) redirect("/servers");
 

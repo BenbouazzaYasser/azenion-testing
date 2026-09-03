@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SettingToggle } from "./setting-toggle";
 import { SettingsPanel, SaveIndicator, type SaveState } from "./settings-panel";
 import { useTranslation } from "@/components/translation/translation-provider";
@@ -27,26 +27,41 @@ export function TogglePreferences({ items, initial, saveAction }: TogglePreferen
   const [values, setValues] = useState<Record<string, boolean>>({ ...initial });
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, []);
 
   function update(key: string, checked: boolean) {
     const next = { ...values, [key]: checked };
     setValues(next);
     setError(null);
     setSaveState("saving");
-    void saveAction(next)
-      .then((res) => {
-        if (res && "error" in res && res.error) {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = new AbortController();
+    timeoutRef.current = setTimeout(() => {
+      void saveAction(next)
+        .then((res) => {
+          if (res && "error" in res && res.error) {
+            setSaveState("idle");
+            setError(res.error);
+          } else {
+            setSaveState("saved");
+            window.setTimeout(() => setSaveState("idle"), 2000);
+          }
+        })
+        .catch(() => {
+          if (abortRef.current?.signal.aborted) return;
           setSaveState("idle");
-          setError(res.error);
-        } else {
-          setSaveState("saved");
-          window.setTimeout(() => setSaveState("idle"), 2000);
-        }
-      })
-      .catch(() => {
-        setSaveState("idle");
-        setError(t("settings.saveError"));
-      });
+          setError(t("settings.saveError"));
+        });
+    }, 300);
   }
 
   return (

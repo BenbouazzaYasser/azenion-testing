@@ -18,9 +18,13 @@ export function DangerZoneSection() {
   function handleSignOutEverywhere() {
     startTransition(async () => {
       const res = await signOutEverywhere();
-      if (res && "unavailable" in res && res.unavailable) {
+      if (res && "unavailable" in res && (res as { unavailable?: boolean }).unavailable) {
         toast.info(t("settings.signOutEverywhereToast"));
         setSignedOutEverywhere(true);
+      } else if (res && "error" in res && (res as { error?: string }).error) {
+        toast.error(String((res as { error: string }).error));
+      } else {
+        toast.success("Signed out from all devices");
       }
     });
   }

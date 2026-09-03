@@ -31,6 +31,7 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
     setError(false);
     setLoading(true);
     setCurrentTime(0);
+    setIsPlaying(false);
   }, [attachment.signedUrl]);
 
   const toggle = () => {
@@ -86,7 +87,7 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
             {formatDuration(isPlaying ? currentTime : displayDuration)}
           </span>
         </div>
-        {attachment.filename && attachment.filename !== "voice-message" && (
+        {attachment.filename && !attachment.filename.startsWith("voice-message") && (
           <span className={cn("truncate text-[11px]", isOwn ? "text-white/60" : "text-ink-500")}>{attachment.filename}</span>
         )}
       </div>

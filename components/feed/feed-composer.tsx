@@ -185,6 +185,7 @@ export function FeedComposer({
         return;
       }
 
+      let mediaError: string | null = null;
       for (let i = 0; i < media.length; i++) {
         const item = media[i]!;
         setUploadStep({ index: i + 1, total: media.length });
@@ -194,9 +195,17 @@ export function FeedComposer({
         mediaFd.set("kind", item.kind);
         const uploaded = await uploadFeedPostMedia(mediaFd);
         if (uploaded && "error" in uploaded && uploaded.error) {
+          mediaError = uploaded.error;
           setError(uploaded.error);
           break;
         }
+      }
+
+      if (mediaError) {
+        // Do not treat as success: keep composer state so user can retry, don't call onPosted/refresh which would show orphan post
+        setUploadStep(null);
+        setSubmitting(false);
+        return;
       }
 
       reset();

@@ -74,13 +74,13 @@ export function ChannelChat({
           filter: `channel_id=eq.${channelId}`,
         },
         async (payload) => {
-          const row = payload.new as ChannelMessageWithSender;
+          const row = payload.new as Omit<ChannelMessageWithSender, "sender">;
 
           if (row.sender_id !== currentUserId) {
             setMessages((prev) =>
               prev.some((m) => m.id === row.id)
                 ? prev
-                : [...prev, { ...row, sender: null }],
+                : [...prev, { ...(row as ChannelMessageWithSender), sender: null }],
             );
 
             // Fetch the sender profile for display.

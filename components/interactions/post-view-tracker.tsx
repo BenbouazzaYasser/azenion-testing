@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { recordPostView } from "@/actions/interactions.actions";
 
 const TOKEN_KEY = "azenion.session_token";
@@ -25,11 +25,7 @@ interface PostViewTrackerProps {
  * when a post is genuinely opened on its detail page.
  */
 export function PostViewTracker({ postId }: PostViewTrackerProps) {
-  const recorded = useRef(false);
-
   useEffect(() => {
-    if (recorded.current) return;
-    recorded.current = true;
     void recordPostView(postId, getSessionToken());
   }, [postId]);
 

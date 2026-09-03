@@ -107,11 +107,12 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
 
   useEffect(() => {
     if (!open) return;
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => {
       cancelAnimationFrame(frame);
-      document.body.style.overflow = "";
+      document.body.style.overflow = originalOverflow;
     };
   }, [open]);
 
@@ -170,7 +171,6 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
     setOpen(false);
     // If navigating to chat/start and user is not authenticated, redirect to login with next param
     if (href.startsWith("/chat/start/") && !user) {
-      const next = encodeURIComponent(href);
       router.push(`/login?next=${encodeURIComponent(href)}`);
       return;
     }

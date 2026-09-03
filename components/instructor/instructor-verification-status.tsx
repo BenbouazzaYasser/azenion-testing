@@ -55,7 +55,7 @@ export default function InstructorVerificationStatus({ request }: Props) {
     },
   };
 
-  const config = statusConfig[request.status]!;
+  const config = (statusConfig[request.status] ?? statusConfig.pending)!;
 
   return (
     <div className="space-y-6">

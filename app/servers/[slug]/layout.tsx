@@ -7,20 +7,21 @@ import { ChannelSidebar } from "@/components/servers/channel-sidebar";
 import { getServerView, getUserServers } from "@/data/servers";
 
 interface ServerLayoutProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
   children: ReactNode;
 }
 
 export default async function ServerLayout({ params, children }: ServerLayoutProps) {
+  const { slug } = await params;
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/login?next=${encodeURIComponent(`/servers/${params.slug}`)}`);
+    redirect(`/login?next=${encodeURIComponent(`/servers/${slug}`)}`);
   }
 
   const [view, servers] = await Promise.all([
-    getServerView(params.slug),
+    getServerView(slug),
     getUserServers(user.id),
   ]);
 

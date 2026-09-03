@@ -75,6 +75,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
 
   useEffect(() => {
     if (!open) return;
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frame = requestAnimationFrame(() => setMounted(true));
     function handleKeyDown(e: KeyboardEvent) {
@@ -83,7 +84,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       cancelAnimationFrame(frame);
-      document.body.style.overflow = "";
+      document.body.style.overflow = originalOverflow;
       document.removeEventListener("keydown", handleKeyDown);
       setMounted(false);
     };

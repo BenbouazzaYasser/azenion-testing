@@ -460,16 +460,7 @@ export default function InstructorVerificationForm() {
               id="portfolio_url"
               type="url"
               value={formData.portfolio_url}
-              onChange={(e) => {
-                const val = e.target.value;
-                setFormData({ ...formData, portfolio_url: val });
-                if (val && isValidUrl(val)) {
-                  const host = getHost(val);
-                  if (GITHUB_HOSTS.includes(host) || LINKEDIN_HOSTS.includes(host)) {
-                    setError(t("settings.urlWarningPortfolio"));
-                  } else { setError(null); }
-                } else { setError(null); }
-              }}
+              onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
               placeholder="https://yourportfolio.com"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />
@@ -483,13 +474,7 @@ export default function InstructorVerificationForm() {
               id="linkedin_url"
               type="url"
               value={formData.linkedin_url}
-              onChange={(e) => {
-                const val = e.target.value;
-                setFormData({ ...formData, linkedin_url: val });
-                if (val && isValidUrl(val) && !LINKEDIN_HOSTS.includes(getHost(val))) {
-                  setError(t("settings.urlWarningLinkedin"));
-                } else { setError(null); }
-              }}
+              onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
               placeholder="https://linkedin.com/in/yourprofile"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />
@@ -503,13 +488,7 @@ export default function InstructorVerificationForm() {
               id="github_url"
               type="url"
               value={formData.github_url}
-              onChange={(e) => {
-                const val = e.target.value;
-                setFormData({ ...formData, github_url: val });
-                if (val && isValidUrl(val) && !GITHUB_HOSTS.includes(getHost(val))) {
-                  setError(t("settings.urlWarningGithub"));
-                } else { setError(null); }
-              }}
+              onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
               placeholder="https://github.com/yourusername"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
             />

@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { Send, MessageSquare, Users, Menu, Ban, Mic, Square, Trash2, Play, Pause, Smile, Plus } from "lucide-react";
+import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Film, Sticker as StickerIcon } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
@@ -117,6 +117,7 @@ export function ChatConversation({
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const isSendingRef = useRef(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [actionsMessageId, setActionsMessageId] = useState<string | null>(null);
   const [otherLastReadAt, setOtherLastReadAt] = useState<string | null>(null);
@@ -340,7 +341,6 @@ export function ChatConversation({
 
   const addFiles = useCallback((files: FileList | File[]) => {
     const list = Array.from(files);
-    console.log("[Chat] addFiles", { count: list.length, queued: queued.length, files: list.map((f) => ({ name: f.name, type: f.type, size: f.size })) });
     if (list.length === 0) return;
     if (queued.length + list.length > 10) {
       toast.error("Too many files. Max 10 per message.");
@@ -349,7 +349,6 @@ export function ChatConversation({
     const next: QueuedFile[] = [];
     for (const file of list) {
       const cls = classifyFile(file);
-      console.log("[Chat] classifyFile", { name: file.name, type: file.type, size: file.size, result: cls });
       if (!cls.valid) {
         toast.error(cls.error ?? "Unsupported file type");
         continue;
@@ -357,14 +356,11 @@ export function ChatConversation({
       const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
       next.push({ id: crypto.randomUUID(), file, previewUrl, status: "queued" });
     }
-    console.log("[Chat] addFiles queued next", next.length);
     if (next.length > 0) setQueued((prev) => [...prev, ...next]);
   }, [queued.length]);
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("[Chat] handleFileInputChange", { hasFiles: !!e.target.files, count: e.target.files?.length, value: e.target.value });
     if (e.target.files) {
-      console.log("[Chat] fileInput files", Array.from(e.target.files).map((f) => ({ name: f.name, type: f.type, size: f.size })));
       addFiles(e.target.files);
       e.target.value = "";
     }
@@ -406,19 +402,6 @@ export function ChatConversation({
     setQueued((prev) => prev.map((q) => (q.id === id ? { ...q, status: "queued" as const, error: undefined } : q)));
   };
 
-  // Minimal dumb synchronous file-input triggers (keep within user gesture)
-  const handleSelectImages = useCallback(() => {
-    console.log("[Chat] Photos button clicked", { hasRef: !!imageInputRef.current, accept: imageInputRef.current?.accept });
-    imageInputRef.current?.click();
-    console.log("[Chat] imageInput click triggered");
-  }, []);
-
-  const handleSelectFiles = useCallback(() => {
-    console.log("[Chat] Files button clicked", { hasRef: !!fileInputRef.current, accept: fileInputRef.current?.accept });
-    fileInputRef.current?.click();
-    console.log("[Chat] fileInput click triggered");
-  }, []);
-
   const insertEmoji = useCallback(
     (emoji: string) => {
       const el = inputRef.current;
@@ -447,7 +430,7 @@ export function ChatConversation({
       setShowEmojiPicker(false);
       setShowStickerPicker(false);
       setShowAttachmentMenu(false);
-      if (isSending) return;
+      if (isSendingRef.current) return;
       if (queued.length > 0) {
         toast.error("Please send or remove attached files before sending a GIF");
         return;
@@ -483,7 +466,8 @@ export function ChatConversation({
 
       const content = input.trim();
       setInput("");
-      setIsSending(true);
+      isSendingRef.current = true;
+    setIsSending(true);
       const supabase = createClient();
       const { data: profile } = await supabase
         .from("profiles")
@@ -568,7 +552,8 @@ export function ChatConversation({
         toast.error("GIF could not be sent.");
         setInput(content);
       } finally {
-        setIsSending(false);
+        isSendingRef.current = false;
+    setIsSending(false);
         void markConversationRead(conversationId);
       }
     },
@@ -581,7 +566,7 @@ export function ChatConversation({
       setShowEmojiPicker(false);
       setShowGifPicker(false);
       setShowAttachmentMenu(false);
-      if (isSending) return;
+      if (isSendingRef.current) return;
       if (queued.length > 0) {
         toast.error("Please send or remove attached files before sending a sticker");
         return;
@@ -592,7 +577,8 @@ export function ChatConversation({
       }
       const content = input.trim();
       setInput("");
-      setIsSending(true);
+      isSendingRef.current = true;
+    setIsSending(true);
       const supabase = createClient();
       const { data: profile } = await supabase
         .from("profiles")
@@ -677,7 +663,8 @@ export function ChatConversation({
         toast.error("Sticker could not be sent.");
         setInput(content);
       } finally {
-        setIsSending(false);
+        isSendingRef.current = false;
+    setIsSending(false);
         void markConversationRead(conversationId);
       }
     },
@@ -686,20 +673,11 @@ export function ChatConversation({
 
   // Voice helpers
   const handleMicClick = async () => {
-    console.log("[Chat] handleMicClick", {
-      isSecureContext: typeof window !== "undefined" ? window.isSecureContext : null,
-      mediaDevices: typeof navigator !== "undefined" ? !!navigator.mediaDevices : null,
-      getUserMedia: typeof navigator !== "undefined" ? !!navigator.mediaDevices?.getUserMedia : null,
-      MediaRecorder: typeof window !== "undefined" ? !!window.MediaRecorder : null,
-      isSupported: voice.isSupported,
-      isRecording: voice.isRecording,
-    });
     setShowAttachmentMenu(false);
     setShowEmojiPicker(false);
     setShowGifPicker(false);
     setShowStickerPicker(false);
     if (voice.isRecording) {
-      console.log("[Chat] stopping recording");
       voice.stop();
       return;
     }
@@ -712,9 +690,8 @@ export function ChatConversation({
       toast.error("Please send or remove attached files before recording.");
       return;
     }
-    console.log("[Chat] starting voice recording");
-    await voice.start();
-    if (voice.error) toast.error(voice.error);
+    const err = await voice.start();
+    if (err) toast.error(err);
   };
 
   const handleCancelVoice = () => {
@@ -742,18 +719,18 @@ export function ChatConversation({
   };
 
   const handleSendVoice = async () => {
-    if (!voice.blob || !voice.previewUrl || isSending) return;
+    if (!voice.blob || !voice.previewUrl || isSendingRef.current) return;
     const blob = voice.blob;
-    console.log("[Chat] handleSendVoice", { size: blob.size, type: blob.type, duration: voice.duration, mimeType: voice.mimeType });
     if (blob.size > CHAT_MAX_AUDIO_SIZE) {
       toast.error(`Voice message too large (max ${Math.round(CHAT_MAX_AUDIO_SIZE / 1024 / 1024)}MB)`);
       return;
     }
-    const dur = voice.duration > 0 ? voice.duration : Math.round(blob.size / 16000); // fallback estimate
+    const dur = voice.duration > 0 ? voice.duration : Math.round(blob.size / 4000); // fallback 32kbps Opus
     if (dur > CHAT_MAX_AUDIO_DURATION_SECONDS) {
       toast.error(`Voice message too long (max ${CHAT_MAX_AUDIO_DURATION_SECONDS}s)`);
       return;
     }
+    isSendingRef.current = true;
     setIsSending(true);
     const supabase = createClient();
     const { data: profile } = await supabase
@@ -764,7 +741,7 @@ export function ChatConversation({
 
     const attachmentId = crypto.randomUUID();
     const mime = voice.mimeType ?? blob.type ?? "audio/webm";
-    const ext = mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : mime.includes("mpeg") ? "mp3" : "webm";
+    const ext = mime.includes("wav") ? "wav" : mime.includes("aac") ? "aac" : mime.includes("m4a") || mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : mime.includes("mpeg") ? "mp3" : "webm";
     const filename = `voice-message.${ext}`;
     const path = getChatMediaObjectPath(conversationId, attachmentId, filename);
 
@@ -803,12 +780,10 @@ export function ChatConversation({
     setMessages((prev) => [...prev, optimistic]);
 
     try {
-      console.log("[Chat] uploading voice", { path, mime, size: blob.size, duration: dur });
-      const { error: upErr, data: upData } = await supabase.storage.from("chat-media").upload(path, blob, {
+      const { error: upErr } = await supabase.storage.from("chat-media").upload(path, blob, {
         contentType: mime,
         upsert: false,
       });
-      console.log("[Chat] voice upload result", { error: upErr?.message, data: upData });
       if (upErr) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
         URL.revokeObjectURL(optimisticPreviewUrl);
@@ -816,7 +791,6 @@ export function ChatConversation({
         return;
       }
 
-      console.log("[Chat] sendMessageWithAttachments voice", { conversationId, path, mime, size: blob.size, duration: dur });
       const result = await sendMessageWithAttachments(conversationId, "", [
         {
           type: "audio",
@@ -827,7 +801,6 @@ export function ChatConversation({
           duration_seconds: dur,
         },
       ]);
-      console.log("[Chat] voice send result", result);
 
       if (result && "error" in result && result.error) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
@@ -850,7 +823,8 @@ export function ChatConversation({
       URL.revokeObjectURL(optimisticPreviewUrl);
       toast.error("Voice message could not be sent.");
     } finally {
-      setIsSending(false);
+      isSendingRef.current = false;
+    setIsSending(false);
       void markConversationRead(conversationId);
     }
   };
@@ -858,8 +832,7 @@ export function ChatConversation({
   const handleSend = async () => {
     const hasText = input.trim().length > 0;
     const hasFiles = queued.length > 0;
-    console.log("[Chat] handleSend", { hasText, hasFiles, queued: queued.length, isSending, content: input.slice(0, 50) });
-    if ((!hasText && !hasFiles) || isSending) return;
+    if ((!hasText && !hasFiles) || isSendingRef.current) return;
 
     // Close pickers on send
     setShowAttachmentMenu(false);
@@ -875,6 +848,7 @@ export function ChatConversation({
       }
     }
 
+    isSendingRef.current = true;
     setIsSending(true);
     const content = input.trim();
     setInput("");
@@ -932,7 +906,6 @@ export function ChatConversation({
       let attachmentInputs: { type: "image" | "file"; storage_path: string; filename: string; mime_type: string; file_size: number }[] = [];
 
       if (toUpload.length > 0) {
-        console.log("[Chat] toUpload", toUpload.map((q) => ({ name: q.file.name, type: q.file.type, size: q.file.size })));
         // Upload each file to chat-media
         const uploadResults = await Promise.all(
           toUpload.map(async (q) => {
@@ -940,12 +913,10 @@ export function ChatConversation({
             const attachmentId = q.id; // reuse queued id as attachment id for path determinism
             const safeName = sanitizeFilename(q.file.name);
             const path = getChatMediaObjectPath(conversationId, attachmentId, safeName);
-            console.log("[Chat] uploading", { name: q.file.name, path, type: q.file.type, size: q.file.size });
-            const { error, data } = await supabase.storage.from("chat-media").upload(path, q.file, {
+            const { error } = await supabase.storage.from("chat-media").upload(path, q.file, {
               contentType: q.file.type,
               upsert: false,
             });
-            console.log("[Chat] upload result", { name: q.file.name, error: error?.message, data });
             if (error) {
               return { error: error.message, q };
             }
@@ -958,7 +929,6 @@ export function ChatConversation({
             };
           }),
         );
-        console.log("[Chat] uploadResults", uploadResults);
 
         const failed = uploadResults.filter((r) => "error" in r) as { error: string; q: QueuedFile }[];
         if (failed.length > 0) {
@@ -987,13 +957,11 @@ export function ChatConversation({
       setQueued([]);
 
       let result;
-      console.log("[Chat] calling sendMessage", { conversationId, content: content.slice(0, 50), attachmentInputs });
       if (attachmentInputs.length > 0) {
         result = await sendMessageWithAttachments(conversationId, content, attachmentInputs);
       } else {
         result = await sendMessage(conversationId, content);
       }
-      console.log("[Chat] send result", result);
 
       if (result && "error" in result && result.error) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
@@ -1037,7 +1005,8 @@ export function ChatConversation({
       setQueued(toUpload.map((q) => ({ ...q, status: "queued" as const })));
       toast.error("Message could not be sent. Please try again.");
     } finally {
-      setIsSending(false);
+      isSendingRef.current = false;
+    setIsSending(false);
       void markConversationRead(conversationId);
     }
   };
@@ -1289,17 +1258,17 @@ export function ChatConversation({
               </div>
             )}
             {showGifPicker && (
-              <div className="absolute bottom-full left-0 z-30 mb-2">
+              <div className="absolute bottom-full left-12 z-30 mb-2 sm:left-16">
                 <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
               </div>
             )}
             {showStickerPicker && (
-              <div className="absolute bottom-full left-0 z-30 mb-2">
+              <div className="absolute bottom-full left-24 z-30 mb-2 sm:left-32">
                 <StickerPicker onSelect={handleStickerSelect} onClose={() => setShowStickerPicker(false)} />
               </div>
             )}
             <form
-              className="flex items-center gap-1.5 sm:gap-2"
+              className="flex items-center gap-2 sm:gap-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSend();
@@ -1321,57 +1290,42 @@ export function ChatConversation({
                 className="hidden"
                 onChange={handleFileInputChange}
               />
-              {/* + menu - Messenger compact */}
-              <div className="flex items-center">
-                <div
-                  className={cn(
-                    "flex items-center gap-1 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
-                    showAttachmentMenu ? "max-w-[220px] opacity-100 sm:max-w-[260px]" : "max-w-0 opacity-0",
-                  )}
-                  aria-hidden={!showAttachmentMenu}
-                >
-                  <AttachmentMenu
-                    onSelectImages={handleSelectImages}
-                    onSelectFiles={handleSelectFiles}
-                    onSelectGif={() => {
-                      console.log("[Chat] GIF selected from plus menu");
-                      setShowGifPicker(true);
-                      setShowAttachmentMenu(false);
-                    }}
-                    onSelectSticker={() => {
-                      console.log("[Chat] Sticker selected from plus menu");
-                      setShowStickerPicker(true);
-                      setShowAttachmentMenu(false);
-                    }}
-                    onClose={() => setShowAttachmentMenu(false)}
-                  />
-                </div>
+              <div className="relative">
                 <Button
                   type="button"
                   variant="secondary"
                   size="default"
-                  aria-label={showAttachmentMenu ? "Close attachment menu" : "Open attachment menu"}
+                  aria-label="Attach file"
                   aria-expanded={showAttachmentMenu}
                   aria-haspopup="menu"
                   onClick={() => {
-                    const next = !showAttachmentMenu;
-                    setShowAttachmentMenu(next);
-                    if (next) {
-                      setShowEmojiPicker(false);
-                      setShowGifPicker(false);
-                      setShowStickerPicker(false);
-                    }
+                    setShowAttachmentMenu((v) => !v);
+                    setShowEmojiPicker(false);
+                    setShowGifPicker(false);
+                    setShowStickerPicker(false);
                   }}
                   disabled={!!voice.blob || voice.isRecording}
-                  className={cn(
-                    "h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
-                    showAttachmentMenu
-                      ? "bg-accent text-white shadow-md rotate-45"
-                      : "bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border",
-                  )}
+                  className="h-12 w-12 shrink-0 rounded-2xl p-0"
                 >
-                  <Plus size={18} className={cn("transition-transform duration-300", showAttachmentMenu && "rotate-90")} />
+                  <Paperclip size={18} />
                 </Button>
+                {showAttachmentMenu && (
+                  <div className="absolute bottom-full left-0 z-30 mb-2">
+                    <AttachmentMenu
+                      onSelectImages={() => imageInputRef.current?.click()}
+                      onSelectFiles={() => fileInputRef.current?.click()}
+                      onSelectGif={() => {
+                        setShowGifPicker(true);
+                        setShowAttachmentMenu(false);
+                      }}
+                      onSelectSticker={() => {
+                        setShowStickerPicker(true);
+                        setShowAttachmentMenu(false);
+                      }}
+                      onClose={() => setShowAttachmentMenu(false)}
+                    />
+                  </div>
+                )}
               </div>
               <Button
                 type="button"
@@ -1379,18 +1333,47 @@ export function ChatConversation({
                 size="default"
                 aria-label="Open emoji picker"
                 onClick={() => {
-                  const next = !showEmojiPicker;
-                  setShowEmojiPicker(next);
-                  if (next) {
-                    setShowAttachmentMenu(false);
-                    setShowGifPicker(false);
-                    setShowStickerPicker(false);
-                  }
+                  setShowEmojiPicker((v) => !v);
+                  setShowGifPicker(false);
+                  setShowStickerPicker(false);
+                  setShowAttachmentMenu(false);
                 }}
                 disabled={!!voice.blob || voice.isRecording}
-                className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border disabled:opacity-50"
+                className="h-12 w-12 shrink-0 rounded-2xl p-0"
               >
-                <Smile size={17} />
+                <Smile size={18} />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="default"
+                aria-label="Open GIF picker"
+                onClick={() => {
+                  setShowGifPicker((v) => !v);
+                  setShowEmojiPicker(false);
+                  setShowStickerPicker(false);
+                  setShowAttachmentMenu(false);
+                }}
+                disabled={!!voice.blob || voice.isRecording}
+                className="h-12 w-12 shrink-0 rounded-2xl p-0"
+              >
+                <Film size={18} />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="default"
+                aria-label="Open sticker picker"
+                onClick={() => {
+                  setShowStickerPicker((v) => !v);
+                  setShowEmojiPicker(false);
+                  setShowGifPicker(false);
+                  setShowAttachmentMenu(false);
+                }}
+                disabled={!!voice.blob || voice.isRecording}
+                className="h-12 w-12 shrink-0 rounded-2xl p-0"
+              >
+                <StickerIcon size={18} />
               </Button>
               <textarea
                 ref={inputRef}
@@ -1407,16 +1390,11 @@ export function ChatConversation({
                 }}
                 disabled={!!voice.blob || voice.isRecording}
                 rows={1}
-                className="min-w-0 flex-1 resize-none rounded-full bg-surface px-4 py-2.5 text-sm leading-5 text-ink-50 placeholder:text-ink-500 border-0 shadow-sm ring-1 ring-border focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent-400/40 disabled:opacity-50 max-h-24 overflow-y-auto"
+                className="min-w-0 flex-1 resize-none rounded-2xl bg-surface px-4 py-3 text-sm leading-5 text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none disabled:opacity-50 max-h-24 overflow-y-auto"
               />
               {canSend ? (
-                <Button
-                  type="submit"
-                  aria-label="Send message"
-                  disabled={isSending}
-                  className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0"
-                >
-                  <Send size={16} />
+                <Button type="submit" aria-label="Send message" disabled={isSending} className="h-12 w-12 shrink-0 rounded-2xl p-0">
+                  <Send size={18} />
                 </Button>
               ) : (
                 <Button
@@ -1425,10 +1403,10 @@ export function ChatConversation({
                   aria-label="Record voice message"
                   onClick={handleMicClick}
                   disabled={!voice.isSupported || isSending}
-                  className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover shadow-sm ring-1 ring-border disabled:opacity-50"
+                  className="h-12 w-12 shrink-0 rounded-2xl p-0"
                   title={!voice.isSupported ? "Voice not supported in this browser" : "Record voice message"}
                 >
-                  <Mic size={17} />
+                  <Mic size={18} />
                 </Button>
               )}
             </form>
