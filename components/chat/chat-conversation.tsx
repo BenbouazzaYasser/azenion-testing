@@ -1,8 +1,8 @@
 "use client";
 
 import { Fragment, useMemo, useRef, useState, useEffect, useCallback } from "react";
-import { Send, MessageSquare, Users, Menu, Ban, Mic, Square, Trash2, Play, Pause, Smile, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
+import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Plus, Film, Sticker as StickerIcon, Phone, Video } from "lucide-react";import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { QueuedAttachmentCard } from "@/components/chat/chat-attachment";
@@ -62,6 +62,12 @@ interface ChatConversationProps {
   initialMessages: Message[];
   currentUserId: string;
   amBlocked?: boolean;
+  peer?: {
+    id: string;
+    full_name: string | null;
+    username: string;
+    avatar_url: string | null;
+  } | null;
 }
 
 type QueuedFile = {
@@ -71,6 +77,34 @@ type QueuedFile = {
   status: "queued" | "uploading" | "error";
   error?: string;
 };
+
+/** Dispatch a request to the global CallProvider to start a call. */
+export function requestCall(
+  conversationId: string,
+  kind: "audio" | "video",
+  peer: ChatConversationProps["peer"],
+  options?: { autoScreen?: boolean },
+) {
+  if (!peer?.id) {
+    toast.error("This conversation partner is unavailable.");
+    return;
+  }
+  window.dispatchEvent(
+    new CustomEvent("azenion:call-request", {
+      detail: {
+        conversationId,
+        peer: {
+          id: peer.id,
+          full_name: peer.full_name,
+          username: peer.username,
+          avatar_url: peer.avatar_url,
+        },
+        kind,
+        autoScreen: options?.autoScreen ?? false,
+      },
+    }),
+  );
+}
 
 function startOfDay(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
@@ -113,6 +147,7 @@ export function ChatConversation({
   initialMessages,
   currentUserId,
   amBlocked = false,
+  peer = null,
 }: ChatConversationProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -1017,6 +1052,28 @@ export function ChatConversation({
 
   const canSend = input.trim().length > 0 || queued.length > 0;
 
+  // Handle an inbound ?call=audio|video query param (from the conversation menu
+  // or any deep link) by starting a call once the peer is known.
+  const searchParams = useSearchParams();
+  const callParam = searchParams.get("call");
+  const handledCallParam = useRef<string | null>(null);
+  useEffect(() => {
+    if (amBlocked) return;
+    if (!callParam) return;
+    if (handledCallParam.current === callParam) return;
+    if (!peer?.id) return;
+    handledCallParam.current = callParam;
+    if (callParam === "audio") {
+      requestCall(conversationId, "audio", peer);
+    } else if (callParam === "video") {
+      requestCall(conversationId, "video", peer);
+    } else if (callParam === "screen") {
+      // Starting a call and immediately sharing the screen.
+      requestCall(conversationId, "video", peer, { autoScreen: true });
+    }
+    // Only fire once.
+  }, [callParam, peer, conversationId, amBlocked]);
+
   return (
     <div
       ref={conversationRef}
@@ -1078,6 +1135,28 @@ export function ChatConversation({
         </div>
 
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={!peer?.id || !!amBlocked}
+              onClick={() => requestCall(conversationId, "audio", peer)}
+              aria-label={`Start a voice call with ${participantName}`}
+              title={`Start a voice call with ${participantName}`}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
+            >
+              <Phone size={16} />
+            </button>
+            <button
+              type="button"
+              disabled={!peer?.id || !!amBlocked}
+              onClick={() => requestCall(conversationId, "video", peer)}
+              aria-label={`Start a video call with ${participantName}`}
+              title={`Start a video call with ${participantName}`}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
+            >
+              <Video size={16} />
+            </button>
+          </div>
           <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1">
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
             <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">Private</span>

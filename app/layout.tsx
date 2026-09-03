@@ -6,6 +6,7 @@ import { OnboardingProvider } from "@/components/onboarding/onboarding-provider"
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TranslationProvider } from "@/components/translation/translation-provider";
+import { CallProvider } from "@/components/call/call-provider";
 
 export const metadata: Metadata = {
   title: "Azenion — Infinite minds. Limitless impact.",
@@ -71,7 +72,7 @@ export default function RootLayout({
           <TranslationProvider initialLanguage={initialLang}>
             <AuthProvider>
               <OnboardingProvider />
-              {children}
+              <CallProvider>{children}</CallProvider>
             </AuthProvider>
           </TranslationProvider>
         </ThemeProvider>

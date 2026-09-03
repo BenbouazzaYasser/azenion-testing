@@ -24,6 +24,18 @@ export default async function ConversationPage({ params }: Props) {
     getConversationBlockState(params.conversationId),
   ]);
 
+  const thisConversation = conversations.find((c) => c.id === params.conversationId);
+  const otherUser = thisConversation?.other_user ?? null;
+  const peer =
+    otherUser && otherUser.id
+      ? {
+          id: otherUser.id,
+          full_name: otherUser.full_name,
+          username: otherUser.username,
+          avatar_url: otherUser.avatar_url,
+        }
+      : null;
+
   return (
     <>
       <Navbar />
@@ -41,6 +53,7 @@ export default async function ConversationPage({ params }: Props) {
               initialMessages={messages}
               currentUserId={user.id}
               amBlocked={blockState.am_blocked}
+              peer={peer}
             />
           </Suspense>
         </ChatLayout>
