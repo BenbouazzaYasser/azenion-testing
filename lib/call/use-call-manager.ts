@@ -808,6 +808,21 @@ function useCallManager() {
       void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
       return { error: "Could not start screen sharing. Please try again." };
     }
+    // Hint the encoder toward smooth, readable screen content: detail
+    // preserves text sharpness, maintain-framerate avoids choppy motion when
+    // the network/CPU is under pressure.
+    try {
+      screenTrack.contentHint = "detail";
+    } catch {
+      /* noop */
+    }
+    try {
+      const params = sender.getParameters();
+      params.degradationPreference = "maintain-framerate";
+      await sender.setParameters(params);
+    } catch {
+      /* noop */
+    }
     screenSenderRef.current = sender ?? null;
 
     // When the browser reports the user stopped sharing, clean up.
