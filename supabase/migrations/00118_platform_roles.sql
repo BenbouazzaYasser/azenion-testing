@@ -1,4 +1,4 @@
--- Migration: 00100_platform_roles
+-- Migration: 00118_platform_roles (renumbered from 00100; 00100 is taken by servers_channels)
 --
 -- Platform-level roles system for cross-product authorization.
 -- Replaces ad-hoc checks with a proper RBAC foundation.

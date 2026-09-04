@@ -1,4 +1,4 @@
--- Migration: 00105_academy_labs_admin_and_storage_gates
+-- Migration: 00119_academy_labs_admin_and_storage_gates (renumbered from 00105; 00105 is taken by add_instructor_education_certifications)
 --
 -- Phase 0 of the Academy Labs expansion: closes two permission gaps found
 -- during the Labs audit. Purely additive -- no existing policy, role, or

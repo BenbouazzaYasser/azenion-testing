@@ -3,7 +3,7 @@
 -- Adds education and certifications fields to instructor verification requests.
 -- Also ensures platform_roles infrastructure exists for the approve flow.
 
--- ── Platform roles safety net (from 00100) ───────────────────────────────────
+-- ── Platform roles safety net (from 00118, formerly 00100) ──────────────────────────
 
 create table if not exists public.roles (
   id uuid primary key default gen_random_uuid(),

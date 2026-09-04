@@ -1,4 +1,4 @@
--- Migration: 00114_fix_leave_user_server
+-- Migration: 00121_fix_leave_user_server (renumbered from 00114; 00114 is taken by call_events)
 --
 -- Fixes leave_user_server SQL clears owner_id on every member leave.
 -- Previously after deleting a leaving member (where role <> 'owner'), the function
