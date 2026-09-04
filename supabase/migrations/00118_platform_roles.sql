@@ -16,6 +16,9 @@ create table if not exists public.roles (
 
 alter table public.roles enable row level security;
 
+-- NOTE: drop-if-exists first — roles tables and policies may already exist
+-- on databases where they were created out-of-band.
+drop policy if exists "roles are publicly readable" on public.roles;
 create policy "roles are publicly readable"
   on public.roles for select using (true);
 
@@ -36,6 +39,7 @@ create table if not exists public.user_roles (
 
 alter table public.user_roles enable row level security;
 
+drop policy if exists "user roles are publicly readable" on public.user_roles;
 create policy "user roles are publicly readable"
   on public.user_roles for select using (true);
 
