@@ -62,13 +62,24 @@ function useCallManager() {
   const connectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const signalChannelRef = useRef<{ unsubscribe: () => void } | null>(null);
 
+  const [myUserId, setMyUserId] = useState<string | null>(null);
   const userIdRef = useRef<string | null>(null);
+  userIdRef.current = myUserId;
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
-      userIdRef.current = data.user?.id ?? null;
+      setMyUserId(data.user?.id ?? null);
     });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setMyUserId(session?.user?.id ?? null);
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+
 
   const clearTimeouts = useCallback(() => {
     [startTimeoutRef, incomingTimeoutRef, connectTimeoutRef].forEach((r) => {
@@ -128,47 +139,129 @@ function useCallManager() {
     [clearTimeouts, teardown],
   );
 
+  const handleEventRow = useCallback(
+    async (row: CallEventRow, targetCallId?: string) => {
+      const myId = userIdRef.current;
+      if (!myId || row.sender_id === myId) return;
+      if (targetCallId && row.call_id !== targetCallId) return;
+
+      if (!targetCallId) {
+        if (row.event_type === "offer") {
+          if (activeRef.current) {
+            void callSignaling.sendBusy(row.conversation_id, row.call_id);
+            return;
+          }
+          const offer = row.payload as unknown as OfferPayload;
+          setIncomingCall((prev) => {
+            if (prev && prev.callId === row.call_id) return prev;
+            return {
+              callId: row.call_id,
+              conversationId: row.conversation_id,
+              senderId: row.sender_id,
+              kind: offer?.kind ?? "audio",
+              offer,
+            };
+          });
+          if (incomingTimeoutRef.current) clearTimeout(incomingTimeoutRef.current);
+          incomingTimeoutRef.current = setTimeout(() => {
+            setIncomingCall((prev) => (prev && prev.callId === row.call_id ? null : prev));
+          }, INCOMING_TIMEOUT_MS);
+        }
+        return;
+      }
+
+      switch (row.event_type) {
+        case "offer": {
+          const pc = pcRef.current;
+          const sdp = (row.payload as { sdp?: string }).sdp;
+          if (!pc || !sdp) break;
+          try {
+            if (pc.signalingState !== "stable") {
+              await pc.setLocalDescription({ type: "rollback" });
+            }
+            await pc.setRemoteDescription({ type: "offer", sdp });
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            void callSignaling.sendAnswer(row.conversation_id, row.call_id, { sdp: answer.sdp ?? "" });
+          } catch {
+            if (activeRef.current) finishCall("error", "Could not update the connection.");
+          }
+          break;
+        }
+        case "answer": {
+          if (pcRef.current && activeCallRef.current?.role === "caller") {
+            const sdp = (row.payload as { sdp?: string }).sdp;
+            if (!sdp) break;
+            if (pcRef.current.signalingState !== "have-local-offer") break;
+            setPhase("connecting");
+            try {
+              await pcRef.current.setRemoteDescription({ type: "answer", sdp });
+            } catch {
+              if (activeRef.current) finishCall("error", "Could not establish the connection.");
+            }
+          }
+          break;
+        }
+        case "ice": {
+          const cand = (row.payload as unknown as IcePayload).candidate;
+          if (!pcRef.current || !cand) break;
+          try {
+            await pcRef.current.addIceCandidate(cand);
+          } catch {
+            /* ignore */
+          }
+          break;
+        }
+        case "cancel": {
+          if (activeCallRef.current?.role === "callee") finishCall("canceled");
+          break;
+        }
+        case "decline": {
+          if (activeCallRef.current?.role === "caller" && activeCallRef.current?.phase === "ringing") {
+            finishCall("declined");
+          }
+          break;
+        }
+        case "busy": {
+          if (activeCallRef.current?.role === "caller" && activeCallRef.current?.phase === "ringing") {
+            finishCall("busy");
+          }
+          break;
+        }
+        case "end": {
+          if (activeRef.current) finishCall("peer-left");
+          break;
+        }
+        case "screen": {
+          patchActive({ screenActive: !!(row.payload as { start?: boolean }).start });
+          break;
+        }
+        default:
+          break;
+      }
+    },
+    [finishCall, patchActive, setPhase],
+  );
+
   // ── Global incoming listener (arrives on any page) ────────────────────────
   useEffect(() => {
+    if (!myUserId) return;
     const supabase = createClient();
     const channel = supabase
       .channel("calls-global")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "call_events" },
-        async (payload) => {
-          const row = payload.new as CallEventRow;
-          const myId = userIdRef.current;
-          if (!myId || row.sender_id === myId) return;
-
-          if (row.event_type === "offer") {
-            if (activeRef.current) {
-              void callSignaling.sendBusy(row.conversation_id, row.call_id);
-              return;
-            }
-            const offer = row.payload as unknown as OfferPayload;
-            setIncomingCall((prev) => {
-              if (prev && prev.callId === row.call_id) return prev;
-              return {
-                callId: row.call_id,
-                conversationId: row.conversation_id,
-                senderId: row.sender_id,
-                kind: offer?.kind ?? "audio",
-                offer,
-              };
-            });
-            if (incomingTimeoutRef.current) clearTimeout(incomingTimeoutRef.current);
-            incomingTimeoutRef.current = setTimeout(() => {
-              setIncomingCall((prev) => (prev && prev.callId === row.call_id ? null : prev));
-            }, INCOMING_TIMEOUT_MS);
-          }
-        },
+        (payload) => void handleEventRow(payload.new as CallEventRow),
+      )
+      .on("broadcast", { event: "call-event" }, (payload) =>
+        void handleEventRow(payload.payload as CallEventRow),
       );
     channel.subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [myUserId, handleEventRow]);
 
   // External request to start a call (fired by the chat page ?call= param).
   useEffect(() => {
@@ -440,94 +533,19 @@ function useCallManager() {
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "call_events" },
-          async (payload) => {
-            const row = payload.new as CallEventRow;
-            if (row.sender_id === userIdRef.current) return;
-            if (row.call_id !== callId) return;
-
-            switch (row.event_type) {
-              case "offer": {
-                // Renegotiation offer (e.g. the caller started sharing a new
-                // track). Roll back any pending local description and answer.
-                const pc = pcRef.current;
-                const sdp = (row.payload as { sdp?: string }).sdp;
-                if (!pc || !sdp) break;
-                try {
-                  if (pc.signalingState !== "stable") {
-                    await pc.setLocalDescription({ type: "rollback" });
-                  }
-                  await pc.setRemoteDescription({ type: "offer", sdp });
-                  const answer = await pc.createAnswer();
-                  await pc.setLocalDescription(answer);
-                  void callSignaling.sendAnswer(conversationId, callId, { sdp: answer.sdp ?? "" });
-                } catch {
-                  if (activeRef.current) finishCall("error", "Could not update the connection.");
-                }
-                break;
-              }
-              case "answer": {
-                if (pcRef.current && activeCallRef.current?.role === "caller") {
-                  const sdp = (row.payload as { sdp?: string }).sdp;
-                  if (!sdp) break;
-                  if (pcRef.current.signalingState !== "have-local-offer") break; // stale/duplicate
-                  setPhase("connecting");
-                  try {
-                    await pcRef.current.setRemoteDescription({ type: "answer", sdp });
-                  } catch {
-                    if (activeRef.current) finishCall("error", "Could not establish the connection.");
-                  }
-                }
-                break;
-              }
-              case "ice": {
-                const cand = (row.payload as unknown as IcePayload).candidate;
-                if (!pcRef.current || !cand) break;
-                try {
-                  await pcRef.current.addIceCandidate(cand);
-                } catch {
-                  /* ignore late/duplicate candidates */
-                }
-                break;
-              }
-              case "cancel": {
-                if (activeCallRef.current?.role === "callee") finishCall("canceled");
-                break;
-              }
-              case "decline": {
-                if (
-                  activeCallRef.current?.role === "caller" &&
-                  activeCallRef.current?.phase === "ringing"
-                ) {
-                  finishCall("declined");
-                }
-                break;
-              }
-              case "busy": {
-                if (
-                  activeCallRef.current?.role === "caller" &&
-                  activeCallRef.current?.phase === "ringing"
-                ) {
-                  finishCall("busy");
-                }
-                break;
-              }
-              case "end": {
-                if (activeRef.current) finishCall("peer-left");
-                break;
-              }
-              case "screen": {
-                patchActive({ screenActive: !!(row.payload as { start?: boolean }).start });
-                break;
-              }
-              default:
-                break;
-            }
-          },
+          (payload) => void handleEventRow(payload.new as CallEventRow, callId),
+        );
+      const bChannel = supabase
+        .channel("calls-global-broadcast")
+        .on("broadcast", { event: "call-event" }, (payload) =>
+          void handleEventRow(payload.payload as CallEventRow, callId),
         );
       channel.subscribe();
+      bChannel.subscribe();
       signalChannelRef.current = {
         unsubscribe: () => {
           void supabase.removeChannel(channel);
+          void supabase.removeChannel(bChannel);
         },
       };
 
