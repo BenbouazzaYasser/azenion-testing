@@ -1,4 +1,4 @@
--- Migration: 00107_academy_labs_core_team_member
+-- Migration: 00120_academy_labs_core_team_member (renumbered from 00107; 00107 is taken by user_settings_language)
 --
 -- Brings the database-level Labs authorization gate in line with the
 -- application-level one. During this audit, academy-labs.actions.ts and
