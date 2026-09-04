@@ -18,8 +18,14 @@
 --
 -- Fix (smallest, production-safe):
 --   * Remove direct EXECUTE from `authenticated` (the actual hole) and also
---     from `anon` (defensive; it never had a grant here, but the `public`
---     default is no-execute anyway, so this is belt-and-braces).
+--     from `anon` (defensive).
+--   * Remove EXECUTE from `PUBLIC` as well — this is REQUIRED, not optional:
+--     Postgres grants EXECUTE to PUBLIC on new functions by default, and
+--     `anon`/`authenticated` inherit PUBLIC privileges. Revoking only the
+--     named roles leaves the function callable by everyone via PUBLIC.
+--     (Verified on prod: after revoking anon/authenticated alone,
+--     has_function_privilege was still true for both via the `=X` PUBLIC
+--     entry in proacl.)
 --   * Keep `service_role` (the server-side / trusted flow) and keep the
 --     function owner's implicit EXECUTE.
 --
@@ -45,7 +51,7 @@
 -- only change is who may *enter* it directly.
 
 revoke execute on function public.delete_storage_prefix(text, text)
-  from anon, authenticated;
+  from anon, authenticated, public;
 
 -- service_role must keep its explicit grant (trusted server-side flows and
 -- the owning migration runner rely on it). It is preserved by the line
