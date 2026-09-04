@@ -87,6 +87,9 @@ grant select, insert
 -- Members may resolve ONE peer's profile in a conversation. Non-members get
 -- NULL (no profile leak). SECURITY DEFINER, but re-checks membership using
 -- the RLS-bypassing helper so it cannot be abused to enumerate profiles.
+-- NOTE: plain DROP (not or-replace) — some databases carry an older variant
+-- with a different OUT-parameter order, which CREATE OR REPLACE rejects.
+drop function if exists public.get_call_peer(uuid, uuid);
 create or replace function public.get_call_peer(
   p_conversation_id uuid,
   p_user_id uuid
