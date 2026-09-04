@@ -609,10 +609,9 @@ export function Navbar() {
 
       <div
         ref={drawerRef}
-        aria-hidden={!isMenuOpen}
         className={cn(
           "absolute left-4 right-4 top-[78px] grid overflow-hidden rounded-[1.5rem] border navbar-border bg-glass-nav shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)] backdrop-blur-2xl transition-all duration-[400ms] ease-premium xl:hidden",
-          isMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          isMenuOpen ? "grid-rows-[1fr] opacity-100 pointer-events-auto" : "grid-rows-[0fr] opacity-0 pointer-events-none"
         )}
       >
         <div className="min-h-0 max-h-[calc(100dvh_-_112px)] overflow-y-auto overscroll-contain">
@@ -623,6 +622,7 @@ export function Navbar() {
                 <div key={link.href}>
                   <Link
                     href={link.href}
+                    tabIndex={isMenuOpen ? 0 : -1}
                     onClick={() => setIsMenuOpen(false)}
                     className={cn(
                       "relative rounded-xl px-4 py-3 text-[15px] font-medium transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
@@ -646,6 +646,7 @@ export function Navbar() {
                         <Link
                           key={child.href}
                           href={child.href}
+                          tabIndex={isMenuOpen ? 0 : -1}
                           onClick={() => setIsMenuOpen(false)}
                           className={cn(
                             "relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",

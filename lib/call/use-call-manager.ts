@@ -636,7 +636,7 @@ function useCallManager() {
       }
       screenSenderRef.current = null;
       screenReplacedTrackRef.current = false;
-      patchActive({ screenActive: false });
+      patchActive({ screenActive: false, screenStream: undefined });
       void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
       return {};
     }
@@ -654,7 +654,7 @@ function useCallManager() {
       return { error: "Could not capture the screen." };
     }
     screenStreamRef.current = stream;
-    patchActive({ screenActive: true });
+    patchActive({ screenActive: true, screenStream: stream });
     void callSignaling.sendScreen(call.conversationId, call.callId, { start: true });
 
     const pc = pcRef.current;
@@ -692,7 +692,7 @@ function useCallManager() {
       }
       screenSenderRef.current = null;
       screenReplacedTrackRef.current = false;
-      patchActive({ screenActive: false });
+      patchActive({ screenActive: false, screenStream: undefined });
       void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
     };
     screenTrack.addEventListener("ended", onScreenEnded, { once: true });
