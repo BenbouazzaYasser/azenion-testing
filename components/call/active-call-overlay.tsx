@@ -254,53 +254,58 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
           </div>
         ) : (
           /* Voice call layout */
-          screenTrackLive ? (
-            <div className="relative h-full w-full overflow-hidden rounded-3xl border border-border-strong bg-void-900/60">
-              <VideoStream
-                stream={call.screenStream}
-                muted={false}
-                className="absolute inset-0 h-full w-full object-contain bg-void-950"
-              />
-              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-accent-300 backdrop-blur">
-                <ScreenShare className="h-3 w-3" />
-                Screen sharing
+          <>
+            {call.remoteStream && (
+              <VideoStream stream={call.remoteStream} muted={false} className="hidden" />
+            )}
+            {screenTrackLive ? (
+              <div className="relative h-full w-full overflow-hidden rounded-3xl border border-border-strong bg-void-900/60">
+                <VideoStream
+                  stream={call.screenStream}
+                  muted={false}
+                  className="absolute inset-0 h-full w-full object-contain bg-void-950"
+                />
+                <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-accent-300 backdrop-blur">
+                  <ScreenShare className="h-3 w-3" />
+                  Screen sharing
+                </div>
+                <div className="absolute right-3 bottom-3 flex items-center gap-2 rounded-full border border-border-strong bg-void-950/70 px-3 py-1.5 text-xs text-ink-200 backdrop-blur">
+                  <span className="truncate">{call.peer.full_name ?? `@${call.peer.username}`}</span>
+                  <span aria-hidden className="text-ink-500">·</span>
+                  <span>{formatClock(durationSec)}</span>
+                </div>
               </div>
-              <div className="absolute right-3 bottom-3 flex items-center gap-2 rounded-full border border-border-strong bg-void-950/70 px-3 py-1.5 text-xs text-ink-200 backdrop-blur">
-                <span className="truncate">{call.peer.full_name ?? `@${call.peer.username}`}</span>
-                <span aria-hidden className="text-ink-500">·</span>
-                <span>{formatClock(durationSec)}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center text-center">
-              <span className="flex h-28 w-28 items-center justify-center rounded-full border border-accent-400/30 bg-gradient-to-br from-accent to-accent-glow shadow-glow">
-                <User className="h-14 w-14 text-white/90" />
-              </span>
-              <div className="mt-5 text-xl font-semibold text-ink-50">
-                {call.peer.full_name ?? `@${call.peer.username}`}
-              </div>
-              <div className="mt-2 text-sm text-ink-500">
-                {call.phase === "active" && call.startedAt ? (
-                  <span className="text-base font-medium text-ink-200">{formatClock(durationSec)}</span>
-                ) : (
-                  <span className="flex items-center justify-center gap-1.5">
-                    <PhoneCall className="h-4 w-4 animate-pulse" />
-                    {call.phase === "ringing"
-                      ? "Ringing…"
-                      : call.role === "caller"
-                        ? "Calling…"
-                        : "Connecting…"}
-                  </span>
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center text-center">
+                <span className="flex h-28 w-28 items-center justify-center rounded-full border border-accent-400/30 bg-gradient-to-br from-accent to-accent-glow shadow-glow">
+                  <User className="h-14 w-14 text-white/90" />
+                </span>
+                <div className="mt-5 text-xl font-semibold text-ink-50">
+                  {call.peer.full_name ?? `@${call.peer.username}`}
+                </div>
+                <div className="mt-2 text-sm text-ink-500">
+                  {call.phase === "active" && call.startedAt ? (
+                    <span className="text-base font-medium text-ink-200">{formatClock(durationSec)}</span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-1.5">
+                      <PhoneCall className="h-4 w-4 animate-pulse" />
+                      {call.phase === "ringing"
+                        ? "Ringing…"
+                        : call.role === "caller"
+                          ? "Calling…"
+                          : "Connecting…"}
+                    </span>
+                  )}
+                </div>
+                {call.muted && (
+                  <div className="mt-3 flex items-center gap-1.5 text-xs text-amber-300/90">
+                    <MicOff className="h-3.5 w-3.5" />
+                    You are muted
+                  </div>
                 )}
               </div>
-              {call.muted && (
-                <div className="mt-3 flex items-center gap-1.5 text-xs text-amber-300/90">
-                  <MicOff className="h-3.5 w-3.5" />
-                  You are muted
-                </div>
-              )}
-            </div>
-          )
+            )}
+          </>
         )}
       </div>
 
