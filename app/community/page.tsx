@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     "The Azenion Community — the feed, showcase, announcements, teams, projects and live sessions across the Limitless Network.",
 };
 
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export default async function CommunityPage() {

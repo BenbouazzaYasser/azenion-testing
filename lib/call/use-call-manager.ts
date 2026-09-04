@@ -61,6 +61,10 @@ function useCallManager() {
   const incomingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const connectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const signalChannelRef = useRef<{ unsubscribe: () => void } | null>(null);
+  // IDs of signaling rows already processed (dedupes live events vs replay).
+  const seenEventIdsRef = useRef<Set<string>>(new Set());
+  // Remote ICE candidates that arrived before the remote description was set.
+  const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
 
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const userIdRef = useRef<string | null>(null);
@@ -98,6 +102,23 @@ function useCallManager() {
     setActiveCall((prev) => (prev ? { ...prev, ...patch } : prev));
   }, []);
 
+  // Drains ICE candidates that arrived before the remote description was
+  // set. Must be called after every successful setRemoteDescription.
+  // Declared before handleEventRow (which depends on it).
+  const flushQueuedIce = useCallback(async () => {
+    const pc = pcRef.current;
+    if (!pc || !pc.remoteDescription) return;
+    const queued = pendingIceRef.current;
+    pendingIceRef.current = [];
+    for (const cand of queued) {
+      try {
+        await pc.addIceCandidate(cand);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
   const teardown = useCallback(() => {
     if (signalChannelRef.current) {
       try {
@@ -107,6 +128,8 @@ function useCallManager() {
       }
       signalChannelRef.current = null;
     }
+    seenEventIdsRef.current.clear();
+    pendingIceRef.current = [];
     closePeerConnection(pcRef.current);
     pcRef.current = null;
     stopTracks(localStreamRef.current);
@@ -180,6 +203,7 @@ function useCallManager() {
               await pc.setLocalDescription({ type: "rollback" });
             }
             await pc.setRemoteDescription({ type: "offer", sdp });
+            await flushQueuedIce();
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
             void callSignaling.sendAnswer(row.conversation_id, row.call_id, { sdp: answer.sdp ?? "" });
@@ -196,6 +220,7 @@ function useCallManager() {
             setPhase("connecting");
             try {
               await pcRef.current.setRemoteDescription({ type: "answer", sdp });
+              await flushQueuedIce();
             } catch {
               if (activeRef.current) finishCall("error", "Could not establish the connection.");
             }
@@ -204,9 +229,16 @@ function useCallManager() {
         }
         case "ice": {
           const cand = (row.payload as unknown as IcePayload).candidate;
-          if (!pcRef.current || !cand) break;
+          const pc = pcRef.current;
+          if (!pc || !cand) break;
+          if (!pc.remoteDescription) {
+            // The candidate arrived before setRemoteDescription resolved
+            // (common right after accept). Queue it instead of dropping it.
+            pendingIceRef.current.push(cand);
+            break;
+          }
           try {
-            await pcRef.current.addIceCandidate(cand);
+            await pc.addIceCandidate(cand);
           } catch {
             /* ignore */
           }
@@ -240,7 +272,40 @@ function useCallManager() {
           break;
       }
     },
-    [finishCall, patchActive, setPhase],
+    [finishCall, patchActive, setPhase, flushQueuedIce],
+  );
+
+  // Replays signaling rows that were inserted before we subscribed to the
+  // per-call channel. The callee typically subscribes seconds after the
+  // caller sent the offer and started trickling ICE (host candidates are
+  // gathered within milliseconds), so without this the callee permanently
+  // misses the caller's early candidates and the call sticks on
+  // "Connecting…". Live rows arriving during the fetch are deduped by id.
+  const replayMissedEvents = useCallback(
+    async (callId: string, role: "caller" | "callee") => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("call_events")
+          .select("id,sender_id,call_id,conversation_id,event_type,payload,created_at")
+          .eq("call_id", callId)
+          .order("created_at", { ascending: true })
+          .limit(200);
+        for (const row of (data ?? []) as unknown as CallEventRow[]) {
+          if (!row.id || seenEventIdsRef.current.has(row.id)) continue;
+          // The callee already applied the initial offer in acceptCall and
+          // never needs answers; the caller only needs the answer + ICE
+          // (its own offer rows are skipped by the sender check anyway).
+          if (role === "callee" && row.event_type !== "ice") continue;
+          if (role === "caller" && row.event_type !== "answer" && row.event_type !== "ice") continue;
+          seenEventIdsRef.current.add(row.id);
+          await handleEventRow(row, callId);
+        }
+      } catch {
+        /* realtime delivery covers the live path */
+      }
+    },
+    [handleEventRow],
   );
 
   // ── Global incoming listener (arrives on any page) ────────────────────────
@@ -436,6 +501,7 @@ function useCallManager() {
     }
     try {
       await pc.setRemoteDescription({ type: "offer", sdp: offer.sdp });
+      await flushQueuedIce();
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       const result = await callSignaling.sendAnswer(info.conversationId, info.callId, {
@@ -466,6 +532,10 @@ function useCallManager() {
       role: "caller" | "callee",
     ): Promise<RTCPeerConnection | null> => {
       const supabase = createClient();
+
+      // Fresh signaling state for this call.
+      seenEventIdsRef.current.clear();
+      pendingIceRef.current = [];
 
       const pc = createPeerConnection({
         onIceCandidate: (candidate) => {
@@ -527,18 +597,24 @@ function useCallManager() {
         });
       }
 
-      // Per-call signaling listener.
+      // Per-call signaling listener. Rows are deduped by id because the
+      // missed-event replay below can overlap with live deliveries.
+      const onCallRow = (row: CallEventRow) => {
+        if (row.id && seenEventIdsRef.current.has(row.id)) return;
+        if (row.id) seenEventIdsRef.current.add(row.id);
+        void handleEventRow(row, callId);
+      };
       const channel = supabase
         .channel(`call-${callId}`)
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "call_events" },
-          (payload) => void handleEventRow(payload.new as CallEventRow, callId),
+          (payload) => onCallRow(payload.new as CallEventRow),
         );
       const bChannel = supabase
         .channel("calls-global-broadcast")
         .on("broadcast", { event: "call-event" }, (payload) =>
-          void handleEventRow(payload.payload as CallEventRow, callId),
+          onCallRow(payload.payload as CallEventRow),
         );
       channel.subscribe();
       bChannel.subscribe();
@@ -548,6 +624,10 @@ function useCallManager() {
           void supabase.removeChannel(bChannel);
         },
       };
+
+      // Pick up signaling rows sent before we subscribed (the callee joins
+      // seconds after the caller started trickling ICE candidates).
+      void replayMissedEvents(callId, role);
 
       // Connection timeout safety net.
       if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
@@ -562,7 +642,7 @@ function useCallManager() {
 
       return pc;
     },
-    [finishCall, patchActive, setPhase],
+    [finishCall, patchActive, setPhase, replayMissedEvents],
   );
 
   // Keep a ref mirror of activeCall for use inside the signaling channel handler.
