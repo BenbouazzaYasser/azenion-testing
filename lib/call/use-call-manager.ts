@@ -521,10 +521,9 @@ function useCallManager() {
   }, [incomingCall, finishCall]);
 
   // Creates + wires the peer connection and attaches local tracks. Sets up the
-  // per-call signaling listener that handles the peer's events. The CALLER
-  // negotiates (creates/sends offers) for both the initial connection and any
-  // later track additions (e.g. screen share from a voice call); the callee
-  // answers offers that arrive.
+  // per-call signaling listener that handles the peer's events. Either side
+  // creates/sends offers (initial + renegotiation, e.g. screen share from a
+  // voice call); inbound offers are answered in handleEventRow.
   const establishPeer = useCallback(
     async (
       conversationId: string,
@@ -543,8 +542,25 @@ function useCallManager() {
           void callSignaling.sendIce(conversationId, callId, payload);
         },
         onTrack: (stream) => {
-          remoteStreamRef.current = stream;
-          patchActive({ remoteStream: stream });
+          // Merge inbound tracks into one persistent remote stream. Replacing
+          // the stream object on every ontrack (e.g. when a screen-share track
+          // arrives mid-call) would detach the tracks the element is already
+          // playing — killing voice audio when screen share starts.
+          let remote = remoteStreamRef.current;
+          if (!remote) {
+            remote = new MediaStream();
+            remoteStreamRef.current = remote;
+          }
+          for (const track of stream.getTracks()) {
+            if (!remote.getTrackById(track.id)) {
+              try {
+                remote.addTrack(track);
+              } catch {
+                /* noop */
+              }
+            }
+          }
+          patchActive({ remoteStream: remote });
         },
         onConnectionStateChange: (state) => {
           patchActive({ connectionState: state });
@@ -563,33 +579,33 @@ function useCallManager() {
       });
       pcRef.current = pc;
 
-      // The caller drives negotiation (initial offer + renegotiation when it
-      // adds tracks such as a screen-share video track).
-      if (role === "caller") {
-        pc.onnegotiationneeded = () => {
-          void (async () => {
-            if (negotiatingRef.current) return;
-            if (pc.signalingState !== "stable") return;
-            negotiatingRef.current = true;
-            try {
-              const offer = await pc.createOffer();
-              await pc.setLocalDescription(offer);
-              const res = await callSignaling.sendOffer(
-                conversationId,
-                callId,
-                { kind: activeCallRef.current?.kind ?? "audio", sdp: offer.sdp ?? "" },
-              );
-              if (res.error && activeRef.current) {
-                finishCall("error", "Signaling failed.");
-              }
-            } catch {
-              if (activeRef.current) finishCall("error", "Could not update the connection.");
-            } finally {
-              negotiatingRef.current = false;
+      // Both sides drive negotiation: the initial offer from the caller plus
+      // any later re-offer when either side adds a track (e.g. screen share
+      // started by the callee in a voice call). Inbound offers are answered
+      // in handleEventRow, which rolls back on glare.
+      pc.onnegotiationneeded = () => {
+        void (async () => {
+          if (negotiatingRef.current) return;
+          if (pc.signalingState !== "stable") return;
+          negotiatingRef.current = true;
+          try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            const res = await callSignaling.sendOffer(
+              conversationId,
+              callId,
+              { kind: activeCallRef.current?.kind ?? "audio", sdp: offer.sdp ?? "" },
+            );
+            if (res.error && activeRef.current) {
+              finishCall("error", "Signaling failed.");
             }
-          })();
-        };
-      }
+          } catch {
+            if (activeRef.current) finishCall("error", "Could not update the connection.");
+          } finally {
+            negotiatingRef.current = false;
+          }
+        })();
+      };
 
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => {
