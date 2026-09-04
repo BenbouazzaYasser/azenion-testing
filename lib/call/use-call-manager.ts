@@ -213,11 +213,14 @@ function useCallManager() {
           break;
         }
         case "answer": {
-          if (pcRef.current && activeCallRef.current?.role === "caller") {
+          // Applies to the initial answer AND to answers for renegotiation
+          // offers sent by either side (e.g. callee-started screen share).
+          // The signaling-state guard keeps stray/duplicate answers harmless.
+          if (pcRef.current) {
             const sdp = (row.payload as { sdp?: string }).sdp;
             if (!sdp) break;
             if (pcRef.current.signalingState !== "have-local-offer") break;
-            setPhase("connecting");
+            if (activeCallRef.current?.phase === "ringing") setPhase("connecting");
             try {
               await pcRef.current.setRemoteDescription({ type: "answer", sdp });
               await flushQueuedIce();
