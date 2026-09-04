@@ -300,7 +300,7 @@ function CourseCard({
               </button>
             ) : null}
             <a
-              href={isPdf ? course.file_url : `/api/academy/courses/${course.id}/file`}
+              href={`/api/academy/courses/${course.id}/file`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"

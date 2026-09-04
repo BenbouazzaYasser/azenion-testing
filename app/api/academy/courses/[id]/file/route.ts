@@ -1,31 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 /**
- * Serve an uploaded course file with the correct Content-Type so browsers
- * render (rather than display as source) HTML/CSS course files.
+ * Serve an uploaded course file through the Azenion origin so that the
+ * response headers are controlled by this application rather than by the
+ * storage bucket defaults.
  *
- * Supabase stores some of these objects without content-type metadata (File.type
- * is empty for many .html/.css uploads, and the fallback application/octet-stream
- * / text/plain makes the browser show the raw code). This proxy reads the bytes
- * from the `course-files` bucket and re-serves them with the right header based
- * on the file extension — fixing both existing and future uploads.
+ * Access model (from the courses RLS in 00095/00096/00101): courses are
+ * public catalog content. The `courses` table is publicly readable
+ * (`using (true)`, select granted to anon) and the `course-files` objects
+ * carry a public `select` policy. There is no enrollment/ownership model for
+ * courses, so course files are intentionally readable by every visitor,
+ * authenticated or anonymous.
  *
- * Security: uploaded HTML/CSS is untrusted. A `Content-Security-Policy: sandbox`
- * header is added to every response so that even if an HTML course file is
- * rendered inline on the Azenion origin it runs fully sandboxed — no scripts,
- * no same-origin access. (Inert for PDF/zip responses.)
+ * Security posture:
+ *   - Reads go through the user-scoped Supabase client so the database RLS
+ *     policies are the authorization layer. The service-role client is never
+ *     used for file access. If a course restriction (e.g. enrollment or
+ *     is_published) is introduced later, that check belongs here, BEFORE the
+ *     storage read.
+ *   - The object path is read from the `courses` row for the requested id and
+ *     validated against a strict pattern. Client-supplied file paths are
+ *     never trusted.
+ *   - Only PDFs are served inline (browser PDF viewers are sandboxed). All
+ *     other content — including uploaded .html/.css/.js/.mjs/.zip — is forced
+ *     to download with an opaque Content-Type so attacker-supplied HTML/JS is
+ *     never rendered/executed on the Azenion origin.
  */
 
-const CONTENT_TYPES: Record<string, string> = {
-  pdf: "application/pdf",
-  zip: "application/zip",
-  html: "text/html; charset=utf-8",
-  htm: "text/html; charset=utf-8",
-  css: "text/css; charset=utf-8",
-  js: "text/javascript; charset=utf-8",
-  mjs: "text/javascript; charset=utf-8",
-};
+const PDF_CONTENT_TYPE = "application/pdf";
+const DOWNLOAD_CONTENT_TYPE = "application/octet-stream";
 
 function fileExtension(filePath: string): string {
   return filePath.split(".").pop()?.toLowerCase() ?? "";
@@ -49,11 +53,16 @@ export async function GET(
     return NextResponse.json({ error: "Invalid course id" }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
+  // Resolve the request's auth principal. Course files are public content by
+  // design (see above), so both anonymous and authenticated visitors are
+  // allowed; this read path intentionally delegates the access decision to
+  // Supabase RLS instead of the service-role client.
+  const supabase = createClient();
+  await supabase.auth.getUser();
 
   const { data: course, error } = await supabase
     .from("courses")
-    .select("file_path, content_type")
+    .select("content_type, file_path")
     .eq("id", id)
     .maybeSingle();
 
@@ -66,13 +75,7 @@ export async function GET(
   }
 
   const ext = fileExtension(course.file_path);
-  const contentType =
-    CONTENT_TYPES[ext] ??
-    (course.content_type === "pdf"
-      ? "application/pdf"
-      : course.content_type === "html_css" && ext === "zip"
-        ? "application/zip"
-        : "application/octet-stream");
+  const isPdf = course.content_type === "pdf" && ext === "pdf";
 
   const { data: blob, error: downloadError } = await supabase.storage
     .from("course-files")
@@ -82,13 +85,22 @@ export async function GET(
     return NextResponse.json({ error: "File unavailable" }, { status: 404 });
   }
 
+  const headers: Record<string, string> = {
+    "Content-Security-Policy": "sandbox",
+    "X-Content-Type-Options": "nosniff",
+    "Cache-Control": "public, max-age=3600",
+  };
+
+  if (isPdf) {
+    headers["Content-Type"] = PDF_CONTENT_TYPE;
+    headers["Content-Disposition"] = `inline; filename="course-${id}.pdf"`;
+  } else {
+    headers["Content-Type"] = DOWNLOAD_CONTENT_TYPE;
+    headers["Content-Disposition"] = `attachment; filename="course-${id}.${ext}"`;
+  }
+
   return new NextResponse(blob, {
     status: 200,
-    headers: {
-      "Content-Type": contentType,
-      "Content-Security-Policy": "sandbox allow-scripts",
-      "Content-Disposition": `inline; filename="course.${ext}"`,
-      "Cache-Control": "public, max-age=3600",
-    },
+    headers,
   });
 }
