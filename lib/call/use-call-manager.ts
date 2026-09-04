@@ -308,6 +308,40 @@ function useCallManager() {
     [handleEventRow],
   );
 
+  // (Re)negotiation offer loop shared by both roles. Guarded to run only
+  // when signaling is stable; inbound offers are answered in handleEventRow.
+  // The caller attaches it immediately; the callee attaches it only after
+  // sending its initial answer — attaching it earlier would make the
+  // callee's initial addTrack emit a rogue counter-offer (glare) that breaks
+  // the handshake.
+  const attachNegotiationHandler = useCallback(
+    (pc: RTCPeerConnection, conversationId: string, callId: string) => {
+      pc.onnegotiationneeded = () => {
+        void (async () => {
+          if (negotiatingRef.current) return;
+          if (pc.signalingState !== "stable") return;
+          negotiatingRef.current = true;
+          try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            const res = await callSignaling.sendOffer(conversationId, callId, {
+              kind: activeCallRef.current?.kind ?? "audio",
+              sdp: offer.sdp ?? "",
+            });
+            if (res.error && activeRef.current) {
+              finishCall("error", "Signaling failed.");
+            }
+          } catch {
+            if (activeRef.current) finishCall("error", "Could not update the connection.");
+          } finally {
+            negotiatingRef.current = false;
+          }
+        })();
+      };
+    },
+    [finishCall],
+  );
+
   // ── Global incoming listener (arrives on any page) ────────────────────────
   useEffect(() => {
     if (!myUserId) return;
@@ -511,6 +545,9 @@ function useCallManager() {
         finishCall("error", "Signaling failed. Please try again.");
         return { error: result.error };
       }
+      // Initial handshake done — the callee may now renegotiate (e.g. when
+      // it starts screen sharing in a voice call).
+      attachNegotiationHandler(pc, info.conversationId, info.callId);
     } catch {
       finishCall("error", "Could not establish the connection.");
       return { error: "Could not establish the connection." };
@@ -518,12 +555,13 @@ function useCallManager() {
 
     return {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [incomingCall, finishCall]);
+  }, [incomingCall, finishCall, attachNegotiationHandler]);
 
   // Creates + wires the peer connection and attaches local tracks. Sets up the
-  // per-call signaling listener that handles the peer's events. Either side
-  // creates/sends offers (initial + renegotiation, e.g. screen share from a
-  // voice call); inbound offers are answered in handleEventRow.
+  // per-call signaling listener that handles the peer's events. The caller
+  // sends the initial offer; after the handshake either side may renegotiate
+  // (e.g. screen share from a voice call). Inbound offers are answered in
+  // handleEventRow.
   const establishPeer = useCallback(
     async (
       conversationId: string,
@@ -582,30 +620,9 @@ function useCallManager() {
       // Both sides drive negotiation: the initial offer from the caller plus
       // any later re-offer when either side adds a track (e.g. screen share
       // started by the callee in a voice call). Inbound offers are answered
-      // in handleEventRow, which rolls back on glare.
-      pc.onnegotiationneeded = () => {
-        void (async () => {
-          if (negotiatingRef.current) return;
-          if (pc.signalingState !== "stable") return;
-          negotiatingRef.current = true;
-          try {
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            const res = await callSignaling.sendOffer(
-              conversationId,
-              callId,
-              { kind: activeCallRef.current?.kind ?? "audio", sdp: offer.sdp ?? "" },
-            );
-            if (res.error && activeRef.current) {
-              finishCall("error", "Signaling failed.");
-            }
-          } catch {
-            if (activeRef.current) finishCall("error", "Could not update the connection.");
-          } finally {
-            negotiatingRef.current = false;
-          }
-        })();
-      };
+      // in handleEventRow, which rolls back on glare. The callee gets its
+      // handler in acceptCall after answering (see attachNegotiationHandler).
+      if (role === "caller") attachNegotiationHandler(pc, conversationId, callId);
 
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => {
@@ -658,7 +675,7 @@ function useCallManager() {
 
       return pc;
     },
-    [finishCall, patchActive, setPhase, replayMissedEvents],
+    [finishCall, patchActive, setPhase, replayMissedEvents, attachNegotiationHandler],
   );
 
   // Keep a ref mirror of activeCall for use inside the signaling channel handler.
