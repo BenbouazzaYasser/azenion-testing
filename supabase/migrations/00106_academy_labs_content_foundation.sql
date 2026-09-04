@@ -100,13 +100,19 @@ create index if not exists idx_course_labs_lab_id on public.course_labs(lab_id);
 -- the existing is_course_manager() / is_lab_creator() gates rather than
 -- introducing a new permission concept for the join table.
 
+-- NOTE: drop-if-exists first — course_labs and its policies may already
+-- exist on databases where they were created out-of-band.
+
+drop policy if exists "course-lab links are publicly readable" on public.course_labs;
 create policy "course-lab links are publicly readable"
   on public.course_labs for select using (true);
 
+drop policy if exists "course or lab managers can link labs to courses" on public.course_labs;
 create policy "course or lab managers can link labs to courses"
   on public.course_labs for insert
   with check (public.is_course_manager() or public.is_lab_creator());
 
+drop policy if exists "course or lab managers can unlink labs from courses" on public.course_labs;
 create policy "course or lab managers can unlink labs from courses"
   on public.course_labs for delete
   using (public.is_course_manager() or public.is_lab_creator());

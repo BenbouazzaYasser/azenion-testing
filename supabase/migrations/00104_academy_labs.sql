@@ -120,27 +120,37 @@ grant execute on function public.is_lab_creator()
   to anon, authenticated, service_role;
 
 -- ── RLS: labs ────────────────────────────────────────────────────────────────
+-- NOTE: drop-if-exists first — these policies may already exist on databases
+-- where the labs tables were created out-of-band (the tables themselves use
+-- `if not exists` above, but Postgres has no `create policy if not exists`).
 
+drop policy if exists "published labs are publicly readable" on public.labs;
 create policy "published labs are publicly readable"
   on public.labs for select using (is_published = true);
 
+drop policy if exists "creators can read their own labs" on public.labs;
 create policy "creators can read their own labs"
   on public.labs for select using (created_by = auth.uid());
 
+drop policy if exists "platform admins can read all labs" on public.labs;
 create policy "platform admins can read all labs"
   on public.labs for select using (public.is_platform_admin());
 
+drop policy if exists "lab creators can create labs" on public.labs;
 create policy "lab creators can create labs"
   on public.labs for insert with check (public.is_lab_creator() and auth.uid() = created_by);
 
+drop policy if exists "lab creators can edit their own labs" on public.labs;
 create policy "lab creators can edit their own labs"
   on public.labs for update using (public.is_lab_creator() and created_by = auth.uid());
 
+drop policy if exists "lab creators can delete their own labs" on public.labs;
 create policy "lab creators can delete their own labs"
   on public.labs for delete using (public.is_lab_creator() and created_by = auth.uid());
 
 -- ── RLS: lab_versions ────────────────────────────────────────────────────────
 
+drop policy if exists "published lab versions are readable" on public.lab_versions;
 create policy "published lab versions are readable"
   on public.lab_versions for select
   using (
@@ -150,6 +160,7 @@ create policy "published lab versions are readable"
     )
   );
 
+drop policy if exists "creators can read their lab versions" on public.lab_versions;
 create policy "creators can read their lab versions"
   on public.lab_versions for select
   using (
@@ -159,9 +170,11 @@ create policy "creators can read their lab versions"
     )
   );
 
+drop policy if exists "platform admins can read all lab versions" on public.lab_versions;
 create policy "platform admins can read all lab versions"
   on public.lab_versions for select using (public.is_platform_admin());
 
+drop policy if exists "lab creators can create versions" on public.lab_versions;
 create policy "lab creators can create versions"
   on public.lab_versions for insert
   with check (
@@ -175,10 +188,12 @@ create policy "lab creators can create versions"
 
 -- ── RLS: lab_submissions ─────────────────────────────────────────────────────
 
+drop policy if exists "users can read their own submissions" on public.lab_submissions;
 create policy "users can read their own submissions"
   on public.lab_submissions for select
   using (user_id = auth.uid());
 
+drop policy if exists "instructors can read submissions for their labs" on public.lab_submissions;
 create policy "instructors can read submissions for their labs"
   on public.lab_submissions for select
   using (
@@ -189,6 +204,7 @@ create policy "instructors can read submissions for their labs"
     )
   );
 
+drop policy if exists "users can create submissions" on public.lab_submissions;
 create policy "users can create submissions"
   on public.lab_submissions for insert
   with check (
@@ -199,10 +215,12 @@ create policy "users can create submissions"
     )
   );
 
+drop policy if exists "users can update their own submissions" on public.lab_submissions;
 create policy "users can update their own submissions"
   on public.lab_submissions for update
   using (user_id = auth.uid());
 
+drop policy if exists "instructors can update submissions (grading)" on public.lab_submissions;
 create policy "instructors can update submissions (grading)"
   on public.lab_submissions for update
   using (

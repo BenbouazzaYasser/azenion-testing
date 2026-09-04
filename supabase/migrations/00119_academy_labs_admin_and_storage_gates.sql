@@ -34,11 +34,15 @@
 --      which cover the rest of the bucket, are left exactly as they are.
 
 -- ── RLS: labs — platform admin update/delete override ──────────────────────
+-- NOTE: drop-if-exists first — these may already exist on databases where
+-- the labs policies were created out-of-band.
 
+drop policy if exists "platform admins can update any lab" on public.labs;
 create policy "platform admins can update any lab"
   on public.labs for update
   using (public.is_platform_admin());
 
+drop policy if exists "platform admins can delete any lab" on public.labs;
 create policy "platform admins can delete any lab"
   on public.labs for delete
   using (public.is_platform_admin());
@@ -47,6 +51,7 @@ create policy "platform admins can delete any lab"
 -- Scoped by path prefix so this does not broaden access to course files
 -- that live outside the labs/ folder.
 
+drop policy if exists "lab creators can upload lab files" on storage.objects;
 create policy "lab creators can upload lab files"
   on storage.objects for insert
   with check (
@@ -55,6 +60,7 @@ create policy "lab creators can upload lab files"
     and public.is_lab_creator()
   );
 
+drop policy if exists "lab creators can update lab files" on storage.objects;
 create policy "lab creators can update lab files"
   on storage.objects for update
   using (
@@ -63,6 +69,7 @@ create policy "lab creators can update lab files"
     and public.is_lab_creator()
   );
 
+drop policy if exists "lab creators can delete lab files" on storage.objects;
 create policy "lab creators can delete lab files"
   on storage.objects for delete
   using (
