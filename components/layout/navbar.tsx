@@ -610,6 +610,7 @@ export function Navbar() {
       <div
         ref={drawerRef}
         aria-hidden={!isMenuOpen}
+        inert={!isMenuOpen ? true : undefined}
         className={cn(
           "absolute left-4 right-4 top-[78px] grid overflow-hidden rounded-[1.5rem] border navbar-border bg-glass-nav shadow-[0_30px_80px_-25px_rgba(40,40,255,0.18)] backdrop-blur-2xl transition-all duration-[400ms] ease-premium xl:hidden",
           isMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
