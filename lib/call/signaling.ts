@@ -56,7 +56,7 @@ export const callSignaling = {
    * the INSERT policy (sender_id = auth.uid()), so clients cannot spoof another
    * user's identity.
    */
-  async send(
+   async send(
     conversationId: string,
     callId: string,
     eventType: CallEventType,
@@ -72,6 +72,30 @@ export const callSignaling = {
       event_type: eventType,
       payload: payload as unknown as object,
     } as never);
+
+    try {
+      const bChannel = supabase.channel("calls-global-broadcast");
+      await bChannel.subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await bChannel.send({
+            type: "broadcast",
+            event: "call-event",
+            payload: {
+              conversation_id: conversationId,
+              sender_id: userId,
+              call_id: callId,
+              event_type: eventType,
+              payload,
+              created_at: new Date().toISOString(),
+            },
+          });
+          supabase.removeChannel(bChannel);
+        }
+      });
+    } catch {
+      /* ignore */
+    }
+
     return error ? { error: error.message } : {};
   },
 

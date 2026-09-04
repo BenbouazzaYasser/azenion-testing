@@ -12,6 +12,8 @@ import {
   User,
   Loader2,
   PhoneCall,
+  Minimize2,
+  Maximize2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatClock } from "@/lib/date";
@@ -85,6 +87,7 @@ function CallButton({
 
 export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
   const isVideo = call.kind === "video";
+  const [isMinimized, setIsMinimized] = useState(false);
   const now = useNow(call.phase === "active" && !!call.startedAt);
   const durationSec =
     call.startedAt && call.phase === "active" ? Math.max(0, Math.floor((now - call.startedAt) / 1000)) : 0;
@@ -96,6 +99,54 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
   // a fallback calling avatar.
   const screenTrackLive =
     call.screenActive && call.screenStream?.getVideoTracks().some((t) => t.readyState === "live");
+
+  if (isMinimized) {
+    return (
+      <div
+        role="dialog"
+        aria-label="Minimized call"
+        className="fixed bottom-6 right-6 z-[120] flex items-center gap-3 rounded-2xl border border-border-strong bg-void-950/90 p-3 shadow-dialog backdrop-blur-2xl animate-fade-in"
+      >
+        <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-void-900">
+          {isVideo && call.remoteStream ? (
+            <VideoStream stream={call.remoteStream} muted={false} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-accent/20 text-accent-300">
+              {isVideo ? <Video className="h-5 w-5" /> : <PhoneCall className="h-5 w-5" />}
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 max-w-[140px]">
+          <div className="truncate text-xs font-semibold text-ink-50">
+            {call.peer.full_name ?? `@${call.peer.username}`}
+          </div>
+          <div className="text-[10px] text-ink-400">
+            {call.phase === "active" && call.startedAt ? formatClock(durationSec) : "Calling…"}
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 ml-2">
+          <button
+            type="button"
+            onClick={() => setIsMinimized(false)}
+            aria-label="Expand call"
+            title="Expand call"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong bg-surface text-ink-300 hover:text-ink-50 transition-all"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={manager.endCall}
+            aria-label="End call"
+            title="End call"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-all"
+          >
+            <PhoneCall className="h-3.5 w-3.5 rotate-[135deg]" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -126,6 +177,17 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
               </span>
             )}
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsMinimized(true)}
+            aria-label="Minimize call"
+            title="Minimize call"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-surface text-ink-300 hover:text-ink-50 transition-all"
+          >
+            <Minimize2 className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
