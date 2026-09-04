@@ -98,7 +98,16 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
   // Choose the primary visual: screen share if active, else remote video, else
   // a fallback calling avatar.
   const screenTrackLive =
-    call.screenActive && call.screenStream?.getVideoTracks().some((t) => t.readyState === "live");
+    call.screenActive && (
+      call.screenStream?.getVideoTracks().some((t) => t.readyState === "live") ||
+      call.remoteStream?.getVideoTracks().some((t) => t.readyState === "live")
+    );
+
+  // Sender sees their own screen stream; receiver sees the remote stream
+  // (which now carries the sender's screen video track).
+  const screenDisplayStream = call.screenActive
+    ? (call.screenStream ?? call.remoteStream)
+    : null;
 
   if (isMinimized) {
     return (
@@ -196,9 +205,9 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
         {isVideo ? (
           <div className="relative h-full w-full overflow-hidden rounded-3xl border border-border-strong bg-void-900/60">
             {/* Primary view: screen share or remote video */}
-            {screenTrackLive ? (
+            {screenTrackLive && screenDisplayStream ? (
               <VideoStream
-                stream={call.screenStream}
+                stream={screenDisplayStream}
                 muted={false}
                 className="absolute inset-0 h-full w-full object-contain bg-void-950"
               />
@@ -258,10 +267,10 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
             {call.remoteStream && (
               <VideoStream stream={call.remoteStream} muted={false} className="hidden" />
             )}
-            {screenTrackLive ? (
+            {screenTrackLive && screenDisplayStream ? (
               <div className="relative h-full w-full overflow-hidden rounded-3xl border border-border-strong bg-void-900/60">
                 <VideoStream
-                  stream={call.screenStream}
+                  stream={screenDisplayStream}
                   muted={false}
                   className="absolute inset-0 h-full w-full object-contain bg-void-950"
                 />
