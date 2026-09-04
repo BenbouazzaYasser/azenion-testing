@@ -1,0 +1,55 @@
+-- Migration: 00116_restrict_delete_storage_prefix
+--
+-- Privilege-escalation fix for `public.delete_storage_prefix(text, text)`.
+--
+-- Background:
+--   * 00053 created `delete_storage_prefix` as SECURITY DEFINER
+--     (`set search_path = public`) primarily so the `delete_project` /
+--     `delete_team` RPCs can perform best-effort storage cleanup without
+--     tripping Supabase's "Direct deletion from storage tables is not
+--     allowed" guard.
+--   * That migration granted EXECUTE on it to `authenticated` (and
+--     `service_role`). Both the bucket and the prefix are caller-controlled
+--     and there is no allocation/ownership scoping inside the function, so
+--     ANY authenticated client who can reach PostgREST could call
+--     `delete_storage_prefix('feed-images', '')` (or any bucket / empty
+--     prefix) and delete an arbitrary storage object outside their own
+--     resources.
+--
+-- Fix (smallest, production-safe):
+--   * Remove direct EXECUTE from `authenticated` (the actual hole) and also
+--     from `anon` (defensive; it never had a grant here, but the `public`
+--     default is no-execute anyway, so this is belt-and-braces).
+--   * Keep `service_role` (the server-side / trusted flow) and keep the
+--     function owner's implicit EXECUTE.
+--
+-- Why the internal cleanup still works:
+--   * `delete_storage_prefix` is ONLY ever called from inside the
+--     SECURITY DEFINER wrapper functions `delete_project` and `delete_team`
+--     (both defined in 00053). Those wrappers already enforce ownership /
+--     role checks on the CALLER (auth.uid()), then resolve the cleanup
+--     bucket and a constructed prefix themselves, and invoke the helper
+--     under the function owner's privileges.
+--   * A SECURITY DEFINER function executes with the privileges of its owner,
+--     who possesses EXECUTE on `delete_storage_prefix` (owners implicitly
+--     hold execute). `service_role` — which owns the migration functions —
+--     also retains an explicit EXECUTE grant. Therefore revoking
+--     `anon`/`authenticated` does not remove the helper from the trusted
+--     call path.
+--   * No database trigger references `delete_storage_prefix` (verified across
+--     the migration chain), so no trigger cleanup is affected.
+--
+-- search_path/security note: the function is unchanged. It remains
+-- SECURITY DEFINER with `set search_path = public`, matching the original
+-- migration, so its runtime privileged surface is identical to before — the
+-- only change is who may *enter* it directly.
+
+revoke execute on function public.delete_storage_prefix(text, text)
+  from anon, authenticated;
+
+-- service_role must keep its explicit grant (trusted server-side flows and
+-- the owning migration runner rely on it). It is preserved by the line
+-- above explicitly omitting it; re-assert it here for clarity and to guard
+-- against any future default-public-toggling tooling.
+grant execute on function public.delete_storage_prefix(text, text)
+  to service_role;
