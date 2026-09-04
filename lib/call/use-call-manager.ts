@@ -758,6 +758,9 @@ function useCallManager() {
     if (!supportsGetDisplayMedia()) {
       return { error: "Screen sharing is not supported in this browser." };
     }
+    if (!pcRef.current) {
+      return { error: "Call is not connected yet. Try again once the call connects." };
+    }
     const { stream, error } = await getScreenStream();
     if (error) return { error };
     if (!stream) return { error: "Could not capture the screen." };
@@ -775,7 +778,15 @@ function useCallManager() {
     const camSender = pc?.getSenders().find((s) => s.track?.kind === "video");
     if (camSender) {
       // Video call: swap the camera sender's track with the screen track.
-      await camSender.replaceTrack(screenTrack);
+      try {
+        await camSender.replaceTrack(screenTrack);
+      } catch {
+        stopTracks(stream);
+        screenStreamRef.current = null;
+        patchActive({ screenActive: false, screenStream: undefined });
+        void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
+        return { error: "Could not start screen sharing. Please try again." };
+      }
       sender = camSender;
       screenReplacedTrackRef.current = true;
     } else if (pc) {
@@ -783,9 +794,16 @@ function useCallManager() {
       try {
         sender = pc.addTrack(screenTrack, stream);
       } catch {
-        /* noop */
+        sender = undefined;
       }
       screenReplacedTrackRef.current = false;
+    }
+    if (!sender) {
+      stopTracks(stream);
+      screenStreamRef.current = null;
+      patchActive({ screenActive: false, screenStream: undefined });
+      void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
+      return { error: "Could not start screen sharing. Please try again." };
     }
     screenSenderRef.current = sender ?? null;
 
