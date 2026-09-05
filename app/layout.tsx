@@ -58,6 +58,7 @@ export default function RootLayout({
 
         <Toaster
           position="bottom-center"
+          className="!z-[9999]"
           toastOptions={{
             style: {
               background: "rgba(14,16,22,0.92)",
