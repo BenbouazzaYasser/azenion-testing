@@ -1,5 +1,10 @@
+import { fileURLToPath } from "url";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Anchors Turbopack's root to this repo so it doesn't scan outside for a
+  // package manager lockfile (e.g. a stray one in the parent folder).
+  turbopack: { root: fileURLToPath(new URL(".", import.meta.url)) },
   reactStrictMode: true,
   // Image optimization
   images: {

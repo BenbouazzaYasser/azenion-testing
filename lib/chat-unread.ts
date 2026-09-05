@@ -9,11 +9,16 @@ export type ChatUnreadMap = Record<string, number>;
 
 type Listener = () => void;
 
+const EMPTY_UNREAD: ChatUnreadMap = {};
+
 let supabase: ReturnType<typeof createClient> | null = null;
 let channel: RealtimeChannel | null = null;
 let currentUserId: string | null = null;
 let activeConversationId: string | null = null;
 let unreadMap: ChatUnreadMap = {};
+// Stable snapshot reference for useSyncExternalStore: only replaced when the
+// map actually changes, so React never sees a different object per call.
+let unreadSnapshot: ChatUnreadMap = EMPTY_UNREAD;
 let bootstrappedFor: string | null = null;
 let bootstrapPromise: Promise<void> | null = null;
 const listeners = new Set<Listener>();
@@ -23,12 +28,17 @@ function getSupabase() {
   return supabase;
 }
 
+function commitUnread(next: ChatUnreadMap) {
+  unreadMap = next;
+  unreadSnapshot = { ...next };
+}
+
 function notify() {
   for (const listener of listeners) listener();
 }
 
 function resetState() {
-  unreadMap = {};
+  commitUnread({});
   activeConversationId = null;
   bootstrappedFor = null;
   bootstrapPromise = null;
@@ -46,7 +56,7 @@ function bootstrap(userId: string): Promise<void> {
         if (next[row.conversation_id] === undefined) next[row.conversation_id] = row.unread_count;
       }
       if (activeConversationId) next[activeConversationId] = 0;
-      unreadMap = next;
+      commitUnread(next);
       notify();
     } catch {
       // Bootstrap failed; unread stays empty until the next load.
@@ -63,7 +73,7 @@ function handleInsert(payload: RealtimePostgresChangesPayload<Record<string, unk
   if (!row?.conversation_id || !row.sender_id) return;
   if (row.sender_id === currentUserId) return;
   if (row.conversation_id === activeConversationId) return;
-  unreadMap = { ...unreadMap, [row.conversation_id]: (unreadMap[row.conversation_id] ?? 0) + 1 };
+  commitUnread({ ...unreadMap, [row.conversation_id]: (unreadMap[row.conversation_id] ?? 0) + 1 });
   notify();
 }
 
@@ -122,7 +132,7 @@ export function setActiveConversation(conversationId: string | null) {
   let changed = activeConversationId !== conversationId;
   activeConversationId = conversationId;
   if (conversationId && (unreadMap[conversationId] ?? 0) > 0) {
-    unreadMap = { ...unreadMap, [conversationId]: 0 };
+    commitUnread({ ...unreadMap, [conversationId]: 0 });
     changed = true;
   }
   if (changed) notify();
@@ -135,7 +145,7 @@ export function setActiveConversation(conversationId: string | null) {
  */
 export function clearConversationUnread(conversationId: string) {
   if ((unreadMap[conversationId] ?? 0) === 0) return;
-  unreadMap = { ...unreadMap, [conversationId]: 0 };
+  commitUnread({ ...unreadMap, [conversationId]: 0 });
   notify();
 }
 
@@ -150,7 +160,7 @@ export function useChatUnread(userId: string | null): ChatUnreadMap {
 
   return useSyncExternalStore(
     subscribe,
-    () => (userId ? { ...unreadMap } : {}),
-    () => ({}),
+    () => (userId ? unreadSnapshot : EMPTY_UNREAD),
+    () => EMPTY_UNREAD,
   );
 }
