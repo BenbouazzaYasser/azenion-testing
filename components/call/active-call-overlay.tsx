@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatClock } from "@/lib/date";
 import { VideoStream } from "@/components/call/video-stream";
+import { supportsGetDisplayMedia } from "@/lib/call/media";
 import type { CallSession, CallKind } from "@/lib/call/types";
 
 interface ActiveCallOverlayProps {
@@ -88,6 +89,7 @@ function CallButton({
 export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
   const isVideo = call.kind === "video";
   const [isMinimized, setIsMinimized] = useState(false);
+  const canScreenShare = typeof window !== "undefined" && supportsGetDisplayMedia();
   // True while a screen-share start/stop is in flight (e.g. while the OS
   // picker is open). Proves the tap registered and something is happening.
   const [sharingBusy, setSharingBusy] = useState(false);
@@ -342,7 +344,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
             </CallButton>
           ) : null}
 
-          {callConnected && (
+          {callConnected && (canScreenShare || call.screenActive) && (
             <CallButton
               label={call.screenActive ? "Stop sharing screen" : "Share screen"}
               active={call.screenActive}
