@@ -764,7 +764,25 @@ function useCallManager() {
     if (!pcRef.current) {
       return { error: "Call is not connected yet. Try again once the call connects." };
     }
-    const { stream, error } = await getScreenStream();
+    // The OS capture picker can hang forever without settling on some
+    // mobile browsers. Race it so a hung picker surfaces an error instead
+    // of leaving the button spinning silently.
+    let captureTimedOut = false;
+    const { stream, error } = await Promise.race([
+      getScreenStream().then((result) => {
+        if (captureTimedOut && result.stream) stopTracks(result.stream);
+        return result;
+      }),
+      new Promise<{ stream?: undefined; error: string }>((resolve) =>
+        setTimeout(
+          () =>
+            resolve({
+              error: "Screen capture is not responding. Reload the page and try again.",
+            }),
+          60_000,
+        ),
+      ),
+    ]);
     if (error) return { error };
     if (!stream) return { error: "Could not capture the screen." };
     const screenTrack = stream.getVideoTracks()[0];
