@@ -12,7 +12,7 @@ interface ProjectPageDiscussionProps {
   initialMessages: ChannelMessageWithSender[];
 }
 
-export function ProjectPageDiscussion({
+export async function ProjectPageDiscussion({
   channelId,
   channelName,
   topic,
@@ -25,7 +25,7 @@ export function ProjectPageDiscussion({
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
             <MessageSquare size={13} />
-            {serverT("projects.discussionEyebrow")}
+            {await serverT("projects.discussionEyebrow")}
           </div>
         </Reveal>
 
@@ -34,10 +34,10 @@ export function ProjectPageDiscussion({
             id="project-discussion-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            {serverT("projects.discussionTitle")}
+            {await serverT("projects.discussionTitle")}
           </h2>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink-400">
-            {serverT("projects.discussionSub")}
+            {await serverT("projects.discussionSub")}
           </p>
         </Reveal>
 

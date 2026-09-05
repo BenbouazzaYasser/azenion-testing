@@ -13,7 +13,7 @@ interface TeamStatsProps {
   categories: { id: string; name: string; slug: string }[];
 }
 
-export function TeamStats({ memberCount, projectsCount, openRolesCount, createdAt, categories }: TeamStatsProps) {
+export async function TeamStats({ memberCount, projectsCount, openRolesCount, createdAt, categories }: TeamStatsProps) {
   const stats = [
     { icon: Users, labelKey: "teams.statsMembers" as DictKey, value: memberCount },
     { icon: FolderKanban, labelKey: "teams.statsProjects" as DictKey, value: projectsCount },
@@ -30,7 +30,7 @@ export function TeamStats({ memberCount, projectsCount, openRolesCount, createdA
         <Reveal>
           <div className="flex flex-wrap items-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-              {serverT("teams.statsEyebrow")}
+              {await serverT("teams.statsEyebrow")}
             </div>
             {categories.map((cat) => (
               <TeamCategoryBadge key={cat.id} name={cat.name} />
@@ -48,12 +48,12 @@ export function TeamStats({ memberCount, projectsCount, openRolesCount, createdA
             id="team-stats-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            {serverT("teams.statsTitle")}
+            {await serverT("teams.statsTitle")}
           </h2>
         </Reveal>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, i) => (
+          {await Promise.all(stats.map(async (stat, i) => (
             <Reveal key={stat.labelKey} delay={120 + i * 60}>
               <div className="group flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
                 <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
@@ -65,13 +65,13 @@ export function TeamStats({ memberCount, projectsCount, openRolesCount, createdA
                     </div>
                     <div>
                       <p className="text-2xl font-semibold text-ink-50">{stat.value}</p>
-                      <p className="text-sm text-ink-400">{serverT(stat.labelKey)}</p>
+                      <p className="text-sm text-ink-400">{await serverT(stat.labelKey)}</p>
                     </div>
                   </div>
                 </div>
               </div>
             </Reveal>
-          ))}
+          )))}
         </div>
       </div>
     </section>

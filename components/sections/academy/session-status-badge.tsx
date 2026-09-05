@@ -22,7 +22,7 @@ const STATUS_CONFIG: Record<
   },
 };
 
-export function SessionStatusBadge({ status }: { status: LiveSessionStatus }) {
+export async function SessionStatusBadge({ status }: { status: LiveSessionStatus }) {
   const config = STATUS_CONFIG[status];
 
   return (
@@ -40,7 +40,7 @@ export function SessionStatusBadge({ status }: { status: LiveSessionStatus }) {
       ) : config.dot ? (
         <span className="h-1.5 w-1.5 rounded-full bg-current" />
       ) : null}
-      {config.labelKey ? serverT(config.labelKey) : null}
+      {config.labelKey ? await serverT(config.labelKey) : null}
     </span>
   );
 }

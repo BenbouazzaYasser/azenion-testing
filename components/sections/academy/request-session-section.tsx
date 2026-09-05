@@ -12,7 +12,7 @@ const TOPICS = [
   "academy.topicQa",
 ] as const;
 
-export function RequestSessionSection({
+export async function RequestSessionSection({
   branches,
   isAuthenticated,
 }: {
@@ -28,7 +28,7 @@ export function RequestSessionSection({
       <div className="mx-auto max-w-[720px] px-5 text-center sm:px-8">
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            {serverT("academy.requestEyebrow")}
+            {await serverT("academy.requestEyebrow")}
           </span>
         </Reveal>
 
@@ -37,26 +37,26 @@ export function RequestSessionSection({
             id="request-session-heading"
             className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
           >
-            {serverT("academy.requestH2")} <span className="text-accent-400">{serverT("academy.requestH2Accent")}</span>
+            {await serverT("academy.requestH2")} <span className="text-accent-400">{await serverT("academy.requestH2Accent")}</span>
           </h2>
         </Reveal>
 
         <Reveal delay={160}>
           <p className="mx-auto mt-6 max-w-xl text-balance text-[1.05rem] leading-relaxed text-ink-400">
-            {serverT("academy.requestSub")}
+            {await serverT("academy.requestSub")}
           </p>
         </Reveal>
 
         <Reveal delay={220}>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            {TOPICS.map((topic) => (
+            {await Promise.all(TOPICS.map(async (topic) => (
               <span
                 key={topic}
                 className="rounded-full bg-surface px-3.5 py-1.5 text-xs font-medium tracking-wide text-ink-200"
               >
-                {serverT(topic)}
+                {await serverT(topic)}
               </span>
-            ))}
+            )))}
           </div>
         </Reveal>
 
@@ -66,7 +66,7 @@ export function RequestSessionSection({
               <RequestSessionDialog branches={branches} />
             ) : (
               <Button variant="secondary" size="lg" asChild>
-                <Link href="/login">{serverT("academy.requestSignIn")}</Link>
+                <Link href="/login">{await serverT("academy.requestSignIn")}</Link>
               </Button>
             )}
           </div>

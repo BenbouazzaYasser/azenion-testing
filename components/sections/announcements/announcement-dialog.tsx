@@ -34,14 +34,16 @@ export function AnnouncementFormDialog({ mode, announcement }: AnnouncementFormD
   const [description, setDescription] = useState(announcement?.description ?? "");
   const [details, setDetails] = useState(announcement?.details?.join("\n") ?? "");
 
-  useEffect(() => {
+  const [prevAnnouncement, setPrevAnnouncement] = useState(announcement);
+  if (prevAnnouncement !== announcement) {
+    setPrevAnnouncement(announcement);
     setEmoji(announcement?.emoji ?? "📢");
     setTitle(announcement?.title ?? "");
     setCategory(announcement?.category ?? "Platform");
     setBadge(announcement?.badge ?? "");
     setDescription(announcement?.description ?? "");
     setDetails(announcement?.details?.join("\n") ?? "");
-  }, [announcement]);
+  }
 
   useEffect(() => {
     if (!open) return;

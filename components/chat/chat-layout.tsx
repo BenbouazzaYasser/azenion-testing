@@ -20,9 +20,11 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
   const [mounted, setMounted] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
 
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     if (!open) return;

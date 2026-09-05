@@ -17,7 +17,7 @@ interface ProjectPageMembersProps {
   members: ProjectMemberWithProfile[];
 }
 
-export function ProjectPageMembers({ members }: ProjectPageMembersProps) {
+export async function ProjectPageMembers({ members }: ProjectPageMembersProps) {
   if (members.length === 0) return null;
 
   return (
@@ -25,7 +25,7 @@ export function ProjectPageMembers({ members }: ProjectPageMembersProps) {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            {serverT("projects.peopleEyebrow")}
+            {await serverT("projects.peopleEyebrow")}
           </div>
         </Reveal>
 
@@ -34,13 +34,13 @@ export function ProjectPageMembers({ members }: ProjectPageMembersProps) {
             id="project-members-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            {serverT("projects.membersTitle")}
+            {await serverT("projects.membersTitle")}
             <span className="ml-3 text-lg font-normal text-ink-500">({members.length})</span>
           </h2>
         </Reveal>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {members.map((member, i) => {
+          {await Promise.all(members.map(async (member, i) => {
             const profile = member.profile;
             const displayName = profile.full_name || `@${profile.username}`;
             const initials = displayName.charAt(0).toUpperCase();
@@ -80,14 +80,14 @@ export function ProjectPageMembers({ members }: ProjectPageMembersProps) {
                         member.role === "admin" ? "text-accent-300" :
                         "text-blue-300"
                       }`}>
-                        {member.role === "owner" ? serverT("common.owner") : member.role === "admin" ? serverT("common.admin") : member.role}
+                        {member.role === "owner" ? await serverT("common.owner") : member.role === "admin" ? await serverT("common.admin") : member.role}
                       </span>
                     </div>
                   </div>
                 </div>
               </Reveal>
             );
-          })}
+          }))}
         </div>
       </div>
     </section>

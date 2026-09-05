@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getChatUnreadCounts } from "@/actions/chat.actions";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
@@ -140,16 +140,17 @@ export function clearConversationUnread(conversationId: string) {
 }
 
 export function useChatUnread(userId: string | null): ChatUnreadMap {
-  const [map, setMap] = useState<ChatUnreadMap>(() => (userId ? { ...unreadMap } : {}));
+  const subscribe = useCallback(
+    (listener: Listener) => {
+      if (!userId) return () => {};
+      return subscribeToChatUnread(userId, listener);
+    },
+    [userId],
+  );
 
-  useEffect(() => {
-    if (!userId) {
-      setMap({});
-      return;
-    }
-    setMap({ ...unreadMap });
-    return subscribeToChatUnread(userId, () => setMap({ ...unreadMap }));
-  }, [userId]);
-
-  return map;
+  return useSyncExternalStore(
+    subscribe,
+    () => (userId ? { ...unreadMap } : {}),
+    () => ({}),
+  );
 }

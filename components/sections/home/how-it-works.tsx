@@ -30,23 +30,23 @@ const STEPS: { icon: typeof UserPlus; step: string; titleKey: DictKey; descKey: 
   },
 ];
 
-export function HowItWorks() {
+export async function HowItWorks() {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="how-it-works-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-              {serverT("home.howEyebrow")}
+              {await serverT("home.howEyebrow")}
             </span>
             <h2
               id="how-it-works-heading"
               className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[3rem]"
             >
-              {serverT("home.howTitle")}<span className="text-accent-400">{serverT("home.howAccent")}</span>
+              {await serverT("home.howTitle")}<span className="text-accent-400">{await serverT("home.howAccent")}</span>
             </h2>
             <p className="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-ink-400">
-              {serverT("home.howSub")}
+              {await serverT("home.howSub")}
             </p>
           </div>
         </Reveal>
@@ -58,7 +58,7 @@ export function HowItWorks() {
             className="absolute left-[27px] top-0 hidden h-full w-px bg-gradient-to-b from-accent-400/0 via-accent-400/30 to-accent-400/0 sm:block lg:left-0 lg:top-[27px] lg:h-px lg:w-full lg:bg-gradient-to-r"
           />
 
-          {STEPS.map((step, i) => {
+          {await Promise.all(STEPS.map(async (step, i) => {
             const Icon = step.icon;
             return (
               <li key={step.step} className="relative">
@@ -77,16 +77,16 @@ export function HowItWorks() {
                     </div>
 
                     <div className="min-w-0 lg:mt-6">
-                      <h3 className="text-lg font-semibold text-ink-50">{serverT(step.titleKey)}</h3>
+                      <h3 className="text-lg font-semibold text-ink-50">{await serverT(step.titleKey)}</h3>
                       <p className="mt-2 text-sm leading-relaxed text-ink-400">
-                        {serverT(step.descKey)}
+                        {await serverT(step.descKey)}
                       </p>
                     </div>
                   </div>
                 </Reveal>
               </li>
             );
-          })}
+          }))}
         </ol>
       </div>
     </section>

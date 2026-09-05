@@ -11,9 +11,10 @@ export const metadata = {
 export default async function AdminInstructorVerificationPage({
   searchParams,
 }: {
-  searchParams: { status?: string; page?: string };
+  searchParams: Promise<{ status?: string; page?: string }>;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
+  const sp = await searchParams;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -29,11 +30,11 @@ export default async function AdminInstructorVerificationPage({
     redirect("/");
   }
 
-  const page = parseInt(searchParams.page || "1", 10);
+  const page = parseInt(sp.page || "1", 10);
   const limit = 20;
   const offset = (page - 1) * limit;
 
-  const status = searchParams.status as
+  const status = sp.status as
     | "pending"
     | "approved"
     | "rejected"

@@ -11,9 +11,9 @@ const LANG_COOKIE = "azenion-lang";
  * `azenion-lang` cookie and returns the hand-written translation for `key`,
  * falling back to English (the source language).
  */
-export function getServerLanguage(): string {
+export async function getServerLanguage(): Promise<string> {
   try {
-    const cookie = cookies().get(LANG_COOKIE)?.value;
+    const cookie = (await cookies()).get(LANG_COOKIE)?.value;
     if (cookie && isValidLanguage(cookie)) return cookie;
   } catch {
     // cookies() can throw during static generation — fall through to default.
@@ -21,6 +21,7 @@ export function getServerLanguage(): string {
   return DEFAULT_LANGUAGE;
 }
 
-export function serverT(key: DictKey, fallback?: string): string {
-  return lookup(key, getServerLanguage(), fallback) ?? fallback ?? key;
+export async function serverT(key: DictKey, fallback?: string): Promise<string> {
+  const lang = await getServerLanguage();
+  return lookup(key, lang, fallback) ?? fallback ?? key;
 }

@@ -37,6 +37,31 @@ export function LabCreateDialog() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [blocks, setBlocks] = useState<DraftBlock[]>([]);
+  const thumbnailPreviewRef = useRef<string | null>(null);
+
+  function applyThumbnailFile(file: File | null) {
+    if (thumbnailPreviewRef.current) {
+      URL.revokeObjectURL(thumbnailPreviewRef.current);
+      thumbnailPreviewRef.current = null;
+    }
+    setThumbnailFile(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      thumbnailPreviewRef.current = url;
+      setThumbnailPreview(url);
+    } else {
+      setThumbnailPreview(null);
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (thumbnailPreviewRef.current) {
+        URL.revokeObjectURL(thumbnailPreviewRef.current);
+        thumbnailPreviewRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -55,16 +80,6 @@ export function LabCreateDialog() {
     };
   }, [open]);
 
-  useEffect(() => {
-    if (!thumbnailFile) {
-      setThumbnailPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(thumbnailFile);
-    setThumbnailPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [thumbnailFile]);
-
   function resetForm() {
     setTitle("");
     setDescription("");
@@ -74,8 +89,7 @@ export function LabCreateDialog() {
     setDuration("");
     setTags("");
     setIsPublished(false);
-    setThumbnailFile(null);
-    setThumbnailPreview(null);
+    applyThumbnailFile(null);
     setBlocks([]);
     setError(null);
     if (thumbnailInputRef.current) thumbnailInputRef.current.value = "";
@@ -325,7 +339,7 @@ export function LabCreateDialog() {
                           ref={thumbnailInputRef}
                           type="file"
                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-                          onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)}
+                          onChange={(e) => applyThumbnailFile(e.target.files?.[0] ?? null)}
                           className="hidden"
                         />
                         <button

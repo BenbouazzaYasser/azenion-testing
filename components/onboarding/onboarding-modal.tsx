@@ -67,10 +67,15 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
 
   const dialogRef = useDialogFocus<HTMLDivElement>(open, { initialFocus: "panel" });
   const busyRef = useRef(false);
-  busyRef.current = busy;
-
   const closedRef = useRef(onClosed);
-  closedRef.current = onClosed;
+
+  useEffect(() => {
+    busyRef.current = busy;
+  }, [busy]);
+
+  useEffect(() => {
+    closedRef.current = onClosed;
+  }, [onClosed]);
 
   function dismiss() {
     if (busyRef.current) return;
@@ -83,7 +88,6 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frame = requestAnimationFrame(() => setMounted(true));
-    setError(null);
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") dismiss();
@@ -96,7 +100,7 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
       document.removeEventListener("keydown", handleKeyDown);
       setMounted(false);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   async function advance(next: OnboardingStep) {

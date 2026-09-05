@@ -10,7 +10,7 @@ interface FeedPreviewProps {
   items: FeedItem[];
 }
 
-export function FeedPreview({ items }: FeedPreviewProps) {
+export async function FeedPreview({ items }: FeedPreviewProps) {
   const preview = items.slice(0, 3);
 
   return (
@@ -21,21 +21,21 @@ export function FeedPreview({ items }: FeedPreviewProps) {
             <div className="max-w-2xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
                 <Newspaper size={13} />
-                {serverT("home.feedPreviewEyebrow")}
+                {await serverT("home.feedPreviewEyebrow")}
               </span>
               <h2
                 id="feed-preview-heading"
                 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[2.9rem]"
               >
-                {serverT("home.feedPreviewTitle")}<span className="text-accent-400">{serverT("home.feedPreviewAccent")}</span>
+                {await serverT("home.feedPreviewTitle")}<span className="text-accent-400">{await serverT("home.feedPreviewAccent")}</span>
               </h2>
               <p className="mt-5 text-[1.02rem] leading-relaxed text-ink-400">
-                {serverT("home.feedPreviewSub")}
+                {await serverT("home.feedPreviewSub")}
               </p>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
               <a href="/feed">
-                {serverT("home.openFeed")}
+                {await serverT("home.openFeed")}
                 <ArrowUpRight size={16} />
               </a>
             </Button>
@@ -56,9 +56,9 @@ export function FeedPreview({ items }: FeedPreviewProps) {
               <span className="flex h-12 w-12 items-center justify-center rounded-full border border-accent-400/30 bg-accent/[0.08] text-accent-300">
                 <Newspaper size={20} />
               </span>
-              <p className="text-lg font-semibold text-ink-50">{serverT("home.feedPreviewEmpty")}</p>
+              <p className="text-lg font-semibold text-ink-50">{await serverT("home.feedPreviewEmpty")}</p>
               <p className="max-w-md text-sm leading-relaxed text-ink-400">
-                {serverT("home.feedPreviewEmptySub")}
+                {await serverT("home.feedPreviewEmptySub")}
               </p>
             </div>
           </Reveal>

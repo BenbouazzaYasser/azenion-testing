@@ -15,7 +15,7 @@ function isKnownStep(step: string): step is (typeof STEPS)[number] {
  * on the next visit. `null` clears progress (used for restart).
  */
 export async function persistOnboardingStep(step: string | null) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -35,7 +35,7 @@ export async function persistOnboardingStep(step: string | null) {
 
 /** Marks onboarding complete (sets the completion timestamp, clears the step). */
 export async function completeOnboarding() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -58,7 +58,7 @@ export async function completeOnboarding() {
 
 /** Clears completion and step so the flow can be walked through again. */
 export async function restartOnboarding() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -86,7 +86,7 @@ export async function restartOnboarding() {
  * the user to fill username / full name.
  */
 export async function saveOnboardingProfile(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -119,7 +119,7 @@ export async function saveOnboardingProfile(formData: FormData) {
 
 /** One-click join (request) for the team step — uses the existing membership flow. */
 export async function requestTeamJoin(teamId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -145,7 +145,7 @@ export async function requestTeamJoin(teamId: string) {
 }
 
 export async function joinOnboardingBranch(branchId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -163,7 +163,7 @@ export async function joinOnboardingBranch(branchId: string) {
 
 /** Client-facing loader: returns onboarding state + recommendations. */
 export async function getOnboardingData() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

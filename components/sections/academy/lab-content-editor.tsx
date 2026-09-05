@@ -190,9 +190,30 @@ export function serializeDraftBlocks(blocks: DraftBlock[]): {
 export function hydrateDraftBlocks(content: { blocks: unknown[] } | null | undefined): DraftBlock[] {
   if (!content || !Array.isArray(content.blocks)) return [];
 
+  type RawHint = { text?: string };
+  type RawItem = { url?: string; caption?: string };
+  type RawOption = { text?: string };
+  type RawBlock = {
+    type?: string;
+    question_type?: string;
+    body?: string;
+    prompt?: string;
+    items?: unknown[];
+    options?: unknown[];
+    hints?: unknown[];
+    multi_select?: unknown;
+    case_sensitive?: unknown;
+  };
+
+  const asText = (value: unknown) => (value as RawHint | null)?.text ?? "";
+  const asItems = (items: unknown[]) =>
+    (items as RawItem[]).map((i) => ({ uid: nextUid("ev"), url: i.url ?? "", caption: i.caption ?? "" }));
+  const asOptions = (options: unknown[]) =>
+    (options as RawOption[]).map((o) => ({ uid: nextUid("o"), text: o.text ?? "", correct: false }));
+
   return content.blocks
     .map((raw): DraftBlock | null => {
-      const b = raw as Record<string, any>;
+      const b = raw as RawBlock;
       if (b.type === "instructions") {
         return { uid: nextUid("blk"), kind: "instructions", body: b.body ?? "" };
       }
@@ -203,7 +224,7 @@ export function hydrateDraftBlocks(content: { blocks: unknown[] } | null | undef
           kind: "evidence",
           items:
             items.length > 0
-              ? items.map((i: any) => ({ uid: nextUid("ev"), url: i.url ?? "", caption: i.caption ?? "" }))
+              ? asItems(items)
               : [{ uid: nextUid("ev"), url: "", caption: "" }],
         };
       }
@@ -214,8 +235,8 @@ export function hydrateDraftBlocks(content: { blocks: unknown[] } | null | undef
           kind: "qcm",
           prompt: b.prompt ?? "",
           multiSelect: Boolean(b.multi_select),
-          options: options.map((o: any) => ({ uid: nextUid("o"), text: o.text ?? "", correct: false })),
-          hints: Array.isArray(b.hints) ? b.hints.map((h: any) => h.text ?? "") : [],
+          options: asOptions(options),
+          hints: Array.isArray(b.hints) ? b.hints.map(asText) : [],
         };
       }
       if (b.type === "question" && b.question_type === "text_answer") {
@@ -226,7 +247,7 @@ export function hydrateDraftBlocks(content: { blocks: unknown[] } | null | undef
           matchMode: "exact_ci",
           accepted: [""],
           manualOnly: true,
-          hints: Array.isArray(b.hints) ? b.hints.map((h: any) => h.text ?? "") : [],
+          hints: Array.isArray(b.hints) ? b.hints.map(asText) : [],
         };
       }
       if (b.type === "question" && b.question_type === "flag") {
@@ -236,7 +257,7 @@ export function hydrateDraftBlocks(content: { blocks: unknown[] } | null | undef
           prompt: b.prompt ?? "",
           expectedFlag: "",
           caseSensitive: Boolean(b.case_sensitive),
-          hints: Array.isArray(b.hints) ? b.hints.map((h: any) => h.text ?? "") : [],
+          hints: Array.isArray(b.hints) ? b.hints.map(asText) : [],
         };
       }
       return null;

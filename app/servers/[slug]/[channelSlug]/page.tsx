@@ -9,7 +9,7 @@ interface ChannelPageProps {
 
 export default async function ChannelPage({ params }: ChannelPageProps) {
   const { slug, channelSlug } = await params;
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) notFound();

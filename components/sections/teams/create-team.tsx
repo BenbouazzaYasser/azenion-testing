@@ -5,7 +5,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { serverT } from "@/lib/translation/server";
 
-export function CreateTeam() {
+export async function CreateTeam() {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="create-team-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
@@ -25,17 +25,17 @@ export function CreateTeam() {
                   id="create-team-heading"
                   className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
                 >
-                  {serverT("teams.ctaTitle")}
+                  {await serverT("teams.ctaTitle")}
                 </h2>
 
                 <p className="mt-4 max-w-lg text-[1.02rem] leading-relaxed text-ink-400">
-                  {serverT("teams.ctaSub")}
+                  {await serverT("teams.ctaSub")}
                 </p>
 
                 <div className="mt-8">
                   <Button size="lg" asChild>
                     <Link href="/teams/create">
-                      {serverT("teams.ctaButton")}
+                      {await serverT("teams.ctaButton")}
                       <Plus size={16} />
                     </Link>
                   </Button>

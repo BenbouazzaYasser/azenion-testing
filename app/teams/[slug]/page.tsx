@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: TeamPageProps): Promise<Metad
 export default async function TeamPage({ params }: TeamPageProps) {
   const { slug } = await params;
   const adminClient = createAdminClient();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: team } = await adminClient
     .from("teams")
@@ -202,8 +202,8 @@ export default async function TeamPage({ params }: TeamPageProps) {
     }
   }
 
-  let projectMemberCounts: Record<string, number> = {};
-  let projectCategoryMap = new Map<string, { id: string; name: string; slug: string }[]>();
+  const projectMemberCounts: Record<string, number> = {};
+  const projectCategoryMap = new Map<string, { id: string; name: string; slug: string }[]>();
   if (teamProjects && teamProjects.length > 0) {
     const projectIds = teamProjects.map((p) => p.id);
     const { data: projectMembers } = await adminClient

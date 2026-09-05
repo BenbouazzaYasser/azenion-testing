@@ -3,18 +3,19 @@ import { createClient } from "@/lib/supabase/server";
 import { getOrCreateConversation } from "@/actions/chat.actions";
 
 interface Props {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 }
 
 export default async function StartConversationPage({ params }: Props) {
-  const supabase = createClient();
+  const supabase = await createClient();
+  const { userId } = await params;
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/login?next=${encodeURIComponent(`/chat/start/${params.userId}`)}`);
+    redirect(`/login?next=${encodeURIComponent(`/chat/start/${userId}`)}`);
   }
 
-  const result = await getOrCreateConversation(params.userId);
+  const result = await getOrCreateConversation(userId);
 
   if (result.error) {
     redirect("/chat");

@@ -53,6 +53,10 @@ export function ConversationMenu({
   const [confirmingBlock, setConfirmingBlock] = useState(false);
   const [pending, setPending] = useState(false);
 
+  if (!open && coords !== null) {
+    setCoords(null);
+  }
+
   const close = useCallback(() => {
     setConfirmingDelete(false);
     setConfirmingBlock(false);
@@ -60,10 +64,7 @@ export function ConversationMenu({
   }, [onOpenChange]);
 
   useLayoutEffect(() => {
-    if (!open) {
-      setCoords(null);
-      return;
-    }
+    if (!open) return;
     const btn = buttonRef.current;
     if (!btn) return;
     const rect = btn.getBoundingClientRect();

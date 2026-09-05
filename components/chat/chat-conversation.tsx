@@ -172,15 +172,22 @@ export function ChatConversation({
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
+  const [prevInitialMessages, setPrevInitialMessages] = useState(initialMessages);
+  if (prevInitialMessages !== initialMessages) {
+    setPrevInitialMessages(initialMessages);
     setMessages(initialMessages);
-  }, [initialMessages]);
+  }
+
+  const [prevConversationId, setPrevConversationId] = useState(conversationId);
+  if (prevConversationId !== conversationId) {
+    setPrevConversationId(conversationId);
+    setOtherLastReadAt(null);
+  }
 
   useEffect(() => {
     void markConversationRead(conversationId);
     void markMessagesReceived(conversationId);
     setActiveConversation(conversationId);
-    setOtherLastReadAt(null);
     void getConversationRecipientReadAt(conversationId).then(setOtherLastReadAt);
     return () => setActiveConversation(null);
   }, [conversationId]);

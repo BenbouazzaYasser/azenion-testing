@@ -59,7 +59,7 @@ export type AdminReviewResult =
 export async function submitInstructorVerification(
   input: Omit<InstructorVerificationRequest, "id" | "user_id" | "status" | "reviewed_by" | "reviewed_at" | "review_notes" | "created_at" | "updated_at">
 ): Promise<SubmitVerificationResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -102,7 +102,7 @@ export async function submitInstructorVerification(
  * Get the current user's instructor verification request (if any)
  */
 export async function getMyInstructorVerification(): Promise<GetMyVerificationResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -154,7 +154,7 @@ export async function adminGetVerificationRequests(input: {
   limit?: number;
   offset?: number;
 }): Promise<AdminGetRequestsResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -211,7 +211,7 @@ export async function adminReviewInstructorVerification(input: {
   action: "approve" | "reject" | "needs_info";
   review_notes?: string;
 }): Promise<AdminReviewResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -253,7 +253,7 @@ export async function amIVerifiedInstructor(): Promise<{
   is_instructor: boolean;
   error?: string;
 }> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

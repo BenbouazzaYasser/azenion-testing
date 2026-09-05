@@ -33,7 +33,7 @@ interface SessionCardProps {
   hostOptions: ManageableHostOption[];
 }
 
-export function SessionCard({ session, hostOptions }: SessionCardProps) {
+export async function SessionCard({ session, hostOptions }: SessionCardProps) {
   const isEnded = session.status === "ENDED";
   const isLive = session.status === "LIVE";
   const isFull = session.capacity != null && session.attendee_count >= session.capacity;
@@ -59,7 +59,7 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
             )}
           >
             {session.format === "ONLINE" ? <Video size={10} /> : <MapPin size={10} />}
-            {session.format === "ONLINE" ? serverT("academy.formatOnline") : serverT("academy.formatInPerson")}
+            {session.format === "ONLINE" ? await serverT("academy.formatOnline") : await serverT("academy.formatInPerson")}
           </span>
           {session.canManage ? (
             <>
@@ -107,18 +107,18 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
         <div className="flex flex-col items-center gap-1.5 px-2 py-3">
           <Calendar size={14} className="text-accent-400" />
           <span className="text-xs font-medium text-ink-200">{dateLabel}</span>
-          <span className="text-[10px] uppercase tracking-wider text-ink-600">{serverT("academy.date")}</span>
+          <span className="text-[10px] uppercase tracking-wider text-ink-600">{await serverT("academy.date")}</span>
         </div>
         <div className="flex flex-col items-center gap-1.5 px-2 py-3">
           <Clock size={14} className="text-accent-400" />
           <span className="text-xs font-medium text-ink-200">{timeLabel}</span>
-          <span className="text-[10px] uppercase tracking-wider text-ink-600">{serverT("academy.time")}</span>
+          <span className="text-[10px] uppercase tracking-wider text-ink-600">{await serverT("academy.time")}</span>
         </div>
         {hasEnd ? (
           <div className="flex flex-col items-center gap-1.5 px-2 py-3">
             <Timer size={14} className="text-accent-400" />
             <span className="text-xs font-medium text-ink-200">{durationLabel}</span>
-            <span className="text-[10px] uppercase tracking-wider text-ink-600">{serverT("academy.duration")}</span>
+            <span className="text-[10px] uppercase tracking-wider text-ink-600">{await serverT("academy.duration")}</span>
           </div>
         ) : null}
       </div>
@@ -131,13 +131,13 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
               <Users size={13} className="shrink-0 text-accent-400" />
             )}
             <span className="min-w-0 truncate">
-              {serverT("academy.hostedBy")} <span className="text-ink-200">{session.host_name}</span>
+              {await serverT("academy.hostedBy")} <span className="text-ink-200">{session.host_name}</span>
             </span>
           </span>
           <span className="inline-flex items-center gap-1.5 text-ink-400">
             <User size={13} className="shrink-0 text-accent-400" />
             <span className="min-w-0 truncate">
-              {serverT("academy.instructor")} <span className="text-ink-200">{session.instructor}</span>
+              {await serverT("academy.instructor")} <span className="text-ink-200">{session.instructor}</span>
             </span>
           </span>
       </div>
@@ -150,7 +150,7 @@ export function SessionCard({ session, hostOptions }: SessionCardProps) {
           <span>
             <span className="font-medium text-ink-200">{session.attendee_count}</span>
             {" / "}
-            {session.capacity} {serverT("academy.seats")}
+            {session.capacity} {await serverT("academy.seats")}
           </span>
         </div>
       ) : null}

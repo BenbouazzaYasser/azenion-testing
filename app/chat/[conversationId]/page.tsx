@@ -7,24 +7,25 @@ import { ChatConversation } from "@/components/chat/chat-conversation";
 import { getConversations, getMessages, getConversationBlockState } from "@/data/chat";
 
 interface Props {
-  params: { conversationId: string };
+  params: Promise<{ conversationId: string }>;
 }
 
 export default async function ConversationPage({ params }: Props) {
-  const supabase = createClient();
+  const supabase = await createClient();
+  const { conversationId } = await params;
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/login?next=${encodeURIComponent(`/chat/${params.conversationId}`)}`);
+    redirect(`/login?next=${encodeURIComponent(`/chat/${conversationId}`)}`);
   }
 
   const [conversations, messages, blockState] = await Promise.all([
     getConversations(user.id),
-    getMessages(params.conversationId),
-    getConversationBlockState(params.conversationId),
+    getMessages(conversationId),
+    getConversationBlockState(conversationId),
   ]);
 
-  const thisConversation = conversations.find((c) => c.id === params.conversationId);
+  const thisConversation = conversations.find((c) => c.id === conversationId);
   const otherUser = thisConversation?.other_user ?? null;
   const peer =
     otherUser && otherUser.id
@@ -49,7 +50,7 @@ export default async function ConversationPage({ params }: Props) {
             }
           >
             <ChatConversation
-              conversationId={params.conversationId}
+              conversationId={conversationId}
               initialMessages={messages}
               currentUserId={user.id}
               amBlocked={blockState.am_blocked}

@@ -2,7 +2,7 @@ import { PageHero } from "@/components/layout/page-hero";
 import { Reveal } from "@/components/ui/reveal";
 import { serverT } from "@/lib/translation/server";
 
-export function TeamsHero() {
+export async function TeamsHero() {
   return (
     <PageHero variant="teams" slug="teams" atmosphere={false}>
       <Reveal delay={0}>
@@ -10,14 +10,14 @@ export function TeamsHero() {
           id="teams-hero-heading"
           className="text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]"
         >
-          {serverT("teams.heroTitle")}
-          <span className="text-accent-400">{serverT("teams.heroTitleAccent")}</span>
+          {await serverT("teams.heroTitle")}
+          <span className="text-accent-400">{await serverT("teams.heroTitleAccent")}</span>
         </h1>
       </Reveal>
 
       <Reveal delay={120}>
         <p className="mx-auto mt-6 max-w-3xl text-balance text-[1.05rem] leading-relaxed text-ink-400 sm:text-[1.1rem] sm:leading-8">
-          {serverT("teams.heroSub")}
+          {await serverT("teams.heroSub")}
         </p>
       </Reveal>
 
@@ -27,7 +27,7 @@ export function TeamsHero() {
             <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
           </span>
           <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
-            {serverT("common.scrollToExplore")}
+            {await serverT("common.scrollToExplore")}
           </span>
         </div>
       </Reveal>

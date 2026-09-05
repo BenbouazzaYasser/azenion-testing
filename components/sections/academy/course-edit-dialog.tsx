@@ -34,16 +34,31 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [removeThumbnail, setRemoveThumbnail] = useState(false);
+  const thumbnailPreviewRef = useRef<string | null>(null);
+
+  function applyThumbnailFile(file: File | null) {
+    if (thumbnailPreviewRef.current) {
+      URL.revokeObjectURL(thumbnailPreviewRef.current);
+      thumbnailPreviewRef.current = null;
+    }
+    setThumbnailFile(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      thumbnailPreviewRef.current = url;
+      setThumbnailPreview(url);
+    } else {
+      setThumbnailPreview(null);
+    }
+  }
 
   useEffect(() => {
-    if (!thumbnailFile) {
-      setThumbnailPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(thumbnailFile);
-    setThumbnailPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [thumbnailFile]);
+    return () => {
+      if (thumbnailPreviewRef.current) {
+        URL.revokeObjectURL(thumbnailPreviewRef.current);
+        thumbnailPreviewRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -69,8 +84,7 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
     setDuration(course.duration ?? "");
     setDifficulty(course.difficulty ?? "");
     setTags(course.tags?.join(", ") ?? "");
-    setThumbnailFile(null);
-    setThumbnailPreview(null);
+    applyThumbnailFile(null);
     setRemoveThumbnail(false);
     setError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -298,7 +312,7 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                           type="file"
                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
                           onChange={(e) => {
-                            setThumbnailFile(e.target.files?.[0] ?? null);
+                            applyThumbnailFile(e.target.files?.[0] ?? null);
                             setRemoveThumbnail(false);
                           }}
                           className="hidden"
@@ -324,7 +338,7 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                             <button
                               type="button"
                               onClick={() => {
-                                setThumbnailFile(null);
+                                applyThumbnailFile(null);
                                 if (fileInputRef.current) fileInputRef.current.value = "";
                               }}
                               className="text-xs font-medium text-red-300 underline-offset-2 hover:underline"

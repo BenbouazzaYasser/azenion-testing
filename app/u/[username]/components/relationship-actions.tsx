@@ -28,6 +28,80 @@ interface RelationshipActionsProps {
   cardClass: string;
 }
 
+interface FriendButtonProps {
+  profileId: string;
+  status: FriendStatus;
+  isPending: boolean;
+  onRun: (
+    action: () => Promise<{ success?: boolean; error?: string }>,
+    patch: Partial<RelationshipState>,
+  ) => void;
+}
+
+function FriendButton({ profileId, status, isPending, onRun }: FriendButtonProps) {
+  switch (status) {
+    case "friends":
+      return (
+        <button
+          type="button"
+          onClick={() => onRun(() => unfriend(profileId), { friend_status: "none" })}
+          disabled={isPending}
+          className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-red-400/40 hover:text-red-300 hover:shadow-glow-sm disabled:opacity-50"
+        >
+          {isPending ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
+          Friends
+        </button>
+      );
+    case "request_sent":
+      return (
+        <button
+          type="button"
+          onClick={() => onRun(() => cancelFriendRequest(profileId), { friend_status: "none" })}
+          disabled={isPending}
+          className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm disabled:opacity-50"
+        >
+          {isPending ? <Loader2 size={16} className="animate-spin" /> : <ArrowLeft size={16} />}
+          Request sent
+        </button>
+      );
+    case "request_received":
+      return (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onRun(() => acceptFriendRequest(profileId), { friend_status: "friends" })}
+            disabled={isPending}
+            className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-void-950 shadow-card transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:bg-accent-300 hover:shadow-glow-sm disabled:opacity-50"
+          >
+            {isPending ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+            Accept
+          </button>
+          <button
+            type="button"
+            onClick={() => onRun(() => declineFriendRequest(profileId), { friend_status: "none" })}
+            disabled={isPending}
+            className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-300 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-red-400/40 hover:text-red-300 hover:shadow-glow-sm disabled:opacity-50"
+          >
+            {isPending ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
+            Decline
+          </button>
+        </div>
+      );
+    default:
+      return (
+        <button
+          type="button"
+          onClick={() => onRun(() => sendFriendRequest(profileId), { friend_status: "request_sent" })}
+          disabled={isPending}
+          className="inline-flex items-center gap-2 rounded-full border border-accent-400/40 bg-accent/[0.08] px-5 py-2.5 text-sm font-medium text-accent-300 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:bg-accent/[0.14] hover:text-accent-200 hover:shadow-glow-sm disabled:opacity-50"
+        >
+          {isPending ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
+          Add friend
+        </button>
+      );
+  }
+}
+
 export function RelationshipActions({ profileId, relationship, cardClass }: RelationshipActionsProps) {
   const [state, setState] = useState<RelationshipState>(relationship);
   const [error, setError] = useState<string | null>(null);
@@ -44,70 +118,6 @@ export function RelationshipActions({ profileId, relationship, cardClass }: Rela
       setState((prev) => ({ ...prev, ...patch }));
     });
   }
-
-  const FriendButton = () => {
-    switch (state.friend_status) {
-      case "friends":
-        return (
-          <button
-            type="button"
-            onClick={() => run(() => unfriend(profileId), { friend_status: "none" })}
-            disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-red-400/40 hover:text-red-300 hover:shadow-glow-sm disabled:opacity-50"
-          >
-            {isPending ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
-            Friends
-          </button>
-        );
-      case "request_sent":
-        return (
-          <button
-            type="button"
-            onClick={() => run(() => cancelFriendRequest(profileId), { friend_status: "none" })}
-            disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm disabled:opacity-50"
-          >
-            {isPending ? <Loader2 size={16} className="animate-spin" /> : <ArrowLeft size={16} />}
-            Request sent
-          </button>
-        );
-      case "request_received":
-        return (
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => run(() => acceptFriendRequest(profileId), { friend_status: "friends" })}
-              disabled={isPending}
-              className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-void-950 shadow-card transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:bg-accent-300 hover:shadow-glow-sm disabled:opacity-50"
-            >
-              {isPending ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-              Accept
-            </button>
-            <button
-              type="button"
-              onClick={() => run(() => declineFriendRequest(profileId), { friend_status: "none" })}
-              disabled={isPending}
-              className="inline-flex items-center gap-2 rounded-full bg-surface px-5 py-2.5 text-sm font-medium text-ink-300 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-red-400/40 hover:text-red-300 hover:shadow-glow-sm disabled:opacity-50"
-            >
-              {isPending ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
-              Decline
-            </button>
-          </div>
-        );
-      default:
-        return (
-          <button
-            type="button"
-            onClick={() => run(() => sendFriendRequest(profileId), { friend_status: "request_sent" })}
-            disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-full border border-accent-400/40 bg-accent/[0.08] px-5 py-2.5 text-sm font-medium text-accent-300 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:bg-accent/[0.14] hover:text-accent-200 hover:shadow-glow-sm disabled:opacity-50"
-          >
-            {isPending ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
-            Add friend
-          </button>
-        );
-    }
-  };
 
   return (
     <div className={cardClass}>
@@ -128,7 +138,12 @@ export function RelationshipActions({ profileId, relationship, cardClass }: Rela
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <FriendButton />
+          <FriendButton
+            profileId={profileId}
+            status={state.friend_status}
+            isPending={isPending}
+            onRun={run}
+          />
           <button
             type="button"
             onClick={() =>

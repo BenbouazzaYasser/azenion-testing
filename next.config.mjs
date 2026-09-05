@@ -22,7 +22,6 @@ const nextConfig = {
   // Distdir configuration
   distDir: process.env.NEXT_PROD_DIST ? process.env.NEXT_PROD_DIST : ".next",
   // Optimizations
-  swcMinify: true,
   experimental: {
     optimizePackageImports: ["lucide-react", "sonner"],
   },

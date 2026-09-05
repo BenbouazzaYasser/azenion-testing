@@ -8,7 +8,7 @@ import {
 } from "@/lib/validations/announcement.schema";
 
 async function isAuthorizedToManage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -61,7 +61,7 @@ export async function createAnnouncement(formData: FormData) {
     return { error: firstZodError(parsed) };
   }
 
-  const { error } = await createClient().rpc("create_platform_announcement", {
+  const { error } = await (await createClient()).rpc("create_platform_announcement", {
     p_emoji: parsed.data.emoji,
     p_title: parsed.data.title,
     p_category: parsed.data.category,
@@ -104,7 +104,7 @@ export async function updateAnnouncement(formData: FormData) {
     return { error: firstZodError(parsed) };
   }
 
-  const { error } = await createClient().rpc("update_platform_announcement", {
+  const { error } = await (await createClient()).rpc("update_platform_announcement", {
     p_id: parsed.data.id,
     p_emoji: parsed.data.emoji,
     p_title: parsed.data.title,
@@ -138,7 +138,7 @@ export async function deleteAnnouncement(formData: FormData) {
     return { error: "Missing announcement id" };
   }
 
-  const { error } = await createClient().rpc("delete_platform_announcement", {
+  const { error } = await (await createClient()).rpc("delete_platform_announcement", {
     p_id: id,
   });
 

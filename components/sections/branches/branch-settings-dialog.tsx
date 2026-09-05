@@ -51,7 +51,9 @@ export function BranchSettingsDialog({ branch, open: controlledOpen, onOpenChang
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const [prevBranch, setPrevBranch] = useState(branch);
+  if (prevBranch !== branch) {
+    setPrevBranch(branch);
     setName(branch.name);
     setSlug(branch.slug);
     setInstitution(branch.full_name ?? "");
@@ -60,6 +62,9 @@ export function BranchSettingsDialog({ branch, open: controlledOpen, onOpenChang
     setLogoUrl(branch.logo_url ?? "");
     setLogoFile(null);
     setLogoPreview(null);
+  }
+
+  useEffect(() => {
     if (logoInputRef.current) logoInputRef.current.value = "";
   }, [branch]);
 

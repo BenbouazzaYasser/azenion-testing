@@ -188,6 +188,16 @@ export function NotificationCenter() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const userId = user?.id ?? null;
 
+  const [prevUserId, setPrevUserId] = useState(userId);
+  if (prevUserId !== userId) {
+    setPrevUserId(userId);
+    if (!userId) {
+      setOpen(false);
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+  }
+
   const loadUnread = useCallback(async () => {
     if (!userId) return;
     const count = await getUnreadNotificationCount(userId);
@@ -195,22 +205,21 @@ export function NotificationCenter() {
   }, [userId]);
 
   useEffect(() => {
-    loadUnread();
-  }, [loadUnread]);
+    if (!userId) return;
+    let cancelled = false;
+    void getUnreadNotificationCount(userId).then((count) => {
+      if (!cancelled) setUnreadCount(count);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
     return subscribeToNotifications(userId, () => {
       setUnreadCount((c) => c + 1);
     });
-  }, [userId]);
-
-  useEffect(() => {
-    if (!userId) {
-      setOpen(false);
-      setNotifications([]);
-      setUnreadCount(0);
-    }
   }, [userId]);
 
   useEffect(() => {

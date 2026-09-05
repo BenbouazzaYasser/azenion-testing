@@ -63,13 +63,17 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
 
   // Re-sync whenever the server passes a fresh list (e.g. after a refresh),
   // and close any open menu when the route changes.
-  useEffect(() => {
+  const [prevConvs, setPrevConvs] = useState(conversations);
+  if (prevConvs !== conversations) {
+    setPrevConvs(conversations);
     setConvList(conversations);
-  }, [conversations]);
+  }
 
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setOpenMenuId(null);
-  }, [pathname]);
+  }
 
   const handleConversationRemoved = useCallback(
     (id: string) => {

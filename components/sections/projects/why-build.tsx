@@ -19,13 +19,13 @@ const REASONS: Reason[] = [
   { icon: Rocket, titleKey: "projects.whyTitle5", descKey: "projects.whyDesc5" },
 ];
 
-export function WhyBuild() {
+export async function WhyBuild() {
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="why-build-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            {serverT("projects.whyEyebrow")}
+            {await serverT("projects.whyEyebrow")}
           </div>
         </Reveal>
 
@@ -34,12 +34,12 @@ export function WhyBuild() {
             id="why-build-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            {serverT("projects.whyTitle")}
+            {await serverT("projects.whyTitle")}
           </h2>
         </Reveal>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
-          {REASONS.map((reason, i) => {
+          {await Promise.all(REASONS.map(async (reason, i) => {
             const Icon = reason.icon;
             return (
               <Reveal key={reason.titleKey} delay={i * 60}>
@@ -53,16 +53,16 @@ export function WhyBuild() {
                     </div>
 
                     <h3 className="mt-5 text-[1rem] font-semibold text-ink-50 transition-colors duration-300 group-hover:text-accent-400">
-                      {serverT(reason.titleKey)}
+                      {await serverT(reason.titleKey)}
                     </h3>
                     <p className="mt-2 flex-1 text-[0.88rem] leading-relaxed text-ink-400">
-                      {serverT(reason.descKey)}
+                      {await serverT(reason.descKey)}
                     </p>
                   </div>
                 </div>
               </Reveal>
             );
-          })}
+          }))}
         </div>
       </div>
     </section>

@@ -88,7 +88,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
     return { query, results: [] };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const q = query;
   const results: SearchResultItem[] = [];
 

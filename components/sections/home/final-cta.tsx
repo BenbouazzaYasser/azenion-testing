@@ -1,11 +1,12 @@
 import { Rocket } from "lucide-react";
+import Link from "next/link";
 
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { DashboardButton } from "@/components/shared/dashboard-button";
 import { serverT } from "@/lib/translation/server";
 
-export function FinalCta() {
+export async function FinalCta() {
   return (
     <section className="relative py-20 sm:py-24 lg:py-32" aria-labelledby="final-cta-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
@@ -18,25 +19,25 @@ export function FinalCta() {
             <div className="relative mx-auto max-w-3xl">
               <span className="inline-flex items-center justify-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
                 <Rocket size={13} />
-                {serverT("home.finalCtaEyebrow")}
+                {await serverT("home.finalCtaEyebrow")}
               </span>
               <h2
                 id="final-cta-heading"
                 className="mt-6 text-balance text-[2.25rem] font-semibold leading-[1.05] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
               >
-                {serverT("home.finalCtaTitle")}
-                <span className="text-accent-400">{serverT("home.finalCtaAccent")}</span>
+                {await serverT("home.finalCtaTitle")}
+                <span className="text-accent-400">{await serverT("home.finalCtaAccent")}</span>
               </h2>
               <p className="mx-auto mt-6 max-w-xl text-[1.02rem] leading-relaxed text-ink-400">
-                {serverT("home.finalCtaSub")}
+                {await serverT("home.finalCtaSub")}
               </p>
 
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <DashboardButton label={serverT("home.joinNow")} />
+                <DashboardButton label={await serverT("home.joinNow")} />
                 <Button asChild variant="secondary" size="lg">
-                  <a href="/teams">
-                    {serverT("home.explorePlatform")}
-                  </a>
+                  <Link href="/teams">
+                    {await serverT("home.explorePlatform")}
+                  </Link>
                 </Button>
               </div>
             </div>

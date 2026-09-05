@@ -144,7 +144,10 @@ export function AtmosphereNodes() {
   const [nodes, setNodes] = useState<NodeSpec[]>(() => buildNodes(0x5eed));
 
   useEffect(() => {
-    setNodes(buildNodes(Math.floor(Math.random() * 2_147_483_647)));
+    const frame = requestAnimationFrame(() =>
+      setNodes(buildNodes(Math.floor(Math.random() * 2_147_483_647))),
+    );
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const layerRef = useRef<HTMLDivElement | null>(null);

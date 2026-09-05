@@ -175,7 +175,8 @@ export function Navbar() {
       const raw = new URLSearchParams(window.location.search).get("next");
       if (raw && raw.startsWith("/")) next = raw;
     } catch {}
-    setPendingNext(next);
+    const frame = requestAnimationFrame(() => setPendingNext(next));
+    return () => cancelAnimationFrame(frame);
   }, [pathname]);
 
   const isActive = (href: string) => {

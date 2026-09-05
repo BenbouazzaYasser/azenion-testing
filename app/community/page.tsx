@@ -41,7 +41,7 @@ export const revalidate = 300;
 
 export default async function CommunityPage() {
   const admin = createAdminClient();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [trendingTeamIds, featuredProjectIds] = await Promise.all([
     getTrendingTeamIds(8),

@@ -21,7 +21,7 @@ const REASONS: { icon: LucideIcon; titleKey: DictKey; descKey: DictKey }[] = [
   { icon: GraduationCap, titleKey: "teams.why6Title", descKey: "teams.why6Desc" },
 ];
 
-export function WhyTeams() {
+export async function WhyTeams() {
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="why-teams-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
@@ -30,15 +30,15 @@ export function WhyTeams() {
             id="why-teams-heading"
             className="text-center text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            {serverT("teams.whyTitle")}
+            {await serverT("teams.whyTitle")}
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-center text-[1.02rem] leading-7 text-ink-400">
-            {serverT("teams.whySub")}
+            {await serverT("teams.whySub")}
           </p>
         </Reveal>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {REASONS.map((reason, i) => {
+          {await Promise.all(REASONS.map(async (reason, i) => {
             const Icon = reason.icon;
             return (
               <Reveal key={reason.titleKey} delay={i * 60} className="flex">
@@ -52,16 +52,16 @@ export function WhyTeams() {
                     </div>
 
                     <h3 className="mt-5 text-[1rem] font-semibold text-ink-50 transition-colors duration-300 group-hover:text-accent-400">
-                      {serverT(reason.titleKey)}
+                      {await serverT(reason.titleKey)}
                     </h3>
                     <p className="mt-2 flex-1 text-[0.88rem] leading-relaxed text-ink-400">
-                      {serverT(reason.descKey)}
+                      {await serverT(reason.descKey)}
                     </p>
                   </div>
                 </div>
               </Reveal>
             );
-          })}
+          }))}
         </div>
       </div>
     </section>

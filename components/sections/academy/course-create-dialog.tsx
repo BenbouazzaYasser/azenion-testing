@@ -40,6 +40,31 @@ export function CourseCreateDialog() {
   const [fileName, setFileName] = useState("");
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const thumbnailPreviewRef = useRef<string | null>(null);
+
+  function applyThumbnailFile(file: File | null) {
+    if (thumbnailPreviewRef.current) {
+      URL.revokeObjectURL(thumbnailPreviewRef.current);
+      thumbnailPreviewRef.current = null;
+    }
+    setThumbnailFile(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      thumbnailPreviewRef.current = url;
+      setThumbnailPreview(url);
+    } else {
+      setThumbnailPreview(null);
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (thumbnailPreviewRef.current) {
+        URL.revokeObjectURL(thumbnailPreviewRef.current);
+        thumbnailPreviewRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -58,16 +83,6 @@ export function CourseCreateDialog() {
     };
   }, [open]);
 
-  useEffect(() => {
-    if (!thumbnailFile) {
-      setThumbnailPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(thumbnailFile);
-    setThumbnailPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [thumbnailFile]);
-
   function resetForm() {
     setTitle("");
     setDescription("");
@@ -77,8 +92,7 @@ export function CourseCreateDialog() {
     setDifficulty("");
     setTags("");
     setFileName("");
-    setThumbnailFile(null);
-    setThumbnailPreview(null);
+    applyThumbnailFile(null);
     setError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (thumbnailInputRef.current) thumbnailInputRef.current.value = "";
@@ -389,7 +403,7 @@ export function CourseCreateDialog() {
                           ref={thumbnailInputRef}
                           type="file"
                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-                          onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)}
+                          onChange={(e) => applyThumbnailFile(e.target.files?.[0] ?? null)}
                           className="hidden"
                         />
                         <button
@@ -413,7 +427,7 @@ export function CourseCreateDialog() {
                             <button
                               type="button"
                               onClick={() => {
-                                setThumbnailFile(null);
+                                applyThumbnailFile(null);
                                 if (thumbnailInputRef.current)
                                   thumbnailInputRef.current.value = "";
                               }}

@@ -22,9 +22,14 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
   const dialogRef = useDialogFocus<HTMLDivElement>(open);
   const [profile, setProfile] = useState<Awaited<ReturnType<typeof getPublicProfile>> | null>(null);
 
+  const [prevDialogKey, setPrevDialogKey] = useState(`${open}:${username}`);
+  if (prevDialogKey !== `${open}:${username}`) {
+    setPrevDialogKey(`${open}:${username}`);
+    setProfile(null);
+  }
+
   useEffect(() => {
     if (!open || !username) return;
-    setProfile(null);
     let cancelled = false;
     getPublicProfile(username).then((res) => {
       if (!cancelled) setProfile(res);

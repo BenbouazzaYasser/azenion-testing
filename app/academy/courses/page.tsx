@@ -58,10 +58,10 @@ export default async function CoursesPage() {
       <main className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyHero
-          eyebrow={serverT("academy.coursesEyebrow")}
-          title={serverT("academy.coursesH1")}
-          accent={serverT("academy.coursesH1Accent")}
-          subtitle={serverT("academy.coursesSubtitle")}
+          eyebrow={await serverT("academy.coursesEyebrow")}
+          title={await serverT("academy.coursesH1")}
+          accent={await serverT("academy.coursesH1Accent")}
+          subtitle={await serverT("academy.coursesSubtitle")}
         />
         <CoursesBrowser courses={courses} canManage={canManage} />
         <AcademyClosingCta />

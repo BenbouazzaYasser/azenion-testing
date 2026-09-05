@@ -6,7 +6,7 @@ interface TeamAboutProps {
   description: string | null;
 }
 
-export function TeamAbout({ description }: TeamAboutProps) {
+export async function TeamAbout({ description }: TeamAboutProps) {
   if (!description) return null;
 
   return (
@@ -18,7 +18,7 @@ export function TeamAbout({ description }: TeamAboutProps) {
       <div className="relative mx-auto max-w-[920px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            {serverT("teams.aboutEyebrow")}
+            {await serverT("teams.aboutEyebrow")}
           </div>
         </Reveal>
 
@@ -27,7 +27,7 @@ export function TeamAbout({ description }: TeamAboutProps) {
             id="team-about-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            {serverT("teams.aboutTitle")}
+            {await serverT("teams.aboutTitle")}
           </h2>
         </Reveal>
 

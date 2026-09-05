@@ -27,14 +27,14 @@ function dirFor(lang: string | undefined): "rtl" | "ltr" {
   return lang && RTL_LANGS.has(lang) ? "rtl" : "ltr";
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   let initialLang: string | undefined;
   try {
-    initialLang = cookies().get("azenion-lang")?.value;
+    initialLang = (await cookies()).get("azenion-lang")?.value;
   } catch {}
   return (
     <html lang={initialLang ?? "en"} dir={dirFor(initialLang)} suppressHydrationWarning>

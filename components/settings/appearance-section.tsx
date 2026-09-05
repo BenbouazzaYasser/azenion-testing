@@ -20,10 +20,10 @@ export function AppearanceSection() {
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
   useEffect(() => {
-    setSaveState("saved");
+    if (saveState === "idle") return;
     const t = window.setTimeout(() => setSaveState("idle"), 1600);
     return () => window.clearTimeout(t);
-  }, [theme]);
+  }, [saveState]);
 
   return (
     <div className="space-y-4">
@@ -34,7 +34,10 @@ export function AppearanceSection() {
             <button
               key={option.value}
               type="button"
-              onClick={() => setTheme(option.value)}
+              onClick={() => {
+                setTheme(option.value);
+                setSaveState("saved");
+              }}
               aria-pressed={active}
               className={cn(
                 "group relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",

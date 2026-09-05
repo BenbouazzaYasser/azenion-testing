@@ -19,7 +19,7 @@ const CHANNEL_ICONS: Record<string, typeof Mail> = {
   GitHub: Github,
 };
 
-export function Footer() {
+export async function Footer() {
   return (
     <footer className="relative">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
@@ -30,65 +30,65 @@ export function Footer() {
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-400">
-              {serverT("footer.taglineTop")}
+              {await serverT("footer.taglineTop")}
               <br />
-              <span className="text-accent-400">{serverT("footer.taglineBottom")}</span>
+              <span className="text-accent-400">{await serverT("footer.taglineBottom")}</span>
             </p>
             <p className="mt-4 text-sm leading-relaxed text-ink-400">
-              {serverT("footer.description")}
+              {await serverT("footer.description")}
             </p>
           </div>
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
-              {serverT("footer.quickLinks")}
+              {await serverT("footer.quickLinks")}
             </h3>
             <ul className="mt-5 space-y-3">
-              {[
+              {await Promise.all([
                 { labelKey: "nav.teams" as const, href: "/teams" },
                 { labelKey: "nav.projects" as const, href: "/projects" },
                 { labelKey: "nav.branches" as const, href: "/branches" },
                 { labelKey: "nav.feed" as const, href: "/feed" },
                 { labelKey: "nav.chat" as const, href: "/chat" },
-              ].map((link) => (
+              ].map(async (link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-sm text-ink-400 transition-colors hover:text-ink-50"
                   >
-                    {serverT(link.labelKey)}
+                    {await serverT(link.labelKey)}
                   </Link>
                 </li>
-              ))}
+              )))}
             </ul>
           </div>
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
-              {serverT("footer.legal")}
+              {await serverT("footer.legal")}
             </h3>
             <ul className="mt-5 space-y-3">
-              {[
+              {await Promise.all([
                 { labelKey: "footer.about" as const, href: "/about" },
                 { labelKey: "footer.contact" as const, href: "/contact" },
                 { labelKey: "footer.terms" as const, href: "/terms" },
                 { labelKey: "footer.privacy" as const, href: "/privacy" },
-              ].map((link) => (
+              ].map(async (link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-sm text-ink-400 transition-colors hover:text-ink-50"
                   >
-                    {serverT(link.labelKey)}
+                    {await serverT(link.labelKey)}
                   </Link>
                 </li>
-              ))}
+              )))}
             </ul>
           </div>
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
-              {serverT("footer.connect")}
+              {await serverT("footer.connect")}
             </h3>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -142,10 +142,10 @@ export function Footer() {
       <div className="relative">
         <div className="mx-auto max-w-[1320px] px-5 py-6 sm:px-8 lg:px-12">
           <p className="text-center text-xs text-ink-600 sm:text-left">
-            &copy; {new Date().getFullYear()} Azenion. {serverT("footer.rights")}
+            &copy; {new Date().getFullYear()} Azenion. {await serverT("footer.rights")}
           </p>
           <p className="mt-2 text-center text-xs text-ink-600/80 sm:text-left">
-            {serverT("footer.founded")} Ziyad
+            {await serverT("footer.founded")} Ziyad
           </p>
         </div>
       </div>

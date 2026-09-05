@@ -95,7 +95,9 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
   const [capacity, setCapacity] = useState("");
   const [topics, setTopics] = useState("");
 
-  useEffect(() => {
+  const [prevSession, setPrevSession] = useState(session);
+  if (prevSession !== session) {
+    setPrevSession(session);
     setTitle(session?.title ?? "");
     setDescription(session?.description ?? "");
     setHostType(session?.host_type ?? "BRANCH");
@@ -124,7 +126,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
     setFormat(session?.format ?? "ONLINE");
     setCapacity(session?.capacity ? String(session.capacity) : "");
     setTopics(session?.topics?.join("\n") ?? "");
-  }, [session]);
+  }
 
   useEffect(() => {
     if (!open) return;

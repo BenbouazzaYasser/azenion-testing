@@ -48,6 +48,31 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
   const [isPublished, setIsPublished] = useState(lab.is_published);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const thumbnailPreviewRef = useRef<string | null>(null);
+
+  function applyThumbnailFile(file: File | null) {
+    if (thumbnailPreviewRef.current) {
+      URL.revokeObjectURL(thumbnailPreviewRef.current);
+      thumbnailPreviewRef.current = null;
+    }
+    setThumbnailFile(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      thumbnailPreviewRef.current = url;
+      setThumbnailPreview(url);
+    } else {
+      setThumbnailPreview(null);
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (thumbnailPreviewRef.current) {
+        URL.revokeObjectURL(thumbnailPreviewRef.current);
+        thumbnailPreviewRef.current = null;
+      }
+    };
+  }, []);
 
   const [blocks, setBlocks] = useState<DraftBlock[]>([]);
   const [contentLoaded, setContentLoaded] = useState(false);
@@ -96,16 +121,6 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
       setLinksLoaded(true);
     });
   }, [open, linksLoaded, lab.id]);
-
-  useEffect(() => {
-    if (!thumbnailFile) {
-      setThumbnailPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(thumbnailFile);
-    setThumbnailPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [thumbnailFile]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -372,7 +387,7 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                           ref={thumbnailInputRef}
                           type="file"
                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-                          onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)}
+                          onChange={(e) => applyThumbnailFile(e.target.files?.[0] ?? null)}
                           className="hidden"
                         />
                         <button

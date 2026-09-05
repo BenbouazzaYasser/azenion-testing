@@ -57,7 +57,7 @@ export function RoleManager({ roleCatalog }: RoleManagerProps) {
     return () => {
       searchSeq.current += 1;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   function handleSelect(user: AdminUserSearchResult) {

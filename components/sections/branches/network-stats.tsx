@@ -9,26 +9,26 @@ interface NetworkStatsProps {
   upcomingEvents: number;
 }
 
-export function NetworkStats({ branchCount, memberCount, upcomingEvents }: NetworkStatsProps) {
+export async function NetworkStats({ branchCount, memberCount, upcomingEvents }: NetworkStatsProps) {
   const stats = [
     {
       icon: Building2,
       value: `${branchCount}`,
-      label: serverT("branches.statActiveBranches"),
+      label: await serverT("branches.statActiveBranches"),
     },
     {
       icon: Users,
       value: `${memberCount}+`,
-      label: serverT("branches.statCombinedMembers"),
+      label: await serverT("branches.statCombinedMembers"),
     },
     {
       icon: CalendarClock,
       value: `${upcomingEvents}`,
-      label: serverT("branches.statUpcomingEvents"),
+      label: await serverT("branches.statUpcomingEvents"),
     },
   ] as const;
   return (
-    <section aria-label={serverT("branches.networkGlance")} className="relative px-6 pb-16 sm:pb-24">
+    <section aria-label={await serverT("branches.networkGlance")} className="relative px-6 pb-16 sm:pb-24">
       <Reveal>
         <div className="mx-auto grid max-w-4xl grid-cols-1 divide-y divide-border-strong card-surface rounded-[2rem] backdrop-blur-xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           {stats.map((stat) => (

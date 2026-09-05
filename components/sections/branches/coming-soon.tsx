@@ -7,7 +7,7 @@ import { serverT } from "@/lib/translation/server";
 
 const ghostSlots = ["branches.yourCampus", "branches.yourCity", "branches.yourNetwork"] as const;
 
-export function ComingSoonTeaser() {
+export async function ComingSoonTeaser() {
   return (
     <section
       id="coming-soon"
@@ -25,18 +25,18 @@ export function ComingSoonTeaser() {
             <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center">
               <Badge className="mb-6 inline-flex items-center gap-1.5">
                 <Rocket className="h-3.5 w-3.5" aria-hidden="true" />
-                {serverT("branches.moreComing")}
+                {await serverT("branches.moreComing")}
               </Badge>
 
               <h2 id="coming-soon-heading" className="text-2xl font-semibold text-ink-50 sm:text-3xl">
-                {serverT("branches.networkStarted")}
+                {await serverT("branches.networkStarted")}
               </h2>
               <p className="mt-4 text-sm text-ink-400 sm:text-base">
-                {serverT("branches.networkStartedSub")}
+                {await serverT("branches.networkStartedSub")}
               </p>
 
               <div className="mt-8 grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
-                {ghostSlots.map((slot) => (
+                {await Promise.all(ghostSlots.map(async (slot) => (
                   <div
                     key={slot}
                     className="flex h-28 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border-strong text-ink-600 transition-colors duration-700 ease-premium hover:border-[rgba(40,40,255,0.35)] hover:text-ink-400"
@@ -44,16 +44,16 @@ export function ComingSoonTeaser() {
                     <span className="text-2xl font-light" aria-hidden="true">
                       ∞
                     </span>
-                    <span className="text-xs uppercase tracking-[0.15em]">{serverT(slot)}</span>
+                    <span className="text-xs uppercase tracking-[0.15em]">{await serverT(slot)}</span>
                   </div>
-                ))}
+                )))}
               </div>
 
               <a
                 href={`${CONTACT.emailHref}?subject=Starting%20a%20new%20Azenion%20branch`}
                 className="mt-8 text-sm font-medium text-accent-500 underline-offset-4 transition-colors duration-500 ease-premium hover:text-accent-300 hover:underline"
               >
-                {serverT("branches.nominate")} →
+                {await serverT("branches.nominate")} →
               </a>
             </div>
           </div>

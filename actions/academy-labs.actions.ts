@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { labSchema, labContentSchema, labAnswerInputSchema, labAnswerKeySchema, labSubmittedAnswersSchema } from "@/lib/validations/lab.schema";
+import { labSchema, labContentSchema, labAnswerInputSchema, labAnswerKeySchema, labSubmittedAnswersSchema, type LabAnswerInput } from "@/lib/validations/lab.schema";
 import type { LabAnswerKey, LabContent } from "@/lib/validations/lab.schema";
 import { gradeSubmission, hashFlag, questionBlocksOf, validateSubmittedAnswers } from "@/lib/labs/grading";
 import { getLabsAuthContext } from "@/lib/labs/authorization";
@@ -542,7 +542,7 @@ export async function createLabVersion(formData: FormData) {
     const questionBlocks = questionBlocksOf(content.blocks);
     const questionIds = new Set(questionBlocks.map((b) => b.id));
 
-    let answerInput: Record<string, any> = {};
+    let answerInput: LabAnswerInput = {};
     if (answerInputRaw) {
       let parsedAnswerInputJson: unknown;
       try {
@@ -989,7 +989,7 @@ export async function gradeLabSubmission(formData: FormData) {
     return { error: "Only submissions awaiting review can be graded" };
   }
 
-  const priorResults = (submission.test_results as Record<string, any>) ?? {};
+  const priorResults = submission.test_results ?? {};
   const mergedResults = {
     ...priorResults,
     manual_review: {

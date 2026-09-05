@@ -13,7 +13,7 @@ interface ServerLayoutProps {
 
 export default async function ServerLayout({ params, children }: ServerLayoutProps) {
   const { slug } = await params;
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

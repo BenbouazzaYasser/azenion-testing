@@ -7,7 +7,7 @@ import { InfinityHeroArt } from "@/components/graphics/infinity-hero-art";
 import { DashboardButton } from "@/components/shared/dashboard-button";
 import { serverT } from "@/lib/translation/server";
 
-export function Hero() {
+export async function Hero() {
   return (
     <section className="relative pt-[88px] sm:pt-[104px] lg:pt-[120px]">
       {/* On mobile the artwork sits behind the copy as ambient atmosphere
@@ -25,31 +25,31 @@ export function Hero() {
           <Reveal delay={0}>
             <Badge className="inline-flex">
               <Globe2 size={13} className="text-accent-400" />
-              {serverT("home.heroBadge")}
+              {await serverT("home.heroBadge")}
             </Badge>
           </Reveal>
 
           <Reveal delay={80}>
             <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[3.75rem]">
-              {serverT("home.heroTitleA")}
+              {await serverT("home.heroTitleA")}
               <br />
-              {serverT("home.heroTitleB")}<span className="text-accent-400">{serverT("home.heroImpact")}</span>
+              {await serverT("home.heroTitleB")}<span className="text-accent-400">{await serverT("home.heroImpact")}</span>
             </h1>
           </Reveal>
 
           <Reveal delay={160}>
             <p className="mt-6 text-balance text-[1.05rem] leading-relaxed text-ink-400">
-              {serverT("home.heroSubA")}
+              {await serverT("home.heroSubA")}
               <br className="hidden sm:block" />
-              {serverT("home.heroSubB")}
+              {await serverT("home.heroSubB")}
             </p>
           </Reveal>
 
           <Reveal delay={240}>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <DashboardButton size="lg" label={serverT("home.heroJoinCta")} />
+            <DashboardButton size="lg" label={await serverT("home.heroJoinCta")} />
               <Button variant="secondary" size="lg" asChild>
-                <Link href="/projects">{serverT("home.exploreProjects")}</Link>
+                <Link href="/projects">{await serverT("home.exploreProjects")}</Link>
               </Button>
             </div>
           </Reveal>
@@ -61,9 +61,9 @@ export function Hero() {
                 className="absolute -inset-x-4 -inset-y-6 rounded-[2rem] bg-accent-400/[0.14] blur-[60px]"
               />
               <div className="relative rounded-[1.6rem] card-surface-soft p-5 shadow-card backdrop-blur-xl">
-                <p className="text-sm font-medium text-ink-50">{serverT("home.heroQuickOverview")}</p>
+                <p className="text-sm font-medium text-ink-50">{await serverT("home.heroQuickOverview")}</p>
                 <p className="mt-2 text-sm leading-6 text-ink-400">
-                  {serverT("home.heroOverviewSub")}
+                  {await serverT("home.heroOverviewSub")}
                 </p>
               </div>
             </div>
@@ -74,7 +74,7 @@ export function Hero() {
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
             <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
-              {serverT("home.heroScroll")}
+              {await serverT("home.heroScroll")}
             </span>
           </div>
         </div>

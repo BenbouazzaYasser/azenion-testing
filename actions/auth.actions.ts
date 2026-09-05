@@ -7,7 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function signUp(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const data = {
     email: formData.get("email") as string,
@@ -40,7 +40,7 @@ export async function signUp(formData: FormData) {
 }
 
 export async function signIn(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const identifier = (formData.get("identifier") as string)?.trim() ?? "";
   const password = formData.get("password") as string;
@@ -84,7 +84,7 @@ export async function signIn(formData: FormData) {
  * `code` in /auth/callback.
  */
 export async function signInWithGoogle(next?: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const safeNext =
@@ -105,7 +105,7 @@ export async function signInWithGoogle(next?: string) {
 }
 
 export async function signOut() {
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/");

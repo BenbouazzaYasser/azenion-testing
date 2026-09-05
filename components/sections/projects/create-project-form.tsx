@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
@@ -143,9 +144,9 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                 <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-sm text-amber-300">
                   You&apos;re not an owner or admin of any team yet — you can still create a
                   personal project below, or{" "}
-                  <a href="/teams/create" className="underline hover:text-amber-200">
+                  <Link href="/teams/create" className="underline hover:text-amber-200">
                     create a team
-                  </a>
+                  </Link>
                   .
                 </div>
               )}

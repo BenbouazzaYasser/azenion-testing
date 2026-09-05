@@ -26,15 +26,15 @@ const FEATURE_ITEMS: { icon: LucideIcon; titleKey: DictKey; descKey: DictKey }[]
   },
 ];
 
-export function Features() {
+export async function Features() {
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="features-heading">
       <h2 id="features-heading" className="sr-only">
-        {serverT("home.featuresSr")}
+        {await serverT("home.featuresSr")}
       </h2>
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
         <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
-          {FEATURE_ITEMS.map((feature) => {
+          {await Promise.all(FEATURE_ITEMS.map(async (feature) => {
             const Icon = feature.icon;
             return (
               <div
@@ -45,14 +45,14 @@ export function Features() {
                   <Icon size={19} strokeWidth={1.75} />
                 </div>
                 <h3 className="mt-5 text-[1.05rem] font-semibold text-ink-50">
-                  {serverT(feature.titleKey)}
+                  {await serverT(feature.titleKey)}
                 </h3>
                 <p className="mt-2.5 max-w-[24ch] text-[0.9rem] leading-relaxed text-ink-400">
-                  {serverT(feature.descKey)}
+                  {await serverT(feature.descKey)}
                 </p>
               </div>
             );
-          })}
+          }))}
         </div>
       </div>
     </section>

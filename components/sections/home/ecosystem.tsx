@@ -58,7 +58,7 @@ const ECOSYSTEM: { href: string; icon: typeof Landmark; titleKey: DictKey; descK
   },
 ];
 
-export function Ecosystem() {
+export async function Ecosystem() {
   return (
     <section
       className="relative py-20 sm:py-24 lg:py-28"
@@ -73,22 +73,22 @@ export function Ecosystem() {
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-              {serverT("home.ecosystemEyebrow")}
+              {await serverT("home.ecosystemEyebrow")}
             </span>
             <h2
               id="ecosystem-heading"
               className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem]"
             >
-              {serverT("home.ecosystemTitle")}<span className="text-accent-400">{serverT("home.ecosystemAccent")}</span>
+              {await serverT("home.ecosystemTitle")}<span className="text-accent-400">{await serverT("home.ecosystemAccent")}</span>
             </h2>
             <p className="mt-5 text-balance text-[1.02rem] leading-relaxed text-ink-400">
-              {serverT("home.ecosystemSub")}
+              {await serverT("home.ecosystemSub")}
             </p>
           </div>
         </Reveal>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {ECOSYSTEM.map((item, i) => {
+          {await Promise.all(ECOSYSTEM.map(async (item, i) => {
             const Icon = item.icon;
             return (
               <Reveal key={item.href} delay={i * 60} className="h-full">
@@ -103,20 +103,20 @@ export function Ecosystem() {
                   </div>
 
                   <h3 className="relative mt-5 text-lg font-semibold text-ink-50 transition-colors duration-300 group-hover:text-accent-300">
-                    {serverT(item.titleKey)}
+                    {await serverT(item.titleKey)}
                   </h3>
                   <p className="relative mt-2.5 flex-1 text-sm leading-relaxed text-ink-400">
-                    {serverT(item.descKey)}
+                    {await serverT(item.descKey)}
                   </p>
 
                   <span className="relative mt-6 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-400 opacity-80 transition-all duration-300 group-hover:gap-2.5 group-hover:opacity-100">
-                    {serverT(item.ctaKey)}
+                    {await serverT(item.ctaKey)}
                     <ArrowUpRight size={14} />
                   </span>
                 </Link>
               </Reveal>
             );
-          })}
+          }))}
         </div>
       </div>
     </section>

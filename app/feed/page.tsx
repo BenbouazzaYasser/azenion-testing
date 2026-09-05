@@ -10,7 +10,7 @@ import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { serverT } from "@/lib/translation/server";
 
 export default async function FeedPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const userId = user?.id ?? null;
 
@@ -26,10 +26,10 @@ export default async function FeedPage() {
         <div className="relative mx-auto max-w-[720px] px-5 sm:px-8">
           <div className="mb-8">
             <h1 className="text-[2rem] font-semibold tracking-tight text-ink-50 sm:text-[2.5rem]">
-              {serverT("feed.title")}
+              {await serverT("feed.title")}
             </h1>
             <p className="mt-2 text-[1.02rem] leading-relaxed text-ink-400">
-              {serverT("feed.subtitle")}
+              {await serverT("feed.subtitle")}
             </p>
           </div>
 

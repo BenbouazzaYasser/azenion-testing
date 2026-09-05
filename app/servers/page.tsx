@@ -20,7 +20,7 @@ const KIND_LABEL = {
 } as const;
 
 export default async function ServersPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -37,9 +37,9 @@ export default async function ServersPage() {
         <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-ink-50">{serverT("servers.title")}</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-ink-50">{await serverT("servers.title")}</h1>
               <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-400">
-                {serverT("servers.welcomeSub")}
+                {await serverT("servers.welcomeSub")}
               </p>
             </div>
             <Link
@@ -47,7 +47,7 @@ export default async function ServersPage() {
               className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white shadow-glow transition-all duration-300 hover:bg-accent/90"
             >
               <Plus size={16} />
-              {serverT("servers.createServer")}
+              {await serverT("servers.createServer")}
             </Link>
           </div>
 
@@ -56,14 +56,14 @@ export default async function ServersPage() {
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface card-surface-soft text-accent-300 shadow-input">
                 <Server size={24} />
               </div>
-              <p className="mt-4 text-lg font-semibold text-ink-50">{serverT("servers.noneYet")}</p>
+              <p className="mt-4 text-lg font-semibold text-ink-50">{await serverT("servers.noneYet")}</p>
               <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-ink-500">
-                {serverT("servers.noneYetSub")}
+                {await serverT("servers.noneYetSub")}
               </p>
             </div>
           ) : (
             <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {servers.map((server) => (
+              {await Promise.all(servers.map(async (server) => (
                 <Link
                   key={server.id}
                   href={`/servers/${server.slug}`}
@@ -84,11 +84,11 @@ export default async function ServersPage() {
                     <p className="truncate text-sm font-semibold text-ink-50">{server.name}</p>
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-500">
                       <Hash size={11} className="shrink-0" />
-                      {serverT(KIND_LABEL[server.kind])}
+                      {await serverT(KIND_LABEL[server.kind])}
                     </p>
                   </div>
                 </Link>
-              ))}
+              )))}
             </div>
           )}
         </div>

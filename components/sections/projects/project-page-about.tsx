@@ -21,7 +21,7 @@ const visibilityConfig: Record<string, { icon: typeof Eye; labelKey: DictKey; cl
   private: { icon: Lock, labelKey: "projects.private", class: "border-rose-500/30 bg-rose-500/[0.08] text-rose-400" },
 };
 
-export function ProjectPageAbout({ description, descriptionLong, website, githubUrl, technologies, categories, team, visibility }: ProjectPageAboutProps) {
+export async function ProjectPageAbout({ description, descriptionLong, website, githubUrl, technologies, categories, team, visibility }: ProjectPageAboutProps) {
   const displayText = descriptionLong || description;
   const paragraphs = displayText.split("\n").filter(Boolean);
 
@@ -32,7 +32,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
       <div className="mx-auto max-w-[920px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
-            {serverT("projects.aboutEyebrow")}
+            {await serverT("projects.aboutEyebrow")}
           </div>
         </Reveal>
 
@@ -41,7 +41,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
             id="project-about-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
-            {serverT("projects.aboutTitle")}
+            {await serverT("projects.aboutTitle")}
           </h2>
         </Reveal>
 
@@ -105,7 +105,7 @@ export function ProjectPageAbout({ description, descriptionLong, website, github
                     const Icon = visibilityConfig[visibility]?.icon ?? Eye;
                     return <Icon size={12} />;
                   })()}
-                  {visibilityConfig[visibility] ? serverT(visibilityConfig[visibility].labelKey) : visibility}
+                  {visibilityConfig[visibility] ? await serverT(visibilityConfig[visibility].labelKey) : visibility}
                 </span>
               ) : null}
             </div>

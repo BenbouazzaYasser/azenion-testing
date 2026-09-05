@@ -92,6 +92,24 @@ export function TranslationProvider({
   const isTranslating = false;
   const isTranslated = language !== SOURCE_LANG;
 
+  // If the server returned a fresher language (e.g. after login) and the user
+  // has no local preference yet, adopt it.
+  const [prevInitialLanguage, setPrevInitialLanguage] = useState(initialLanguage);
+  if (prevInitialLanguage !== initialLanguage) {
+    setPrevInitialLanguage(initialLanguage);
+    if (initialLanguage && isValidLanguage(initialLanguage) && initialLanguage !== language) {
+      const stored = (() => {
+        if (typeof window === "undefined") return null;
+        try {
+          return localStorage.getItem(STORAGE_KEY);
+        } catch {
+          return null;
+        }
+      })();
+      if (!stored || stored === DEFAULT_LANGUAGE) setLanguageState(initialLanguage);
+    }
+  }
+
   const t = useCallback(
     (key: DictKey, fallback?: string) => lookup(key, language, fallback) ?? fallback ?? key,
     [language],
@@ -108,24 +126,6 @@ export function TranslationProvider({
     setLanguageState(code);
     persistLanguage(code);
   }, []);
-
-  // If the server returned a fresher language (e.g. after login) and the user
-  // has no local preference yet, adopt it.
-  useEffect(() => {
-    if (initialLanguage && isValidLanguage(initialLanguage) && initialLanguage !== language) {
-      const stored = (() => {
-        try {
-          return localStorage.getItem(STORAGE_KEY);
-        } catch {
-          return null;
-        }
-      })();
-      if (!stored || stored === DEFAULT_LANGUAGE) {
-        setLanguageState(initialLanguage);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialLanguage]);
 
   const restore = useCallback(() => {
     setLanguageState(SOURCE_LANG);

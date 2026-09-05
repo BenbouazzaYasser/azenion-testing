@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 const protectedRoutes = ["/profile", "/teams/create", "/projects/create"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const isProtected = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route),
   );

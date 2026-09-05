@@ -48,10 +48,15 @@ function parseRecruitment(raw: unknown) {
   }
 }
 
+function countUpcomingEvents(events: { starts_at: string | null }[]): number {
+  const now = Date.now();
+  return events.filter((e) => e.starts_at && new Date(e.starts_at).getTime() >= now).length;
+}
+
 export default async function BranchPage({ params }: BranchPageProps) {
   const { slug } = await params;
   const adminClient = createAdminClient();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: branch } = await adminClient
     .from("branches")
@@ -345,7 +350,7 @@ export default async function BranchPage({ params }: BranchPageProps) {
           teamsCount={relatedTeamsData.length}
           projectsCount={relatedProjectsData.length}
           postsCount={postsCount}
-          eventsCount={events.filter((e) => e.starts_at && new Date(e.starts_at).getTime() >= Date.now()).length}
+          eventsCount={countUpcomingEvents(events)}
           createdAt={branch.created_at}
         />
         <BranchPageTeams teams={relatedTeamsData} />

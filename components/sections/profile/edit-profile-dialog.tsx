@@ -47,10 +47,17 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
   const [isPending, startTransition] = useTransition();
   const [mounted, setMounted] = useState(false);
 
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) {
+      setError(null);
+      setUrlWarning(null);
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
-    setError(null);
-    setUrlWarning(null);
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frame = requestAnimationFrame(() => setMounted(true));

@@ -60,7 +60,7 @@ const FOCUS_CARDS: { icon: typeof Network; titleKey: DictKey; descKey: DictKey }
   },
 ];
 
-export function WhyAzenion() {
+export async function WhyAzenion() {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="why-azenion-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
@@ -70,32 +70,32 @@ export function WhyAzenion() {
             <div className="lg:sticky lg:top-32">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
                 <Network size={13} />
-                {serverT("home.whyEyebrow")}
+                {await serverT("home.whyEyebrow")}
               </span>
 
               <h2
                 id="why-azenion-heading"
                 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[2.9rem]"
               >
-                {serverT("home.whyTitle")}
-                <span className="text-accent-400">{serverT("home.whyTitleAccent")}</span>
+                {await serverT("home.whyTitle")}
+                <span className="text-accent-400">{await serverT("home.whyTitleAccent")}</span>
               </h2>
 
               <p className="mt-5 max-w-xl text-[1.02rem] leading-8 text-ink-400">
-                {serverT("home.whyParaA")}
+                {await serverT("home.whyParaA")}
               </p>
 
               <p className="mt-4 max-w-xl text-[1.02rem] leading-8 text-ink-400">
-                {serverT("home.whyParaB")}
+                {await serverT("home.whyParaB")}
               </p>
 
-              <DashboardButton size="lg" className="mt-8" label={serverT("home.joinMovement")} />
+              <DashboardButton size="lg" className="mt-8" label={await serverT("home.joinMovement")} />
             </div>
           </Reveal>
 
           {/* Focus cards */}
           <div className="grid gap-5 sm:grid-cols-2">
-            {FOCUS_CARDS.map((card, i) => {
+            {await Promise.all(FOCUS_CARDS.map(async (card, i) => {
               const Icon = card.icon;
               return (
                 <Reveal key={card.titleKey} delay={i * 80} className="h-full">
@@ -106,15 +106,15 @@ export function WhyAzenion() {
                       <Icon size={20} strokeWidth={1.75} />
                     </div>
                     <h3 className="relative mt-5 text-[1.05rem] font-semibold text-ink-50">
-                      {serverT(card.titleKey)}
+                      {await serverT(card.titleKey)}
                     </h3>
                     <p className="relative mt-2.5 text-sm leading-relaxed text-ink-400">
-                      {serverT(card.descKey)}
+                      {await serverT(card.descKey)}
                     </p>
                   </div>
                 </Reveal>
               );
-            })}
+            }))}
           </div>
         </div>
       </div>
@@ -123,7 +123,7 @@ export function WhyAzenion() {
       <div className="mx-auto mt-[0.875rem] max-w-[1320px] px-5 sm:px-8 lg:mt-[1.5rem] lg:px-12">
         <Reveal>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {PILLARS.map((pillar) => {
+            {await Promise.all(PILLARS.map(async (pillar) => {
               const Icon = pillar.icon;
               return (
                 <div
@@ -140,15 +140,15 @@ export function WhyAzenion() {
                       <Icon size={17} strokeWidth={1.75} />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[15px] font-semibold text-ink-50">{serverT(pillar.titleKey)}</p>
+                      <p className="text-[15px] font-semibold text-ink-50">{await serverT(pillar.titleKey)}</p>
                       <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-ink-500">
-                        {serverT(pillar.descKey)}
+                        {await serverT(pillar.descKey)}
                       </p>
                     </div>
                   </div>
                 </div>
               );
-            })}
+            }))}
           </div>
         </Reveal>
       </div>

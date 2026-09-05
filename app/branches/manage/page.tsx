@@ -39,7 +39,7 @@ interface ProfileOption {
 }
 
 export default async function ManageBranchesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

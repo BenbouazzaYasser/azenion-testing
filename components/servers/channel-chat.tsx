@@ -51,9 +51,11 @@ export function ChannelChat({
   const [isSending, setIsSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const [prevInitialMessages, setPrevInitialMessages] = useState(initialMessages);
+  if (prevInitialMessages !== initialMessages) {
+    setPrevInitialMessages(initialMessages);
     setMessages(initialMessages);
-  }, [initialMessages]);
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

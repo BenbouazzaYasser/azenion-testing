@@ -71,7 +71,7 @@ export async function getConversations(
   userId: string,
   options: { archived?: boolean } = {},
 ): Promise<ConversationWithMeta[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const membershipQuery = supabase
     .from("conversation_members")
@@ -196,7 +196,7 @@ export async function getConversations(
 }
 
 export async function getMessages(conversationId: string): Promise<MessageWithSender[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: messages } = await supabase
     .from("messages")
@@ -262,7 +262,7 @@ export async function getConversationBlockState(conversationId: string): Promise
   /** True when the current user has blocked the other participant. */
   i_blocked: boolean;
 }> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

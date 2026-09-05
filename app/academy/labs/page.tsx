@@ -69,10 +69,10 @@ export default async function LabsPage() {
       <main className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyHero
-          eyebrow={serverT("academy.labsEyebrow")}
-          title={serverT("academy.labsH1")}
-          accent={serverT("academy.labsH1Accent")}
-          subtitle={serverT("academy.labsSubtitle")}
+          eyebrow={await serverT("academy.labsEyebrow")}
+          title={await serverT("academy.labsH1")}
+          accent={await serverT("academy.labsH1Accent")}
+          subtitle={await serverT("academy.labsSubtitle")}
         />
         <LabsBrowser
           labs={labs}

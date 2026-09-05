@@ -15,7 +15,7 @@ interface UpcomingSessionsProps {
   hostOptions: ManageableHostOption[];
 }
 
-export function UpcomingSessions({ sessions, canCreate, hostOptions }: UpcomingSessionsProps) {
+export async function UpcomingSessions({ sessions, canCreate, hostOptions }: UpcomingSessionsProps) {
   const hasSessions = sessions.length > 0;
 
   return (
@@ -29,16 +29,16 @@ export function UpcomingSessions({ sessions, canCreate, hostOptions }: UpcomingS
           <div className="text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
               <CalendarClock size={12} />
-              {serverT("academy.upcomingEyebrow")}
+              {await serverT("academy.upcomingEyebrow")}
             </span>
             <h2
               id="upcoming-sessions-heading"
               className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
             >
-              {serverT("academy.upcomingH2")} <span className="text-accent-400">{serverT("academy.upcomingH2Accent")}</span>
+              {await serverT("academy.upcomingH2")} <span className="text-accent-400">{await serverT("academy.upcomingH2Accent")}</span>
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-balance text-[1.05rem] leading-relaxed text-ink-400">
-              {serverT("academy.upcomingSub")}
+              {await serverT("academy.upcomingSub")}
             </p>
             {canCreate ? (
               <div className="mt-8 flex justify-center">
@@ -67,14 +67,14 @@ export function UpcomingSessions({ sessions, canCreate, hostOptions }: UpcomingS
                 <CalendarClock size={32} />
               </div>
               <h3 className="relative mt-8 text-2xl font-semibold text-ink-50 sm:text-3xl">
-                {serverT("academy.noSessions")}
+                {await serverT("academy.noSessions")}
               </h3>
               <p className="relative mt-4 max-w-md text-balance text-[0.95rem] leading-relaxed text-ink-400">
-                {serverT("academy.noSessionsSub")}
+                {await serverT("academy.noSessionsSub")}
               </p>
               <div className="relative mt-8">
                 <Button asChild>
-                  <a href="#request-session">{serverT("academy.requestSession")}</a>
+                  <a href="#request-session">{await serverT("academy.requestSession")}</a>
                 </Button>
               </div>
             </div>

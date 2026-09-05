@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { FileText, Download, AlertCircle, Loader2, Image as ImageIcon, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatChatFileSize } from "@/lib/chat-media";
@@ -27,12 +27,14 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
   const [loading, setLoading] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
+  const [prevSignedUrl, setPrevSignedUrl] = useState(attachment.signedUrl);
+  if (attachment.signedUrl !== prevSignedUrl) {
+    setPrevSignedUrl(attachment.signedUrl);
     setError(false);
     setLoading(true);
     setCurrentTime(0);
     setIsPlaying(false);
-  }, [attachment.signedUrl]);
+  }
 
   const toggle = () => {
     const el = audioRef.current;

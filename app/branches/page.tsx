@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BranchesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -79,11 +79,11 @@ export default async function BranchesPage() {
         {user && !isBranchMember ? (
           <EmptyState
             icon={<Landmark size={32} />}
-            title={serverT("branches.emptyTitle")}
-            description={serverT("branches.emptySub")}
-            eyebrow={serverT("branches.emptyEyebrow")}
+            title={await serverT("branches.emptyTitle")}
+            description={await serverT("branches.emptySub")}
+            eyebrow={await serverT("branches.emptyEyebrow")}
             scrollToId="branches"
-            actionLabel={serverT("branches.exploreBranches")}
+            actionLabel={await serverT("branches.exploreBranches")}
           />
         ) : (
           <BranchesHero branchCount={branchCount} memberCount={totalMembers} />

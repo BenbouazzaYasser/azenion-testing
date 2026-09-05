@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TeamsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -250,11 +250,11 @@ export default async function TeamsPage() {
         {user && myTeams.length === 0 ? (
           <EmptyState
             icon={<Users size={32} />}
-            title={serverT("teams.personalEmptyTitle")}
-            description={serverT("teams.personalEmptyDesc")}
-            eyebrow={serverT("teams.workspace")}
+            title={await serverT("teams.personalEmptyTitle")}
+            description={await serverT("teams.personalEmptyDesc")}
+            eyebrow={await serverT("teams.workspace")}
             scrollToId="teams"
-            actionLabel={serverT("teams.exploreTeams")}
+            actionLabel={await serverT("teams.exploreTeams")}
           />
         ) : (
           <TeamsHero />

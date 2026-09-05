@@ -70,19 +70,24 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
 
   useEffect(() => {
     mountedRef.current = true;
-    if (typeof window === "undefined" || typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      setIsSupported(false);
-      return;
-    }
-    const m = pickSupportedMime();
-    if (!m) {
-      setMimeType(null);
-    } else {
-      setMimeType(m);
-    }
-    setIsSupported(true);
+    const frame = requestAnimationFrame(() => {
+      if (
+        !mountedRef.current ||
+        typeof window === "undefined" ||
+        typeof navigator === "undefined" ||
+        !navigator.mediaDevices?.getUserMedia ||
+        typeof MediaRecorder === "undefined"
+      ) {
+        setIsSupported(false);
+        setMimeType(null);
+        return;
+      }
+      setMimeType(pickSupportedMime());
+      setIsSupported(true);
+    });
     return () => {
       mountedRef.current = false;
+      cancelAnimationFrame(frame);
     };
   }, []);
 

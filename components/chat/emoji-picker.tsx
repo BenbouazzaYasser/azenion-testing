@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type EmojiItem = { emoji: string; name: string };
@@ -317,11 +317,7 @@ interface EmojiPickerProps {
 export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("smileys");
-  const [recent, setRecent] = useState<string[]>([]);
-
-  useEffect(() => {
-    setRecent(loadRecent());
-  }, []);
+  const [recent, setRecent] = useState<string[]>(() => loadRecent());
 
   const handleSelect = (emoji: string) => {
     saveRecent(emoji);

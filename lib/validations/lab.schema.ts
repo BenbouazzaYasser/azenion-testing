@@ -302,6 +302,14 @@ export interface LabVersionRow {
   created_at: string;
 }
 
+export interface LabTestResults {
+  total_questions?: number;
+  auto_gradable?: number;
+  auto_correct?: number;
+  per_question?: { question_id: string; correct: boolean | null; graded: string }[];
+  graded_at?: string;
+}
+
 export interface LabSubmissionRow {
   id: string;
   lab_id: string;
@@ -312,7 +320,7 @@ export interface LabSubmissionRow {
   // Structured per-question learner answers, keyed to match the
   // corresponding lab_versions.content question block ids.
   answers: LabSubmittedAnswers | null;
-  test_results: Record<string, any> | null;
+  test_results: LabTestResults | null;
   feedback_url: string | null;
   score: number | null;
   started_at: string;
