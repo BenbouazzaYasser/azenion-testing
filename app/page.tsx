@@ -28,6 +28,7 @@ import type {
   LiveSessionWithManage,
 } from "@/lib/validations/live-session.schema";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 export default async function HomePage() {

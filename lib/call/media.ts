@@ -122,7 +122,10 @@ export async function getScreenStream(): Promise<{
   try {
     const stream = await (
       navigator.mediaDevices as MediaDevices
-    ).getDisplayMedia({ video: true, audio: false });
+    ).getDisplayMedia({
+      video: { frameRate: { ideal: 24, max: 30 } },
+      audio: false,
+    });
     return { stream };
   } catch (err) {
     const name = err instanceof Error ? err.name : "";

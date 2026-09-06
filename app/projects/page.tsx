@@ -24,6 +24,8 @@ export const metadata: Metadata = {
     "Discover projects built by the Azenion community — find collaborators, build real-world products, and turn ideas into reality.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ProjectsPage() {
   const adminClient = createAdminClient();
   const supabase = createClient();
