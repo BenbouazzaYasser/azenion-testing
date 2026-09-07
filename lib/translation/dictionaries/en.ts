@@ -55,8 +55,8 @@ export const en: TranslationResource = {
 
   "home.heroBadge": "The Limitless Network",
   "home.heroTitleA": "Be",
-  "home.heroTitleB": "Limitless",
-  "home.heroImpact": "",
+  "home.heroTitleB": "",
+  "home.heroImpact": "Limitless.",
   "home.heroSubA":
     "The Limitless Network brings ambitious minds together through learning, collaboration and innovation.",
   "home.heroSubB": "Together, we build. Together, we elevate.",
