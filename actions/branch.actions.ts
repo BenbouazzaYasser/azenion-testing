@@ -282,9 +282,11 @@ export async function uploadBranchLogoAsset(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
-  if (!isPlatformAdmin) {
-    return { error: "Only platform admins can manage branch logos" };
+  const { data: canUploadLogo } = await supabase.rpc("has_platform_role", {
+    p_role_name: "branch_supervisor",
+  });
+  if (!canUploadLogo) {
+    return { error: "Only branch supervisors or platform admins can manage branch logos" };
   }
 
   const file = formData.get("logo") as File;
