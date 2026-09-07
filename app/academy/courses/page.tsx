@@ -43,7 +43,7 @@ export default async function CoursesPage() {
   const { data: courseRows } = await supabase
     .from("courses")
     .select(
-      "id, title, description, category, content_type, file_url, thumbnail, duration, difficulty, tags, created_by, created_at",
+      "id, title, description, category, content_type, file_url, thumbnail, duration, difficulty, tags, created_by, created_at, status, is_free, price_cents, currency",
     )
     .order("created_at", { ascending: false });
 
