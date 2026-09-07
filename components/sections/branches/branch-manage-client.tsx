@@ -30,6 +30,7 @@ interface BranchItem {
   description: string | null;
   city: string | null;
   logo_url: string | null;
+  sort_order: number | null;
   member_count: number;
   leaders: BranchLeader[];
 }
@@ -60,6 +61,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
   const [formCity, setFormCity] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formLogoUrl, setFormLogoUrl] = useState("");
+  const [formSortOrder, setFormSortOrder] = useState("0");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
@@ -76,6 +78,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
     setFormCity("");
     setFormDescription("");
     setFormLogoUrl("");
+    setFormSortOrder("0");
     setLogoFile(null);
     setLogoPreview(null);
     setLogoUploading(false);
@@ -91,6 +94,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
     setFormCity(branch.city ?? "");
     setFormDescription(branch.description ?? "");
     setFormLogoUrl(branch.logo_url ?? "");
+    setFormSortOrder(String(branch.sort_order ?? 0));
     setLogoFile(null);
     setLogoPreview(null);
     setLogoUploading(false);
@@ -156,6 +160,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
     fd.set("city", formCity);
     fd.set("description", formDescription);
     fd.set("logo_url", formLogoUrl);
+    fd.set("sort_order", formSortOrder);
 
     if (editingId) {
       fd.set("branch_id", editingId);
@@ -352,6 +357,26 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                       placeholder="e.g. Rabat"
                       className={inputClass}
                     />
+                  </div>
+                  <div>
+                    <label htmlFor="branch-order" className={labelClass}>
+                      Order
+                    </label>
+                    <input
+                      id="branch-order"
+                      type="number"
+                      min={0}
+                      inputMode="numeric"
+                      value={formSortOrder}
+                      onChange={(e) =>
+                        setFormSortOrder(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))
+                      }
+                      placeholder="e.g. 1"
+                      className={inputClass}
+                    />
+                    <p className="mt-1.5 text-xs text-ink-500">
+                      Lower values appear first in the branch list.
+                    </p>
                   </div>
                 </div>
 

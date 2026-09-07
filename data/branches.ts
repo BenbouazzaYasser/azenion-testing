@@ -61,6 +61,8 @@ export interface Branch {
   accentGlyph?: string;
   /** Branch logo URL from the database (falls back to the default mark). */
   logo_url?: string | null;
+  /** Display order in the showcase (lower = higher priority). */
+  sortOrder?: number;
 }
 
 /** Shape of a row from the `public.branches` table. */
@@ -73,6 +75,7 @@ export interface BranchRow {
   logo_url: string | null;
   cover_url: string | null;
   city: string | null;
+  sort_order: number | null;
   created_at: string | null;
 }
 
@@ -94,6 +97,7 @@ export function mapBranchRow(row: BranchRow): Branch {
     founded: row.created_at ? String(new Date(row.created_at).getUTCFullYear()) : undefined,
     status: "active",
     logo_url: row.logo_url,
+    sortOrder: row.sort_order ?? 0,
     highlights: [],
     upcomingEvents: [],
     joinCta: {

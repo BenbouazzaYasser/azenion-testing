@@ -19,6 +19,8 @@ interface BranchEditTarget {
   city: string;
   description: string;
   logo_url?: string | null;
+  /** Display order in the showcase (lower = higher priority). */
+  sortOrder?: number;
 }
 
 interface BranchEditDialogProps {
@@ -43,6 +45,7 @@ export function BranchEditDialog({ branch, onClose }: BranchEditDialogProps) {
   const [institution, setInstitution] = useState(branch.name);
   const [city, setCity] = useState(branch.city);
   const [description, setDescription] = useState(branch.description);
+  const [sortOrder, setSortOrder] = useState(String(branch.sortOrder ?? 0));
   const [logoUrl, setLogoUrl] = useState(branch.logo_url ?? "");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -113,6 +116,7 @@ export function BranchEditDialog({ branch, onClose }: BranchEditDialogProps) {
     fd.set("city", city);
     fd.set("description", description);
     fd.set("logo_url", logoUrl);
+    fd.set("sort_order", sortOrder);
     fd.set("_current_slug", branch.slug);
 
     startTransition(async () => {
@@ -231,6 +235,26 @@ export function BranchEditDialog({ branch, onClose }: BranchEditDialogProps) {
                   placeholder="e.g. Rabat"
                   className={inputClass}
                 />
+              </div>
+              <div>
+                <label htmlFor="branch-edit-order" className={labelClass}>
+                  Order
+                </label>
+                <input
+                  id="branch-edit-order"
+                  type="number"
+                  min={0}
+                  inputMode="numeric"
+                  value={sortOrder}
+                  onChange={(e) =>
+                    setSortOrder(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))
+                  }
+                  placeholder="e.g. 1"
+                  className={inputClass}
+                />
+                <p className="mt-1.5 text-xs text-ink-500">
+                  Lower values appear first in the branch list.
+                </p>
               </div>
             </div>
 

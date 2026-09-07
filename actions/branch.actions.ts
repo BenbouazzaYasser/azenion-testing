@@ -106,6 +106,7 @@ export async function createBranch(formData: FormData) {
     city: (formData.get("city") as string) || null,
     description: (formData.get("description") as string) || null,
     logo_url: (formData.get("logo_url") as string) || null,
+    sort_order: parseInt(formData.get("sort_order") as string, 10) || 0,
   };
 
   const parsed = createBranchSchema.safeParse(raw);
@@ -121,6 +122,7 @@ export async function createBranch(formData: FormData) {
     p_city: parsed.data.city ?? null,
     p_description: parsed.data.description ?? null,
     p_logo_url: parsed.data.logo_url ?? null,
+    p_sort_order: parsed.data.sort_order ?? 0,
   });
 
   if (error) {
@@ -157,6 +159,8 @@ export async function updateBranch(formData: FormData) {
   raw.city = (formData.get("city") as string) || null;
   raw.description = (formData.get("description") as string) || null;
   raw.logo_url = (formData.get("logo_url") as string) || null;
+  const sortOrder = formData.get("sort_order");
+  if (sortOrder) raw.sort_order = parseInt(sortOrder as string, 10) || 0;
 
   const parsed = updateBranchSchema.safeParse(raw);
 
@@ -187,6 +191,7 @@ export async function updateBranch(formData: FormData) {
     p_city: parsed.data.city ?? null,
     p_description: parsed.data.description ?? null,
     p_logo_url: parsed.data.logo_url ?? null,
+    p_sort_order: parsed.data.sort_order ?? null,
   });
 
   if (error) {

@@ -30,6 +30,12 @@ export const createBranchSchema = z.object({
     .nullable()
     .optional(),
   logo_url: z.string().nullable().optional(),
+  sort_order: z
+    .number()
+    .int()
+    .min(0, "Order must be 0 or greater")
+    .max(1000, "Order must be 1000 or less")
+    .optional(),
 });
 
 export type CreateBranchInput = z.infer<typeof createBranchSchema>;
@@ -63,6 +69,12 @@ export const updateBranchSchema = z.object({
     .nullable()
     .optional(),
   logo_url: z.string().nullable().optional(),
+  sort_order: z
+    .number()
+    .int()
+    .min(0, "Order must be 0 or greater")
+    .max(1000, "Order must be 1000 or less")
+    .optional(),
 });
 
 export type UpdateBranchInput = z.infer<typeof updateBranchSchema>;

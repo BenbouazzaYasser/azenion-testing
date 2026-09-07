@@ -27,6 +27,7 @@ export function BranchCreateDialog() {
   const [institution, setInstitution] = useState("");
   const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
+  const [sortOrder, setSortOrder] = useState("0");
   const [logoUrl, setLogoUrl] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -56,6 +57,7 @@ export function BranchCreateDialog() {
     setInstitution("");
     setCity("");
     setDescription("");
+    setSortOrder("0");
     setLogoUrl("");
     setLogoFile(null);
     setLogoPreview(null);
@@ -120,6 +122,7 @@ export function BranchCreateDialog() {
     fd.set("city", city);
     fd.set("description", description);
     if (logoUrl) fd.set("logo_url", logoUrl);
+    fd.set("sort_order", sortOrder);
 
     startTransition(async () => {
       const result = await createBranch(fd);
@@ -248,6 +251,26 @@ export function BranchCreateDialog() {
                           placeholder="e.g. Rabat"
                           className={inputClass}
                         />
+                      </div>
+                      <div>
+                        <label htmlFor="branch-order" className={labelClass}>
+                          Order
+                        </label>
+                        <input
+                          id="branch-order"
+                          type="number"
+                          min={0}
+                          inputMode="numeric"
+                          value={sortOrder}
+                          onChange={(e) =>
+                            setSortOrder(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))
+                          }
+                          placeholder="e.g. 1"
+                          className={inputClass}
+                        />
+                        <p className="mt-1.5 text-xs text-ink-500">
+                          Lower values appear first in the branch list.
+                        </p>
                       </div>
                     </div>
 

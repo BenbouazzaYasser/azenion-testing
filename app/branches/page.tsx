@@ -29,7 +29,9 @@ export default async function BranchesPage() {
 
   const { data: dbBranches } = await supabase
     .from("branches")
-    .select("id, slug, name, full_name, description, logo_url, cover_url, city, created_at");
+    .select("id, slug, name, full_name, description, logo_url, cover_url, city, sort_order, created_at")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
 
   const { count: memberCount } = await supabase
     .from("branch_members")
