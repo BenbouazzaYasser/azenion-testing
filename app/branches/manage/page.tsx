@@ -22,6 +22,7 @@ interface BranchWithMembers {
   description: string | null;
   city: string | null;
   logo_url: string | null;
+  sort_order: number | null;
   member_count: number;
   leaders: {
     id: string;
@@ -87,6 +88,7 @@ export default async function ManageBranchesPage() {
     description: b.description,
     city: b.city,
     logo_url: b.logo_url,
+    sort_order: b.sort_order,
     member_count: memberCountMap.get(b.id) ?? 0,
     leaders: (leaderRows ?? [])
       .filter((r) => r.branch_id === b.id && r.user)

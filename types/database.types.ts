@@ -324,6 +324,7 @@ export type Database = {
           logo_url: string | null
           name: string
           slug: string
+          sort_order: number
         }
         Insert: {
           city?: string | null
@@ -335,6 +336,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           slug: string
+          sort_order?: number
         }
         Update: {
           city?: string | null
@@ -346,6 +348,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           slug?: string
+          sort_order?: number
         }
         Relationships: []
       }
@@ -2880,6 +2883,7 @@ export type Database = {
           p_logo_url?: string
           p_name: string
           p_slug: string
+          p_sort_order?: number
         }
         Returns: string
       }
@@ -3459,6 +3463,7 @@ export type Database = {
           p_logo_url?: string
           p_name?: string
           p_slug?: string
+          p_sort_order?: number
         }
         Returns: undefined
       }

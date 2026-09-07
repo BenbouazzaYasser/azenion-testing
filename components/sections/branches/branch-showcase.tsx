@@ -9,17 +9,31 @@ import type { Branch } from "@/data/branches";
 import { useTranslation } from "@/components/translation/translation-provider";
 
 import { BranchCreateDialog } from "./branch-create-dialog";
+import { BranchDeleteDialog } from "./branch-delete-dialog";
+import { BranchEditDialog } from "./branch-edit-dialog";
 import { BranchSpotlight } from "./branch-spotlight";
 
 interface BranchShowcaseProps {
   branches: (Branch & { dbId?: string; memberCount: number })[];
   membershipBySlug: Record<string, boolean>;
+  /** Edit/delete access (core team, branch supervisors, platform admins). */
   canManage?: boolean;
+  /** Create access (branch supervisors, platform admins). */
+  canCreate?: boolean;
 }
 
-export function BranchShowcase({ branches, membershipBySlug, canManage = false }: BranchShowcaseProps) {
+type ManageableBranch = Branch & { dbId: string; memberCount: number };
+
+export function BranchShowcase({
+  branches,
+  membershipBySlug,
+  canManage = false,
+  canCreate = false,
+}: BranchShowcaseProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
+  const [editingBranch, setEditingBranch] = useState<ManageableBranch | null>(null);
+  const [deletingBranch, setDeletingBranch] = useState<ManageableBranch | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -74,7 +88,7 @@ export function BranchShowcase({ branches, membershipBySlug, canManage = false }
                 )}
               />
             </div>
-            {canManage ? <BranchCreateDialog /> : null}
+            {canCreate ? <BranchCreateDialog /> : null}
           </div>
         </Reveal>
 
@@ -106,12 +120,26 @@ export function BranchShowcase({ branches, membershipBySlug, canManage = false }
                   reversed={index % 2 === 1}
                   isMember={membershipBySlug[branch.slug] ?? false}
                   branchId={branch.dbId}
+                  canManage={canManage}
+                  onEdit={() => {
+                    if (branch.dbId) setEditingBranch(branch as ManageableBranch);
+                  }}
+                  onDelete={() => {
+                    if (branch.dbId) setDeletingBranch(branch as ManageableBranch);
+                  }}
                 />
               </Reveal>
             ))}
           </div>
         )}
       </div>
+
+      {editingBranch ? (
+        <BranchEditDialog branch={editingBranch} onClose={() => setEditingBranch(null)} />
+      ) : null}
+      {deletingBranch ? (
+        <BranchDeleteDialog branch={deletingBranch} onClose={() => setDeletingBranch(null)} />
+      ) : null}
     </section>
   );
 }
