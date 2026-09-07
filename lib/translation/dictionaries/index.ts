@@ -19,10 +19,13 @@ export const SOURCE_LANG = "en";
 export function lookup(key: string, lang: string, fallback?: string): string | undefined {
   const dict = dictionaries[lang];
   const exact = dict?.[key as keyof TranslationResource];
-  if (exact) return exact;
+  // An explicitly empty string is a legitimate value (e.g. a headline
+  // segment intentionally left blank) — only fall back when the key is
+  // actually missing.
+  if (exact !== undefined) return exact;
   if (lang !== SOURCE_LANG) {
     const source = dictionaries[SOURCE_LANG]?.[key as keyof TranslationResource];
-    if (source) return source;
+    if (source !== undefined) return source;
   }
   return fallback;
 }
