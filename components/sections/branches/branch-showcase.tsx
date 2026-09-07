@@ -8,14 +8,16 @@ import { Reveal } from "@/components/ui/reveal";
 import type { Branch } from "@/data/branches";
 import { useTranslation } from "@/components/translation/translation-provider";
 
+import { BranchCreateDialog } from "./branch-create-dialog";
 import { BranchSpotlight } from "./branch-spotlight";
 
 interface BranchShowcaseProps {
   branches: (Branch & { dbId?: string; memberCount: number })[];
   membershipBySlug: Record<string, boolean>;
+  canManage?: boolean;
 }
 
-export function BranchShowcase({ branches, membershipBySlug }: BranchShowcaseProps) {
+export function BranchShowcase({ branches, membershipBySlug, canManage = false }: BranchShowcaseProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
 
@@ -53,23 +55,26 @@ export function BranchShowcase({ branches, membershipBySlug }: BranchShowcasePro
         </Reveal>
 
         <Reveal delay={80}>
-          <div className="relative mx-auto mb-12 max-w-md">
-            <Search
-              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-600"
-              aria-hidden="true"
-            />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("branches.searchBranches")}
-              aria-label={t("branches.searchBranches")}
-              className={cn(
-                "w-full rounded-full bg-surface px-11 py-3 text-sm text-ink-50",
-                "placeholder:text-ink-600 outline-none backdrop-blur-xl transition-colors",
-                "focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-[0_0_0_1px_rgba(40,40,255,0.25)]",
-              )}
-            />
+          <div className="relative mx-auto mb-12 flex max-w-md items-center gap-3">
+            <div className="relative flex-1">
+              <Search
+                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-600"
+                aria-hidden="true"
+              />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("branches.searchBranches")}
+                aria-label={t("branches.searchBranches")}
+                className={cn(
+                  "w-full rounded-full bg-surface px-11 py-3 text-sm text-ink-50",
+                  "placeholder:text-ink-600 outline-none backdrop-blur-xl transition-colors",
+                  "focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-[0_0_0_1px_rgba(40,40,255,0.25)]",
+                )}
+              />
+            </div>
+            {canManage ? <BranchCreateDialog /> : null}
           </div>
         </Reveal>
 
