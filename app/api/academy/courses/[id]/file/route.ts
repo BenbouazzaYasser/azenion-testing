@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { decideFileAccess } from "@/lib/payments/access";
 
 /**
@@ -16,9 +17,15 @@ import { decideFileAccess } from "@/lib/payments/access";
  * no paid-file delivery.
  *
  * Security posture:
- *   - Reads go through the user-scoped Supabase client so the database RLS
- *     policies are the authorization layer. The service-role client is never
- *     used for file access.
+ *   - Authorization runs first on the user-scoped Supabase client so the
+ *     database RLS policies are the authorization layer (course lookup,
+ *     is_course_manager check, entitlement check, decideFileAccess gate).
+ *     Only AFTER an allow-decision is the object byte-fetch performed with
+ *     the server-side service-role client, because the private
+ *     `course-files` bucket intentionally carries an owner-only storage
+ *     SELECT policy and a user-scoped download would wrongly 404 for
+ *     authorized non-owners. The service-role client never leaves the
+ *     server and is never consulted for the access decision itself.
  *   - The object path is read from the `courses` row for the requested id and
  *     validated against a strict pattern. Client-supplied file paths are
  *     never trusted.
@@ -117,7 +124,14 @@ export async function GET(
   const ext = fileExtension(row.file_path);
   const isPdf = row.content_type === "pdf" && ext === "pdf";
 
-  const { data: blob, error: downloadError } = await supabase.storage
+  // Delivery: authorization above already returned allow. Fetch the bytes
+  // with the server-side service-role client because the private bucket's
+  // storage SELECT policy is owner-only; a user-scoped download would deny
+  // authorized non-owners (free readers, entitled buyers, staff). A missing
+  // object still surfaces here as downloadError -> 404 below, so this does
+  // not mask missing-object issues.
+  const admin = createAdminClient();
+  const { data: blob, error: downloadError } = await admin.storage
     .from("course-files")
     .download(row.file_path);
 
