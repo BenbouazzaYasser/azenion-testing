@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, MapPin, Sparkles, Users } from "lucide-react";
+import { Calendar, MapPin, Pencil, Sparkles, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -16,9 +16,21 @@ interface BranchSpotlightProps {
   reversed?: boolean;
   isMember?: boolean;
   branchId?: string;
+  canManage?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export function BranchSpotlight({ branch, index, reversed = false, isMember = false, branchId }: BranchSpotlightProps) {
+export function BranchSpotlight({
+  branch,
+  index,
+  reversed = false,
+  isMember = false,
+  branchId,
+  canManage = false,
+  onEdit,
+  onDelete,
+}: BranchSpotlightProps) {
   const { t } = useTranslation();
   const order = String(index + 1).padStart(2, "0");
 
@@ -116,6 +128,24 @@ export function BranchSpotlight({ branch, index, reversed = false, isMember = fa
               </div>
             )}
           </div>
+
+          {canManage ? (
+            <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-border pt-6">
+              <Button variant="secondary" size="sm" onClick={onEdit}>
+                <Pencil size={14} />
+                Edit Branch
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="border-red-500/30 text-red-400 hover:border-red-400/60 hover:bg-red-500/[0.08] hover:text-red-300"
+                onClick={onDelete}
+              >
+                <Trash2 size={14} />
+                Delete Branch
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         {/* Detail column */}

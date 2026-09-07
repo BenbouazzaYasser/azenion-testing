@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   createBranchSchema,
@@ -282,11 +281,12 @@ export async function uploadBranchLogoAsset(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  const { data: canUploadLogo } = await supabase.rpc("has_platform_role", {
-    p_role_name: "branch_supervisor",
-  });
-  if (!canUploadLogo) {
-    return { error: "Only branch supervisors or platform admins can manage branch logos" };
+  const [{ data: isSupervisor }, { data: isCoreTeam }] = await Promise.all([
+    supabase.rpc("has_platform_role", { p_role_name: "branch_supervisor" }),
+    supabase.rpc("has_platform_role", { p_role_name: "core_team_member" }),
+  ]);
+  if (!isSupervisor && !isCoreTeam) {
+    return { error: "Only branch supervisors, core team members, or platform admins can manage branch logos" };
   }
 
   const file = formData.get("logo") as File;
@@ -378,9 +378,12 @@ export async function deleteBranch(formData: FormData) {
 
   // The RPC also enforces this, but it must be checked here too because the
   // storage cleanup below runs before the RPC is called.
-  const { data: isPlatformAdmin } = await supabase.rpc("is_platform_admin");
-  if (!isPlatformAdmin) {
-    return { error: "Only the platform administrator can delete branches" };
+  const [{ data: isSupervisor }, { data: isCoreTeam }] = await Promise.all([
+    supabase.rpc("has_platform_role", { p_role_name: "branch_supervisor" }),
+    supabase.rpc("has_platform_role", { p_role_name: "core_team_member" }),
+  ]);
+  if (!isSupervisor && !isCoreTeam) {
+    return { error: "Only platform admins, branch supervisors, or core team members can delete branches" };
   }
 
   // ── Storage cleanup (Storage API only — direct DML on storage.objects is
@@ -411,7 +414,7 @@ export async function deleteBranch(formData: FormData) {
   }
 
   revalidateBranchPaths();
-  redirect("/branches/manage");
+  return { success: true };
 }
 
 // ── Branch Leaders (Platform Admin appoints/removes) ────────────────────

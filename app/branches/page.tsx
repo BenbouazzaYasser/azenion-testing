@@ -37,6 +37,7 @@ export default async function BranchesPage() {
 
   let userBranchSlug: string | null = null;
   let isBranchMember = false;
+  let canCreate = false;
   let canManage = false;
   if (user) {
     const { data: membership } = await supabase
@@ -51,10 +52,12 @@ export default async function BranchesPage() {
       userBranchSlug = branch?.slug ?? null;
     }
 
-    const { data: canCreate } = await supabase.rpc("has_platform_role", {
-      p_role_name: "branch_supervisor",
-    });
-    canManage = canCreate === true;
+    const [{ data: isSupervisor }, { data: isCoreTeam }] = await Promise.all([
+      supabase.rpc("has_platform_role", { p_role_name: "branch_supervisor" }),
+      supabase.rpc("has_platform_role", { p_role_name: "core_team_member" }),
+    ]);
+    canCreate = isSupervisor === true;
+    canManage = canCreate || isCoreTeam === true;
   }
 
   const branches = dbBranches ?? [];
@@ -103,6 +106,7 @@ export default async function BranchesPage() {
           branches={enrichedBranches}
           membershipBySlug={membershipBySlug}
           canManage={canManage}
+          canCreate={canCreate}
         />
         <ComingSoonTeaser />
         <PageBridge />

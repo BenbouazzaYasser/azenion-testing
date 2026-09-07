@@ -183,7 +183,11 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
         setError(result.error);
         setShowDelete(null);
         setDeleteConfirm("");
+        return;
       }
+      setShowDelete(null);
+      setDeleteConfirm("");
+      router.refresh();
     });
   }
 
