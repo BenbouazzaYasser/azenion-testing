@@ -54,9 +54,9 @@ export const en: TranslationResource = {
   "footer.founded": "Founded by",
 
   "home.heroBadge": "The Limitless Network",
-  "home.heroTitleA": "Infinite minds.",
+  "home.heroTitleA": "Be",
   "home.heroTitleB": "Limitless",
-  "home.heroImpact": "impact.",
+  "home.heroImpact": "",
   "home.heroSubA":
     "The Limitless Network brings ambitious minds together through learning, collaboration and innovation.",
   "home.heroSubB": "Together, we build. Together, we elevate.",
