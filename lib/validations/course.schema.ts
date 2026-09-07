@@ -85,4 +85,9 @@ export interface CourseRow {
   tags: string[] | null;
   created_by: string | null;
   created_at: string;
+  // Lifecycle/monetization columns (prod-live; absent rows predate them).
+  status?: string | null;
+  is_free?: boolean | null;
+  price_cents?: number | null;
+  currency?: string | null;
 }

@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { decideFileAccess } from "@/lib/payments/access";
 
 /**
  * Serve an uploaded course file through the Azenion origin so that the
  * response headers are controlled by this application rather than by the
  * storage bucket defaults.
  *
- * Access model (from the courses RLS in 00095/00096/00101): courses are
- * public catalog content. The `courses` table is publicly readable
- * (`using (true)`, select granted to anon) and the `course-files` objects
- * carry a public `select` policy. There is no enrollment/ownership model for
- * courses, so course files are intentionally readable by every visitor,
- * authenticated or anonymous.
+ * Access model (from the courses RLS in 00095/00096/00101 plus the paid-course
+ * entitlement model in 00123/00125): courses are public catalog content and
+ * free course files are readable by every visitor, authenticated or
+ * anonymous. Paid courses (is_free = false) additionally require the caller
+ * to be the course owner, course staff, or the holder of an active
+ * entitlement — enforced here, BEFORE the storage read. No entitlement means
+ * no paid-file delivery.
  *
  * Security posture:
  *   - Reads go through the user-scoped Supabase client so the database RLS
  *     policies are the authorization layer. The service-role client is never
- *     used for file access. If a course restriction (e.g. enrollment or
- *     is_published) is introduced later, that check belongs here, BEFORE the
- *     storage read.
+ *     used for file access.
  *   - The object path is read from the `courses` row for the requested id and
  *     validated against a strict pattern. Client-supplied file paths are
  *     never trusted.
@@ -53,16 +53,17 @@ export async function GET(
     return NextResponse.json({ error: "Invalid course id" }, { status: 400 });
   }
 
-  // Resolve the request's auth principal. Course files are public content by
-  // design (see above), so both anonymous and authenticated visitors are
-  // allowed; this read path intentionally delegates the access decision to
-  // Supabase RLS instead of the service-role client.
+  // Resolve the request's auth principal. Free course files are public
+  // content by design (see above). Paid files additionally require owner,
+  // staff, or an active entitlement — checked here before the storage read.
   const supabase = createClient();
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: course, error } = await supabase
     .from("courses")
-    .select("content_type, file_path")
+    .select("content_type, file_path, status, is_free, created_by")
     .eq("id", id)
     .maybeSingle();
 
@@ -70,16 +71,55 @@ export async function GET(
     return NextResponse.json({ error: "Course not found" }, { status: 404 });
   }
 
-  if (!isSafeObjectPath(course.file_path)) {
+  const row = course as unknown as {
+    content_type: string;
+    file_path: string;
+    status: string | null;
+    is_free: boolean | null;
+    created_by: string | null;
+  };
+
+  let isStaff = false;
+  let hasActiveEntitlement = false;
+  if (row.is_free === false && user) {
+    const { data: manages } = await supabase.rpc("is_course_manager");
+    isStaff = manages === true;
+    if (!isStaff) {
+      const { data: entitlement } = await supabase
+        .from("entitlements")
+        .select("id")
+        .eq("course_id", id)
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+      hasActiveEntitlement = entitlement != null;
+    }
+  }
+
+  const decision = decideFileAccess({
+    isFree: row.is_free,
+    ownerId: row.created_by,
+    callerUserId: user?.id ?? null,
+    isStaff,
+    hasActiveEntitlement,
+  });
+  if (decision === "deny_unauthenticated") {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+  if (decision === "deny_forbidden") {
+    return NextResponse.json({ error: "Purchase required" }, { status: 402 });
+  }
+
+  if (!isSafeObjectPath(row.file_path)) {
     return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
   }
 
-  const ext = fileExtension(course.file_path);
-  const isPdf = course.content_type === "pdf" && ext === "pdf";
+  const ext = fileExtension(row.file_path);
+  const isPdf = row.content_type === "pdf" && ext === "pdf";
 
   const { data: blob, error: downloadError } = await supabase.storage
     .from("course-files")
-    .download(course.file_path);
+    .download(row.file_path);
 
   if (downloadError || !blob) {
     return NextResponse.json({ error: "File unavailable" }, { status: 404 });
