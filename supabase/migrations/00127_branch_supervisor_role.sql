@@ -53,15 +53,16 @@ $$;
 -- ── Storage: allow branch supervisors to pre-upload branch logos ─────────────
 -- The logo upload runs before the branch exists, targeting the reserved
 -- staging prefix 00000000-0000-0000-0000-000000000000/logos/. The existing
--- insert policy only covers branch managers + platform admins, so extend it
+-- insert policy only covers branch leaders + platform admins, so extend it
 -- for branch supervisors on that staging prefix.
+-- (Uses is_branch_leader: is_branch_manager was dropped in 00030.)
 
-drop policy if exists "branch managers can upload branch assets" on storage.objects;
-create policy "branch managers can upload branch assets"
+drop policy if exists "branch leaders can upload branch assets" on storage.objects;
+create policy "branch leaders can upload branch assets"
   on storage.objects for insert with check (
     bucket_id = 'branch-assets'
     and (
-      public.is_branch_manager((storage.foldername(name))[1]::uuid)
+      public.is_branch_leader((storage.foldername(name))[1]::uuid)
       or public.is_platform_admin()
       or (
         (storage.foldername(name))[1] = '00000000-0000-0000-0000-000000000000'
