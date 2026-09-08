@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { setAuthNextCookie } from "@/lib/auth-redirect";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -87,15 +88,11 @@ export async function signInWithGoogle(next?: string) {
   const supabase = createClient();
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const safeNext =
-    typeof next === "string" && next.startsWith("/") && !next.startsWith("//")
-      ? next
-      : "/";
-  const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent(safeNext)}`;
+  setAuthNextCookie(next);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo },
+    options: { redirectTo: `${siteUrl}/auth/callback` },
   });
 
   if (error) {

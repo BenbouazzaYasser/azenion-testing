@@ -15,16 +15,19 @@ export const metadata: Metadata = {
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams?: { next?: string };
+  searchParams?: { next?: string; error?: string };
 }) {
-  const next = typeof searchParams?.next === "string" ? searchParams.next : undefined;
+  const next =
+    typeof searchParams?.next === "string" ? searchParams.next : undefined;
+  const error =
+    typeof searchParams?.error === "string" ? searchParams.error : undefined;
 
   return (
     <>
       <Navbar />
       <main className="relative overflow-hidden">
         <PageAtmosphere />
-        <LoginCard next={next} />
+        <LoginCard next={next} error={error} />
         <SecurityNote />
       </main>
       <Footer />
