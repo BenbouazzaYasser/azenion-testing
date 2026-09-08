@@ -12,12 +12,12 @@ import { signIn, signInWithGoogle } from "@/actions/auth.actions";
 const INPUT_CLASS =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30";
 
-export function LoginCard({ next }: { next?: string }) {
+export function LoginCard({ next, error: initialError }: { next?: string; error?: string }) {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError ?? null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
