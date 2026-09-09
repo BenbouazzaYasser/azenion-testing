@@ -64,6 +64,9 @@ export const courseSchema = z.object({
     .optional()
     .default(""),
   difficulty: z.enum(COURSE_DIFFICULTIES).optional(),
+  is_free: z.boolean().default(true),
+  currency: z.enum(["usd", "eur", "gbp"]).default("usd"),
+  status: z.enum(["draft", "published", "archived"]).default("draft"),
   tags: z
     .array(z.string().trim().max(30, "Each tag must be 30 characters or less"))
     .max(10, "Maximum of 10 tags")
@@ -82,6 +85,9 @@ export interface CourseRow {
   thumbnail: string | null;
   duration: string | null;
   difficulty: string | null;
+  is_free: boolean;
+  currency: "usd" | "eur" | "gbp";
+  status: "draft" | "published" | "archived";
   tags: string[] | null;
   created_by: string | null;
   created_at: string;
