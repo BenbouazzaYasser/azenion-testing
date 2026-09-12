@@ -41,12 +41,13 @@ export default function ChatList() {
       setItems([]);
       return;
     }
-    const [{ data: conversations }, { data: allMembers }, { data: lastMessages }, { data: unreadRows }] =
+    const [{ data: conversations }, { data: allMembers }, { data: lastMessages }, { data: unreadRows }, { data: mediaRows }] =
       await Promise.all([
         supabase.from("conversations").select("id, updated_at").in("id", convIds).order("updated_at", { ascending: false }),
         supabase.from("conversation_members").select("conversation_id, user_id").in("conversation_id", convIds),
         supabase.from("messages").select("conversation_id, content, created_at, sender_id").in("conversation_id", convIds).order("created_at", { ascending: false }).limit(200),
         supabase.rpc("get_unread_counts", { p_user_id: user.id }),
+        supabase.from("chat_message_attachments").select("conversation_id, message_id, type").in("conversation_id", convIds).order("created_at", { ascending: false }).limit(200),
       ]);
     const membersByConv = new Map<string, string[]>();
     for (const m of (allMembers ?? []) as Array<{ conversation_id: string; user_id: string }>) {
@@ -58,6 +59,20 @@ export default function ChatList() {
     for (const m of (lastMessages ?? []) as Array<{ conversation_id: string; content: string; created_at: string | null }>) {
       if (!lastByConv.has(m.conversation_id)) lastByConv.set(m.conversation_id, m);
     }
+    // Media-only messages have empty text: label them by latest attachment type.
+    const mediaByConv = new Map<string, string>();
+    for (const a of (mediaRows ?? []) as Array<{ conversation_id: string; message_id: string; type: string }>) {
+      if (!mediaByConv.has(a.conversation_id)) mediaByConv.set(a.conversation_id, a.type);
+    }
+    const previewFor = (convId: string, last: { content: string } | undefined): string | null => {
+      if (last?.content?.trim()) return last.content;
+      const t = mediaByConv.get(convId);
+      if (t === "image") return "Photo";
+      if (t === "gif") return "GIF";
+      if (t === "audio") return "Voice message";
+      if (t === "file") return "Attachment";
+      return last?.content || null;
+    };
     const unreadByConv = new Map<string, number>();
     for (const r of (unreadRows ?? []) as Array<{ conversation_id: string; unread_count: number }>) {
       unreadByConv.set(r.conversation_id, Number(r.unread_count));
@@ -73,7 +88,7 @@ export default function ChatList() {
           id: c.id,
           updated_at: c.updated_at,
           otherId,
-          lastMessage: last?.content ?? null,
+          lastMessage: previewFor(c.id, last),
           lastAt: last?.created_at ?? c.updated_at,
           unread: unreadByConv.get(c.id) ?? 0,
           peerName: peer ? (peer.full_name ?? `@${peer.username}`) : otherId ? `…${otherId.slice(0, 8)}` : "Conversation",
@@ -143,7 +158,11 @@ export default function ChatList() {
               <Avatar uri={item.peerAvatar} name={item.peerName} size={48} />
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Txt weight="600">{item.peerName}</Txt>
+                  <View style={{ flex: 1, marginRight: spacing.sm }}>
+                    <Txt weight="600" numberOfLines={1}>
+                      {item.peerName}
+                    </Txt>
+                  </View>
                   <Txt variant="caption" color={item.unread > 0 ? palette.accent400 : palette.ink500} weight={item.unread > 0 ? "700" : "400"}>
                     {[timeAgo(item.lastAt), item.unread > 0 ? `${item.unread} new` : null].filter(Boolean).join(" · ")}
                   </Txt>
