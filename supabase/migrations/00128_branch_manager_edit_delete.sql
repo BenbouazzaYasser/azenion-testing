@@ -98,7 +98,7 @@ create policy "branch managers can upload branch assets"
   on storage.objects for insert with check (
     bucket_id = 'branch-assets'
     and (
-      public.is_branch_manager((storage.foldername(name))[1]::uuid)
+      public.is_branch_leader((storage.foldername(name))[1]::uuid)
       or public.is_platform_admin()
       or (
         (storage.foldername(name))[1] = '00000000-0000-0000-0000-000000000000'
