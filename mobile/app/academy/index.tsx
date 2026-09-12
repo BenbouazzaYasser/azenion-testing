@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, Image, Pressable, RefreshControl, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
-import { Card, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../components/ui";
+import { Card, Empty, ErrorState, Header, Loading, SafeImage, Screen, Txt } from "../../components/ui";
 import { supabase } from "../../lib/supabase";
 import { API_BASE_URL } from "../../lib/config";
-import { palette, radius, spacing } from "../../lib/theme";
+import { palette, spacing } from "../../lib/theme";
 
 export interface CourseRow {
   id: string;
@@ -101,11 +101,8 @@ export default function Academy() {
         renderItem={({ item }) => (
           <Pressable onPress={() => router.push(`/academy/${item.id}`)}>
             <Card>
-              <Image
-                source={{ uri: courseThumbnail(item.id) }}
-                style={{ width: "100%", height: 160, borderRadius: radius.md, backgroundColor: palette.surfaceHover, marginBottom: spacing.sm }}
-                resizeMode="cover"
-              />
+              <SafeImage uri={courseThumbnail(item.id)} width="100%" height={160} topMargin={0} />
+              <View style={{ height: spacing.sm }} />
               <Txt variant="caption" color={palette.accent400} weight="600">
                 {(item.category ?? "").toUpperCase()} · {item.content_type === "pdf" ? "PDF" : "Interactive"}
               </Txt>
