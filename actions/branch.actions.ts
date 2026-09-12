@@ -275,6 +275,12 @@ export async function uploadBranchLogo(formData: FormData) {
   return { success: true, logo_url: publicUrl };
 }
 
+// NOTE (Phase 0A): this staging helper intentionally keeps its existing,
+// narrower gate (branch_supervisor OR core_team_member) and its unattached
+// zero-UUID storage prefix. It differs from uploadBranchLogo above
+// (platform admin OR branch leader, branch-bound path + update_branch RPC).
+// Do NOT widen either gate or merge the two until the product decision on
+// whether this staging-during-creation path is intentional lands.
 export async function uploadBranchLogoAsset(formData: FormData) {
   const supabase = createClient();
 

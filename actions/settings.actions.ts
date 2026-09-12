@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { signOut } from "@/actions/auth.actions";
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
@@ -201,13 +202,40 @@ export async function changeUsername(formData: FormData) {
 }
 
 /**
- * Sign out everywhere.
- * The auth backend does not yet expose a cross-session revocation hook, so
- * this returns a not-implemented result while remaining a safe future-ready
- * entry point. When the backend lands, swap the body for a revoke call.
+ * Sign out everywhere (all devices/sessions for the current user).
+ *
+ * The target identity is derived exclusively from the current server session;
+ * no caller-supplied user id is accepted, so a user can only revoke their
+ * own sessions. Revocation runs through the Supabase Auth Admin API on the
+ * server (service-role client never leaves the server).
+ *
+ * Scope: revokes refresh-token/session state globally (`global` scope), which
+ * signs the user out on every device. It does NOT instantly invalidate
+ * already-issued short-lived access JWTs (they expire naturally), does NOT
+ * revoke push-device tokens, does NOT delete the account, and does NOT
+ * affect any other user.
  */
 export async function signOutEverywhere() {
-  return { unavailable: true };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Not authenticated" };
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const accessToken = session?.access_token;
+  if (!accessToken) return { error: "No active session found." };
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.signOut(accessToken, "global");
+
+  if (error) return { error: error.message };
+
+  return { success: true };
 }
 
 export { signOut as signOutCurrentSession };

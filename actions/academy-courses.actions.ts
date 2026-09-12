@@ -28,22 +28,18 @@ function fileExtension(fileName: string): string {
   return fileName.split(".").pop()?.toLowerCase() ?? "";
 }
 
+/**
+ * Canonical course-manager check. Delegates to the database oracle
+ * `public.is_course_manager()` (platform roles: core_team_member, creator,
+ * plus platform-admin override) on the authenticated user-scoped client, so
+ * the caller's identity always comes from `auth.uid()` server-side. Never
+ * re-implements role logic here and never consults the service-role client
+ * for this decision.
+ */
 async function isCourseManager(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return false;
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("user_roles")
-    .select("roles(name)")
-    .eq("user_id", user.id);
-  const rows = (data as Array<{ roles: { name: string } | { name: string }[] | null }> | null) ?? [];
-  return rows.some((row) => {
-    const r = row.roles as unknown as { name: string } | { name: string }[] | null;
-    if (!r) return false;
-    return Array.isArray(r) ? r.some((x) => x.name === "core_team_member") : r.name === "core_team_member";
-  });
+  const { data, error } = await supabase.rpc("is_course_manager");
+  if (error) return false;
+  return data === true;
 }
 
 function parseTags(raw: string | null): string[] | undefined {

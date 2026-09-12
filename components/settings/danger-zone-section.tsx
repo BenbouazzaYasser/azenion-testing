@@ -25,6 +25,10 @@ export function DangerZoneSection() {
         toast.error(String((res as { error: string }).error));
       } else {
         toast.success("Signed out from all devices");
+        // The global revocation also invalidated this device's session.
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        window.location.href = "/login";
       }
     });
   }
