@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import { apiJson } from "./api";
 import { clearPeerCache } from "./peers";
+import { friendlyError } from "./errors";
 
 export interface HydrateSnapshot {
   user: { id: string; email: string | null };
@@ -60,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return error ? { error: error.message } : {};
+    return error ? { error: friendlyError(error.message) } : {};
   }, []);
 
   const signUp = useCallback(async (email: string, password: string, username: string, fullName: string) => {
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
       options: { data: { username, full_name: fullName } },
     });
-    return error ? { error: error.message } : {};
+    return error ? { error: friendlyError(error.message) } : {};
   }, []);
 
   const signOut = useCallback(async () => {
