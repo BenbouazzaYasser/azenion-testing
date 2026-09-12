@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useRouter } from "expo-router";
-import { View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { Button, Input, Loading, Screen, Txt } from "../components/ui";
 import { useAuth } from "../lib/auth";
 import { palette, spacing } from "../lib/theme";
@@ -40,30 +40,32 @@ export default function Signup() {
   }
 
   return (
-    <Screen>
-      <View style={{ flex: 1, justifyContent: "center" }}>
-        <Txt variant="title" weight="700">
-          Join Azenion
-        </Txt>
-        <View style={{ height: spacing.xs }} />
-        <Txt color={palette.ink400}>Email and password only — no OAuth in v1.</Txt>
-        <View style={{ height: spacing.lg }} />
-        <Input value={fullName} onChangeText={setFullName} placeholder="Display name" autoCapitalize="words" />
-        <Input value={username} onChangeText={setUsername} placeholder="Username" />
-        <Input value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address" />
-        <Input value={password} onChangeText={setPassword} placeholder="Password" secureTextEntry />
-        {error ? <Txt color={palette.danger}>{error}</Txt> : null}
-        <View style={{ height: spacing.sm }} />
-        <Button
-          title={busy ? "Creating…" : "Create account"}
-          onPress={onSubmit}
-          disabled={busy || !email || !password || !username}
-        />
-        <View style={{ height: spacing.md }} />
-        <Link href="/login" asChild>
-          <Txt color={palette.accent400}>Already have an account? Sign in</Txt>
-        </Link>
-      </View>
+    <Screen padded={false}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: spacing.md }} keyboardShouldPersistTaps="handled">
+          <Txt variant="title" weight="700">
+            Join Azenion
+          </Txt>
+          <View style={{ height: spacing.xs }} />
+          <Txt color={palette.ink400}>Email and password only — no OAuth in v1.</Txt>
+          <View style={{ height: spacing.lg }} />
+          <Input value={fullName} onChangeText={setFullName} placeholder="Display name" autoCapitalize="words" returnKeyType="next" />
+          <Input value={username} onChangeText={setUsername} placeholder="Username" returnKeyType="next" />
+          <Input value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address" returnKeyType="next" />
+          <Input value={password} onChangeText={setPassword} placeholder="Password (min. 6 characters)" secureTextEntry returnKeyType="go" onSubmitEditing={() => void onSubmit()} />
+          {error ? <Txt color={palette.danger}>{error}</Txt> : null}
+          <View style={{ height: spacing.sm }} />
+          <Button
+            title={busy ? "Creating…" : "Create account"}
+            onPress={onSubmit}
+            disabled={busy || !email || !password || !username}
+          />
+          <View style={{ height: spacing.md }} />
+          <Link href="/login" asChild>
+            <Txt color={palette.accent400}>Already have an account? Sign in</Txt>
+          </Link>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
