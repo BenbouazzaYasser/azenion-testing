@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { apiFetch } from "./api";
+import { friendlyError } from "./errors";
 
 export interface ChatAttachment {
   id: string;
@@ -30,7 +31,7 @@ export async function getAttachments(conversationId: string): Promise<ChatAttach
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true })
     .limit(100);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(friendlyError(error.message));
   return (data ?? []) as ChatAttachment[];
 }
 
@@ -71,7 +72,7 @@ export async function sendImage({ conversationId, uri, filename, mimeType, fileS
     .insert({ conversation_id: conversationId, sender_id: user.id, content: "" })
     .select("id")
     .single();
-  if (msgError || !msg) throw new Error(msgError?.message ?? "Unable to create message.");
+  if (msgError || !msg) throw new Error(friendlyError(msgError?.message ?? "Unable to create message."));
   const messageId = (msg as { id: string }).id;
 
   const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100) || "image.jpg";
@@ -84,7 +85,7 @@ export async function sendImage({ conversationId, uri, filename, mimeType, fileS
       contentType: mimeType,
       upsert: false,
     });
-    if (upError) throw new Error(upError.message);
+    if (upError) throw new Error(friendlyError(upError.message));
 
     const { error: attError } = await supabase.from("chat_message_attachments").insert({
       message_id: messageId,
@@ -96,7 +97,7 @@ export async function sendImage({ conversationId, uri, filename, mimeType, fileS
       mime_type: mimeType,
       file_size: fileSize ?? null,
     });
-    if (attError) throw new Error(attError.message);
+    if (attError) throw new Error(friendlyError(attError.message));
   } catch (e) {
     await supabase.from("messages").delete().eq("id", messageId).eq("sender_id", user.id);
     try {
@@ -128,7 +129,7 @@ export async function sendGif({ conversationId, externalId, url, previewUrl }: S
     .insert({ conversation_id: conversationId, sender_id: user.id, content: "" })
     .select("id")
     .single();
-  if (msgError || !msg) throw new Error(msgError?.message ?? "Unable to create message.");
+  if (msgError || !msg) throw new Error(friendlyError(msgError?.message ?? "Unable to create message."));
   const messageId = (msg as { id: string }).id;
 
   const { error: attError } = await supabase.from("chat_message_attachments").insert({
