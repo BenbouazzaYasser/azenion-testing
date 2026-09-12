@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, Image, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Button, Empty, ErrorState, Input, Loading, Screen, Txt } from "../../components/ui";
+import { Button, Empty, ErrorState, Input, Loading, Press, Screen, Txt } from "../../components/ui";
 import { ActionIcon } from "../../components/icons";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
@@ -46,6 +46,9 @@ export default function Conversation() {
   const [gifResults, setGifResults] = useState<GifResult[]>([]);
   const [gifBusy, setGifBusy] = useState(false);
   const seen = useRef(new Set<string>());
+  const listRef = useRef<FlatList<Message>>(null);
+  const stickRef = useRef(true);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const loadAttachments = useCallback(async () => {
     const rows = await getAttachments(id);
@@ -126,6 +129,7 @@ export default function Conversation() {
     void tap("light");
     const optimistic: Message = { id: `local-${Date.now()}`, sender_id: user.id, content: text, created_at: new Date().toISOString() };
     setMessages((prev) => [...prev, optimistic]);
+    stickRef.current = true;
     setDraft("");
     try {
       const { data, error: iErr } = await supabase
@@ -216,13 +220,15 @@ export default function Conversation() {
   }
 
   function renderAttachment(att: ChatAttachment) {
+    if (failedImages.has(att.id)) return null;
+    const fail = () => setFailedImages((prev) => new Set(prev).add(att.id));
     if (att.type === "gif") {
       const url = gifUrlOf(att);
       if (!url) return null;
-      return <Image key={att.id} source={{ uri: url }} style={{ width: 180, height: 140, borderRadius: 10, marginTop: 6 }} resizeMode="cover" />;
+      return <Image key={att.id} source={{ uri: url }} style={{ width: 180, height: 140, borderRadius: 10, marginTop: 6 }} resizeMode="cover" onError={fail} />;
     }
     if (att.type === "image" && att.signedUrl) {
-      return <Image key={att.id} source={{ uri: att.signedUrl }} style={{ width: 200, height: 160, borderRadius: 10, marginTop: 6 }} resizeMode="cover" />;
+      return <Image key={att.id} source={{ uri: att.signedUrl }} style={{ width: 200, height: 160, borderRadius: 10, marginTop: 6 }} resizeMode="cover" onError={fail} />;
     }
     if (att.type === "file") {
       return (
@@ -258,10 +264,20 @@ export default function Conversation() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={90}>
       <View style={{ flex: 1, paddingHorizontal: spacing.md }}>
         <FlatList
+          ref={listRef}
           data={messages}
           keyExtractor={(m) => m.id}
           contentContainerStyle={{ paddingVertical: spacing.sm, flexGrow: messages.length === 0 ? 1 : undefined }}
           ListEmptyComponent={<Empty title="No messages yet" hint="Say hello or send a GIF." />}
+          onContentSizeChange={() => {
+            if (stickRef.current) listRef.current?.scrollToEnd({ animated: false });
+          }}
+          onScrollBeginDrag={() => {
+            stickRef.current = false;
+          }}
+          onScrollToTop={() => {
+            stickRef.current = false;
+          }}
           renderItem={({ item }) => {
             const mine = item.sender_id === user?.id;
             const atts = attachments.get(item.id) ?? [];
@@ -290,9 +306,9 @@ export default function Conversation() {
         </Txt>
       ) : null}
       <View style={{ flexDirection: "row", gap: spacing.sm, padding: spacing.md, alignItems: "center" }}>
-        <Pressable hitSlop={10} onPress={() => setComposerMenu(true)}>
+        <Press label="Attach photo or GIF" onPress={() => setComposerMenu(true)}>
           <ActionIcon name="add" color={palette.accent400} size={24} />
-        </Pressable>
+        </Press>
         <View style={{ flex: 1 }}>
           <Input value={draft} onChangeText={setDraft} placeholder="Message…" autoCapitalize="sentences" />
         </View>
