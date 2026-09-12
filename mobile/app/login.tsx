@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useRouter } from "expo-router";
-import { View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { Button, Input, Loading, Screen, Txt } from "../components/ui";
 import { useAuth } from "../lib/auth";
 import { palette, spacing } from "../lib/theme";
@@ -38,24 +38,26 @@ export default function Login() {
   }
 
   return (
-    <Screen>
-      <View style={{ flex: 1, justifyContent: "center" }}>
-        <Txt variant="title" weight="700">
-          Welcome back
-        </Txt>
-        <View style={{ height: spacing.xs }} />
-        <Txt color={palette.ink400}>Sign in to your Azenion account.</Txt>
-        <View style={{ height: spacing.lg }} />
-        <Input value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address" />
-        <Input value={password} onChangeText={setPassword} placeholder="Password" secureTextEntry />
-        {error ? <Txt color={palette.danger}>{error}</Txt> : null}
-        <View style={{ height: spacing.sm }} />
-        <Button title={busy ? "Signing in…" : "Sign in"} onPress={onSubmit} disabled={busy || !email || !password} />
-        <View style={{ height: spacing.md }} />
-        <Link href="/signup" asChild>
-          <Txt color={palette.accent400}>No account yet? Create one</Txt>
-        </Link>
-      </View>
+    <Screen padded={false}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center", padding: spacing.md }} keyboardShouldPersistTaps="handled">
+          <Txt variant="title" weight="700">
+            Welcome back
+          </Txt>
+          <View style={{ height: spacing.xs }} />
+          <Txt color={palette.ink400}>Sign in to your Azenion account.</Txt>
+          <View style={{ height: spacing.lg }} />
+          <Input value={email} onChangeText={setEmail} placeholder="Email" keyboardType="email-address" returnKeyType="next" />
+          <Input value={password} onChangeText={setPassword} placeholder="Password" secureTextEntry returnKeyType="go" onSubmitEditing={() => void onSubmit()} />
+          {error ? <Txt color={palette.danger}>{error}</Txt> : null}
+          <View style={{ height: spacing.sm }} />
+          <Button title={busy ? "Signing in…" : "Sign in"} onPress={onSubmit} disabled={busy || !email || !password} />
+          <View style={{ height: spacing.md }} />
+          <Link href="/signup" asChild>
+            <Txt color={palette.accent400}>No account yet? Create one</Txt>
+          </Link>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
