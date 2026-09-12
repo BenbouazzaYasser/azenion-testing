@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { Image, Linking, ScrollView, View } from "react-native";
+import { Linking, ScrollView, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { Button, Card, Empty, ErrorState, Loading, Screen, Txt } from "../../components/ui";
+import { Button, Card, Empty, ErrorState, Loading, SafeImage, Screen, Txt } from "../../components/ui";
 import { supabase } from "../../lib/supabase";
 import { palette, radius, spacing } from "../../lib/theme";
 import { courseFileUrl, courseThumbnail, type CourseRow } from "./index";
@@ -75,11 +75,8 @@ export default function CourseDetail() {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl, flexGrow: 1 }}>
-        <Image
-          source={{ uri: courseThumbnail(course.id) }}
-          style={{ width: "100%", height: 200, borderRadius: radius.lg, backgroundColor: palette.surfaceHover, marginBottom: spacing.md }}
-          resizeMode="cover"
-        />
+        <SafeImage uri={courseThumbnail(course.id)} width="100%" height={200} borderRadius={radius.lg} />
+        <View style={{ height: spacing.md }} />
         <Txt variant="caption" color={palette.accent400} weight="600">
           {(course.category ?? "").toUpperCase()}
         </Txt>
