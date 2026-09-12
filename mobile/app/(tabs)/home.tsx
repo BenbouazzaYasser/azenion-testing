@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
-import { Empty, ErrorState, Header, Screen } from "../../components/ui";
+import { useRouter } from "expo-router";
+import { Empty, ErrorState, Header, Screen, Txt } from "../../components/ui";
 import { PostCard, PostSkeleton, type FeedItem } from "../../components/post-card";
 import { apiJson } from "../../lib/api";
 import { palette, spacing } from "../../lib/theme";
@@ -15,6 +16,7 @@ interface FeedPage {
 const PAGE_SIZE = 20;
 
 export default function Home() {
+  const router = useRouter();
   const [items, setItems] = useState<FeedItem[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -104,7 +106,14 @@ export default function Home() {
   return (
     <Screen padded={false}>
       <View style={{ padding: spacing.md, paddingBottom: 0 }}>
-        <Header title="Home" />
+        <Header
+          title="Home"
+          right={
+            <Txt color={palette.accent400} weight="600" onPress={() => router.push("/academy")}>
+              🎓 Learn
+            </Txt>
+          }
+        />
       </View>
       <FlatList
         data={items}
