@@ -5,6 +5,7 @@ import { Avatar, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../c
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
 import { resolvePeers } from "../../lib/peers";
+import { timeAgo } from "../../lib/format";
 import { palette, spacing } from "../../lib/theme";
 
 interface NotificationRow {
@@ -127,6 +128,20 @@ export default function Notifications() {
     }
   }
 
+  async function markAllRead() {
+    if (!user || unread === 0) return;
+    setRows((prev) => prev.map((r) => ({ ...r, read: true })));
+    const { error: uErr } = await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("user_id", user.id)
+      .eq("read", false);
+    if (uErr) {
+      // Revert on failure so the badge stays truthful.
+      void load().catch(() => {});
+    }
+  }
+
   const unread = rows.filter((r) => !r.read).length;
 
   if (loading) {
@@ -148,7 +163,16 @@ export default function Notifications() {
   return (
     <Screen padded={false}>
       <View style={{ padding: spacing.md, paddingBottom: 0 }}>
-        <Header title={unread > 0 ? `Alerts (${unread})` : "Alerts"} />
+        <Header
+          title={unread > 0 ? `Alerts (${unread})` : "Alerts"}
+          right={
+            unread > 0 ? (
+              <Txt color={palette.accent400} weight="600" onPress={() => void markAllRead()}>
+                Mark all read
+              </Txt>
+            ) : undefined
+          }
+        />
       </View>
       <FlatList
         data={rows}
@@ -167,7 +191,7 @@ export default function Notifications() {
                 </Txt>
                 {item.created_at ? (
                   <Txt variant="caption" color={palette.ink500}>
-                    {new Date(item.created_at).toLocaleString()}
+                    {timeAgo(item.created_at)}
                   </Txt>
                 ) : null}
               </View>

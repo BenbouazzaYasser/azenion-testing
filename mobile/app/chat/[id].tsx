@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
 import { apiJson } from "../../lib/api";
 import { getAttachments, sendGif, sendImage, signAttachment, type ChatAttachment } from "../../lib/chat-media";
+import { tap } from "../../lib/haptics";
 import { palette, radius, spacing } from "../../lib/theme";
 
 interface Message {
@@ -121,6 +122,7 @@ export default function Conversation() {
     const text = draft.trim();
     if (!text || !user || sending) return;
     setSending(true);
+    void tap("light");
     const optimistic: Message = { id: `local-${Date.now()}`, sender_id: user.id, content: text, created_at: new Date().toISOString() };
     setMessages((prev) => [...prev, optimistic]);
     setDraft("");

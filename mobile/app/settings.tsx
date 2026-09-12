@@ -34,6 +34,16 @@ export default function Settings() {
       </Card>
       <Card>
         <Txt variant="caption" color={palette.ink500}>
+          APPEARANCE
+        </Txt>
+        <View style={{ height: spacing.xs }} />
+        <Txt color={palette.ink200}>Dark</Txt>
+        <Txt variant="caption" color={palette.ink500}>
+          Azenion mobile follows the dark identity. More themes later.
+        </Txt>
+      </Card>
+      <Card>
+        <Txt variant="caption" color={palette.ink500}>
           APP
         </Txt>
         <View style={{ height: spacing.xs }} />

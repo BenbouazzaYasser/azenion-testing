@@ -6,6 +6,7 @@ import { Avatar, Button, Card, Txt } from "./ui";
 import { palette, radius, spacing } from "../lib/theme";
 import { timeAgo } from "../lib/format";
 import { setLiked, setSaved } from "../lib/feed";
+import { tap } from "../lib/haptics";
 
 export interface FeedItem {
   id: string;
@@ -38,6 +39,7 @@ export function PostCard({ item, onChanged }: { item: FeedItem; onChanged: (next
   async function toggleLike() {
     if (busy || !item.source_id) return;
     const next = !item.user_has_liked;
+    void tap("light");
     onChanged({
       ...item,
       user_has_liked: next,
