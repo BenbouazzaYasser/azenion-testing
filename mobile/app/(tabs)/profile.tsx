@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
-import { Avatar, Card, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../components/ui";
+import { Avatar, Card, Empty, ErrorState, Header, Loading, Press, Screen, Txt } from "../../components/ui";
 import { ActionIcon } from "../../components/icons";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
@@ -128,12 +128,12 @@ export default function Profile() {
             <Header
               title="Profile"
               right={
-                <Pressable onPress={() => router.push("/settings")} style={{ flexDirection: "row", gap: 6, alignItems: "center" }} hitSlop={10}>
+                <Press label="Open settings" onPress={() => router.push("/settings")}>
                   <ActionIcon name="settings-outline" color={palette.accent400} size={18} />
                   <Txt color={palette.accent400} weight="600">
                     Settings
                   </Txt>
-                </Pressable>
+                </Press>
               }
             />
             <View style={{ backgroundColor: palette.accent500, borderRadius: 16, padding: spacing.lg, marginBottom: spacing.md }}>
