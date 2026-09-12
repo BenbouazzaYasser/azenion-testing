@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { Avatar, Card, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../components/ui";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Avatar, Button, Card, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../components/ui";
 import { supabase } from "../../lib/supabase";
+import { useAuth } from "../../lib/auth";
 import { palette, spacing } from "../../lib/theme";
 
 interface PublicProfile {
@@ -25,11 +26,14 @@ interface PostRow {
 
 export default function UserProfile() {
   const { username } = useLocalSearchParams<{ username: string }>();
+  const { user: me } = useAuth();
+  const router = useRouter();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [posts, setPosts] = useState<PostRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chatBusy, setChatBusy] = useState(false);
 
   const load = useCallback(async () => {
     if (!username) return;
@@ -76,6 +80,23 @@ export default function UserProfile() {
       // Keep existing content on refresh failure.
     } finally {
       setRefreshing(false);
+    }
+  }
+
+  async function onMessage() {
+    if (!profile || chatBusy) return;
+    setChatBusy(true);
+    try {
+      // Canonical conversation bootstrap; RLS + block guards enforced inside.
+      const { data, error: rpcError } = await supabase.rpc("get_or_create_conversation", {
+        p_user_id: profile.id,
+      });
+      if (rpcError || !data) throw new Error(rpcError?.message ?? "Unable to start chat.");
+      router.push(`/chat/${data as string}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to start chat.");
+    } finally {
+      setChatBusy(false);
     }
   }
 
@@ -131,6 +152,11 @@ export default function UserProfile() {
               {profile.bio ? (
                 <View style={{ marginTop: spacing.sm }}>
                   <Txt color={palette.ink200}>{profile.bio}</Txt>
+                </View>
+              ) : null}
+              {me && me.id !== profile.id ? (
+                <View style={{ marginTop: spacing.md }}>
+                  <Button title={chatBusy ? "Opening…" : "Message"} onPress={() => void onMessage()} disabled={chatBusy} />
                 </View>
               ) : null}
               {profile.skills.length > 0 ? (

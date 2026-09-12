@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, RefreshControl, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Avatar, Card, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../components/ui";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
-import { palette, spacing } from "../../lib/theme";
+import { palette, radius, spacing } from "../../lib/theme";
 
 interface ProfileRow {
   id: string;
@@ -13,6 +13,7 @@ interface ProfileRow {
   bio: string | null;
   institution: string | null;
   avatar_url: string | null;
+  created_at: string | null;
 }
 
 interface PostRow {
@@ -22,19 +23,30 @@ interface PostRow {
   created_at: string | null;
 }
 
+type Segment = "posts" | "saved";
+
 export default function Profile() {
   const { user } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState<ProfileRow | null>(null);
-  const [posts, setPosts] = useState<PostRow[]>([]);
+  const [segment, setSegment] = useState<Segment>("posts");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [cache, setCache] = useState<{ mine: PostRow[]; saved: PostRow[] }>({ mine: [], saved: [] });
+
   const load = useCallback(async () => {
     if (!user) return;
-    const [{ data: row, error: pErr }, { data: postRows, error: qErr }] = await Promise.all([
-      supabase.from("profiles").select("id, username, full_name, bio, institution, avatar_url").eq("id", user.id).maybeSingle(),
+    const { data: row, error: pErr } = await supabase
+      .from("profiles")
+      .select("id, username, full_name, bio, institution, avatar_url, created_at")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (pErr) throw new Error(pErr.message);
+    setProfile((row ?? null) as ProfileRow | null);
+
+    const [mine, saved] = await Promise.all([
       supabase
         .from("posts")
         .select("id, title, body, created_at")
@@ -42,11 +54,20 @@ export default function Profile() {
         .eq("source_type", "user_post")
         .order("created_at", { ascending: false })
         .limit(30),
+      supabase
+        .from("saved_posts")
+        .select("post_id, posts(id, title, body, created_at)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(30),
     ]);
-    if (pErr) throw new Error(pErr.message);
-    if (qErr) throw new Error(qErr.message);
-    setProfile((row ?? null) as ProfileRow | null);
-    setPosts(((postRows ?? []) as PostRow[]));
+    if (mine.error) throw new Error(mine.error.message);
+    if (saved.error) throw new Error(saved.error.message);
+    const savedPosts = ((saved.data ?? []) as Array<{ posts: PostRow | PostRow[] | null }>)
+      .map((r) => (Array.isArray(r.posts) ? r.posts[0] : r.posts))
+      .filter((p): p is PostRow => Boolean(p));
+    // Cache both lists so segment switching is instant; refresh refetches.
+    setCache({ mine: (mine.data ?? []) as PostRow[], saved: savedPosts });
   }, [user]);
 
   const initial = useCallback(async () => {
@@ -92,32 +113,34 @@ export default function Profile() {
     );
   }
 
+  const shown = segment === "saved" ? cache.saved : cache.mine;
+
   return (
     <Screen padded={false}>
       <FlatList
-        data={posts}
+        data={shown}
         keyExtractor={(p) => p.id}
-        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl, flexGrow: posts.length === 0 ? 1 : undefined }}
+        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.xl, flexGrow: shown.length === 0 ? 1 : undefined }}
         ListHeaderComponent={
           <View>
             <Header
               title="Profile"
               right={
-                <Txt color={palette.accent400} onPress={() => router.push("/settings")}>
-                  Settings
+                <Txt color={palette.accent400} weight="600" onPress={() => router.push("/settings")}>
+                  ⚙ Settings
                 </Txt>
               }
             />
-            <Card>
+            <View style={{ backgroundColor: palette.accent500, borderRadius: 16, padding: spacing.lg, marginBottom: spacing.md }}>
               <View style={{ flexDirection: "row", gap: spacing.md, alignItems: "center" }}>
-                <Avatar uri={profile.avatar_url} name={profile.full_name ?? profile.username} size={64} />
+                <Avatar uri={profile.avatar_url} name={profile.full_name ?? profile.username} size={72} />
                 <View style={{ flex: 1 }}>
-                  <Txt variant="subtitle" weight="700">
+                  <Txt variant="subtitle" weight="700" color="#FFFFFF">
                     {profile.full_name ?? profile.username}
                   </Txt>
-                  <Txt color={palette.ink400}>@{profile.username}</Txt>
+                  <Txt color="rgba(255,255,255,0.75)">@{profile.username}</Txt>
                   {profile.institution ? (
-                    <Txt variant="caption" color={palette.ink500}>
+                    <Txt variant="caption" color="rgba(255,255,255,0.65)">
                       {profile.institution}
                     </Txt>
                   ) : null}
@@ -125,25 +148,42 @@ export default function Profile() {
               </View>
               {profile.bio ? (
                 <View style={{ marginTop: spacing.sm }}>
-                  <Txt color={palette.ink200}>{profile.bio}</Txt>
+                  <Txt color="rgba(255,255,255,0.9)">{profile.bio}</Txt>
                 </View>
               ) : null}
-            </Card>
-            <Txt variant="subtitle" weight="600">
-              Posts
-            </Txt>
-            <View style={{ height: spacing.sm }} />
+            </View>
+            <View style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.md }}>
+              {(["posts", "saved"] as Segment[]).map((s) => (
+                <Pressable
+                  key={s}
+                  onPress={() => setSegment(s)}
+                  style={{
+                    flex: 1,
+                    paddingVertical: spacing.sm,
+                    borderRadius: radius.full,
+                    alignItems: "center",
+                    backgroundColor: segment === s ? palette.accent : palette.surface,
+                    borderWidth: 1,
+                    borderColor: segment === s ? palette.accent : palette.borderStrong,
+                  }}
+                >
+                  <Txt weight="600" color={segment === s ? "#FFFFFF" : palette.ink300}>
+                    {s === "posts" ? `Posts · ${cache.mine.length}` : `Saved · ${cache.saved.length}`}
+                  </Txt>
+                </Pressable>
+              ))}
+            </View>
           </View>
         }
         renderItem={({ item }) => (
           <Card>
-            {item.title ? (
-              <Txt weight="600">{item.title}</Txt>
-            ) : null}
+            {item.title ? <Txt weight="600">{item.title}</Txt> : null}
             {item.body ? <Txt color={palette.ink200}>{item.body}</Txt> : null}
           </Card>
         )}
-        ListEmptyComponent={<Empty title="No posts yet" />}
+        ListEmptyComponent={
+          <Empty title={segment === "saved" ? "Nothing saved yet" : "No posts yet"} hint={segment === "saved" ? "Save posts from the feed overflow menu." : undefined} />
+        }
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={palette.accent400} />}
       />
     </Screen>
