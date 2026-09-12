@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Empty, ErrorState, Header, Screen, Txt } from "../../components/ui";
 import { PostCard, PostSkeleton, type FeedItem } from "../../components/post-card";
 import { apiJson } from "../../lib/api";
+import { getDirectFeedPage } from "../../lib/feed-direct";
 import { palette, spacing } from "../../lib/theme";
 
 interface FeedPage {
@@ -26,7 +27,14 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   const loadPage = useCallback(async (next: number, replace: boolean) => {
-    const data = await apiJson<FeedPage>(`/api/feed?scope=global&page=${next}&pageSize=${PAGE_SIZE}`);
+    // Boundary first (full enrichment); direct-RLS fallback when the
+    // backend boundary is unreachable — visibility stays DB-enforced.
+    let data: FeedPage;
+    try {
+      data = await apiJson<FeedPage>(`/api/feed?scope=global&page=${next}&pageSize=${PAGE_SIZE}`);
+    } catch {
+      data = { ...(await getDirectFeedPage(next, PAGE_SIZE)), page: next, pageSize: PAGE_SIZE };
+    }
     setItems((prev) => {
       if (replace) return data.items;
       const seen = new Set(prev.map((p) => p.id));

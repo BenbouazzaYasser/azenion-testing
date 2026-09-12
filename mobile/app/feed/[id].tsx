@@ -4,6 +4,7 @@ import { useLocalSearchParams } from "expo-router";
 import { Avatar, Button, Empty, ErrorState, Input, Loading, Screen, Txt } from "../../components/ui";
 import { PostCard, type FeedItem } from "../../components/post-card";
 import { apiJson } from "../../lib/api";
+import { getDirectFeedItem } from "../../lib/feed-direct";
 import { addComment, getComments, type FeedComment } from "../../lib/feed";
 import { resolvePeers } from "../../lib/peers";
 import { timeAgo } from "../../lib/format";
@@ -20,7 +21,15 @@ export default function PostDetail() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const postRes = await apiJson<{ item: FeedItem }>(`/api/feed?scope=single&postId=${id}`);
+    // Boundary first; direct-RLS fallback when it is unreachable.
+    let found: FeedItem | null = null;
+    try {
+      found = (await apiJson<{ item: FeedItem }>(`/api/feed?scope=single&postId=${id}`)).item;
+    } catch {
+      found = await getDirectFeedItem(id);
+    }
+    if (!found) throw new Error("Post not found.");
+    const postRes = { item: found };
     setItem(postRes.item);
     if (postRes.item.source_id) {
       const rows = await getComments(postRes.item.source_type, postRes.item.source_id);
