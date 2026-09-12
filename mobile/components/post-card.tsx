@@ -3,6 +3,7 @@ import { Image, Modal, Pressable, Share, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { Avatar, Button, Card, Txt } from "./ui";
+import { ActionIcon } from "./icons";
 import { palette, radius, spacing } from "../lib/theme";
 import { timeAgo } from "../lib/format";
 import { setLiked, setSaved } from "../lib/feed";
@@ -105,9 +106,7 @@ export function PostCard({ item, onChanged }: { item: FeedItem; onChanged: (next
             </Txt>
           </View>
           <Pressable hitSlop={12} onPress={() => setMenu(true)}>
-            <Txt color={palette.ink400} variant="subtitle" weight="700">
-              ···
-            </Txt>
+            <ActionIcon name="ellipsis-horizontal" />
           </Pressable>
         </View>
         {item.title ? (
@@ -131,26 +130,20 @@ export function PostCard({ item, onChanged }: { item: FeedItem; onChanged: (next
       ) : null}
       <View style={{ flexDirection: "row", marginTop: spacing.sm, gap: spacing.lg }}>
         <Pressable hitSlop={10} onPress={() => void toggleLike()} style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
-          <Txt color={item.user_has_liked ? palette.danger : palette.ink400} weight="700">
-            ♥
-          </Txt>
+          <ActionIcon name={item.user_has_liked ? "heart" : "heart-outline"} color={item.user_has_liked ? palette.danger : palette.ink400} />
           <Txt variant="caption" color={palette.ink400}>
             {item.like_count}
           </Txt>
         </Pressable>
         <Pressable hitSlop={10} onPress={() => router.push(`/feed/${item.id}`)} style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
-          <Txt color={palette.ink400} weight="700">
-            ✎
-          </Txt>
+          <ActionIcon name="chatbubble-outline" />
           <Txt variant="caption" color={palette.ink400}>
             {item.comment_count}
           </Txt>
         </Pressable>
         <View style={{ flex: 1 }} />
         <Pressable hitSlop={10} onPress={() => void share()}>
-          <Txt color={palette.ink400} weight="700">
-            ↗
-          </Txt>
+          <ActionIcon name="share-outline" />
         </Pressable>
       </View>
       <Modal visible={menu} transparent animationType="fade" onRequestClose={() => setMenu(false)}>

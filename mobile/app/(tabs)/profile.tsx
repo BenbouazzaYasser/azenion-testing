@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Avatar, Card, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../components/ui";
+import { ActionIcon } from "../../components/icons";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
+import { timeAgo } from "../../lib/format";
 import { palette, radius, spacing } from "../../lib/theme";
 
 interface ProfileRow {
@@ -126,9 +128,12 @@ export default function Profile() {
             <Header
               title="Profile"
               right={
-                <Txt color={palette.accent400} weight="600" onPress={() => router.push("/settings")}>
-                  ⚙ Settings
-                </Txt>
+                <Pressable onPress={() => router.push("/settings")} style={{ flexDirection: "row", gap: 6, alignItems: "center" }} hitSlop={10}>
+                  <ActionIcon name="settings-outline" color={palette.accent400} size={18} />
+                  <Txt color={palette.accent400} weight="600">
+                    Settings
+                  </Txt>
+                </Pressable>
               }
             />
             <View style={{ backgroundColor: palette.accent500, borderRadius: 16, padding: spacing.lg, marginBottom: spacing.md }}>
@@ -179,6 +184,11 @@ export default function Profile() {
           <Card>
             {item.title ? <Txt weight="600">{item.title}</Txt> : null}
             {item.body ? <Txt color={palette.ink200}>{item.body}</Txt> : null}
+            {item.created_at ? (
+              <Txt variant="caption" color={palette.ink500}>
+                {timeAgo(item.created_at)}
+              </Txt>
+            ) : null}
           </Card>
         )}
         ListEmptyComponent={

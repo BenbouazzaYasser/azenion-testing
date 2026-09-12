@@ -64,7 +64,7 @@ export default function Notifications() {
     const list = (data ?? []) as NotificationRow[];
     setRows(list);
     const actorIds = [...new Set(list.map((n) => n.actor_id).filter((a): a is string => Boolean(a)))];
-    const peers = await resolvePeers(actorIds);
+    const peers = await resolvePeers(actorIds, user.id);
     const names = new Map<string, string>();
     for (const [id, p] of peers) names.set(id, p.full_name ?? `@${p.username}`);
     setPeerNames(names);

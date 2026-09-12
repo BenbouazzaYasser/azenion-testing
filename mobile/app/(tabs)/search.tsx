@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Avatar, Card, Empty, Header, Input, Loading, Screen, Txt } from "../../components/ui";
+import { ActionIcon } from "../../components/icons";
 import { supabase } from "../../lib/supabase";
 import { palette, spacing } from "../../lib/theme";
 
@@ -90,9 +91,7 @@ export default function Search() {
                       {item.institution ? ` · ${item.institution}` : ""}
                     </Txt>
                   </View>
-                  <Txt color={palette.accent400} weight="600">
-                    ›
-                  </Txt>
+                  <ActionIcon name="chevron-forward" color={palette.accent400} />
                 </View>
               </Card>
             </Pressable>

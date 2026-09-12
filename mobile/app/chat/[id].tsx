@@ -3,6 +3,7 @@ import { FlatList, Image, KeyboardAvoidingView, Linking, Modal, Platform, Pressa
 import { useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Button, Empty, ErrorState, Input, Loading, Screen, Txt } from "../../components/ui";
+import { ActionIcon } from "../../components/icons";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
 import { apiJson } from "../../lib/api";
@@ -225,9 +226,10 @@ export default function Conversation() {
     }
     if (att.type === "file") {
       return (
-        <Pressable key={att.id} onPress={() => void openFile(att)} style={{ marginTop: 6, backgroundColor: "rgba(0,0,0,0.25)", borderRadius: 8, padding: 8 }}>
+        <Pressable key={att.id} onPress={() => void openFile(att)} style={{ marginTop: 6, backgroundColor: "rgba(0,0,0,0.25)", borderRadius: 8, padding: 8, flexDirection: "row", gap: 6, alignItems: "center" }}>
+          <ActionIcon name="document-text-outline" size={16} color="#FFFFFF" />
           <Txt variant="caption" color="#FFFFFF">
-            📎 {att.filename ?? "file"}
+            {att.filename ?? "file"}
           </Txt>
         </Pressable>
       );
@@ -289,9 +291,7 @@ export default function Conversation() {
       ) : null}
       <View style={{ flexDirection: "row", gap: spacing.sm, padding: spacing.md, alignItems: "center" }}>
         <Pressable hitSlop={10} onPress={() => setComposerMenu(true)}>
-          <Txt variant="subtitle" color={palette.accent400} weight="700">
-            ＋
-          </Txt>
+          <ActionIcon name="add" color={palette.accent400} size={24} />
         </Pressable>
         <View style={{ flex: 1 }}>
           <Input value={draft} onChangeText={setDraft} placeholder="Message…" autoCapitalize="sentences" />

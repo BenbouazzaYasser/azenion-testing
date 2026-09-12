@@ -118,7 +118,7 @@ export default function Home() {
           title="Home"
           right={
             <Txt color={palette.accent400} weight="600" onPress={() => router.push("/academy")}>
-              🎓 Learn
+              Learn
             </Txt>
           }
         />

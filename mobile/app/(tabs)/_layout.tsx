@@ -3,6 +3,7 @@ import { Tabs, useRouter } from "expo-router";
 import { useAuth } from "../../lib/auth";
 import { palette } from "../../lib/theme";
 import { Loading, Screen } from "../../components/ui";
+import { TabIcon, type TabRoute } from "../../components/icons";
 
 export default function TabsLayout() {
   const { session, bootstrapped } = useAuth();
@@ -20,6 +21,10 @@ export default function TabsLayout() {
     );
   }
 
+  const icon = (route: TabRoute) => (props: { focused: boolean }) => (
+    <TabIcon route={route} focused={props.focused} />
+  );
+
   return (
     <Tabs
       screenOptions={{
@@ -29,11 +34,11 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: palette.ink500,
       }}
     >
-      <Tabs.Screen name="home" options={{ title: "Home" }} />
-      <Tabs.Screen name="search" options={{ title: "Search" }} />
-      <Tabs.Screen name="chat" options={{ title: "Chat" }} />
-      <Tabs.Screen name="notifications" options={{ title: "Alerts" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen name="home" options={{ title: "Home", tabBarIcon: icon("home") }} />
+      <Tabs.Screen name="search" options={{ title: "Search", tabBarIcon: icon("search") }} />
+      <Tabs.Screen name="chat" options={{ title: "Chat", tabBarIcon: icon("chat") }} />
+      <Tabs.Screen name="notifications" options={{ title: "Alerts", tabBarIcon: icon("notifications") }} />
+      <Tabs.Screen name="profile" options={{ title: "Profile", tabBarIcon: icon("profile") }} />
     </Tabs>
   );
 }

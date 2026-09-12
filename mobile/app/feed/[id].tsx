@@ -7,11 +7,13 @@ import { apiJson } from "../../lib/api";
 import { getDirectFeedItem } from "../../lib/feed-direct";
 import { addComment, getComments, type FeedComment } from "../../lib/feed";
 import { resolvePeers } from "../../lib/peers";
+import { useAuth } from "../../lib/auth";
 import { timeAgo } from "../../lib/format";
 import { palette, spacing } from "../../lib/theme";
 
 export default function PostDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
   const [item, setItem] = useState<FeedItem | null>(null);
   const [comments, setComments] = useState<FeedComment[]>([]);
   const [names, setNames] = useState<Map<string, string>>(new Map());
@@ -34,12 +36,15 @@ export default function PostDetail() {
     if (postRes.item.source_id) {
       const rows = await getComments(postRes.item.source_type, postRes.item.source_id);
       setComments(rows);
-      const peers = await resolvePeers(rows.map((c) => c.user_id));
+      const peers = await resolvePeers(
+        rows.map((c) => c.user_id),
+        user?.id ?? null,
+      );
       const map = new Map<string, string>();
       for (const [uid, p] of peers) map.set(uid, p.full_name ?? `@${p.username}`);
       setNames(map);
     }
-  }, [id]);
+  }, [id, user?.id]);
 
   const initial = useCallback(async () => {
     setLoading(true);
@@ -65,7 +70,7 @@ export default function PostDetail() {
       setDraft("");
       setComments((prev) => [...prev, row]);
       setItem({ ...item, comment_count: item.comment_count + 1 });
-      const peers = await resolvePeers([row.user_id]);
+      const peers = await resolvePeers([row.user_id], user?.id ?? null);
       const p = peers.get(row.user_id);
       if (p) setNames((prev) => new Map(prev).set(row.user_id, p.full_name ?? `@${p.username}`));
     } catch (e) {

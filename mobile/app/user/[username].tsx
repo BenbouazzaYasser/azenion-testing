@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Avatar, Button, Card, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../components/ui";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
+import { timeAgo } from "../../lib/format";
 import { palette, spacing } from "../../lib/theme";
 
 interface PublicProfile {
@@ -181,6 +182,11 @@ export default function UserProfile() {
           <Card>
             {item.title ? <Txt weight="600">{item.title}</Txt> : null}
             {item.body ? <Txt color={palette.ink200}>{item.body}</Txt> : null}
+            {item.created_at ? (
+              <Txt variant="caption" color={palette.ink500}>
+                {timeAgo(item.created_at)}
+              </Txt>
+            ) : null}
           </Card>
         )}
         ListEmptyComponent={<Empty title="No public posts" />}

@@ -83,7 +83,7 @@ export async function getDirectFeedPage(page: number, pageSize: number): Promise
     sourceIds.length > 0
       ? supabase.from("update_comments").select("target_type, target_id").in("target_id", sourceIds)
       : Promise.resolve({ data: [], error: null }),
-    resolvePeers(authorIds),
+    resolvePeers(authorIds, user?.id),
     user && sourceIds.length > 0
       ? supabase.from("update_likes").select("target_type, target_id").eq("user_id", user.id).in("target_id", sourceIds)
       : Promise.resolve({ data: [], error: null }),
@@ -112,14 +112,17 @@ export async function getDirectFeedPage(page: number, pageSize: number): Promise
 
 /** Direct-RLS single post (visibility enforced by posts RLS). Null when invisible/missing. */
 export async function getDirectFeedItem(postId: string): Promise<FeedItem | null> {
-  const { data, error } = await supabase
-    .from("posts")
-    .select("id, author_id, title, body, images, videos, source_type, source_id, created_at")
-    .eq("id", postId)
-    .maybeSingle();
+  const [{ data, error }, { data: { user } }] = await Promise.all([
+    supabase
+      .from("posts")
+      .select("id, author_id, title, body, images, videos, source_type, source_id, created_at")
+      .eq("id", postId)
+      .maybeSingle(),
+    supabase.auth.getUser(),
+  ]);
   if (error || !data) return null;
   const row = data as PostRow;
-  const peers = await resolvePeers(row.author_id ? [row.author_id] : []);
+  const peers = await resolvePeers(row.author_id ? [row.author_id] : [], user?.id ?? null);
   const [item] = assembleFeedItems([row], peers, new Map(), new Map(), new Set(), new Set());
   return item ?? null;
 }

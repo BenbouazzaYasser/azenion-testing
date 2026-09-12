@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import { apiJson } from "./api";
+import { clearPeerCache } from "./peers";
 
 export interface HydrateSnapshot {
   user: { id: string; email: string | null };
@@ -47,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setBootstrapped(true);
     });
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, next) => {
+      if (!next) clearPeerCache();
       setSession(next);
       setHydrate(next ? await loadHydrate() : null);
     });

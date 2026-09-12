@@ -63,7 +63,7 @@ export default function ChatList() {
       unreadByConv.set(r.conversation_id, Number(r.unread_count));
     }
     const otherIds = [...new Set([...membersByConv.values()].flat().filter((id) => id !== user.id))];
-    const peers = await resolvePeers(otherIds);
+    const peers = await resolvePeers(otherIds, user.id);
     setItems(
       ((conversations ?? []) as Array<{ id: string; updated_at: string | null }>).map((c) => {
         const otherId = (membersByConv.get(c.id) ?? []).find((id) => id !== user.id) ?? null;
