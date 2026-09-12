@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import {
   createProjectSchema,
   createProjectUpdateSchema,
@@ -170,12 +169,11 @@ export async function leaveProject(projectId: string, slug: string) {
 }
 
 export async function updateProjectSettings(formData: FormData) {
-  const ssr = createClient(); // SSR-aware, has cookies → can auth
-  const supabase = createAdminClient(); // service-role, bypasses RLS
+  const supabase = createClient();
 
   const {
     data: { user },
-  } = await ssr.auth.getUser();
+  } = await supabase.auth.getUser();
 
   if (!user) {
     return { error: "Not authenticated" };
@@ -187,30 +185,10 @@ export async function updateProjectSettings(formData: FormData) {
     return { error: "Project ID is required" };
   }
 
-  // Proxy the caller before any write. `supabase` here is the service-role
-  // client, so RLS cannot protect the write; the authorization MUST happen
-  // server-side. Only the project owner or an owner/maintainer member may edit.
-  const { data: memberRows } = await supabase
-    .from("project_members")
-    .select("role")
-    .eq("project_id", projectId)
-    .eq("user_id", user.id);
-  const { data: projectRow } = await supabase
-    .from("projects")
-    .select("owner_id")
-    .eq("id", projectId)
-    .single();
-
-  const memberRole = memberRows?.[0]?.role;
-  const isOwner = projectRow?.owner_id === user.id;
-  const canManage = isOwner || memberRole === "owner" || memberRole === "maintainer";
-
-  if (!canManage) {
-    return { error: "You do not have permission to edit this project" };
-  }
-
-  const updates: Record<string, unknown> = {};
-
+  // Authorization is enforced inside the update_project_settings RPC
+  // (owner or owner/maintainer member, evaluated against auth.uid()).
+  // Only the fields the settings form already manages are passed; logo
+  // updates stay in update_project_logo and membership in their own RPCs.
   const name = formData.get("name") as string | null;
   const slug = formData.get("slug") as string | null;
   const description = formData.get("description") as string | null;
@@ -222,63 +200,49 @@ export async function updateProjectSettings(formData: FormData) {
   const recruitmentRaw = formData.get("recruitment") as string | null;
   const categoryIdsRaw = formData.get("category_ids") as string | null;
 
-  if (name) updates.name = name;
-  if (slug) updates.slug = slug;
-  updates.description = description || null;
-  updates.description_long = descriptionLong || null;
-  updates.website = website || null;
-  updates.github_url = githubUrl || null;
-  if (visibility) updates.visibility = visibility;
-
+  let technologies: unknown = null;
   if (technologiesRaw) {
     try {
-      updates.technologies = JSON.parse(technologiesRaw);
+      technologies = JSON.parse(technologiesRaw);
     } catch {
       return { error: "Invalid technologies format" };
     }
   }
 
+  let recruitment: unknown = null;
   if (recruitmentRaw) {
     try {
-      updates.recruitment = JSON.parse(recruitmentRaw);
+      recruitment = JSON.parse(recruitmentRaw);
     } catch {
       return { error: "Invalid recruitment format" };
     }
   }
 
-  const payload = { ...updates, updated_at: new Date().toISOString() };
+  let categoryIds: string[] | null = null;
+  if (categoryIdsRaw !== null) {
+    try {
+      categoryIds = JSON.parse(categoryIdsRaw) as string[];
+    } catch {
+      return { error: "Invalid categories format" };
+    }
+  }
 
-  const { data: updateData, error: updateError } = await supabase
-    .from("projects")
-    .update(payload)
-    .eq("id", projectId)
-    .select();
+  const { error: updateError } = await supabase.rpc("update_project_settings", {
+    p_project_id: projectId,
+    p_name: name || null,
+    p_slug: slug || null,
+    p_description: description || null,
+    p_description_long: descriptionLong || null,
+    p_website: website || null,
+    p_github_url: githubUrl || null,
+    p_visibility: visibility || null,
+    p_technologies: (technologies ?? null) as never,
+    p_recruitment: (recruitment ?? null) as never,
+    p_category_ids: categoryIds,
+  });
 
   if (updateError) {
     return { error: updateError.message };
-  }
-
-  const { data: verify } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("id", projectId)
-    .single();
-
-  if (categoryIdsRaw !== null) {
-    const categoryIds: string[] = JSON.parse(categoryIdsRaw) as string[];
-    await supabase.from("project_category_members").delete().eq("project_id", projectId);
-    if (categoryIds.length > 0) {
-      const members = categoryIds.map((cid) => ({
-        project_id: projectId,
-        category_id: cid,
-      }));
-      const { error: catError } = await supabase
-        .from("project_category_members")
-        .insert(members);
-      if (catError) {
-        // Category sync failed but project updated; non-fatal
-      }
-    }
   }
 
   revalidatePath(`/projects/${formData.get("slug")}`);

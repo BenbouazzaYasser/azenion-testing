@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { authenticateBearer } from "@/lib/supabase/bearer";
 
 /**
  * Serve an uploaded course file or thumbnail through the Azenion origin so
@@ -88,16 +89,28 @@ export async function GET(
   const wantsThumbnail =
     request.nextUrl.searchParams.get("view") === "thumbnail";
 
-  // Resolve the request's auth principal. Published course content is
-  // public through this route by design (see above). Draft/archived
-  // courses additionally require owner or staff — checked here before the
-  // storage read.
+  // Resolve the request's auth principal. Web callers authenticate via
+  // cookies; native callers present `Authorization: Bearer <access_token>`.
+  // Published course content is public through this route by design (see
+  // above). Draft/archived courses additionally require owner or staff —
+  // checked below before the storage read, using the same canonical rules
+  // for both credential types.
   const supabase = createClient();
   const {
-    data: { user },
+    data: { user: cookieUser },
   } = await supabase.auth.getUser();
 
-  const { data: course, error } = await supabase
+  let user = cookieUser;
+  let scoped = supabase;
+  if (!user && request.headers.get("authorization")) {
+    const bearer = await authenticateBearer(request);
+    if (bearer.ok) {
+      user = bearer.principal.user;
+      scoped = bearer.principal.supabase;
+    }
+  }
+
+  const { data: course, error } = await scoped
     .from("courses")
     .select("content_type, file_path, thumbnail, status, created_by")
     .eq("id", id)
@@ -118,7 +131,7 @@ export async function GET(
   const isOwner = user != null && row.created_by != null && row.created_by === user.id;
   let isStaff = false;
   if (user && !isOwner) {
-    const { data: manages } = await supabase.rpc("is_course_manager");
+    const { data: manages } = await scoped.rpc("is_course_manager");
     isStaff = isCourseManagerResult(manages);
   } else if (user && isOwner) {
     isStaff = false;

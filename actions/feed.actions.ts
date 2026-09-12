@@ -415,7 +415,7 @@ export async function getFeedItems(
   if (filter && filter !== "all") query = query.eq("source_type", filter);
 
   const [userId, { count: total }] = await Promise.all([
-    _userId === null ? Promise.resolve(null) : getSessionUserId(),
+    _userId !== undefined ? Promise.resolve(_userId) : getSessionUserId(),
     query,
   ]);
 
@@ -445,7 +445,7 @@ export async function getTrendingFeedItems(
   _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
-  const userId = _userId === null ? null : await getSessionUserId();
+  const userId = _userId !== undefined ? _userId : await getSessionUserId();
 
   let posts: PostRow[] = [];
   try {
@@ -469,7 +469,7 @@ export async function getFeedItemById(
   _userId?: string | null,
 ): Promise<FeedItem | null> {
   const supabase = createAdminClient();
-  const userId = _userId === null ? null : await getSessionUserId();
+  const userId = _userId !== undefined ? _userId : await getSessionUserId();
 
   const { data: post } = await supabase
     .from("posts")
@@ -500,7 +500,7 @@ export async function getSavedFeedItems(
   _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
-  const userId = _userId === null ? null : await getSessionUserId();
+  const userId = _userId !== undefined ? _userId : await getSessionUserId();
   if (!userId) return { items: [], total: 0 };
 
   const { data: saved } = await supabase
@@ -549,7 +549,7 @@ export async function getBranchFeedItems(
   _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
-  const userId = _userId === null ? null : await getSessionUserId();
+  const userId = _userId !== undefined ? _userId : await getSessionUserId();
 
   const { data: branchTeams } = await supabase
     .from("teams")
