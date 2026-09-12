@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text as RNText, TextInput as RNTextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { palette, radius, spacing, type } from "../lib/theme";
@@ -41,6 +42,9 @@ export function Button({
     <Pressable
       onPress={onPress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: Boolean(disabled) }}
       style={({ pressed }) => [
         styles.button,
         variant === "secondary" && styles.buttonSecondary,
@@ -54,6 +58,78 @@ export function Button({
   );
 }
 
+/**
+ * Touchable with visible press feedback, a 44px-minimum touch target for
+ * icon-only controls, and first-class accessibility labeling. Prefer this
+ * over raw Pressable for every interactive row/icon.
+ */
+export function Press({
+  children,
+  onPress,
+  label,
+  disabled,
+  direction = "row",
+  gap = spacing.sm,
+  align = "center",
+}: {
+  children: React.ReactNode;
+  onPress: () => void;
+  label: string;
+  disabled?: boolean;
+  direction?: "row" | "column";
+  gap?: number;
+  align?: "center" | "flex-start" | "flex-end";
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={12}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: Boolean(disabled) }}
+      style={({ pressed }) => [
+        { flexDirection: direction, gap, alignItems: align, opacity: pressed || disabled ? 0.55 : 1, minHeight: 44, justifyContent: "center" },
+      ]}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
+export function Divider() {
+  return <View style={styles.divider} />;
+}
+
+/**
+ * Image with a graceful fallback: while loading shows the surface tint;
+ * on failure renders nothing (callers decide layout) via onFail.
+ */
+export function SafeImage({
+  uri,
+  width,
+  height,
+  borderRadius = radius.md,
+  topMargin = 0,
+}: {
+  uri?: string | null;
+  width: number | "100%";
+  height: number;
+  borderRadius?: number;
+  topMargin?: number;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (!uri || failed) return null;
+  return (
+    <Image
+      source={{ uri }}
+      style={{ width, height, borderRadius, backgroundColor: palette.surfaceHover, marginTop: topMargin }}
+      resizeMode="cover"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 export function Input({
   value,
   onChangeText,
@@ -61,6 +137,9 @@ export function Input({
   secureTextEntry,
   autoCapitalize = "none",
   keyboardType,
+  returnKeyType,
+  onSubmitEditing,
+  autoFocus,
 }: {
   value: string;
   onChangeText: (v: string) => void;
@@ -68,6 +147,9 @@ export function Input({
   secureTextEntry?: boolean;
   autoCapitalize?: "none" | "words" | "sentences" | "characters";
   keyboardType?: "default" | "email-address";
+  returnKeyType?: "done" | "go" | "next" | "search" | "send";
+  onSubmitEditing?: () => void;
+  autoFocus?: boolean;
 }) {
   return (
     <RNTextInput
@@ -78,6 +160,9 @@ export function Input({
       secureTextEntry={secureTextEntry}
       autoCapitalize={autoCapitalize}
       keyboardType={keyboardType}
+      returnKeyType={returnKeyType}
+      onSubmitEditing={onSubmitEditing}
+      autoFocus={autoFocus}
       style={styles.input}
     />
   );
@@ -88,8 +173,15 @@ export function Card({ children }: { children: React.ReactNode }) {
 }
 
 export function Avatar({ uri, name, size = 40 }: { uri?: string | null; name?: string | null; size?: number }) {
-  if (uri) {
-    return <Image source={{ uri }} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: palette.surfaceHover }} />;
+  const [failed, setFailed] = useState(false);
+  if (uri && !failed) {
+    return (
+      <Image
+        source={{ uri }}
+        style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: palette.surfaceHover }}
+        onError={() => setFailed(true)}
+      />
+    );
   }
   const initial = (name ?? "?").trim().charAt(0).toUpperCase() || "?";
   return (
@@ -182,6 +274,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   avatarFallback: { backgroundColor: palette.accent500, alignItems: "center", justifyContent: "center" },
+  divider: { height: 1, backgroundColor: palette.border, marginVertical: spacing.sm },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.lg, gap: spacing.xs },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: spacing.md },
 });
