@@ -66,7 +66,7 @@ export function Input({
   onChangeText: (v: string) => void;
   placeholder?: string;
   secureTextEntry?: boolean;
-  autoCapitalize?: "none" | "words";
+  autoCapitalize?: "none" | "words" | "sentences" | "characters";
   keyboardType?: "default" | "email-address";
 }) {
   return (

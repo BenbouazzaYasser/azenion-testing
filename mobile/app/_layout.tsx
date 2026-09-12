@@ -19,6 +19,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="settings" options={{ headerShown: true, headerStyle: { backgroundColor: palette.surface }, headerTintColor: palette.ink50, title: "Settings" }} />
         <Stack.Screen name="chat/[id]" options={{ headerShown: true, headerStyle: { backgroundColor: palette.surface }, headerTintColor: palette.ink50, title: "Conversation" }} />
+        <Stack.Screen name="feed/[id]" options={{ headerShown: true, headerStyle: { backgroundColor: palette.surface }, headerTintColor: palette.ink50, title: "Post" }} />
+        <Stack.Screen name="user/[username]" options={{ headerShown: true, headerStyle: { backgroundColor: palette.surface }, headerTintColor: palette.ink50, title: "Profile" }} />
       </Stack>
     </AuthProvider>
   );

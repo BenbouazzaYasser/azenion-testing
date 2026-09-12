@@ -1,23 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, Image, RefreshControl, View } from "react-native";
-import { Avatar, Card, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../components/ui";
+import { FlatList, RefreshControl, View } from "react-native";
+import { Empty, ErrorState, Header, Screen } from "../../components/ui";
+import { PostCard, PostSkeleton, type FeedItem } from "../../components/post-card";
 import { apiJson } from "../../lib/api";
 import { palette, spacing } from "../../lib/theme";
-
-interface FeedItem {
-  id: string;
-  title: string;
-  body: string | null;
-  images: string[];
-  created_at: string | null;
-  like_count: number;
-  comment_count: number;
-  author_name: string | null;
-  author_username: string | null;
-  author_avatar: string | null;
-  entity_name: string | null;
-  branch_name: string | null;
-}
 
 interface FeedPage {
   items: FeedItem[];
@@ -27,38 +13,6 @@ interface FeedPage {
 }
 
 const PAGE_SIZE = 20;
-
-function PostCard({ item }: { item: FeedItem }) {
-  const subtitle = item.entity_name ?? item.branch_name ?? item.author_username ?? "";
-  return (
-    <Card>
-      <View style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.sm }}>
-        <Avatar uri={item.author_avatar} name={item.author_name ?? item.author_username} />
-        <View style={{ flex: 1 }}>
-          <Txt weight="600">{item.author_name ?? item.author_username ?? "Unknown"}</Txt>
-          {subtitle ? (
-            <Txt variant="caption" color={palette.ink400}>
-              {subtitle}
-            </Txt>
-          ) : null}
-        </View>
-      </View>
-      {item.title ? (
-        <Txt weight="600" variant="subtitle">
-          {item.title}
-        </Txt>
-      ) : null}
-      {item.body ? <Txt color={palette.ink200}>{item.body}</Txt> : null}
-      {item.images[0] ? (
-        <Image source={{ uri: item.images[0] }} style={{ width: "100%", height: 200, borderRadius: 12, marginTop: spacing.sm }} resizeMode="cover" />
-      ) : null}
-      <View style={{ height: spacing.sm }} />
-      <Txt variant="caption" color={palette.ink500}>
-        {item.like_count} likes · {item.comment_count} comments
-      </Txt>
-    </Card>
-  );
-}
 
 export default function Home() {
   const [items, setItems] = useState<FeedItem[]>([]);
@@ -71,7 +25,11 @@ export default function Home() {
 
   const loadPage = useCallback(async (next: number, replace: boolean) => {
     const data = await apiJson<FeedPage>(`/api/feed?scope=global&page=${next}&pageSize=${PAGE_SIZE}`);
-    setItems((prev) => (replace ? data.items : [...prev, ...data.items]));
+    setItems((prev) => {
+      if (replace) return data.items;
+      const seen = new Set(prev.map((p) => p.id));
+      return [...prev, ...data.items.filter((p) => !seen.has(p.id))];
+    });
     setHasMore(data.items.length === PAGE_SIZE);
     setPage(next);
   }, []);
@@ -94,10 +52,11 @@ export default function Home() {
 
   async function onRefresh() {
     setRefreshing(true);
+    setError(null);
     try {
       await loadPage(1, true);
-    } catch {
-      // Keep existing items on refresh failure.
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Refresh failed.");
     } finally {
       setRefreshing(false);
     }
@@ -115,10 +74,21 @@ export default function Home() {
     }
   }
 
+  function patchItem(next: FeedItem) {
+    setItems((prev) => prev.map((p) => (p.id === next.id ? next : p)));
+  }
+
   if (loading) {
     return (
-      <Screen>
-        <Loading label="Loading feed…" />
+      <Screen padded={false}>
+        <View style={{ padding: spacing.md, paddingBottom: 0 }}>
+          <Header title="Home" />
+        </View>
+        {[0, 1, 2].map((k) => (
+          <View key={k} style={{ paddingHorizontal: spacing.md }}>
+            <PostSkeleton />
+          </View>
+        ))}
       </Screen>
     );
   }
@@ -141,12 +111,18 @@ export default function Home() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={{ paddingHorizontal: spacing.md }}>
-            <PostCard item={item} />
+            <PostCard item={item} onChanged={patchItem} />
           </View>
         )}
         contentContainerStyle={items.length === 0 ? { flex: 1 } : { paddingBottom: spacing.xl }}
         ListEmptyComponent={<Empty title="No posts yet" hint="Pull down to refresh." />}
-        ListFooterComponent={loadingMore ? <Loading /> : null}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={{ paddingHorizontal: spacing.md }}>
+              <PostSkeleton />
+            </View>
+          ) : null
+        }
         onEndReached={() => void onEnd()}
         onEndReachedThreshold={0.5}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} tintColor={palette.accent400} />}
