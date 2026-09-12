@@ -336,7 +336,7 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                           <div className="flex items-center gap-3">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                              src={course.thumbnail}
+                              src={`/api/academy/courses/${course.id}/file?view=thumbnail`}
                               alt="Current thumbnail"
                               className="h-16 w-16 shrink-0 rounded-lg object-cover"
                             />

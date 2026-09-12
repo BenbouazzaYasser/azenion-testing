@@ -5,7 +5,7 @@
  * It is the smallest durable mechanism that works on serverless without a new
  * vendor: attempts are logged to public.rate_limit_attempts (service-role
  * only, see 00126) and counted per (scope, key, window). Use it to blunt
- * abuse on sensitive routes (payment checkout, provider webhook) until a
+ * abuse on sensitive routes (auth callbacks, file delivery) until a
  * dedicated solution is adopted.
  */
 import "server-only";

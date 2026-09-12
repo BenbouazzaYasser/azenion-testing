@@ -639,15 +639,12 @@ export type Database = {
           content_type: string
           created_at: string
           created_by: string | null
-          currency: string
           description: string | null
           difficulty: string | null
           duration: string | null
           file_path: string
           file_url: string
           id: string
-          is_free: boolean
-          price_cents: number
           status: string
           tags: string[] | null
           thumbnail: string | null
@@ -659,15 +656,12 @@ export type Database = {
           content_type: string
           created_at?: string
           created_by?: string | null
-          currency?: string
           description?: string | null
           difficulty?: string | null
           duration?: string | null
           file_path: string
           file_url: string
           id?: string
-          is_free?: boolean
-          price_cents?: number
           status?: string
           tags?: string[] | null
           thumbnail?: string | null
@@ -679,15 +673,12 @@ export type Database = {
           content_type?: string
           created_at?: string
           created_by?: string | null
-          currency?: string
           description?: string | null
           difficulty?: string | null
           duration?: string | null
           file_path?: string
           file_url?: string
           id?: string
-          is_free?: boolean
-          price_cents?: number
           status?: string
           tags?: string[] | null
           thumbnail?: string | null
@@ -745,48 +736,6 @@ export type Database = {
           team_inactive_days?: number
         }
         Relationships: []
-      }
-      entitlements: {
-        Row: {
-          course_id: string
-          expires_at: string | null
-          id: string
-          started_at: string
-          status: string
-          user_id: string
-        }
-        Insert: {
-          course_id: string
-          expires_at?: string | null
-          id?: string
-          started_at?: string
-          status?: string
-          user_id: string
-        }
-        Update: {
-          course_id?: string
-          expires_at?: string | null
-          id?: string
-          started_at?: string
-          status?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "entitlements_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "entitlements_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       feed_pins: {
         Row: {
@@ -1403,115 +1352,6 @@ export type Database = {
           },
         ]
       }
-      payment_allocations: {
-        Row: {
-          allocation_type: string
-          amount_cents: number
-          beneficiary_type: string
-          beneficiary_user_id: string
-          course_id: string
-          created_at: string
-          id: string
-          payment_id: string
-          payout_status: string
-        }
-        Insert: {
-          allocation_type: string
-          amount_cents: number
-          beneficiary_type?: string
-          beneficiary_user_id: string
-          course_id: string
-          created_at?: string
-          id?: string
-          payment_id: string
-          payout_status?: string
-        }
-        Update: {
-          allocation_type?: string
-          amount_cents?: number
-          beneficiary_type?: string
-          beneficiary_user_id?: string
-          course_id?: string
-          created_at?: string
-          id?: string
-          payment_id?: string
-          payout_status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payment_allocations_beneficiary_user_id_fkey"
-            columns: ["beneficiary_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payment_allocations_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payment_allocations_payment_id_fkey"
-            columns: ["payment_id"]
-            isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payments: {
-        Row: {
-          amount_cents: number
-          course_id: string | null
-          created_at: string
-          currency: string
-          id: string
-          provider: string
-          provider_data: Json
-          status: string
-          user_id: string
-        }
-        Insert: {
-          amount_cents?: number
-          course_id?: string | null
-          created_at?: string
-          currency?: string
-          id?: string
-          provider?: string
-          provider_data?: Json
-          status?: string
-          user_id: string
-        }
-        Update: {
-          amount_cents?: number
-          course_id?: string | null
-          created_at?: string
-          currency?: string
-          id?: string
-          provider?: string
-          provider_data?: Json
-          status?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payments_course_id_fkey"
-            columns: ["course_id"]
-            isOneToOne: false
-            referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       platform_admins: {
         Row: {
           created_at: string | null
@@ -1996,41 +1836,6 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      refunds: {
-        Row: {
-          allocation_id: string
-          amount_cents: number
-          created_at: string
-          id: string
-          reason: string | null
-          status: string
-        }
-        Insert: {
-          allocation_id: string
-          amount_cents: number
-          created_at?: string
-          id?: string
-          reason?: string | null
-          status?: string
-        }
-        Update: {
-          allocation_id?: string
-          amount_cents?: number
-          created_at?: string
-          id?: string
-          reason?: string | null
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "refunds_allocation_id_fkey"
-            columns: ["allocation_id"]
-            isOneToOne: false
-            referencedRelation: "payment_allocations"
             referencedColumns: ["id"]
           },
         ]
@@ -2786,33 +2591,6 @@ export type Database = {
           },
         ]
       }
-      webhook_events: {
-        Row: {
-          event_type: string
-          id: string
-          processed_at: string | null
-          provider: string
-          provider_data: Json
-          status: string
-        }
-        Insert: {
-          event_type: string
-          id?: string
-          processed_at?: string | null
-          provider: string
-          provider_data?: Json
-          status?: string
-        }
-        Update: {
-          event_type?: string
-          id?: string
-          processed_at?: string | null
-          provider?: string
-          provider_data?: Json
-          status?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       feed_items: {
@@ -2849,14 +2627,12 @@ export type Database = {
         Returns: undefined
       }
       can_access_chat_media: { Args: { p_path: string }; Returns: boolean }
-      can_access_course: { Args: { course_id: string }; Returns: boolean }
       can_access_private_media: {
         Args: { p_path: string; p_user_id?: string }
         Returns: boolean
       }
       can_manage_announcements: { Args: never; Returns: boolean }
       can_manage_chat_media: { Args: { p_path: string }; Returns: boolean }
-      can_manage_course: { Args: { course_id: string }; Returns: boolean }
       can_manage_live_session: {
         Args: { p_session_id: string }
         Returns: boolean
@@ -2867,7 +2643,6 @@ export type Database = {
       }
       can_manage_private_media: { Args: { p_path: string }; Returns: boolean }
       can_manage_session_requests: { Args: never; Returns: boolean }
-      can_publish_course: { Args: { course_id: string }; Returns: boolean }
       cancel_account_deletion: { Args: never; Returns: undefined }
       cancel_friend_request: { Args: { p_receiver_id: string }; Returns: Json }
       claim_welcome_email: { Args: { p_user_id: string }; Returns: boolean }

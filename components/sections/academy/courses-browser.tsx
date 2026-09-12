@@ -18,10 +18,8 @@ import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { useTranslation } from "@/components/translation/translation-provider";
 import { CourseCreateDialog } from "./course-create-dialog";
 import { CourseEditDialog } from "./course-edit-dialog";
-import { CoursePurchaseDialog } from "@/components/academy/course-purchase-dialog";
 import { deleteCourse } from "@/actions/academy-courses.actions";
 import type { CourseRow } from "@/lib/validations/course.schema";
-import { formatMadPrice } from "@/lib/payments/money";
 
 const CATEGORIES = [
   "Programming",
@@ -179,11 +177,6 @@ function CourseCard({
   const [confirming, setConfirming] = useState(false);
   const isPdf = course.content_type === "pdf";
   const Icon = isPdf ? FileText : Code2;
-  const isPaid =
-    course.is_free === false &&
-    typeof course.price_cents === "number" &&
-    course.price_cents > 0;
-  const priceLabel = isPaid ? formatMadPrice(course.price_cents as number) : null;
 
   function handleDelete() {
     if (!confirming) {
@@ -220,7 +213,7 @@ function CourseCard({
             className="relative -mx-6 -mt-6 mb-5 overflow-hidden border-b border-border hover:opacity-100 transition-opacity duration-300"
           >
             <img
-              src={`/api/academy/courses/${course.id}/file?isThumbnail=true`}
+              src={`/api/academy/courses/${course.id}/file?view=thumbnail`}
               alt={`${course.title} thumbnail`}
               className="h-40 w-full object-cover"
             />
@@ -293,14 +286,6 @@ function CourseCard({
           </span>
 
           <div className="flex items-center gap-2">
-            {priceLabel ? (
-              <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300">
-                {priceLabel}
-              </span>
-            ) : null}
-            {priceLabel ? (
-              <CoursePurchaseDialog courseId={course.id} priceLabel={priceLabel} />
-            ) : null}
             {canManage ? (
               <button
                 type="button"
