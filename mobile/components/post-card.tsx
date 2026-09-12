@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Image, Modal, Pressable, Share, View } from "react-native";
+import { Modal, Pressable, Share, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
-import { Avatar, Button, Card, Txt } from "./ui";
+import { Avatar, Button, Card, Press, SafeImage, Txt } from "./ui";
 import { ActionIcon } from "./icons";
 import { palette, radius, spacing } from "../lib/theme";
 import { timeAgo } from "../lib/format";
@@ -88,11 +88,10 @@ export function PostCard({ item, onChanged }: { item: FeedItem; onChanged: (next
   }
 
   const subtitle = item.entity_name ?? item.branch_name ?? "";
-  const failedImage = useState(false);
 
   return (
     <Card>
-      <Pressable onPress={() => router.push(`/feed/${item.id}`)}>
+      <Pressable onPress={() => router.push(`/feed/${item.id}`)} accessibilityRole="link" accessibilityLabel={`Open post by ${item.author_name ?? item.author_username ?? "unknown author"}`}>
         <View style={{ flexDirection: "row", gap: spacing.sm, marginBottom: spacing.sm }}>
           <Avatar uri={item.author_avatar} name={item.author_name ?? item.author_username} />
           <View style={{ flex: 1 }}>
@@ -105,9 +104,9 @@ export function PostCard({ item, onChanged }: { item: FeedItem; onChanged: (next
                 .join(" · ")}
             </Txt>
           </View>
-          <Pressable hitSlop={12} onPress={() => setMenu(true)}>
+          <Press label="Post options" onPress={() => setMenu(true)}>
             <ActionIcon name="ellipsis-horizontal" />
-          </Pressable>
+          </Press>
         </View>
         {item.title ? (
           <Txt weight="600" variant="subtitle">
@@ -120,31 +119,26 @@ export function PostCard({ item, onChanged }: { item: FeedItem; onChanged: (next
           </Txt>
         ) : null}
       </Pressable>
-      {item.images[0] && !failedImage[0] ? (
-        <Image
-          source={{ uri: item.images[0] }}
-          style={{ width: "100%", height: 220, borderRadius: radius.md, marginTop: spacing.sm, backgroundColor: palette.surfaceHover }}
-          resizeMode="cover"
-          onError={() => failedImage[1](true)}
-        />
+      {item.images[0] ? (
+        <SafeImage uri={item.images[0]} width="100%" height={220} topMargin={spacing.sm} />
       ) : null}
-      <View style={{ flexDirection: "row", marginTop: spacing.sm, gap: spacing.lg }}>
-        <Pressable hitSlop={10} onPress={() => void toggleLike()} style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+      <View style={{ flexDirection: "row", marginTop: spacing.sm, gap: spacing.lg, alignItems: "center" }}>
+        <Press label={item.user_has_liked ? "Unlike" : "Like"} onPress={() => void toggleLike()}>
           <ActionIcon name={item.user_has_liked ? "heart" : "heart-outline"} color={item.user_has_liked ? palette.danger : palette.ink400} />
           <Txt variant="caption" color={palette.ink400}>
             {item.like_count}
           </Txt>
-        </Pressable>
-        <Pressable hitSlop={10} onPress={() => router.push(`/feed/${item.id}`)} style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+        </Press>
+        <Press label="Open comments" onPress={() => router.push(`/feed/${item.id}`)}>
           <ActionIcon name="chatbubble-outline" />
           <Txt variant="caption" color={palette.ink400}>
             {item.comment_count}
           </Txt>
-        </Pressable>
+        </Press>
         <View style={{ flex: 1 }} />
-        <Pressable hitSlop={10} onPress={() => void share()}>
+        <Press label="Share post" onPress={() => void share()}>
           <ActionIcon name="share-outline" />
-        </Pressable>
+        </Press>
       </View>
       <Modal visible={menu} transparent animationType="fade" onRequestClose={() => setMenu(false)}>
         <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }} onPress={() => setMenu(false)}>
