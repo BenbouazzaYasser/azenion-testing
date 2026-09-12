@@ -5,6 +5,7 @@ import { Avatar, Empty, ErrorState, Header, Loading, Screen, Txt } from "../../c
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
 import { resolvePeers } from "../../lib/peers";
+import { timeAgo } from "../../lib/format";
 import { palette, spacing } from "../../lib/theme";
 
 interface ConversationItem {
@@ -143,7 +144,9 @@ export default function ChatList() {
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                   <Txt weight="600">{item.peerName}</Txt>
-                  {item.unread > 0 ? <Txt color={palette.accent400} weight="700">{item.unread}</Txt> : null}
+                  <Txt variant="caption" color={item.unread > 0 ? palette.accent400 : palette.ink500} weight={item.unread > 0 ? "700" : "400"}>
+                    {[timeAgo(item.lastAt), item.unread > 0 ? `${item.unread} new` : null].filter(Boolean).join(" · ")}
+                  </Txt>
                 </View>
                 {item.lastMessage ? (
                   <Txt variant="caption" color={palette.ink400} numberOfLines={1}>
