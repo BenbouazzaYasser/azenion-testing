@@ -112,7 +112,7 @@ export default function PostDetail() {
           keyExtractor={(c) => c.id}
           contentContainerStyle={{ padding: spacing.md, flexGrow: comments.length === 0 ? 1 : undefined }}
           ListHeaderComponent={
-            <View style={{ marginHorizontal: -spacing.md, paddingHorizontal: spacing.md }}>
+            <View>
               <PostCard item={item} onChanged={setItem} />
               <View style={{ height: spacing.sm }} />
               <Txt variant="subtitle" weight="600">
