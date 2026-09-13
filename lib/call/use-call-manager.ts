@@ -287,7 +287,7 @@ function useCallManager() {
   const replayMissedEvents = useCallback(
     async (callId: string, role: "caller" | "callee") => {
       try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data } = await supabase
           .from("call_events")
           .select("id,sender_id,call_id,conversation_id,event_type,payload,created_at")
@@ -571,7 +571,7 @@ function useCallManager() {
       callId: string,
       role: "caller" | "callee",
     ): Promise<RTCPeerConnection | null> => {
-      const supabase = createClient();
+      const supabase = await createClient();
 
       // Fresh signaling state for this call.
       seenEventIdsRef.current.clear();

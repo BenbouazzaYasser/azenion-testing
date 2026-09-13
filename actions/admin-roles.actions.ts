@@ -50,7 +50,7 @@ export type AdminListUsersWithRoleResult =
 async function requirePlatformAdmin(): Promise<
   { ok: true } | { ok: false; error: string }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -82,7 +82,7 @@ export async function adminSearchUsers(input: {
     return { error: "Invalid search query", users: null };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("search_users", {
     p_query: parsed.data.query || null,
     p_limit: 20,
@@ -106,7 +106,7 @@ export async function adminGetUserRoles(input: {
     return { error: "Invalid user", roles: null };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("user_roles")
     .select("assigned_at, roles(name, description)")
@@ -140,7 +140,7 @@ export async function adminListPlatformRoles(): Promise<AdminListRolesResult> {
   const guard = await requirePlatformAdmin();
   if (!guard.ok) return { error: guard.error, roles: null };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("roles")
     .select("name, description, is_system")
@@ -166,7 +166,7 @@ export async function adminGrantRole(input: {
     return { error: "Invalid input" };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("grant_platform_role", {
     p_user_id: parsed.data.user_id,
     p_role_name: parsed.data.role_name,
@@ -191,7 +191,7 @@ export async function adminRevokeRole(input: {
     return { error: "Invalid input" };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("revoke_platform_role", {
     p_user_id: parsed.data.user_id,
     p_role_name: parsed.data.role_name,
@@ -218,7 +218,7 @@ export async function adminListUsersWithRoles(input: {
   const limit = Math.min(input.limit ?? 50, 100);
   const offset = input.offset ?? 0;
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("profiles")
     .select(

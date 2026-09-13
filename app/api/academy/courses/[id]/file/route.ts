@@ -95,7 +95,7 @@ export async function GET(
   // above). Draft/archived courses additionally require owner or staff —
   // checked below before the storage read, using the same canonical rules
   // for both credential types.
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user: cookieUser },
   } = await supabase.auth.getUser();

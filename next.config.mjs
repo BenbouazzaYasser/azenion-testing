@@ -28,8 +28,10 @@ const nextConfig = {
     ? process.env.NEXT_PROD_DIST
     : ".next",
 
-  // Next 16: optimizePackageImports is now top-level
-  optimizePackageImports: ["lucide-react", "sonner"],
+  // Next 16: optimizePackageImports lives under experimental
+  experimental: {
+    optimizePackageImports: ["lucide-react", "sonner"],
+  },
 };
 
 export default nextConfig;

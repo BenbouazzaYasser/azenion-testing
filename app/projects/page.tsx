@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ProjectsPage() {
   const adminClient = createAdminClient();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -252,11 +252,11 @@ export default async function ProjectsPage() {
         {user && myProjects.length === 0 ? (
           <EmptyState
             icon={<Rocket size={32} />}
-            title={serverT("projects.emptyTitle")}
-            description={serverT("projects.emptySub")}
-            eyebrow={serverT("projects.workspace")}
+            title={await serverT("projects.emptyTitle")}
+            description={await serverT("projects.emptySub")}
+            eyebrow={await serverT("projects.workspace")}
             scrollToId="projects"
-            actionLabel={serverT("projects.exploreProjects")}
+            actionLabel={await serverT("projects.exploreProjects")}
           />
         ) : (
           <ProjectsHero />

@@ -503,7 +503,7 @@ export function ChatConversation({
       setInput("");
       isSendingRef.current = true;
     setIsSending(true);
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data: profile } = await supabase
         .from("profiles")
         .select("id, full_name, avatar_url, username")
@@ -614,7 +614,7 @@ export function ChatConversation({
       setInput("");
       isSendingRef.current = true;
     setIsSending(true);
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data: profile } = await supabase
         .from("profiles")
         .select("id, full_name, avatar_url, username")
@@ -767,7 +767,7 @@ export function ChatConversation({
     }
     isSendingRef.current = true;
     setIsSending(true);
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, full_name, avatar_url, username")
@@ -888,7 +888,7 @@ export function ChatConversation({
     const content = input.trim();
     setInput("");
 
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, full_name, avatar_url, username")

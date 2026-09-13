@@ -28,7 +28,7 @@ export type UserBranch = {
 };
 
 export async function getCurrentUser(): Promise<User | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -36,7 +36,7 @@ export async function getCurrentUser(): Promise<User | null> {
 }
 
 export async function getOrCreateProfile(user: User) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   let { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -73,7 +73,7 @@ export async function getOrCreateProfile(user: User) {
 }
 
 export async function getUserBranch(userId: string): Promise<UserBranch | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("branch_members")
     .select("role, branch:branches(name, slug)")
@@ -89,7 +89,7 @@ export async function getUserBranch(userId: string): Promise<UserBranch | null> 
 }
 
 export async function getUserTeams(userId: string): Promise<UserTeam[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase.rpc("get_user_teams", { p_user_id: userId });
 
   const rows = (data ?? []) as {
@@ -112,7 +112,7 @@ export async function getUserTeams(userId: string): Promise<UserTeam[]> {
 }
 
 export async function getUserProjects(userId: string): Promise<UserProject[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: memberships } = await supabase
     .from("project_members")
@@ -167,7 +167,7 @@ export async function getUserProjects(userId: string): Promise<UserProject[]> {
 }
 
 export async function getUserActivities(userId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("activities")
     .select("*, creator:user_id ( username, full_name )")
@@ -208,7 +208,7 @@ export type UserInvitation = {
 };
 
 export async function getUserInvitations(): Promise<UserInvitation[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase.rpc("get_my_team_invitations");
 
   return (data ?? []) as UserInvitation[];

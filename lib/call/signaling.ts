@@ -62,7 +62,7 @@ export const callSignaling = {
     eventType: CallEventType,
     payload: Record<string, unknown>,
   ): Promise<{ error?: string }> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const userId = await this._getCurrentUserId();
     if (!userId) return { error: "Not signed in." };
     const { error } = await supabase.from("call_events").insert({
@@ -151,7 +151,7 @@ export const callSignaling = {
     conversationId: string,
     userId: string,
   ): Promise<{ peer?: import("@/lib/call/types").CallPeer; error?: string }> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .rpc("get_call_peer", { p_conversation_id: conversationId, p_user_id: userId })
       .maybeSingle();

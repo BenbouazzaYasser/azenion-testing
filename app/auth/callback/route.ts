@@ -12,12 +12,12 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
 
   const queryNext = searchParams.get("next");
-  const next = sanitizeNextPath(queryNext ?? getAuthNextCookie());
+  const next = sanitizeNextPath(queryNext ?? (await getAuthNextCookie()));
 
   const loginUrl = new URL("/login", origin);
 
   if (code) {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     try {
       const { error } = await supabase.auth.exchangeCodeForSession(code);

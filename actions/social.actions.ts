@@ -9,7 +9,7 @@ import { insertNotification } from "@/lib/notifications";
  * Client-provided ids are never trusted for authorization.
  */
 async function getSessionUserId(): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -27,7 +27,7 @@ export async function sendFriendRequest(receiverId: string) {
   if (!senderId) return { error: "Not authenticated" };
   if (!receiverId) return { error: "Missing friend request target" };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("send_friend_request", {
     p_receiver_id: receiverId,
   });
@@ -52,7 +52,7 @@ export async function cancelFriendRequest(receiverId: string) {
   const senderId = await getSessionUserId();
   if (!senderId) return { error: "Not authenticated" };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("cancel_friend_request", {
     p_receiver_id: receiverId,
   });
@@ -65,7 +65,7 @@ export async function acceptFriendRequest(senderId: string) {
   const receiverId = await getSessionUserId();
   if (!receiverId) return { error: "Not authenticated" };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("respond_friend_request", {
     p_sender_id: senderId,
     p_accept: true,
@@ -88,7 +88,7 @@ export async function declineFriendRequest(senderId: string) {
   const receiverId = await getSessionUserId();
   if (!receiverId) return { error: "Not authenticated" };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("respond_friend_request", {
     p_sender_id: senderId,
     p_accept: false,
@@ -102,7 +102,7 @@ export async function unfriend(targetId: string) {
   const callerId = await getSessionUserId();
   if (!callerId) return { error: "Not authenticated" };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("unfriend", { p_target_id: targetId });
 
   if (error) return rpcError(error, "Couldn't unfriend this user.");
@@ -115,7 +115,7 @@ export async function followUser(targetId: string) {
   const followerId = await getSessionUserId();
   if (!followerId) return { error: "Not authenticated" };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("follow_user", {
     p_target_id: targetId,
   });
@@ -139,7 +139,7 @@ export async function unfollowUser(targetId: string) {
   const followerId = await getSessionUserId();
   if (!followerId) return { error: "Not authenticated" };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.rpc("unfollow_user", {
     p_target_id: targetId,
   });
@@ -199,7 +199,7 @@ export async function getPublicProfile(username: string): Promise<
   | { data: PublicProfileData }
   | { error: string; data?: undefined }
 > {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Profiles/activities RLS is locked to the caller's own row (00004_rls_fix),
   // so cross-user reads go through the SECURITY DEFINER RPC (00074_public_profile),

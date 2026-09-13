@@ -35,7 +35,7 @@ export interface ChannelMessageWithSender {
 
 /** Servers the user belongs to (team/branch servers included automatically). */
 export async function getUserServers(userId: string): Promise<ServerSummary[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("server_members")
@@ -82,7 +82,7 @@ export interface ServerView {
 
 /** Full server view. RLS hides project channels the user can't access. */
 export async function getServerView(slug: string): Promise<ServerView | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: server } = await supabase
     .from("servers")
@@ -138,7 +138,7 @@ export interface ChannelView {
  * Returns null when it doesn't exist or RLS hides it (no access).
  */
 export async function getChannelView(channelId: string): Promise<ChannelView | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data } = await supabase
     .from("channels")
@@ -172,7 +172,7 @@ export async function getChannelView(channelId: string): Promise<ChannelView | n
 
 /** The group-chat channel of a project (works standalone or team-linked). */
 export async function getProjectChannel(projectId: string): Promise<ChannelView | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: channel } = await supabase
     .from("channels")
@@ -188,7 +188,7 @@ export async function getProjectChannel(projectId: string): Promise<ChannelView 
 export async function getChannelMessages(
   channelId: string,
 ): Promise<ChannelMessageWithSender[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // RLS enforces access; an empty result for non-members is fine.
   const { data: messages } = await supabase
@@ -226,7 +226,7 @@ export interface ServerMemberRow {
 }
 
 export async function getServerMembers(serverId: string): Promise<ServerMemberRow[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: members } = await supabase
     .from("server_members")

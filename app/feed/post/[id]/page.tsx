@@ -50,7 +50,7 @@ export default async function FeedPostPage({ params }: FeedPostPageProps) {
 }
 
 async function FeedPost({ id }: { id: string }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -66,7 +66,7 @@ async function FeedPost({ id }: { id: string }) {
 
       <section className="rounded-2xl card-surface-soft p-5 shadow-card backdrop-blur-xl sm:p-6">
         <h2 className="mb-3 text-sm font-semibold tracking-tight text-ink-200">
-          {serverT("feed.comments")}
+          {await serverT("feed.comments")}
         </h2>
         <CommentSection
           targetType={item.source_type}

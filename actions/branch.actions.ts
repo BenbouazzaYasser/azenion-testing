@@ -45,7 +45,7 @@ function validateUpload(file: File) {
 }
 
 export async function joinBranch(branchId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -68,7 +68,7 @@ export async function joinBranch(branchId: string) {
 }
 
 export async function leaveBranch(slug?: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -89,7 +89,7 @@ export async function leaveBranch(slug?: string) {
 }
 
 export async function createBranch(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -137,7 +137,7 @@ export async function createBranch(formData: FormData) {
 }
 
 export async function updateBranch(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -206,7 +206,7 @@ export async function updateBranch(formData: FormData) {
 }
 
 export async function uploadBranchLogo(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -282,7 +282,7 @@ export async function uploadBranchLogo(formData: FormData) {
 // Do NOT widen either gate or merge the two until the product decision on
 // whether this staging-during-creation path is intentional lands.
 export async function uploadBranchLogoAsset(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -329,7 +329,7 @@ export async function uploadBranchLogoAsset(formData: FormData) {
   return { success: true, logo_url: publicUrl };
 }
 
-type BranchAssetsBucket = ReturnType<ReturnType<typeof createClient>["storage"]["from"]>;
+type BranchAssetsBucket = ReturnType<Awaited<ReturnType<typeof createClient>>["storage"]["from"]>;
 
 /**
  * Recursively collects every file path under `prefix` in the given storage
@@ -371,7 +371,7 @@ async function listBucketFilePaths(
 }
 
 export async function deleteBranch(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -431,7 +431,7 @@ export async function deleteBranch(formData: FormData) {
 // ── Branch Leaders (Platform Admin appoints/removes) ────────────────────
 
 export async function assignBranchLeader(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -462,7 +462,7 @@ export async function assignBranchLeader(formData: FormData) {
 }
 
 export async function removeBranchLeader(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -495,7 +495,7 @@ export async function removeBranchLeader(formData: FormData) {
 // ── Branch Announcements ───────────────────────────────────────────────
 
 export async function createBranchAnnouncement(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -538,7 +538,7 @@ export async function createBranchAnnouncement(formData: FormData) {
 }
 
 export async function uploadBranchAnnouncementImage(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -602,7 +602,7 @@ export async function uploadBranchAnnouncementImage(formData: FormData) {
 }
 
 export async function updateBranchAnnouncement(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -653,7 +653,7 @@ export async function updateBranchAnnouncement(formData: FormData) {
 }
 
 export async function deleteBranchAnnouncement(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -681,7 +681,7 @@ export async function deleteBranchAnnouncement(formData: FormData) {
 // ── Branch Events ──────────────────────────────────────────────────────
 
 export async function createBranchEvent(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -735,7 +735,7 @@ export async function createBranchEvent(formData: FormData) {
 }
 
 export async function updateBranchEvent(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -792,7 +792,7 @@ export async function updateBranchEvent(formData: FormData) {
 }
 
 export async function deleteBranchEvent(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -818,7 +818,7 @@ export async function deleteBranchEvent(formData: FormData) {
 }
 
 export async function uploadBranchEventCover(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -872,7 +872,7 @@ export async function uploadBranchEventCover(formData: FormData) {
 // ── Branch Highlights ──────────────────────────────────────────────────
 
 export async function createBranchHighlight(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -915,7 +915,7 @@ export async function createBranchHighlight(formData: FormData) {
 }
 
 export async function updateBranchHighlight(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -962,7 +962,7 @@ export async function updateBranchHighlight(formData: FormData) {
 }
 
 export async function deleteBranchHighlight(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -988,7 +988,7 @@ export async function deleteBranchHighlight(formData: FormData) {
 }
 
 export async function uploadBranchHighlightImage(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
