@@ -22,25 +22,13 @@ export const metadata: Metadata = {
   },
 };
 
-import { cookies } from "next/headers";
-
-const RTL_LANGS = new Set(["ar", "he", "fa", "ur"]);
-function dirFor(lang: string | undefined): "rtl" | "ltr" {
-  return lang && RTL_LANGS.has(lang) ? "rtl" : "ltr";
-}
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let initialLang: string | undefined;
-  try {
-    const store = await cookies();
-    initialLang = store.get("azenion-lang")?.value;
-  } catch {}
   return (
-    <html lang={initialLang ?? "en"} dir={dirFor(initialLang)} suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
         <Script
           id="theme-init"
@@ -77,7 +65,7 @@ export default async function RootLayout({
           }}
         />
         <ThemeProvider>
-          <TranslationProvider initialLanguage={initialLang}>
+          <TranslationProvider>
             <AuthProvider>
               <OnboardingProvider />
               <CallProvider>{children}</CallProvider>

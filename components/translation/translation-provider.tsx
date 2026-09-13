@@ -1,18 +1,21 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   DEFAULT_LANGUAGE,
   getDirection,
   isValidLanguage,
 } from "@/lib/translation/languages";
-import { lookup } from "@/lib/translation/dictionaries";
-import type { DictKey } from "@/lib/translation/types";
+import {
+  SOURCE_LANG,
+  loadDictionary,
+  lookupBase,
+} from "@/lib/translation/client-dictionaries";
+import type { DictKey, TranslationResource } from "@/lib/translation/types";
 
 const STORAGE_KEY = "azenion-lang";
 const COOKIE_KEY = "azenion-lang";
-const SOURCE_LANG = "en";
 
 interface TranslationContextValue {
   language: string;
@@ -30,7 +33,7 @@ const TranslationContext = createContext<TranslationContextValue>({
   isTranslating: false,
   isTranslated: false,
   restore: () => {},
-  t: (key, fallback) => lookup(key, DEFAULT_LANGUAGE, fallback) ?? fallback ?? key,
+  t: (key, fallback) => lookupBase(key, DEFAULT_LANGUAGE, fallback) ?? fallback ?? key,
 });
 
 export function useTranslation() {
@@ -92,9 +95,19 @@ export function TranslationProvider({
   const isTranslating = false;
   const isTranslated = language !== SOURCE_LANG;
 
+  const [loaded, setLoaded] = useState<
+    Partial<Record<string, TranslationResource>>
+  >({});
+  const loadingRef = useRef<Set<string>>(new Set());
+
   const t = useCallback(
-    (key: DictKey, fallback?: string) => lookup(key, language, fallback) ?? fallback ?? key,
-    [language],
+    (key: DictKey, fallback?: string) => {
+      const dict = loaded[language];
+      const exact = dict?.[key as keyof TranslationResource];
+      if (exact !== undefined) return exact;
+      return lookupBase(key, language, fallback) ?? fallback ?? key;
+    },
+    [loaded, language],
   );
 
   // Sync language to DOM + storage (includes rtl dir for Arabic).
@@ -126,6 +139,22 @@ export function TranslationProvider({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialLanguage]);
+
+  useEffect(() => {
+    if (language === SOURCE_LANG || loadingRef.current.has(language)) return;
+    loadingRef.current.add(language);
+    loadDictionary(language)
+      .then((dict) => {
+        if (dict) {
+          setLoaded((prev) =>
+            prev[language] ? prev : { ...prev, [language]: dict },
+          );
+        }
+      })
+      .catch(() => {
+        loadingRef.current.delete(language);
+      });
+  }, [language]);
 
   const restore = useCallback(() => {
     setLanguageState(SOURCE_LANG);
