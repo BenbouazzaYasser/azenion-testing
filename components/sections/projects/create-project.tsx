@@ -5,7 +5,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { serverT } from "@/lib/translation/server";
 
-export function CreateProject() {
+export async function CreateProject() {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="create-project-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
@@ -25,17 +25,17 @@ export function CreateProject() {
                   id="create-project-heading"
                   className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
                 >
-                  {serverT("projects.ctaTitle")}
+                  {await serverT("projects.ctaTitle")}
                 </h2>
 
                 <p className="mt-4 max-w-lg text-[1.02rem] leading-relaxed text-ink-400">
-                  {serverT("projects.ctaSub")}
+                  {await serverT("projects.ctaSub")}
                 </p>
 
                 <div className="mt-8">
                   <Button size="lg" asChild>
                     <Link href="/projects/create">
-                      {serverT("projects.ctaButton")}
+                      {await serverT("projects.ctaButton")}
                       <Plus size={16} />
                     </Link>
                   </Button>

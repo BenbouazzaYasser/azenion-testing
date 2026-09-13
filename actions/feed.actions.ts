@@ -70,7 +70,7 @@ export type FeedItemWithAuthor = FeedItem;
  * Client-provided ids are never trusted for authorization.
  */
 async function getSessionUserId(): Promise<string | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -624,7 +624,7 @@ export async function getBranchFeedItems(
  * A single post can be pinned independently in multiple feeds.
  */
 export async function toggleFeedPin(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -662,7 +662,7 @@ export async function toggleFeedPin(formData: FormData) {
 // ── Standalone composer (main feed) ──────────────────────────────────────
 
 export async function createFeedPost(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -698,7 +698,7 @@ export async function createFeedPost(formData: FormData) {
 }
 
 export async function uploadFeedPostMedia(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

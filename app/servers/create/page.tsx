@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CreateServerPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -26,9 +26,9 @@ export default async function CreateServerPage() {
       <main className="relative min-h-dvh overflow-hidden pb-20 pt-[100px] sm:pt-[110px]">
         <PageAtmosphere />
         <div className="relative mx-auto w-full max-w-xl px-4 sm:px-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-ink-50">{serverT("servers.createTitle")}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-ink-50">{await serverT("servers.createTitle")}</h1>
           <p className="mt-1.5 text-sm leading-relaxed text-ink-400">
-            {serverT("servers.createSub")}
+            {await serverT("servers.createSub")}
           </p>
 
           <div className="mt-8 rounded-3xl bg-surface/50 p-6 shadow-card backdrop-blur-xl sm:p-8">

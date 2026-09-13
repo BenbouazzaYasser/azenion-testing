@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { fetchWithTimeout } from "@/lib/fetch-timeout";
 
-export function createClient() {
+export async function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -17,7 +17,7 @@ export function createClient() {
     );
   }
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -32,7 +32,7 @@ export function createClient() {
         } catch {
           // Called from a Server Component where cookies cannot be modified
           // outside a Server Action or Route Handler. Session refresh is
-          // already handled in middleware.ts, so this is safe to skip.
+          // already handled in proxy.ts, so this is safe to skip.
         }
       },
     },

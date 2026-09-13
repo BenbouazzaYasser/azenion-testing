@@ -504,7 +504,7 @@ export function Navbar() {
                         <button
                           type="button"
                           onClick={async () => {
-                            const supabase = createClient();
+                            const supabase = await createClient();
                             await supabase.auth.signOut();
                             window.location.href = "/";
                           }}

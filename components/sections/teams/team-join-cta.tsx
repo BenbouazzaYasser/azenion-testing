@@ -11,7 +11,7 @@ interface TeamJoinCtaProps {
   requestStatus?: TeamRequestStatus;
 }
 
-export function TeamJoinCta({ teamId, teamName, teamSlug, isMember, isOwner, requestStatus = null }: TeamJoinCtaProps) {
+export async function TeamJoinCta({ teamId, teamName, teamSlug, isMember, isOwner, requestStatus = null }: TeamJoinCtaProps) {
   const isRequestPending = requestStatus === "PENDING";
 
   return (
@@ -22,17 +22,17 @@ export function TeamJoinCta({ teamId, teamName, teamSlug, isMember, isOwner, req
             id="team-join-heading"
             className="text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
           >
-            {isMember ? serverT("teams.ctaMember") : isRequestPending ? serverT("teams.ctaPending") : serverT("teams.ctaReady")}
+            {isMember ? await serverT("teams.ctaMember") : isRequestPending ? await serverT("teams.ctaPending") : await serverT("teams.ctaReady")}
           </h2>
         </Reveal>
 
         <Reveal delay={100}>
           <p className="mx-auto mt-6 max-w-xl text-balance text-[1.05rem] leading-relaxed text-ink-400">
             {isMember
-              ? serverT("teams.ctaMemberSub")
+              ? await serverT("teams.ctaMemberSub")
               : isRequestPending
-                ? serverT("teams.ctaPendingSub")
-                : serverT("teams.ctaReadySub")}
+                ? await serverT("teams.ctaPendingSub")
+                : await serverT("teams.ctaReadySub")}
           </p>
         </Reveal>
 

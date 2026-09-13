@@ -13,7 +13,7 @@ export default async function AdminInstructorVerificationPage({
 }: {
   searchParams: { status?: string; page?: string };
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

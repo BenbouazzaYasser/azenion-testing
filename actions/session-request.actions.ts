@@ -20,7 +20,7 @@ function firstZodError(parsed: { error: { flatten: () => { fieldErrors: Record<s
 }
 
 export async function createSessionRequest(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -59,7 +59,7 @@ export async function createSessionRequest(formData: FormData) {
 }
 
 export async function getMySessionRequests() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -79,7 +79,7 @@ export async function getMySessionRequests() {
 }
 
 export async function getAllSessionRequests() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -99,7 +99,7 @@ export async function getAllSessionRequests() {
 }
 
 export async function updateSessionRequestStatus(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

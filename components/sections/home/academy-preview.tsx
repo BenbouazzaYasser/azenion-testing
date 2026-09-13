@@ -10,7 +10,7 @@ interface AcademyPreviewProps {
   sessions: LiveSessionWithManage[];
 }
 
-export function AcademyPreview({ sessions }: AcademyPreviewProps) {
+export async function AcademyPreview({ sessions }: AcademyPreviewProps) {
   const upcoming = sessions.filter((s) => s.status === "UPCOMING").slice(0, 3);
 
   return (
@@ -21,21 +21,21 @@ export function AcademyPreview({ sessions }: AcademyPreviewProps) {
             <div className="max-w-2xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
                 <GraduationCap size={13} />
-                {serverT("home.academyPreviewEyebrow")}
+                {await serverT("home.academyPreviewEyebrow")}
               </span>
               <h2
                 id="academy-preview-heading"
                 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[2.9rem]"
               >
-                {serverT("home.academyPreviewTitle")}<span className="text-accent-400">{serverT("home.academyPreviewAccent")}</span>
+                {await serverT("home.academyPreviewTitle")}<span className="text-accent-400">{await serverT("home.academyPreviewAccent")}</span>
               </h2>
               <p className="mt-5 text-[1.02rem] leading-relaxed text-ink-400">
-                {serverT("home.academyPreviewSub")}
+                {await serverT("home.academyPreviewSub")}
               </p>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
               <a href="/academy/live-sessions">
-                {serverT("home.exploreAcademy")}
+                {await serverT("home.exploreAcademy")}
                 <ArrowUpRight size={16} />
               </a>
             </Button>
@@ -56,9 +56,9 @@ export function AcademyPreview({ sessions }: AcademyPreviewProps) {
               <span className="flex h-12 w-12 items-center justify-center rounded-full border border-accent-400/30 bg-accent/[0.08] text-accent-300">
                 <GraduationCap size={20} />
               </span>
-              <p className="text-lg font-semibold text-ink-50">{serverT("home.academyPreviewEmpty")}</p>
+              <p className="text-lg font-semibold text-ink-50">{await serverT("home.academyPreviewEmpty")}</p>
               <p className="max-w-md text-sm leading-relaxed text-ink-400">
-                {serverT("home.academyPreviewEmptySub")}
+                {await serverT("home.academyPreviewEmptySub")}
               </p>
             </div>
           </Reveal>

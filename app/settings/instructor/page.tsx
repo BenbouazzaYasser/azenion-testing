@@ -14,7 +14,7 @@ export const metadata = {
 };
 
 export default async function InstructorVerificationPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -32,9 +32,9 @@ export default async function InstructorVerificationPage() {
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-ink-50">{serverT("settings.becomeInstructorTitle")}</h1>
+        <h1 className="text-3xl font-bold text-ink-50">{await serverT("settings.becomeInstructorTitle")}</h1>
         <p className="mt-2 text-ink-400">
-          {serverT("settings.becomeInstructorDesc")}
+          {await serverT("settings.becomeInstructorDesc")}
         </p>
       </div>
 
@@ -56,10 +56,10 @@ export default async function InstructorVerificationPage() {
             </svg>
             <div>
               <h2 className="text-lg font-semibold text-success">
-                {serverT("settings.instructorVerifiedHeading")}
+                {await serverT("settings.instructorVerifiedHeading")}
               </h2>
               <p className="mt-1 text-ink-300">
-                {serverT("settings.instructorVerifiedDescAlt")}
+                {await serverT("settings.instructorVerifiedDescAlt")}
               </p>
             </div>
           </div>

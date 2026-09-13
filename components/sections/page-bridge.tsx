@@ -1,6 +1,6 @@
 import { serverT } from "@/lib/translation/server";
 
-export function PageBridge() {
+export async function PageBridge() {
   return (
     <div className="relative h-40 overflow-hidden sm:h-48 lg:h-56" aria-hidden>
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.04] to-transparent" />
@@ -24,7 +24,7 @@ export function PageBridge() {
         <div className="flex flex-col items-center gap-3">
           <span className="h-10 w-px bg-gradient-to-b from-accent-400/40 to-transparent" />
           <span className="animate-pulse text-[11px] font-medium uppercase tracking-[0.18em] text-ink-600">
-            {serverT("home.journeyContinues")}
+            {await serverT("home.journeyContinues")}
           </span>
         </div>
       </div>

@@ -31,7 +31,7 @@ export interface UpdateSettingsInput {
  * authenticated user id is always derived from the server session.
  */
 export async function updateSettings(input: UpdateSettingsInput) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -142,7 +142,7 @@ export async function updateSettings(input: UpdateSettingsInput) {
 }
 
 export async function changeEmail(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -166,7 +166,7 @@ export async function changeEmail(formData: FormData) {
 }
 
 export async function changeUsername(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -216,7 +216,7 @@ export async function changeUsername(formData: FormData) {
  * affect any other user.
  */
 export async function signOutEverywhere() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

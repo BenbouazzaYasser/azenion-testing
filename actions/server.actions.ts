@@ -17,7 +17,7 @@ function slugify(value: string): string {
 }
 
 export async function createUserServer(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -68,7 +68,7 @@ export async function createUserServer(formData: FormData) {
 }
 
 export async function createServerChannel(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -109,7 +109,7 @@ export async function createServerChannel(formData: FormData) {
 }
 
 export async function leaveUserServer(serverId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -132,7 +132,7 @@ export async function leaveUserServer(serverId: string) {
 }
 
 export async function editChannelMessage(messageId: string, content: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -160,7 +160,7 @@ export async function editChannelMessage(messageId: string, content: string) {
 }
 
 export async function deleteChannelMessage(messageId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -184,7 +184,7 @@ export async function deleteChannelMessage(messageId: string) {
 }
 
 export async function sendChannelMessage(channelId: string, content: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

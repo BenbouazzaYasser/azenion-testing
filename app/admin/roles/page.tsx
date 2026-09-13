@@ -9,7 +9,7 @@ import { RoleManager } from "@/components/admin/role-manager";
 export const dynamic = "force-dynamic";
 
 export default async function AdminRolesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

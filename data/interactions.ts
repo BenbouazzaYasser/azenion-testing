@@ -83,7 +83,7 @@ export async function getUserLikes(
 ): Promise<Set<string>> {
   if (!userId || targetIds.length === 0) return new Set();
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("update_likes")
     .select("target_id")
@@ -121,7 +121,7 @@ export async function getUserCommentLikes(
 ): Promise<Set<string>> {
   if (!userId || commentIds.length === 0) return new Set();
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("comment_likes")
     .select("comment_id")
@@ -138,7 +138,7 @@ export async function getUserCommentLikes(
 export async function getSavedPostIds(userId: string | null, postIds: string[]): Promise<Set<string>> {
   if (!userId || postIds.length === 0) return new Set();
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("saved_posts")
     .select("post_id")
@@ -151,7 +151,7 @@ export async function getSavedPostIds(userId: string | null, postIds: string[]):
 export async function getSavedPostsCount(userId: string): Promise<number> {
   if (!userId) return 0;
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { count } = await supabase
     .from("saved_posts")
     .select("id", { count: "exact", head: true })

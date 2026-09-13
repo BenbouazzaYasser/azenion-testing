@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { CursorGlow } from "@/components/graphics/cursor-glow";
@@ -28,24 +29,29 @@ function dirFor(lang: string | undefined): "rtl" | "ltr" {
   return lang && RTL_LANGS.has(lang) ? "rtl" : "ltr";
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   let initialLang: string | undefined;
   try {
-    initialLang = cookies().get("azenion-lang")?.value;
+    const store = await cookies();
+    initialLang = store.get("azenion-lang")?.value;
   } catch {}
   return (
     <html lang={initialLang ?? "en"} dir={dirFor(initialLang)} suppressHydrationWarning>
       <head>
-        <script
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `try{var t=(function(){try{return localStorage.getItem("azenion-theme")}catch(e){return null}})();if(!t){var c=document.cookie.match(/(?:^|; )azenion-theme=([^;]*)/);t=c?c[1]:null}if(!t)t="system";var e=(t==="system")?(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"):t;var d=document.documentElement;d.dataset.theme=e;d.dataset.themePreference=t;d.style.colorScheme=e;}catch(err){document.documentElement.dataset.theme="dark";}`,
           }}
         />
-        <script
+        <Script
+          id="lang-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `try{var l=null;try{l=localStorage.getItem("azenion-lang")}catch(e){}if(!l){var m=document.cookie.match(/(?:^|; )azenion-lang=([^;]*)/);l=m?decodeURIComponent(m[1]):null}if(l){document.documentElement.lang=l;var rtl=new Set(["ar","he","fa","ur"]);document.documentElement.dir=rtl.has(l)?"rtl":"ltr";}}catch(e){}`,
           }}

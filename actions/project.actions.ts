@@ -18,7 +18,7 @@ import {
 } from "@/lib/media";
 
 export async function createProject(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -122,7 +122,7 @@ export async function createProject(formData: FormData) {
 }
 
 export async function joinProject(projectId: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -145,7 +145,7 @@ export async function joinProject(projectId: string) {
 }
 
 export async function leaveProject(projectId: string, slug: string) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -169,7 +169,7 @@ export async function leaveProject(projectId: string, slug: string) {
 }
 
 export async function updateProjectSettings(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -251,7 +251,7 @@ export async function updateProjectSettings(formData: FormData) {
 }
 
 export async function restoreProject(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -282,7 +282,7 @@ export async function restoreProject(formData: FormData) {
 }
 
 export async function deleteProject(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -313,7 +313,7 @@ export async function deleteProject(formData: FormData) {
 }
 
 export async function uploadProjectLogo(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -380,7 +380,7 @@ export async function uploadProjectLogo(formData: FormData) {
 
 export async function createProjectUpdate(formData: FormData) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const {
       data: { user },
@@ -468,7 +468,7 @@ export async function createProjectUpdate(formData: FormData) {
 }
 
 export async function uploadUpdateImage(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -541,7 +541,7 @@ export async function uploadUpdateImage(formData: FormData) {
 }
 
 export async function updateProjectUpdate(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -587,7 +587,7 @@ export async function updateProjectUpdate(formData: FormData) {
 }
 
 export async function deleteProjectUpdate(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

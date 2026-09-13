@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLeader, setIsLeader] = useState(false);
 
   const fetchProfileAndRoles = useCallback(async (userId: string) => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const [{ data: profileData }, { data: adminResult }, { data: leaderRows }] =
       await Promise.all([
         supabase
