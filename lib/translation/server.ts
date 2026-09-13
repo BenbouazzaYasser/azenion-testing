@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { lookup } from "@/lib/translation/dictionaries";
 import { DEFAULT_LANGUAGE, isValidLanguage } from "@/lib/translation/languages";
@@ -11,7 +12,7 @@ const LANG_COOKIE = "azenion-lang";
  * `azenion-lang` cookie and returns the hand-written translation for `key`,
  * falling back to English (the source language).
  */
-export async function getServerLanguage(): Promise<string> {
+export const getServerLanguage = cache(async (): Promise<string> => {
   try {
     const store = await cookies();
     const cookie = store.get(LANG_COOKIE)?.value;
@@ -20,7 +21,7 @@ export async function getServerLanguage(): Promise<string> {
     // cookies() can throw during static generation — fall through to default.
   }
   return DEFAULT_LANGUAGE;
-}
+});
 
 export async function serverT(key: DictKey, fallback?: string): Promise<string> {
   return lookup(key, await getServerLanguage(), fallback) ?? fallback ?? key;
