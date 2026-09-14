@@ -37,6 +37,7 @@ export function CourseCreateDialog() {
   const [duration, setDuration] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [tags, setTags] = useState("");
+  const [status, setStatus] = useState("published");
   const [fileName, setFileName] = useState("");
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -76,6 +77,7 @@ export function CourseCreateDialog() {
     setDuration("");
     setDifficulty("");
     setTags("");
+    setStatus("published");
     setFileName("");
     setThumbnailFile(null);
     setThumbnailPreview(null);
@@ -106,6 +108,7 @@ export function CourseCreateDialog() {
       fd.set("category", category);
       fd.set("content_type", contentType);
       fd.set("duration", duration);
+      fd.set("status", status);
       if (difficulty) fd.set("difficulty", difficulty);
       if (tags.trim()) fd.set("tags", tags);
       fd.set("file", file);
@@ -296,6 +299,24 @@ export function CourseCreateDialog() {
                       />
                       <p className="mt-1.5 text-xs text-ink-500">
                         Comma-separated, up to 10 tags.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="course-status" className={labelClass}>
+                        Visibility
+                      </label>
+                      <select
+                        id="course-status"
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                        className={cn(inputClass, "cursor-pointer appearance-none pr-10")}
+                      >
+                        <option value="published">Published — visible to everyone</option>
+                        <option value="draft">Draft — managers only</option>
+                      </select>
+                      <p className="mt-1.5 text-xs text-ink-500">
+                        Drafts are hidden from regular users; published courses are public.
                       </p>
                     </div>
 
