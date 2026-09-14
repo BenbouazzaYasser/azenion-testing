@@ -566,9 +566,9 @@ export function Navbar() {
         aria-label={isMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
         aria-expanded={isMenuOpen}
         aria-controls="mobile-nav-drawer"
-        className="fixed right-4 top-4 z-50 flex h-[52px] w-[52px] items-center justify-center rounded-full ring-1 ring-inset ring-border bg-glass-nav text-ink-50 shadow-[0_8px_30px_-15px_rgba(40,40,255,0.35)] transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:bg-surface-hover hover:shadow-[0_0_22px_-6px_rgba(109,109,255,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
+        className="fixed right-4 top-4 z-50 flex h-16 w-16 items-center justify-center rounded-full ring-1 ring-inset ring-border bg-glass-nav text-ink-50 shadow-[0_8px_30px_-15px_rgba(40,40,255,0.35)] transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:bg-surface-hover hover:shadow-[0_0_22px_-6px_rgba(109,109,255,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
       >
-        <Logo withWordmark={false} markSize={36} />
+        <Logo withWordmark={false} markSize={44} />
       </button>
 
       <MobileNavDrawer
