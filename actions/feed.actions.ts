@@ -276,12 +276,18 @@ async function enrichPosts(
   // ── Interaction data (batched) ─────────────────────────────────────────
 
   const interactive = posts.filter((p) => !INTERACTIONLESS_TYPES.has(p.source_type));
-  const interactiveIds = [...new Set(interactive.map((p) => p.source_id!).filter(Boolean))];
+  // user_post rows carry no separate source row (source_id is null) — the
+  // post itself is the like/comment target. Every other type targets its
+  // source row. This key must match what toggleLike/createComment receive
+  // from FeedCard (source_id ?? post id), or likes silently miss.
+  const targetIdOf = (p: { id: string; source_id: string | null }) => p.source_id ?? p.id;
+  const interactiveIds = [...new Set(interactive.map((p) => targetIdOf(p)).filter(Boolean))];
 
   const likeCounts: Record<string, number> = {};
   const commentCounts: Record<string, number> = {};
   const userLiked = new Set<string>();
-  const keyOf = (p: { source_type: string; source_id: string | null }) => `${p.source_type}-${p.source_id}`;
+  const keyOf = (p: { source_type: string; id: string; source_id: string | null }) =>
+    `${p.source_type}-${targetIdOf(p)}`;
   for (const p of interactive) likeCounts[keyOf(p)] = 0;
   for (const p of interactive) commentCounts[keyOf(p)] = 0;
 
@@ -305,7 +311,7 @@ async function enrichPosts(
   }
 
   const likerNames = await getBatchLikerNames(
-    interactive.map((p) => ({ target_type: p.source_type, target_id: p.source_id! })),
+    interactive.map((p) => ({ target_type: p.source_type, target_id: targetIdOf(p) })),
     2,
     likesRes.data ?? undefined,
   );

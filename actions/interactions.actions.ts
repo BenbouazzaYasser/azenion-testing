@@ -67,6 +67,10 @@ export async function toggleLike(targetType: string, targetId: string) {
     return { error: "Not authenticated" };
   }
 
+  if (!targetId) {
+    return { error: "Missing target" };
+  }
+
   const { data: existing } = await supabase
     .from("update_likes")
     .select("id")

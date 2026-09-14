@@ -323,12 +323,12 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
                 initialCount={item.like_count}
                 initialLiked={item.user_has_liked}
                 currentUserId={currentUserId}
-                onToggle={() => toggleLike(item.source_type, item.source_id ?? "")}
+                onToggle={() => toggleLike(item.source_type, item.source_id ?? item.id)}
               />
 
               <CommentSection
                 targetType={item.source_type}
-                targetId={item.source_id ?? ""}
+                targetId={item.source_id ?? item.id}
                 initialCount={item.comment_count}
                 currentUserId={currentUserId}
               />
