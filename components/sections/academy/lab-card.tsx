@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -67,12 +68,13 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
 
       <div className="relative flex flex-1 flex-col p-6">
         {lab.thumbnail_url ? (
-          <div className="relative -mx-6 -mt-6 mb-5 overflow-hidden border-b border-border">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div className="relative -mx-6 -mt-6 mb-5 h-40 overflow-hidden border-b border-border">
+            <Image
               src={lab.thumbnail_url}
               alt={`${lab.title} thumbnail`}
-              className="h-40 w-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="object-cover"
             />
           </div>
         ) : null}
