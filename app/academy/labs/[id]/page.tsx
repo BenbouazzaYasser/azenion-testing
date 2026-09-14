@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import nextDynamic from "next/dynamic";
 import Link from "next/link";
 import { FlaskConical, ArrowLeft } from "lucide-react";
 
@@ -7,10 +8,32 @@ import { Navbar } from "@/components/layout/navbar";
 import { PageBridge } from "@/components/sections/page-bridge";
 import { PageHero } from "@/components/layout/page-hero";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
-import { LabPlayer, type PlayerVersion, type PlayerSubmission } from "@/components/sections/academy/lab-player";
+import type {
+  PlayerVersion,
+  PlayerSubmission,
+} from "@/components/sections/academy/lab-player";
 import { getLabWithContent } from "@/actions/academy-labs.actions";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/supabase/user";
+
+// Code-split: the ~600-line interactive player hydrates after the page
+// shell (navbar/hero) paints; skeleton holds layout to avoid CLS.
+const LabPlayer = nextDynamic(
+  () =>
+    import("@/components/sections/academy/lab-player").then((mod) => ({
+      default: mod.LabPlayer,
+    })),
+  {
+    loading: () => (
+      <div className="mx-auto w-full max-w-[880px] px-5 py-16 sm:px-8" aria-hidden>
+        <div className="h-8 w-2/3 animate-pulse rounded-lg bg-surface" />
+        <div className="mt-4 h-4 w-full animate-pulse rounded-lg bg-surface" />
+        <div className="mt-2 h-4 w-5/6 animate-pulse rounded-lg bg-surface" />
+        <div className="mt-8 h-64 animate-pulse rounded-2xl bg-surface" />
+      </div>
+    ),
+  },
+);
 
 interface LabDetailPageProps {
   params: Promise<{ id: string }>;
