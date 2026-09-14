@@ -7,6 +7,7 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  contain: layout paint;
 }
 
 /* ------- drifting energy currents ------- */
@@ -16,6 +17,7 @@
   pointer-events: none;
   will-change: transform;
   filter: blur(56px);
+  contain: layout paint;
 }
 
 .currentA {
@@ -62,12 +64,14 @@
 .node {
   position: absolute;
   will-change: transform;
+  contain: layout paint;
 }
 
 .core {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
+  will-change: opacity;
 }
 
 .halo {

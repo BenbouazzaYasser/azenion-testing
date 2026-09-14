@@ -103,6 +103,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
               <div className="flex items-center gap-2">
                 <ArrowDownWideNarrow size={14} className="text-ink-500" />
                 <select
+                  aria-label={t(SORT_LABEL_KEYS[sort])}
                   value={sort}
                   onChange={(e) => setSort(e.target.value as SortKey)}
                   className="appearance-none rounded-xl bg-surface px-3 py-3 pr-8 text-sm text-ink-50 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input"
