@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { mapBranchRow } from "@/data/branches";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { serverT } from "@/lib/translation/server";
 
 export const metadata: Metadata = {
@@ -23,9 +24,7 @@ export const metadata: Metadata = {
 export default async function BranchesPage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   const { data: dbBranches } = await supabase
     .from("branches")
@@ -85,7 +84,7 @@ export default async function BranchesPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         {user && !isBranchMember ? (
           <EmptyState

@@ -19,7 +19,7 @@ export default function ShowcasePage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <ShowcaseHero />
         <ComingSoon />

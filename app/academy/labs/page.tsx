@@ -8,6 +8,7 @@ import { LabsBrowser } from "@/components/sections/academy/labs-browser";
 import { AcademyClosingCta } from "@/components/sections/academy/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { getLabsAuthContext } from "@/lib/labs/authorization";
 import type { LabRow } from "@/lib/validations/lab.schema";
 import { serverT } from "@/lib/translation/server";
@@ -23,9 +24,7 @@ export const dynamic = "force-dynamic";
 export default async function LabsPage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   // Mirrors the backend gates in academy-labs.actions.ts. Unlike Courses
   // (where any manager can edit any course), Labs restrict update/delete
@@ -66,7 +65,7 @@ export default async function LabsPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyHero
           eyebrow={await serverT("academy.labsEyebrow")}

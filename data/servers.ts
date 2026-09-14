@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -80,8 +81,14 @@ export interface ServerView {
   channels: ChannelSummary[];
 }
 
-/** Full server view. RLS hides project channels the user can't access. */
-export async function getServerView(slug: string): Promise<ServerView | null> {
+/**
+ * Full server view. RLS hides project channels the user can't access.
+ *
+ * Memoized per request: the server layout renders next to the channel page,
+ * and both call this with the same slug — caching collapses the duplicate
+ * (server + channels + count + role) query chain into a single result.
+ */
+export const getServerView = cache(async (slug: string): Promise<ServerView | null> => {
   const supabase = await createClient();
 
   const { data: server } = await supabase
@@ -119,7 +126,7 @@ export async function getServerView(slug: string): Promise<ServerView | null> {
     memberCount: count ?? 0,
     channels: channels ?? [],
   };
-}
+});
 
 export interface ChannelView {
   id: string;

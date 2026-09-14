@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Hash, Plus, Server } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { getUserServers } from "@/data/servers";
@@ -20,8 +20,7 @@ const KIND_LABEL = {
 } as const;
 
 export default async function ServersPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     redirect(`/login?next=${encodeURIComponent("/servers")}`);
@@ -32,7 +31,7 @@ export default async function ServersPage() {
   return (
     <>
       <Navbar />
-      <main className="relative min-h-dvh overflow-hidden pb-20 pt-[100px] sm:pt-[110px]">
+      <main id="main" className="relative min-h-dvh overflow-hidden pb-20 pt-[100px] sm:pt-[110px]">
         <PageAtmosphere />
         <div className="relative mx-auto w-full max-w-5xl px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">

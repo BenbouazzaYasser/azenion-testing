@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
@@ -11,9 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminRolesPage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     redirect("/login");
@@ -37,7 +36,7 @@ export default async function AdminRolesPage() {
   return (
     <>
       <Navbar />
-      <main className="relative min-h-screen overflow-hidden pt-[112px]">
+      <main id="main" className="relative min-h-screen overflow-hidden pt-[112px]">
         <PageAtmosphere />
         <div className="relative mx-auto max-w-[1120px] space-y-6 px-5 py-12 sm:px-8 sm:py-16 lg:py-20">
           <div className="flex items-start gap-4">

@@ -8,6 +8,7 @@ import { CoursesBrowser } from "@/components/sections/academy/courses-browser";
 import { AcademyClosingCta } from "@/components/sections/academy/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import type { CourseRow } from "@/lib/validations/course.schema";
 import { serverT } from "@/lib/translation/server";
 
@@ -22,9 +23,7 @@ export const dynamic = "force-dynamic";
 export default async function CoursesPage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   let canManage = false;
   if (user) {
@@ -55,7 +54,7 @@ export default async function CoursesPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyHero
           eyebrow={await serverT("academy.coursesEyebrow")}

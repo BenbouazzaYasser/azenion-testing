@@ -13,6 +13,7 @@ import { ProjectPageUpdates } from "@/components/sections/projects/project-page-
 import { ProjectPageDiscussion } from "@/components/sections/projects/project-page-discussion";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSessionUser } from "@/lib/supabase/user";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { resolveMediaValue } from "@/lib/media";
 import { getProjectChannel, getChannelMessages } from "@/data/servers";
@@ -86,7 +87,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     ((teamBranchRow as unknown as { branch: { id: string; name: string; slug: string } | null } | null)
       ?.branch ?? null);
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (project.visibility === "private") {
     if (!user) notFound();
@@ -163,7 +164,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     id: u.id as string,
     title: u.title as string,
     body: u.body as string | null,
-    image_url: ((await resolveMediaValue(u.image_url as string | null)) as string | null) ?? null,
+    image_url: ((await resolveMediaValue(u.image_url as string | null, undefined, adminClient)) as string | null) ?? null,
     created_at: u.created_at as string,
     updated_at: u.updated_at as string,
     author: u.author as {
@@ -253,7 +254,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     name: project.name,
     description: project.description,
     description_long: project.description_long,
-    logo_url: ((await resolveMediaValue(project.logo_url)) as string | null) ?? null,
+    logo_url: ((await resolveMediaValue(project.logo_url, undefined, adminClient)) as string | null) ?? null,
     visibility: project.visibility,
     website: project.website,
     github_url: project.github_url,
@@ -271,7 +272,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <ProjectPageHero
           project={projectData}

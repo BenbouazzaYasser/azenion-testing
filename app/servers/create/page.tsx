@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
@@ -13,8 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CreateServerPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     redirect(`/login?next=${encodeURIComponent("/servers/create")}`);
@@ -23,7 +22,7 @@ export default async function CreateServerPage() {
   return (
     <>
       <Navbar />
-      <main className="relative min-h-dvh overflow-hidden pb-20 pt-[100px] sm:pt-[110px]">
+      <main id="main" className="relative min-h-dvh overflow-hidden pb-20 pt-[100px] sm:pt-[110px]">
         <PageAtmosphere />
         <div className="relative mx-auto w-full max-w-xl px-4 sm:px-6">
           <h1 className="text-2xl font-semibold tracking-tight text-ink-50">{await serverT("servers.createTitle")}</h1>

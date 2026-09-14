@@ -9,6 +9,7 @@ import { RequestSessionSection } from "@/components/sections/academy/request-ses
 import { AcademyClosingCta } from "@/components/sections/academy/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import type { BranchOption } from "@/components/sections/academy/request-session-dialog";
 import type {
   LiveSessionRow,
@@ -27,9 +28,7 @@ export const dynamic = "force-dynamic";
 export default async function LiveSessionsPage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   let isAdmin = false;
   let hostOptions: ManageableHostOption[] = [];
@@ -71,7 +70,7 @@ export default async function LiveSessionsPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <LiveSessionsHero />
         <UpcomingSessions

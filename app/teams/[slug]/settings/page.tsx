@@ -7,6 +7,7 @@ import { PageBridge } from "@/components/sections/page-bridge";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSessionUser } from "@/lib/supabase/user";
 import {
   TeamPermission,
   TEAM_PERMISSIONS,
@@ -48,7 +49,7 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
 
   if (!team) notFound();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) redirect(`/teams/${slug}`);
 
@@ -62,8 +63,8 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
   if (!membership) redirect(`/teams/${slug}`);
 
   const [resolvedLogo, resolvedBanner] = await Promise.all([
-    resolveMediaValue(team.logo_url),
-    resolveMediaValue(team.banner_url),
+    resolveMediaValue(team.logo_url, undefined, adminClient),
+    resolveMediaValue(team.banner_url, undefined, adminClient),
   ]);
   const teamData = {
     ...team,
@@ -201,7 +202,7 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <TeamSettingsClient
           team={teamData}

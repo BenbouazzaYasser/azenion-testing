@@ -1,3 +1,5 @@
+import "server-only";
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
@@ -36,6 +38,15 @@ export function privateObjectPath(
 }
 
 /**
+ * Default signed-URL client, memoized per request. `resolveMediaValue` is
+ * invoked once per media value (often many times per page, e.g. per feed
+ * post), and each omission of an explicit client used to spin up its own
+ * admin client. Memoizing keeps exactly one per request; callers that
+ * already hold a client (session or admin) should still pass it in.
+ */
+const getDefaultSignedUrlClient = cache(() => createAdminClient());
+
+/**
  * Resolve a stored media value to something a client may render.
  *
  *   - null/empty           -> null
@@ -55,7 +66,7 @@ export async function resolveMediaValue(
     return resolved.filter((v): v is string => typeof v === "string");
   }
   if (!isPrivateMediaMarker(value)) return value;
-  const client = supabase ?? createAdminClient();
+  const client = supabase ?? getDefaultSignedUrlClient();
   const objectPath = objectPathFromMarker(value);
   const { data, error } = await client.storage
     .from(PRIVATE_MEDIA_BUCKET)

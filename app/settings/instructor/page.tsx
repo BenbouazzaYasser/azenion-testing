@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import {
   getMyInstructorVerification,
   amIVerifiedInstructor,
@@ -14,10 +14,7 @@ export const metadata = {
 };
 
 export default async function InstructorVerificationPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     redirect("/login");

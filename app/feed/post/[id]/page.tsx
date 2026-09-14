@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { FeedCard } from "@/components/feed/feed-card";
@@ -50,10 +50,7 @@ export default async function FeedPostPage({ params }: FeedPostPageProps) {
 }
 
 async function FeedPost({ id }: { id: string }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   const userId = user?.id ?? null;
 
   const item = await getFeedItemById(id, userId);

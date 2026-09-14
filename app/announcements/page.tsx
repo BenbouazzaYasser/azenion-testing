@@ -8,6 +8,7 @@ import { AnnouncementsFeed } from "@/components/sections/announcements/announcem
 import { ClosingCta } from "@/components/sections/announcements/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import type { Announcement } from "@/data/announcements";
 
 export const metadata: Metadata = {
@@ -21,9 +22,7 @@ export const dynamic = "force-dynamic";
 export default async function AnnouncementsPage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   let canManage = false;
   if (user) {
@@ -49,7 +48,7 @@ export default async function AnnouncementsPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <AnnouncementsHero />
         <AnnouncementsFeed announcements={announcements} canManage={canManage} />

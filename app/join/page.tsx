@@ -15,7 +15,7 @@ export default function JoinPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <JoinCard />
       </main>

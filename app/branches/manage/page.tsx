@@ -7,6 +7,7 @@ import { PageBridge } from "@/components/sections/page-bridge";
 import { BranchManageClient } from "@/components/sections/branches/branch-manage-client";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSessionUser } from "@/lib/supabase/user";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 
 export const metadata: Metadata = {
@@ -42,9 +43,7 @@ interface ProfileOption {
 export default async function ManageBranchesPage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) notFound();
 
@@ -110,7 +109,7 @@ export default async function ManageBranchesPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <BranchManageClient branches={branchesWithMembers} profiles={profileOptions} />
         <PageBridge />

@@ -14,6 +14,7 @@ import { TeamFeed } from "@/components/sections/teams/team-feed";
 import { TeamJoinRequests } from "@/components/sections/teams/team-join-requests";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSessionUser } from "@/lib/supabase/user";
 import { getTeamPermissions, TEAM_PERMISSIONS, TeamPermission } from "@/lib/team-permissions.server";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { resolveMediaValue } from "@/lib/media";
@@ -67,7 +68,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
     ? { id: teamBranch.id, name: teamBranch.name, slug: teamBranch.slug }
     : null;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (team.visibility === "private") {
     if (!user) notFound();
@@ -260,7 +261,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
     slug: p.slug,
     name: p.name,
     description: p.description,
-    logo_url: ((await resolveMediaValue(p.logo_url)) as string | null) ?? null,
+    logo_url: ((await resolveMediaValue(p.logo_url, undefined, adminClient)) as string | null) ?? null,
     visibility: p.visibility,
     lifecycle_status: p.lifecycle_status,
     last_activity_at: p.last_activity_at as string | null,
@@ -364,9 +365,11 @@ export default async function TeamPage({ params }: TeamPageProps) {
       id: u.id as string,
       title: u.title as string,
       body: u.body as string | null,
-      image_url: ((await resolveMediaValue(u.image_url as string | null)) as string | null) ?? null,
+      image_url: ((await resolveMediaValue(u.image_url as string | null, undefined, adminClient)) as string | null) ?? null,
       images: ((await resolveMediaValue(
         Array.isArray(u.images) ? (u.images as string[]).filter(Boolean) : [],
+        undefined,
+        adminClient,
       )) as string[] | undefined) ?? [],
       created_at: u.created_at as string,
       updated_at: u.updated_at as string,
@@ -384,8 +387,8 @@ export default async function TeamPage({ params }: TeamPageProps) {
   );
 
   const [teamLogoResolved, teamBannerResolved] = await Promise.all([
-    resolveMediaValue(team.logo_url),
-    resolveMediaValue(team.banner_url),
+    resolveMediaValue(team.logo_url, undefined, adminClient),
+    resolveMediaValue(team.banner_url, undefined, adminClient),
   ]);
 
   const teamWithOwner = {
@@ -408,7 +411,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
   return (
     <>
       <Navbar />
-      <main className="relative min-h-screen bg-void-950 dark:bg-void-950">
+      <main id="main" className="relative min-h-screen bg-void-950 dark:bg-void-950">
         <PageAtmosphere />
         <TeamHero
           team={teamWithOwner}

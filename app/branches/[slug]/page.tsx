@@ -12,6 +12,7 @@ import { BranchPageProjects } from "@/components/sections/branches/branch-page-p
 import { BranchFeed } from "@/components/sections/branches/branch-feed";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSessionUser } from "@/lib/supabase/user";
 import { getBranchFeedItems } from "@/actions/feed.actions";
 import type { TeamCardTeam } from "@/components/sections/teams/team-card";
 import type { ProjectCardProject } from "@/components/sections/projects/project-card";
@@ -61,7 +62,7 @@ export default async function BranchPage({ params }: BranchPageProps) {
 
   if (!branch) notFound();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   const currentUserId = user?.id ?? null;
 
   let isPlatformAdmin = false;
@@ -330,7 +331,7 @@ export default async function BranchPage({ params }: BranchPageProps) {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <BranchPageHero
           branch={branchWithCounts}

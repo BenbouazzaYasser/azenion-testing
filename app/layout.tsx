@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Tajawal, Noto_Naskh_Arabic } from "next/font/google";
+import { Inter, Tajawal, Noto_Naskh_Arabic } from "next/font/google";
 import { InlineScript } from "@/components/ui/inline-script";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -10,6 +10,13 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TranslationProvider } from "@/components/translation/translation-provider";
 import { CallProvider } from "@/components/call/call-provider";
+
+const inter = Inter({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const tajawal = Tajawal({
   weight: ["400", "500", "700"],
@@ -34,6 +41,14 @@ export const metadata: Metadata = {
     title: "Azenion — Infinite minds. Limitless impact.",
     description: "A global network connecting ambitious minds through learning, collaboration and innovation.",
     type: "website",
+    url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://azenion.io",
+    siteName: "Azenion",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Azenion — Infinite minds. Limitless impact.",
+    description: "A global network connecting ambitious minds through learning, collaboration and innovation.",
   },
 };
 
@@ -43,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning className={`${tajawal.variable} ${notoNaskhArabic.variable}`}>
+    <html lang="en" dir="ltr" suppressHydrationWarning className={`${inter.variable} ${tajawal.variable} ${notoNaskhArabic.variable}`}>
       <head>
         <InlineScript
           html={`try{var t=(function(){try{return localStorage.getItem("azenion-theme")}catch(e){return null}})();if(!t){var c=document.cookie.match(/(?:^|; )azenion-theme=([^;]*)/);t=c?c[1]:null}if(!t)t="system";var e=(t==="system")?(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"):t;var d=document.documentElement;d.dataset.theme=e;d.dataset.themePreference=t;d.style.colorScheme=e;}catch(err){document.documentElement.dataset.theme="dark";}`}
@@ -57,6 +72,12 @@ export default function RootLayout({
           aria-hidden
           className="pointer-events-none fixed inset-0 z-[60] bg-grain opacity-[0.025] mix-blend-overlay"
         />
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-xl focus:bg-void-900 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-ink-50 focus:shadow-dialog"
+        >
+          Skip to content
+        </a>
         <CursorGlow />
         <Toaster
           position="bottom-center"
