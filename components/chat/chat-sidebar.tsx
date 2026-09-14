@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Search, MessageSquare, Plus, Archive, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -170,7 +171,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   className="flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-premium hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
                 >
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt="" className="h-8 w-8 shrink-0 rounded-full object-cover" />
+                    <Image src={user.avatar_url} alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-full object-cover" />
                   ) : (
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
                       {user.full_name?.[0] ?? user.username[0]?.toUpperCase() ?? "U"}
@@ -383,9 +384,11 @@ function ConversationRow({
         )}
 
         {conv.other_user?.avatar_url ? (
-          <img
+          <Image
             src={conv.other_user.avatar_url}
             alt=""
+            width={40}
+            height={40}
             className={cn(
               "h-10 w-10 shrink-0 rounded-full object-cover transition-all duration-300",
               isActive && "border-accent-400/50 shadow-glow-sm",

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog } from "lucide-react";
@@ -367,7 +368,7 @@ export function Navbar() {
                     className="h-10 w-10 overflow-hidden rounded-full border navbar-element-border transition-all duration-300 hover:scale-105 hover:border-accent-400/40 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                      <Image src={profile.avatar_url} alt="" width={40} height={40} className="h-full w-full object-cover" />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-accent-500 to-accent-400 text-[15px] font-semibold text-white">
                         {avatarLetter}
@@ -393,7 +394,7 @@ export function Navbar() {
                           />
                           <div className="relative h-14 w-14 overflow-hidden rounded-full shadow-[0_0_24px_-8px_rgba(109,109,255,0.5)]">
                             {profile?.avatar_url ? (
-                              <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                              <Image src={profile.avatar_url} alt="" width={56} height={56} className="h-full w-full object-cover" />
                             ) : (
                               <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-accent-500 to-accent-400 text-lg font-semibold text-white">
                                 {avatarLetter}

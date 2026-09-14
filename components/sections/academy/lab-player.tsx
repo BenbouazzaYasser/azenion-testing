@@ -408,7 +408,7 @@ function EvidenceBlock({ items }: { items: { url: string; caption?: string }[] }
         {items.map((item, i) => (
           <figure key={i} className="overflow-hidden rounded-xl border border-border-strong bg-surface">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={item.url} alt={item.caption ?? "Evidence item"} className="w-full object-contain" />
+            <img src={item.url} alt={item.caption ?? "Evidence item"} loading="lazy" decoding="async" className="w-full object-contain" />
             {item.caption ? (
               <figcaption className="border-t border-border px-3 py-2 text-xs text-ink-400">{item.caption}</figcaption>
             ) : null}

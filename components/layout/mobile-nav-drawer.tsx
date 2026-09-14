@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import {
   X,
@@ -239,7 +240,7 @@ export function MobileNavDrawer({
                   <div className="flex items-center gap-3 rounded-xl px-4 py-3">
                     <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full">
                       {profile?.avatar_url ? (
-                        <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                        <Image src={profile.avatar_url} alt="" width={40} height={40} className="h-full w-full object-cover" />
                       ) : (
                         <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-accent-500 to-accent-400 text-[15px] font-semibold text-white">
                           {avatarLetter}

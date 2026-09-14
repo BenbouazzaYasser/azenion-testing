@@ -374,7 +374,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                               )}>
                                 {item.image ? (
                                   item.image.startsWith("http") ? (
-                                    <img src={item.image} alt="" className="h-full w-full object-cover" />
+                                    <img src={item.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                                   ) : (
                                     <span className="text-base leading-none">{item.image}</span>
                                   )
