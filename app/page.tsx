@@ -43,6 +43,7 @@ export default async function HomePage() {
     { count: countTeams },
     { count: countProjects },
     { count: countBranches },
+    { items: feedItems },
   ] = await Promise.all([
     admin
       .from("teams")
@@ -88,6 +89,7 @@ export default async function HomePage() {
     admin.from("teams").select("id", { count: "exact", head: true }),
     admin.from("projects").select("id", { count: "exact", head: true }),
     admin.from("branches").select("id", { count: "exact", head: true }),
+    getFeedItems("all", 1, 3, null),
   ]);
 
   const teamIds = (teamRows ?? []).map((t) => t.id);
@@ -197,7 +199,7 @@ const teams: TeamCardTeam[] = await Promise.all(
     })
   );
 
-  const { items: feedItems } = await getFeedItems("all", 1, 3, null);
+  
 
   return (
     <>

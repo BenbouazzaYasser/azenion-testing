@@ -40,9 +40,9 @@ export async function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
+            <p className="text-sm font-semibold uppercase tracking-wider text-ink-200">
               {await serverT("footer.quickLinks")}
-            </h3>
+            </p>
             <ul className="mt-5 space-y-3">
               {(await Promise.all([
                 { labelKey: "nav.teams" as const, href: "/teams" },
@@ -64,9 +64,9 @@ export async function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
+            <p className="text-sm font-semibold uppercase tracking-wider text-ink-200">
               {await serverT("footer.legal")}
-            </h3>
+            </p>
             <ul className="mt-5 space-y-3">
               {(await Promise.all([
                 { labelKey: "footer.about" as const, href: "/about" },
@@ -87,9 +87,9 @@ export async function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-200">
+            <p className="text-sm font-semibold uppercase tracking-wider text-ink-200">
               {await serverT("footer.connect")}
-            </h3>
+            </p>
 
             <div className="mt-5 flex flex-wrap gap-2">
               {CONTACT.socials.map(({ label, href }) => {
@@ -127,7 +127,7 @@ export async function Footer() {
                       <p className="text-[0.82rem] font-medium text-ink-200 transition-colors group-hover:text-accent-400">
                         {channel.label}
                       </p>
-                      <p className="truncate text-[0.75rem] text-ink-600">
+                      <p className="truncate text-[0.75rem] text-ink-400">
                         {channel.detail}
                       </p>
                     </div>

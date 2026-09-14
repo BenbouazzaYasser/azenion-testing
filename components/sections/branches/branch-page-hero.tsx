@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Calendar, GitBranch, MapPin, ShieldCheck, Users } from "lucide-react";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Reveal } from "@/components/ui/reveal";
@@ -50,9 +51,12 @@ export function BranchPageHero({
     <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
       {branch.logo_url ? (
         <div className="absolute inset-0">
-          <img
+          <Image
             src={branch.logo_url}
             alt=""
+            fill
+            priority
+            sizes="100vw"
             className="h-full w-full object-cover opacity-40"
           />
           <div className="branch-hero-scrim absolute inset-0 backdrop-blur-sm" />

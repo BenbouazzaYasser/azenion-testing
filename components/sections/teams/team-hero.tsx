@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useTransition } from "react";
 import { Users, Calendar, User, Building2, Settings, Clock, Archive } from "lucide-react";
 import { AmbientBg } from "@/components/graphics/ambient-bg";
@@ -66,9 +67,12 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
     <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
       {team.banner_url ? (
         <div className="absolute inset-0">
-          <img
+          <Image
             src={team.banner_url}
             alt=""
+            fill
+            priority
+            sizes="100vw"
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-[#050507]/70 backdrop-blur-sm" />

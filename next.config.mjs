@@ -10,6 +10,10 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 365,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    remotePatterns: [
+      { protocol: "https", hostname: "cytwlxpomhzdezgwlbhv.supabase.co" },
+      { protocol: "https", hostname: "*.supabase.co" },
+    ],
   },
 
   // Performance optimizations
@@ -27,6 +31,8 @@ const nextConfig = {
   distDir: process.env.NEXT_PROD_DIST
     ? process.env.NEXT_PROD_DIST
     : ".next",
+
+  reactCompiler: true,
 
   // Next 16: optimizePackageImports lives under experimental
   experimental: {

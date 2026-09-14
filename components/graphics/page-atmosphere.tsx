@@ -69,12 +69,12 @@ export function PageAtmosphere({ className }: PageAtmosphereProps) {
         }}
       />
 
-      <div className="absolute left-[20%] top-[10%] h-80 w-80 rounded-full bg-accent/10 blur-[140px]" />
-      <div className="absolute right-[12%] top-[32%] h-72 w-72 rounded-full bg-accent-400/10 blur-[120px]" />
-      <div className="absolute left-[15%] top-[55%] h-80 w-80 rounded-full bg-accent/10 blur-[140px]" />
-      <div className="absolute right-[18%] top-[78%] h-72 w-72 rounded-full bg-accent-400/10 blur-[120px]" />
-      <div className="absolute left-[45%] top-[40%] h-96 w-96 rounded-full bg-accent-400/[0.06] blur-[160px]" />
-      <div className="absolute left-[5%] top-[88%] h-72 w-72 rounded-full bg-accent/10 blur-[120px]" />
+      <div className="atmosphere-blob absolute left-[20%] top-[10%] h-80 w-80 rounded-full bg-accent/10 blur-[140px]" />
+      <div className="atmosphere-blob absolute right-[12%] top-[32%] h-72 w-72 rounded-full bg-accent-400/10 blur-[120px]" />
+      <div className="atmosphere-blob absolute left-[15%] top-[55%] h-80 w-80 rounded-full bg-accent/10 blur-[140px]" />
+      <div className="atmosphere-blob absolute right-[18%] top-[78%] h-72 w-72 rounded-full bg-accent-400/10 blur-[120px]" />
+      <div className="atmosphere-blob absolute left-[45%] top-[40%] h-96 w-96 rounded-full bg-accent-400/[0.06] blur-[160px]" />
+      <div className="atmosphere-blob absolute left-[5%] top-[88%] h-72 w-72 rounded-full bg-accent/10 blur-[120px]" />
 
       {CURRENTS.map((current, i) => (
         <div
