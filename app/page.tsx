@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Hero } from "@/components/sections/hero";
@@ -16,7 +17,6 @@ import { Roadmap } from "@/components/sections/home/roadmap";
 import { Faq } from "@/components/sections/home/faq";
 import { FinalCta } from "@/components/sections/home/final-cta";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { resolveMediaValue } from "@/lib/media";
 import { getFeedItems } from "@/actions/feed.actions";
 import { isTeamHidden } from "@/lib/lifecycle";
@@ -28,12 +28,8 @@ import type {
   LiveSessionWithManage,
 } from "@/lib/validations/live-session.schema";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 300;
-
-export default async function HomePage() {
+async function fetchHomePageData() {
   const admin = createAdminClient();
-  const supabase = await createClient();
 
   const [
     { data: teamRows },
@@ -139,7 +135,7 @@ export default async function HomePage() {
     }
   }
 
-const teams: TeamCardTeam[] = await Promise.all(
+  const teams: TeamCardTeam[] = await Promise.all(
     (teamRows ?? [])
       .filter((team) => !isTeamHidden(team.last_activity_at as string | null))
       .map(async (team) => ({
@@ -147,7 +143,7 @@ const teams: TeamCardTeam[] = await Promise.all(
     slug: team.slug,
     name: team.name,
     description: team.description,
-    logo_url: ((await resolveMediaValue(team.logo_url, undefined, supabase)) as string | null) ?? null,
+    logo_url: ((await resolveMediaValue(team.logo_url, undefined, admin)) as string | null) ?? null,
     visibility: team.visibility,
     status: team.status,
     last_activity_at: team.last_activity_at as string | null,
@@ -171,7 +167,7 @@ const teams: TeamCardTeam[] = await Promise.all(
     slug: p.slug,
     name: p.name,
     description: p.description,
-    logo_url: ((await resolveMediaValue(p.logo_url, undefined, supabase)) as string | null) ?? null,
+    logo_url: ((await resolveMediaValue(p.logo_url, undefined, admin)) as string | null) ?? null,
     visibility: p.visibility,
     lifecycle_status: p.lifecycle_status,
     last_activity_at: p.last_activity_at as string | null,
@@ -198,6 +194,26 @@ const teams: TeamCardTeam[] = await Promise.all(
       canManage: false,
     })
   );
+
+  return {
+    teams,
+    projects,
+    sessions,
+    countMembers,
+    countTeams,
+    countProjects,
+    countBranches,
+    feedItems,
+  };
+}
+
+const getHomePageData = unstable_cache(fetchHomePageData, ["home-page-data"], {
+  revalidate: 30,
+});
+
+export default async function HomePage() {
+  const { teams, projects, sessions, countMembers, countTeams, countProjects, countBranches, feedItems } =
+    await getHomePageData();
 
   
 

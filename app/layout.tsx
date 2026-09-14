@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Tajawal, Noto_Naskh_Arabic } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { CursorGlow } from "@/components/graphics/cursor-glow";
@@ -9,6 +10,20 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TranslationProvider } from "@/components/translation/translation-provider";
 import { CallProvider } from "@/components/call/call-provider";
+
+const tajawal = Tajawal({
+  weight: ["400", "500", "700"],
+  subsets: ["latin", "arabic"],
+  variable: "--font-tajawal",
+  display: "swap",
+});
+
+const notoNaskhArabic = Noto_Naskh_Arabic({
+  weight: ["400", "500", "600"],
+  subsets: ["latin", "arabic"],
+  variable: "--font-noto-naskh",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Azenion — Infinite minds. Limitless impact.",
@@ -28,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning className={`${tajawal.variable} ${notoNaskhArabic.variable}`}>
       <head>
         <Script
           id="theme-init"

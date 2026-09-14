@@ -59,7 +59,7 @@ export function PageAtmosphere({ className }: PageAtmosphereProps) {
   return (
     <div
       aria-hidden
-      className={className ?? "pointer-events-none absolute inset-0"}
+      className={className ?? "pointer-events-none fixed inset-0"}
     >
       <div
         className="absolute inset-0"
