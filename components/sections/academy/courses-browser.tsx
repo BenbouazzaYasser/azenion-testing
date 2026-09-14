@@ -18,7 +18,7 @@ import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { useTranslation } from "@/components/translation/translation-provider";
 import { CourseCreateDialog } from "./course-create-dialog";
 import { CourseEditDialog } from "./course-edit-dialog";
-import { deleteCourse } from "@/actions/academy-courses.actions";
+import { deleteCourse, updateCourseStatus } from "@/actions/academy-courses.actions";
 import type { CourseRow } from "@/lib/validations/course.schema";
 
 const CATEGORIES = [
@@ -174,9 +174,11 @@ function CourseCard({
   const router = useRouter();
   const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
+  const [statusPending, startStatusTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
   const isPdf = course.content_type === "pdf";
   const Icon = isPdf ? FileText : Code2;
+  const isPublished = course.status === "published";
 
   function handleDelete() {
     if (!confirming) {
@@ -193,6 +195,21 @@ function CourseCard({
         return;
       }
       toast.success(t("academy.courseDeleted"));
+      router.refresh();
+    });
+  }
+
+  function handleToggleStatus() {
+    startStatusTransition(async () => {
+      const fd = new FormData();
+      fd.set("id", course.id);
+      fd.set("status", isPublished ? "draft" : "published");
+      const result = await updateCourseStatus(fd);
+      if (result && "error" in result && result.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(isPublished ? "Course unpublished (draft)." : "Course published.");
       router.refresh();
     });
   }
@@ -231,7 +248,24 @@ function CourseCard({
           >
             <Icon size={20} />
           </span>
-          {canManage ? <CourseEditDialog course={course} /> : null}
+          <div className="flex items-center gap-2">
+            {canManage ? (
+              <span
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-[11px] font-medium capitalize",
+                  isPublished
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                    : course.status === "archived"
+                      ? "border-ink-500/30 bg-surface text-ink-400"
+                      : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                )}
+                title={isPublished ? "Visible to everyone" : "Hidden from regular users"}
+              >
+                {course.status ?? "draft"}
+              </span>
+            ) : null}
+            {canManage ? <CourseEditDialog course={course} /> : null}
+          </div>
         </div>
 
         <h3 className="mt-4 text-lg font-semibold text-ink-50">{course.title}</h3>
@@ -286,6 +320,22 @@ function CourseCard({
           </span>
 
           <div className="flex items-center gap-2">
+            {canManage ? (
+              <button
+                type="button"
+                onClick={handleToggleStatus}
+                disabled={statusPending}
+                title={isPublished ? "Unpublish (hide from users)" : "Publish (visible to everyone)"}
+                className={cn(
+                  "inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors",
+                  isPublished
+                    ? "border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+                    : "border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10"
+                )}
+              >
+                {statusPending ? "..." : isPublished ? "Unpublish" : "Publish"}
+              </button>
+            ) : null}
             {canManage ? (
               <button
                 type="button"
