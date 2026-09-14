@@ -24,6 +24,15 @@ const CONTENT_TYPES: Record<string, string> = {
   mjs: "text/javascript",
 };
 
+const COURSE_STATUSES = new Set(["draft", "published", "archived"]);
+
+function parseStatus(raw: unknown): "draft" | "published" | "archived" | null {
+  if (typeof raw !== "string") return null;
+  const v = raw.trim().toLowerCase();
+  if (v === "draft" || v === "published" || v === "archived") return v;
+  return null;
+}
+
 function fileExtension(fileName: string): string {
   return fileName.split(".").pop()?.toLowerCase() ?? "";
 }
@@ -75,6 +84,10 @@ export async function createCourse(formData: FormData) {
     difficulty: (formData.get("difficulty") as string) ?? undefined,
     tags: parseTags((formData.get("tags") as string) ?? null),
   };
+
+  // New courses are visible (published) by default so managers don't
+  // accidentally create invisible drafts. Pass status=draft to stage.
+  const status = parseStatus(formData.get("status")) ?? "published";
 
   const parsed = courseSchema.omit({ id: true }).safeParse(raw);
 
@@ -144,6 +157,7 @@ export async function createCourse(formData: FormData) {
       duration: parsed.data.duration || null,
       difficulty: parsed.data.difficulty ?? null,
       tags: parsed.data.tags ?? null,
+      status,
       created_by: user.id,
     })
     .select("id")
@@ -264,6 +278,8 @@ export async function updateCourse(formData: FormData) {
     return { error: firstError ?? "Invalid input" };
   }
 
+  const nextStatus = parseStatus(formData.get("status"));
+
   const thumbnail = formData.get("thumbnail") as File | null;
   const removeThumbnail = formData.get("remove_thumbnail") === "true";
   const hasNewThumbnail = thumbnail && thumbnail.size > 0;
@@ -309,6 +325,7 @@ export async function updateCourse(formData: FormData) {
     duration: string | null;
     difficulty: string | null;
     tags: string[] | null;
+    status?: "draft" | "published" | "archived";
     thumbnail?: string | null;
   } = {
     title: parsed.data.title,
@@ -318,6 +335,10 @@ export async function updateCourse(formData: FormData) {
     difficulty: parsed.data.difficulty ?? null,
     tags: parsed.data.tags ?? null,
   };
+
+  if (nextStatus) {
+    patch.status = nextStatus;
+  }
 
   if (hasNewThumbnail && thumbnailPath) {
     const {
@@ -345,4 +366,49 @@ export async function updateCourse(formData: FormData) {
 
   revalidatePath(COURSES_PATH);
   return { success: true };
+}
+
+/**
+ * Quick publish / unpublish / archive toggle for managers. Uses the same
+ * canonical `is_course_manager()` gate as create/update/delete.
+ */
+export async function updateCourseStatus(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  if (!(await isCourseManager(supabase))) {
+    return { error: "Not authorized - core team only" };
+  }
+
+  const id = ((formData.get("id") as string) ?? "").trim();
+  const status = parseStatus(formData.get("status"));
+
+  if (!id) {
+    return { error: "Missing course id" };
+  }
+
+  if (!status || !COURSE_STATUSES.has(status)) {
+    return { error: "Invalid status. Use draft, published, or archived." };
+  }
+
+  const admin = createAdminClient();
+
+  const { error: updateError } = await admin
+    .from("courses")
+    .update({ status })
+    .eq("id", id);
+
+  if (updateError) {
+    return { error: updateError.message };
+  }
+
+  revalidatePath(COURSES_PATH);
+  return { success: true, status };
 }
