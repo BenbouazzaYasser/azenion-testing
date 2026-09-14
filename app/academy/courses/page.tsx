@@ -25,26 +25,29 @@ export default async function CoursesPage() {
 
   const user = await getSessionUser();
 
+  // Canonical manager gate (core_team_member, creator, platform-admin
+  // override) — same oracle the write actions and file route use.
   let canManage = false;
   if (user) {
-    const { data: roleRows } = await supabase
-      .from("user_roles")
-      .select("roles(name)")
-      .eq("user_id", user.id);
-    const roles = (roleRows as Array<{ roles: { name: string } | { name: string }[] | null }> | null) ?? [];
-    canManage = roles.some((row) => {
-      const r = row.roles as unknown as { name: string } | { name: string }[] | null;
-      if (!r) return false;
-      return Array.isArray(r) ? r.some((x) => x.name === "core_team_member") : r.name === "core_team_member";
-    });
+    const { data } = await supabase.rpc("is_course_manager");
+    canManage = data === true;
   }
 
-  const { data: courseRows } = await supabase
+  // Regular visitors (and anon) only ever see published courses, so they
+  // never hit a draft card whose file bytes would 404. Managers see the
+  // full catalog with status badges + publish controls.
+  let query = supabase
     .from("courses")
     .select(
       "id, title, description, category, content_type, file_url, thumbnail, duration, difficulty, tags, created_by, created_at, status",
     )
     .order("created_at", { ascending: false });
+
+  if (!canManage) {
+    query = query.eq("status", "published");
+  }
+
+  const { data: courseRows } = await query;
 
   const courses = ((courseRows ?? []) as unknown as CourseRow[]).map((row) => ({
     ...row,
