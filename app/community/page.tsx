@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -13,7 +14,6 @@ import { FeaturedProjects } from "@/components/sections/community/featured-proje
 import { AcademySessions } from "@/components/sections/community/academy-sessions";
 import { CommunityCta } from "@/components/sections/community/final-cta";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { resolveMediaValue } from "@/lib/media";
 import { getFeedItems, getTrendingFeedItems } from "@/actions/feed.actions";
 import {
@@ -37,11 +37,9 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-export const revalidate = 300;
 
-export default async function CommunityPage() {
+async function fetchCommunityPageData() {
   const admin = createAdminClient();
-  const supabase = await createClient();
 
   const [trendingTeamIds, featuredProjectIds] = await Promise.all([
     getTrendingTeamIds(8),
@@ -214,7 +212,7 @@ const teams: TeamCardTeam[] = await Promise.all(
     slug: team.slug,
     name: team.name,
     description: team.description,
-    logo_url: ((await resolveMediaValue(team.logo_url, undefined, supabase)) as string | null) ?? null,
+    logo_url: ((await resolveMediaValue(team.logo_url, undefined, admin)) as string | null) ?? null,
     visibility: team.visibility,
     status: team.status,
     last_activity_at: team.last_activity_at as string | null,
@@ -239,7 +237,7 @@ const teams: TeamCardTeam[] = await Promise.all(
     slug: p.slug,
     name: p.name,
     description: p.description,
-    logo_url: ((await resolveMediaValue(p.logo_url, undefined, supabase)) as string | null) ?? null,
+    logo_url: ((await resolveMediaValue(p.logo_url, undefined, admin)) as string | null) ?? null,
     visibility: p.visibility,
     lifecycle_status: p.lifecycle_status,
     last_activity_at: p.last_activity_at as string | null,
@@ -277,11 +275,34 @@ const teams: TeamCardTeam[] = await Promise.all(
     details: row.details ?? undefined,
   }));
 
+  // Public feed with an explicit null viewer: no cookies/session reads, so the
+  // result is identical for every visitor and safe to cache. Per-user state
+  // (likes/saves) is not part of the community preview.
   const { items: trendedFeed } = await getTrendingFeedItems(6, null);
   const feedItems =
     trendedFeed.length > 0
       ? trendedFeed
       : (await getFeedItems("all", 1, 3, null)).items;
+
+  return {
+    teams,
+    projects,
+    sessions,
+    announcements,
+    feedItems,
+  };
+}
+
+// Community aggregates are public, non-user-specific data (same for every
+// visitor), so they go through the same validated unstable_cache pattern as
+// the home page. revalidate 30 stays safely below the 60s signed-URL TTL.
+const getCommunityPageData = unstable_cache(fetchCommunityPageData, ["community-page-data"], {
+  revalidate: 30,
+});
+
+export default async function CommunityPage() {
+  const { teams, projects, sessions, announcements, feedItems } =
+    await getCommunityPageData();
 
   return (
     <>

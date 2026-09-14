@@ -1,6 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { ServerRail } from "@/components/servers/server-rail";
 import { ChannelSidebar } from "@/components/servers/channel-sidebar";
@@ -13,8 +13,7 @@ interface ServerLayoutProps {
 
 export default async function ServerLayout({ params, children }: ServerLayoutProps) {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     redirect(`/login?next=${encodeURIComponent(`/servers/${slug}`)}`);
@@ -30,7 +29,7 @@ export default async function ServerLayout({ params, children }: ServerLayoutPro
   return (
     <>
       <Navbar />
-      <main className="relative h-dvh overflow-hidden pt-[80px] sm:pt-[90px]">
+      <main id="main" className="relative h-dvh overflow-hidden pt-[80px] sm:pt-[90px]">
         <div className="mx-auto flex h-full w-full max-w-[1440px] gap-2 p-2 sm:gap-3 sm:p-4">
           <ServerRail servers={servers} activeSlug={view.server.slug} />
 

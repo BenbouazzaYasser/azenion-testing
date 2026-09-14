@@ -16,7 +16,7 @@ export default function CreateTeamPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <CreateTeamHero />
         <CreateTeamForm />

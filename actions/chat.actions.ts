@@ -556,13 +556,19 @@ export async function searchUsers(query: string) {
 
   if (!user) return [];
 
-  const supabaseAdmin = createAdminClient();
+  // Use the established search_users SECURITY DEFINER RPC (00072_global_user_search)
+  // through the session-bound client. Unlike an admin-client read of `profiles`,
+  // it enforces search_visibility and excludes blocked users in both directions,
+  // and never weakens RLS. Only non-private profile columns are returned.
+  const { data } = await supabase.rpc("search_users", {
+    p_query: query.trim(),
+    p_limit: 10,
+  });
 
-  const { data } = await supabaseAdmin
-    .from("profiles")
-    .select("id, full_name, username, avatar_url")
-    .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
-    .limit(10);
-
-  return data ?? [];
+  return (data ?? []) as {
+    id: string;
+    full_name: string | null;
+    username: string;
+    avatar_url: string | null;
+  }[];
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { MessageSquare } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatLayout } from "@/components/chat/chat-layout";
@@ -13,8 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ChatPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     redirect(`/login?next=${encodeURIComponent("/chat")}`);
@@ -25,7 +24,7 @@ export default async function ChatPage() {
   return (
     <>
       <Navbar />
-      <main className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
+      <main id="main" className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
         <ChatLayout conversations={conversations} currentUserId={user.id}>
           <div className="relative min-h-0 flex-1 overflow-hidden md:hidden">
             <ChatSidebar conversations={conversations} currentUserId={user.id} />

@@ -10,6 +10,7 @@ import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { LabPlayer, type PlayerVersion, type PlayerSubmission } from "@/components/sections/academy/lab-player";
 import { getLabWithContent } from "@/actions/academy-labs.actions";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 
 interface LabDetailPageProps {
   params: Promise<{ id: string }>;
@@ -53,9 +54,7 @@ export default async function LabDetailPage({ params }: LabDetailPageProps) {
     : null;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   let initialSubmission: PlayerSubmission | null = null;
   if (user) {
@@ -77,7 +76,7 @@ export default async function LabDetailPage({ params }: LabDetailPageProps) {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <LabPlayer lab={lab} version={safeVersion} initialSubmission={initialSubmission} isAuthenticated={Boolean(user)} />
         <PageBridge />
@@ -91,7 +90,7 @@ function LabNotFound() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <PageHero variant="academy" slug="academy" atmosphere={false}>
           <div className="flex flex-col items-center">

@@ -18,7 +18,7 @@ export default function AcademyPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyLandingHero />
         <AcademyFeatures />

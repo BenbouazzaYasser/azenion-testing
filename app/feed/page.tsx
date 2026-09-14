@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { FeedComposer } from "@/components/feed/feed-composer";
@@ -10,8 +11,8 @@ import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { serverT } from "@/lib/translation/server";
 
 export default async function FeedPage() {
+  const user = await getSessionUser();
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
   const userId = user?.id ?? null;
 
   const isPlatformAdmin = user ? (await supabase.rpc("is_platform_admin"))?.data === true : false;

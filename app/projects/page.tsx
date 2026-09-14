@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { getProjectLifecycleStatus } from "@/lib/lifecycle";
 import { resolveMediaValue } from "@/lib/media";
 import { serverT } from "@/lib/translation/server";
@@ -30,7 +31,7 @@ export default async function ProjectsPage() {
   const adminClient = createAdminClient();
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   const { data: projects } = await adminClient
     .from("projects")
@@ -247,7 +248,7 @@ export default async function ProjectsPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         {user && myProjects.length === 0 ? (
           <EmptyState

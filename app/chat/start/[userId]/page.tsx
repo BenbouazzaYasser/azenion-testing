@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { getOrCreateConversation } from "@/actions/chat.actions";
 
 interface Props {
@@ -7,8 +7,7 @@ interface Props {
 }
 
 export default async function StartConversationPage({ params }: Props) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     redirect(`/login?next=${encodeURIComponent(`/chat/start/${params.userId}`)}`);

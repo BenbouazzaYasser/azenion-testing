@@ -15,6 +15,7 @@ import { PageBridge } from "@/components/sections/page-bridge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSessionUser } from "@/lib/supabase/user";
 import { isTeamHidden } from "@/lib/lifecycle";
 import { serverT } from "@/lib/translation/server";
 
@@ -27,9 +28,7 @@ export const metadata: Metadata = {
 export default async function TeamsPage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   const admin = createAdminClient();
 
@@ -245,7 +244,7 @@ export default async function TeamsPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         {user && myTeams.length === 0 ? (
           <EmptyState

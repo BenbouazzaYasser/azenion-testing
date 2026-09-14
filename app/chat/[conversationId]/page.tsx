@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { ChatLayout } from "@/components/chat/chat-layout";
 import { ChatConversation } from "@/components/chat/chat-conversation";
@@ -11,8 +11,7 @@ interface Props {
 }
 
 export default async function ConversationPage({ params }: Props) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     redirect(`/login?next=${encodeURIComponent(`/chat/${params.conversationId}`)}`);
@@ -39,7 +38,7 @@ export default async function ConversationPage({ params }: Props) {
   return (
     <>
       <Navbar />
-      <main className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
+      <main id="main" className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
         <ChatLayout conversations={conversations} currentUserId={user.id}>
           <Suspense
             fallback={

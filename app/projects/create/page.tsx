@@ -6,8 +6,8 @@ import { Navbar } from "@/components/layout/navbar";
 import { CreateProjectHero } from "@/components/sections/projects/create-project-hero";
 import { CreateProjectForm } from "@/components/sections/projects/create-project-form";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSessionUser } from "@/lib/supabase/user";
 
 export const metadata: Metadata = {
   title: "Create a Project | Azenion — The Limitless Network",
@@ -16,11 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CreateProjectPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) redirect("/login");
 
@@ -46,7 +42,7 @@ export default async function CreateProjectPage() {
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <CreateProjectHero />
         <CreateProjectForm teams={teams} categories={allCategories ?? []} />

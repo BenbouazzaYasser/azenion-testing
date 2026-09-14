@@ -14,7 +14,7 @@ export default function GlobalError() {
         <title>Error — Azenion</title>
       </head>
       <body className="overflow-x-hidden">
-        <main className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <main id="main" className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <PageAtmosphere />
           <div className="relative mx-auto max-w-md px-5 text-center">
             <div className="mb-6">

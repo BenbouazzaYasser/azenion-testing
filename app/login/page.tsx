@@ -25,7 +25,7 @@ export default function LoginPage({
   return (
     <>
       <Navbar />
-      <main className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <LoginCard next={next} error={error} />
         <SecurityNote />

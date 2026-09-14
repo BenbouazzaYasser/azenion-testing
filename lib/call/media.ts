@@ -5,12 +5,27 @@
  *
  * STUN servers are free Google STUN (fine for NAT traversal in development and
  * most home/office networks). For production-grade reliability behind strict
- * NATs/firewalls you should add TURN servers — configure them via env vars
- * rather than hardcoding credentials, so secrets never ship to the client.
+ * NATs/firewalls you add a TURN server.
  *
- *   NEXT_PUBLIC_TURN_URL=turn:host:3478
- *   NEXT_PUBLIC_TURN_USERNAME=...
- *   NEXT_PUBLIC_TURN_CREDENTIAL=...
+ * SECURITY MODEL FOR TURN CREDENTIALS
+ * -----------------------------------
+ * WebRTC requires the ICE configuration (including any TURN server + its
+ * credentials) to be present in the BROWSER, because the browser itself is
+ * what establishes the peer connection. A static shared TURN credential
+ * therefore cannot be a secret: anything inlined into the client bundle is
+ * readable by anyone. Do NOT ship long-lived TURN secrets via NEXT_PUBLIC_*
+ * env vars — that would permanently expose them.
+ *
+ * Two safe options:
+ *   1. A public/unauthenticated TURN server: set NEXT_PUBLIC_TURN_URL to the
+ *      turn(s)/turns(s) URL. This is consumer software's default model.
+ *   2. Authenticated TURN (e.g. coturn with --use-auth-secret / TURN REST
+ *      API): mint SHORT-LIVED credentials on the server (a server action /
+ *      API route behind the session user) at call time and hand them to
+ *      outbound-only. Never configure a static TURN username/password in
+ *      NEXT_PUBLIC_* vars. If you implement this, fetch the freshly minted
+ *      { username, credential } from the server and extend getRtcConfiguration
+ *      to accept it as an argument — do not inline the TTL-less secret.
  */
 
 export const RTC_ICE_SERVERS: RTCIceServer[] = [
@@ -21,15 +36,13 @@ export const RTC_ICE_SERVERS: RTCIceServer[] = [
 export function getRtcConfiguration(): RTCConfiguration {
   const servers: RTCIceServer[] = [...RTC_ICE_SERVERS];
 
+  // Public (no-auth) TURN endpoint. NEVER pair this with static credentials —
+  // see the security model above. Authenticated TURN secrets must come from
+  // a server-minted short-lived credential endpoint instead.
   const turnUrl = process.env.NEXT_PUBLIC_TURN_URL;
-  const turnUsername = process.env.NEXT_PUBLIC_TURN_USERNAME;
-  const turnCredential = process.env.NEXT_PUBLIC_TURN_CREDENTIAL;
 
   if (turnUrl) {
-    const server: RTCIceServer = { urls: turnUrl };
-    if (turnUsername) server.username = turnUsername;
-    if (turnCredential) server.credential = turnCredential;
-    servers.push(server);
+    servers.push({ urls: turnUrl });
   }
 
   return { iceServers: servers };

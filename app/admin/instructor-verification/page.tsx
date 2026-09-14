@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
 import { adminGetVerificationRequests } from "@/actions/instructor-verification.actions";
 import InstructorVerificationAdmin from "@/components/instructor/instructor-verification-admin";
 
@@ -14,9 +15,7 @@ export default async function AdminInstructorVerificationPage({
   searchParams: { status?: string; page?: string };
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     redirect("/login");
