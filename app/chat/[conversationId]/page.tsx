@@ -1,10 +1,21 @@
 import { Suspense } from "react";
+import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { ChatLayout } from "@/components/chat/chat-layout";
-import { ChatConversation } from "@/components/chat/chat-conversation";
 import { getConversations, getMessages, getConversationBlockState } from "@/data/chat";
+
+// Code-split: the ~1500-line interactive conversation (pickers, realtime,
+// call wiring) hydrates after the shell paints; the Suspense fallback below
+// covers the loading state.
+const ChatConversation = nextDynamic(
+  () =>
+    import("@/components/chat/chat-conversation").then((mod) => ({
+      default: mod.ChatConversation,
+    })),
+  { loading: () => null },
+);
 
 interface Props {
   params: { conversationId: string };
