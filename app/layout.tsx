@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Tajawal, Noto_Naskh_Arabic } from "next/font/google";
 import { InlineScript } from "@/components/ui/inline-script";
+import { LazyToaster } from "@/components/ui/lazy-toaster";
 import "./globals.css";
-import { Toaster } from "sonner";
 
 import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -22,6 +22,10 @@ const tajawal = Tajawal({
   subsets: ["latin", "arabic"],
   variable: "--font-tajawal",
   display: "swap",
+  // On-demand: next/font preloads every file by default, which would force
+  // EN visitors to download the Arabic stacks. They only apply under
+  // html[lang=ar] (see globals.css), so load them lazily instead.
+  preload: false,
 });
 
 const notoNaskhArabic = Noto_Naskh_Arabic({
@@ -29,6 +33,8 @@ const notoNaskhArabic = Noto_Naskh_Arabic({
   subsets: ["latin", "arabic"],
   variable: "--font-noto-naskh",
   display: "swap",
+  // Same as Tajawal above: Arabic-only, load on demand.
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -77,19 +83,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <Toaster
-          position="bottom-center"
-          className="!z-[9999]"
-          toastOptions={{
-            style: {
-              background: "rgba(14,16,22,0.92)",
-              border: "1px solid rgba(244,245,248,0.14)",
-              color: "#F4F5F8",
-              backdropFilter: "blur(20px)",
-            },
-            duration: 4000,
-          }}
-        />
+        <LazyToaster />
         <ThemeProvider>
           <TranslationProvider>
             <AuthProvider>
