@@ -12,7 +12,6 @@
    and everything respects prefers-reduced-motion. */
 
 import { type CSSProperties } from "react";
-import { AtmosphereNodes } from "./atmosphere-nodes";
 import styles from "./page-atmosphere.module.css";
 
 interface PageAtmosphereProps {
@@ -83,9 +82,6 @@ export function PageAtmosphere({ className }: PageAtmosphereProps) {
           style={current.style}
         />
       ))}
-
-
-      <AtmosphereNodes />
     </div>
   );
 }

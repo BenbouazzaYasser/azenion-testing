@@ -3,7 +3,6 @@ import { Inter, Tajawal, Noto_Naskh_Arabic } from "next/font/google";
 import { InlineScript } from "@/components/ui/inline-script";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { CursorGlow } from "@/components/graphics/cursor-glow";
 
 import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -78,7 +77,6 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <CursorGlow />
         <Toaster
           position="bottom-center"
           className="!z-[9999]"
