@@ -69,7 +69,7 @@ export function JoinCard() {
                 <h1 className="text-balance text-[1.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2rem]">
                   Check Your Email
                 </h1>
-                <p className="mt-4 text-[0.95rem] leading-relaxed text-ink-400">
+                <p className="mt-4 break-words text-[0.95rem] leading-relaxed text-ink-400">
                   We sent a confirmation link to <span className="text-ink-200">{email}</span>. Click it to activate your account.
                 </p>
                 <Button variant="primary" size="lg" className="mt-6" asChild>
@@ -174,7 +174,7 @@ export function JoinCard() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 transition-colors hover:text-ink-400"
+                    className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-600 transition-colors hover:bg-surface-hover hover:text-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -199,7 +199,7 @@ export function JoinCard() {
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 transition-colors hover:text-ink-400"
+                    className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-600 transition-colors hover:bg-surface-hover hover:text-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
                     aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
                   >
                     {showConfirm ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -237,9 +237,9 @@ export function JoinCard() {
                 type="button"
                 disabled
                 aria-disabled="true"
-                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl bg-surface px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
+                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl bg-surface pl-4 pr-20 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300 sm:px-4"
               >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" aria-hidden="true">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -255,9 +255,9 @@ export function JoinCard() {
                 type="button"
                 disabled
                 aria-disabled="true"
-                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl bg-surface px-4 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300"
+                className="relative flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl bg-surface pl-4 pr-20 py-3.5 text-sm font-medium text-ink-300 opacity-70 backdrop-blur-xl transition-all duration-300 sm:px-4"
               >
-                <Github size={19} />
+                <Github size={19} className="shrink-0" />
                 Continue with GitHub
                 <span className="absolute right-4 text-[10px] font-medium uppercase tracking-wide text-ink-600">
                   Coming soon

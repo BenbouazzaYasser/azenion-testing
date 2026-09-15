@@ -144,7 +144,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
             onClick={() => setIsMinimized(false)}
             aria-label="Expand call"
             title="Expand call"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong bg-surface text-ink-300 hover:text-ink-50 transition-all"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong bg-surface text-ink-300 hover:text-ink-50 transition-all"
           >
             <Maximize2 className="h-3.5 w-3.5" />
           </button>
@@ -153,7 +153,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
             onClick={manager.endCall}
             aria-label="End call"
             title="End call"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-all"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-all"
           >
             <PhoneCall className="h-3.5 w-3.5 rotate-[135deg]" />
           </button>

@@ -1142,7 +1142,7 @@ export function ChatConversation({
               onClick={() => requestCall(conversationId, "audio", peer)}
               aria-label={`Start a voice call with ${participantName}`}
               title={`Start a voice call with ${participantName}`}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
             >
               <Phone size={16} />
             </button>
@@ -1152,7 +1152,7 @@ export function ChatConversation({
               onClick={() => requestCall(conversationId, "video", peer)}
               aria-label={`Start a video call with ${participantName}`}
               title={`Start a video call with ${participantName}`}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
             >
               <Video size={16} />
             </button>
@@ -1337,12 +1337,12 @@ export function ChatConversation({
               </div>
             )}
             {showGifPicker && (
-              <div className="absolute bottom-full left-12 z-30 mb-2 sm:left-16">
+              <div className="absolute bottom-full right-0 z-30 mb-2 sm:left-16 sm:right-auto">
                 <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
               </div>
             )}
             {showStickerPicker && (
-              <div className="absolute bottom-full left-24 z-30 mb-2 sm:left-32">
+              <div className="absolute bottom-full right-0 z-30 mb-2 sm:left-32 sm:right-auto">
                 <StickerPicker onSelect={handleStickerSelect} onClose={() => setShowStickerPicker(false)} />
               </div>
             )}

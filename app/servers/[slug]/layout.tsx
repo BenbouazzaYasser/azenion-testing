@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { ServerRail } from "@/components/servers/server-rail";
 import { ChannelSidebar } from "@/components/servers/channel-sidebar";
+import { MobileChannelStrip } from "@/components/servers/mobile-channel-strip";
 import { getServerView, getUserServers } from "@/data/servers";
 
 interface ServerLayoutProps {
@@ -47,18 +48,7 @@ export default async function ServerLayout({ params, children }: ServerLayoutPro
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              {/* Mobile channel strip (sidebar is hidden below md) */}
-              <div className="flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-border/60 bg-void-900/50 px-3 py-2 backdrop-blur-xl md:hidden">
-                {view.channels.map((ch) => (
-                  <a
-                    key={ch.id}
-                    href={`/servers/${view.server.slug}/${ch.slug}`}
-                    className="shrink-0 rounded-full bg-surface px-3 py-1 text-xs font-medium text-ink-300"
-                  >
-                    # {ch.name}
-                  </a>
-                ))}
-              </div>
+              <MobileChannelStrip serverSlug={view.server.slug} channels={view.channels} />
               {children}
             </div>
           </div>

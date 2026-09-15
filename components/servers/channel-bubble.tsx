@@ -124,7 +124,7 @@ export function ChannelBubble({
             type="button"
             aria-label={t("servers.editMessage")}
             onClick={() => setIsEditing(true)}
-            className="rounded-md p-1.5 text-ink-500 hover:bg-surface-hover hover:text-ink-100"
+            className="rounded-md p-2 text-ink-500 hover:bg-surface-hover hover:text-ink-100"
           >
             <Pencil size={13} />
           </button>
@@ -132,7 +132,7 @@ export function ChannelBubble({
             type="button"
             aria-label={t("servers.deleteMessage")}
             onClick={handleDelete}
-            className="rounded-md p-1.5 text-ink-500 hover:bg-red-400/10 hover:text-red-300"
+            className="rounded-md p-2 text-ink-500 hover:bg-red-400/10 hover:text-red-300"
           >
             <Trash2 size={13} />
           </button>

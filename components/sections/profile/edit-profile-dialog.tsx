@@ -128,7 +128,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                 transform: mounted ? "scale(1)" : "scale(0.95)",
               }}
             >
-              <div className="flex items-start justify-between border-b border-border px-10 py-6">
+              <div className="flex items-start justify-between border-b border-border px-5 py-5 sm:px-10 sm:py-6">
                 <div>
                   <h2 className="text-xl font-semibold text-ink-50">{t("settings.editProfile")}</h2>
                   <p className="mt-1 text-sm text-ink-400">{t("settings.editProfileDesc")}</p>
@@ -144,7 +144,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-                <div className="flex-1 space-y-6 overflow-y-auto px-10 py-8">
+                <div className="flex-1 space-y-6 overflow-y-auto px-5 py-6 sm:px-10 sm:py-8">
                   {error ? (
                     <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                       {error}
@@ -269,7 +269,7 @@ export function EditProfileDialog({ profile }: EditProfileDialogProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 border-t border-border px-10 py-5">
+                <div className="flex items-center justify-end gap-3 border-t border-border px-5 py-4 sm:px-10 sm:py-5">
                   <Button
                     type="button"
                     variant="secondary"
