@@ -21,6 +21,7 @@ export default function robots(): MetadataRoute.Robots {
           "/login",
           "/academy",
           "/academy/courses",
+          "/academy/roadmaps",
           "/academy/live-sessions",
           "/academy/labs",
           "/terms",

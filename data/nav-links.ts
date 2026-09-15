@@ -31,6 +31,7 @@ export const NAV_LINKS: NavLink[] = [
     href: "/academy",
     children: [
       { label: "Courses", href: "/academy/courses", description: "Self-paced learning paths" },
+      { label: "Roadmaps", href: "/academy/roadmaps", description: "Structured learning paths" },
       { label: "Live Sessions", href: "/academy/live-sessions", description: "Workshops and lectures" },
       { label: "Labs", href: "/academy/labs", description: "Build and experiment" },
     ],

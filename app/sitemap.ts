@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/login",
     "/academy",
     "/academy/courses",
+    "/academy/roadmaps",
     "/academy/live-sessions",
     "/academy/labs",
     "/terms",

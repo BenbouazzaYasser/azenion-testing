@@ -14,6 +14,7 @@ import {
   Settings,
   LogOut,
   GraduationCap,
+  Route,
   Video,
   FlaskConical,
   Newspaper,
@@ -41,6 +42,7 @@ const GlobalSearch = dynamic(
 
 const CHILD_ICONS: Record<string, React.ReactNode> = {
   "/academy/courses": <GraduationCap size={16} />,
+  "/academy/roadmaps": <Route size={16} />,
   "/academy/live-sessions": <Video size={16} />,
   "/academy/labs": <FlaskConical size={16} />,
   "/feed": <Newspaper size={16} />,
@@ -61,6 +63,7 @@ const NAV_LABEL_KEYS: Record<string, DictKey> = {
   "/showcase": "nav.showcase",
   "/announcements": "nav.announcements",
   "/academy/courses": "nav.courses",
+  "/academy/roadmaps": "nav.roadmaps",
   "/academy/live-sessions": "nav.liveSessions",
   "/academy/labs": "nav.labs",
 };

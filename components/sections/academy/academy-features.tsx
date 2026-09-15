@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap, Video, FlaskConical, ArrowRight } from "lucide-react";
+import { GraduationCap, Route, Video, FlaskConical, ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { serverT } from "@/lib/translation/server";
@@ -12,6 +12,13 @@ const FEATURES = [
     descKey: "academy.coursesDesc",
     href: "/academy/courses",
     actionKey: "academy.exploreCourses",
+  },
+  {
+    icon: Route,
+    titleKey: "academy.roadmapsTitle",
+    descKey: "academy.roadmapsDesc",
+    href: "/academy/roadmaps",
+    actionKey: "academy.exploreRoadmaps",
   },
   {
     icon: Video,
@@ -50,7 +57,7 @@ export async function AcademyFeatures() {
           </div>
         </Reveal>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-3">
+        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {(await Promise.all(FEATURES.map(async (feature, i) => (
             <Reveal key={feature.titleKey} delay={i * 120}>
               <article className="group flex h-full flex-col rounded-[2rem] card-surface p-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">

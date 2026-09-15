@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog } from "lucide-react";
+import { User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Route, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS } from "@/data/nav-links";
@@ -74,6 +74,7 @@ export function Navbar() {
 
   const CHILD_ICONS: Record<string, ReactNode> = {
     "/academy/courses": <GraduationCap size={16} />,
+    "/academy/roadmaps": <Route size={16} />,
     "/academy/live-sessions": <Video size={16} />,
     "/academy/labs": <FlaskConical size={16} />,
     "/feed": <Newspaper size={16} />,
@@ -94,6 +95,7 @@ export function Navbar() {
     "/showcase": "nav.showcase",
     "/announcements": "nav.announcements",
     "/academy/courses": "nav.courses",
+    "/academy/roadmaps": "nav.roadmaps",
     "/academy/live-sessions": "nav.liveSessions",
     "/academy/labs": "nav.labs",
   };
@@ -103,6 +105,7 @@ export function Navbar() {
     "/showcase": "nav.showcaseDesc",
     "/announcements": "nav.announcementsDesc",
     "/academy/courses": "nav.coursesDesc",
+    "/academy/roadmaps": "nav.roadmapsDesc",
     "/academy/live-sessions": "nav.liveSessionsDesc",
     "/academy/labs": "nav.labsDesc",
   };
