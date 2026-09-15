@@ -177,7 +177,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                   transform: mounted ? "scale(1)" : "scale(0.95)",
                 }}
               >
-                <div className="flex items-start justify-between border-b border-border px-8 py-5">
+                <div className="flex items-start justify-between border-b border-border px-5 py-5 sm:px-8">
                   <div>
                     <h2 className="text-xl font-semibold text-ink-50">Team Settings</h2>
                     <p className="mt-1 text-sm text-ink-400">Manage your team configuration.</p>
@@ -192,7 +192,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                   </button>
                 </div>
 
-                <div className="flex border-b border-border px-8">
+                <div className="flex border-b border-border px-5 sm:px-8">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
@@ -209,7 +209,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                   ))}
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-8 py-6">
+                <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-8">
                   {error ? (
                     <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                       {error}

@@ -414,7 +414,7 @@ function CommentItem({
                 type="button"
                 onClick={toggleReply}
                 aria-expanded={isReplying}
-                className="flex items-center gap-1 text-[10px] text-ink-600 transition-colors hover:text-accent-300"
+                className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-ink-600 transition-colors hover:text-accent-300"
               >
                 <Reply size={11} />
                 {t("feed.reply")}
@@ -426,7 +426,7 @@ function CommentItem({
                 <button
                   type="button"
                   onClick={startEdit}
-                  className="flex items-center gap-1 text-[10px] text-ink-600 transition-colors hover:text-accent-300"
+                  className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-ink-600 transition-colors hover:text-accent-300"
                 >
                   <Pencil size={11} />
                   {t("common.edit")}
@@ -434,7 +434,7 @@ function CommentItem({
                 <button
                   type="button"
                   onClick={() => setIsConfirmingDelete(true)}
-                  className="flex items-center gap-1 text-[10px] text-ink-600 transition-colors hover:text-red-400"
+                  className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-ink-600 transition-colors hover:text-red-400"
                 >
                   <Trash2 size={11} />
                   {t("common.delete")}

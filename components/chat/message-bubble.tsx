@@ -232,7 +232,7 @@ export function MessageBubble({
                 setEditText(content);
                 setIsEditing(true);
               }}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
             >
               <Pencil className="h-3.5 w-3.5" />
             </button>
@@ -241,7 +241,7 @@ export function MessageBubble({
               aria-label="Delete message"
               title="Delete"
               onClick={handleDelete}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>

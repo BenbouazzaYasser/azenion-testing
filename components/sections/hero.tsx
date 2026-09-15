@@ -30,7 +30,7 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={80}>
-            <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[3.75rem]">
+            <h1 className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[3.75rem]">
               {serverT("home.heroTitleA")}
               <br />
               {serverT("home.heroTitleB")}<span className="text-accent">{serverT("home.heroImpact")}</span>

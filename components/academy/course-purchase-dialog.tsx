@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createCheckout } from "@/actions/academy-payments.actions";
 
@@ -44,22 +45,22 @@ export function CoursePurchaseDialog({
 
   if (!open) {
     return (
-      <Button type="button" onClick={() => setOpen(true)} className="h-8 rounded-full px-3 text-xs">
+      <Button type="button" onClick={() => setOpen(true)} className="h-10 rounded-full px-3 text-xs">
         {priceLabel}
       </Button>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="relative w-full max-w-sm rounded-xl bg-surface p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8">
+      <div className="relative w-full max-w-sm rounded-2xl border navbar-panel-border bg-surface p-6 shadow-dialog backdrop-blur-2xl">
         <button
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Close"
-          className="absolute right-4 top-4 rounded-full p-1 hover:bg-surface-pointer"
+          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full p-2 text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50"
         >
-          X
+          <X className="h-5 w-5" />
         </button>
         <h3 className="mb-4 text-xl font-bold">Purchase Course</h3>
         <p className="mb-4 text-sm text-muted-foreground">

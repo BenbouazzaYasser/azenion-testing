@@ -64,19 +64,19 @@ export function DeleteAccountModal() {
               transform: mounted ? "scale(1)" : "scale(0.95)",
             }}
           >
-            <div className="flex items-center justify-between border-b border-border px-8 py-6">
+            <div className="flex items-center justify-between border-b border-border px-5 py-5 sm:px-8 sm:py-6">
               <h2 className="text-lg font-semibold text-ink-50">{t("settings.deleteAccount")}</h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label={t("settings.closeAria")}
-                className="-mr-1.5 -mt-1.5 rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                className="-mr-1.5 -mt-1.5 rounded-full p-2.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="px-8 py-6">
+            <div className="px-5 py-5 sm:px-8 sm:py-6">
               <div className="flex flex-col items-center text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">
                   <TriangleAlert size={24} className="text-red-400" />

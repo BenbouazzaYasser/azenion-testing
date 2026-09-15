@@ -29,7 +29,7 @@ export function ProfileEmptyCard({
       </div>
       <Link
         href={href}
-        className="group inline-flex items-center gap-1.5 rounded-full bg-surface px-4 py-2 text-sm font-medium text-accent-400 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:bg-surface-hover hover:text-accent-300 hover:shadow-glow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+        className="group inline-flex items-center gap-1.5 rounded-full bg-surface px-4 py-2.5 text-sm font-medium text-accent-400 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:bg-surface-hover hover:text-accent-300 hover:shadow-glow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
       >
         {linkLabel}
         <ArrowRight
