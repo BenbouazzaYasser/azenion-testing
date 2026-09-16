@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog, Menu, X } from "lucide-react";
+import { User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS } from "@/data/nav-links";
@@ -169,7 +169,7 @@ export function Navbar() {
       >
         <div className="flex h-[64px] items-center justify-between gap-3 px-4 sm:h-[70px] sm:px-6 xl:justify-start xl:gap-5">
           <div className="flex shrink-0 items-center pr-1">
-            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            <Logo withWordmark={false} markSize={32} />
           </div>
 
           <div className="hidden xl:flex xl:ms-2">

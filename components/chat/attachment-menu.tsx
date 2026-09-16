@@ -15,7 +15,7 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
     <div
       role="menu"
       aria-label="Attachment options"
-      className="flex items-center gap-1.5"
+      className="flex items-center gap-0.5 sm:gap-1.5"
     >
       <button
         type="button"

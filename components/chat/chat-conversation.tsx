@@ -1247,7 +1247,7 @@ export function ChatConversation({
         </div>
       )}
 
-      <div className="relative z-10 shrink-0 border-0 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4 sm:pt-3">
+      <div className="relative z-10 shrink-0 border-0 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-2 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4 sm:pt-3">
         {amBlocked ? (
           <div
             role="status"
@@ -1347,7 +1347,10 @@ export function ChatConversation({
               </div>
             )}
             <form
-              className="flex items-center gap-1.5 sm:gap-2"
+              className={cn(
+                "flex items-center",
+                showAttachmentMenu ? "gap-0.5 sm:gap-2" : "gap-1.5 sm:gap-2",
+              )}
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSend();
