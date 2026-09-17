@@ -22,12 +22,19 @@ export const metadata: Metadata = {
 
 export default async function FeedPage() {
   const user = await getSessionUser();
-  const supabase = await createClient();
   const userId = user?.id ?? null;
 
-  const isPlatformAdmin = user ? (await supabase.rpc("is_platform_admin"))?.data === true : false;
-
-  const { items, total } = await getFeedItems("all", 1, 20, userId);
+  // is_platform_admin and initial feed load are independent — run concurrently
+  const [isPlatformAdmin, feed] = await Promise.all([
+    (async () => {
+      if (!user) return false;
+      const supabase = await createClient();
+      const { data } = await supabase.rpc("is_platform_admin");
+      return data === true;
+    })(),
+    getFeedItems("all", 1, 20, userId),
+  ]);
+  const { items, total } = feed;
 
   return (
     <>

@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { Suspense } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Hero } from "@/components/sections/hero";
@@ -17,7 +18,6 @@ import { Roadmap } from "@/components/sections/home/roadmap";
 import { Faq } from "@/components/sections/home/faq";
 import { FinalCta } from "@/components/sections/home/final-cta";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { resolveMediaValue } from "@/lib/media";
 import { JsonLd, siteUrl } from "@/components/seo/json-ld";
 import { getFeedItems } from "@/actions/feed.actions";
 import { isTeamHidden } from "@/lib/lifecycle";
@@ -32,14 +32,30 @@ import type {
 async function fetchHomePageData() {
   const admin = createAdminClient();
 
+  // Home counts via single RPC (1 RTT) instead of 4 parallel HEAD counts.
+  // Falls back to 4 counts if RPC not yet deployed.
+  async function fetchHomeCounts() {
+    try {
+      const { data, error } = await admin.rpc("get_home_counts");
+      if (!error && data) {
+        const j = data as { members: number; teams: number; projects: number; branches: number };
+        return { members: j.members ?? 0, teams: j.teams ?? 0, projects: j.projects ?? 0, branches: j.branches ?? 0 };
+      }
+    } catch {}
+    const [m, t, p, b] = await Promise.all([
+      admin.from("profiles").select("id", { count: "exact", head: true }),
+      admin.from("teams").select("id", { count: "exact", head: true }),
+      admin.from("projects").select("id", { count: "exact", head: true }),
+      admin.from("branches").select("id", { count: "exact", head: true }),
+    ]);
+    return { members: m.count ?? 0, teams: t.count ?? 0, projects: p.count ?? 0, branches: b.count ?? 0 };
+  }
+
   const [
     { data: teamRows },
     { data: projectRows },
     { data: sessionRows },
-    { count: countMembers },
-    { count: countTeams },
-    { count: countProjects },
-    { count: countBranches },
+    homeCounts,
     { items: feedItems },
   ] = await Promise.all([
     admin
@@ -82,12 +98,13 @@ async function fetchHomePageData() {
       .order("created_at", { ascending: false })
       .limit(4),
     admin.rpc("get_live_sessions"),
-    admin.from("profiles").select("id", { count: "exact", head: true }),
-    admin.from("teams").select("id", { count: "exact", head: true }),
-    admin.from("projects").select("id", { count: "exact", head: true }),
-    admin.from("branches").select("id", { count: "exact", head: true }),
+    fetchHomeCounts(),
     getFeedItems("all", 1, 3, null),
   ]);
+  const countMembers = homeCounts.members;
+  const countTeams = homeCounts.teams;
+  const countProjects = homeCounts.projects;
+  const countBranches = homeCounts.branches;
 
   const teamIds = (teamRows ?? []).map((t) => t.id);
   const projectIds = (projectRows ?? []).map((p) => p.id);
@@ -136,15 +153,33 @@ async function fetchHomePageData() {
     }
   }
 
-  const teams: TeamCardTeam[] = await Promise.all(
-    (teamRows ?? [])
-      .filter((team) => !isTeamHidden(team.last_activity_at as string | null))
-      .map(async (team) => ({
+  // Batch private logo resolution: one storage call for all team+project logos
+  const filteredTeams = (teamRows ?? []).filter((team) => !isTeamHidden(team.last_activity_at as string | null));
+  const filteredProjects = (projectRows ?? []).filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED");
+  const PRIVATE_PREFIX = "private-media/";
+  const isPrivate = (v: string | null | undefined): boolean => typeof v === "string" && v.startsWith(PRIVATE_PREFIX);
+  const objectPath = (m: string) => m.slice(PRIVATE_PREFIX.length);
+  const isSafe = (p: string) => p.length > 0 && p.length <= 500 && !p.includes("..") && /^[A-Za-z0-9._\/-]+$/.test(p) && (p.startsWith("team/") || p.startsWith("project/"));
+  const privatePaths = new Set<string>();
+  for (const t of filteredTeams) if (isPrivate(t.logo_url)) { const op = objectPath(t.logo_url as string); if (isSafe(op)) privatePaths.add(op); }
+  for (const p of filteredProjects) if (isPrivate(p.logo_url)) { const op = objectPath(p.logo_url as string); if (isSafe(op)) privatePaths.add(op); }
+  const markerToUrl = new Map<string, string>();
+  if (privatePaths.size > 0) {
+    try {
+      const { data } = await admin.storage.from("private-media").createSignedUrls([...privatePaths], 60);
+      if (data) for (const e of data) if (!e.error && e.signedUrl && e.path) markerToUrl.set(`${PRIVATE_PREFIX}${e.path}`, e.signedUrl);
+    } catch {}
+  }
+
+  const teams: TeamCardTeam[] = filteredTeams.map((team) => {
+    const rawLogo = team.logo_url as string | null;
+    const resolved = rawLogo && isPrivate(rawLogo) ? (markerToUrl.get(rawLogo) ?? null) : rawLogo;
+    return {
     id: team.id,
     slug: team.slug,
     name: team.name,
     description: team.description,
-    logo_url: ((await resolveMediaValue(team.logo_url, undefined, admin)) as string | null) ?? null,
+    logo_url: resolved,
     visibility: team.visibility,
     status: team.status,
     last_activity_at: team.last_activity_at as string | null,
@@ -157,18 +192,18 @@ async function fetchHomePageData() {
     project_count: projectCountMap.get(team.id) ?? 0,
     update_count: 0,
     open_roles: [],
-    }))
-  );
+    };
+  });
 
-  const projects: ProjectCardProject[] = await Promise.all(
-    (projectRows ?? [])
-      .filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED")
-      .map(async (p) => ({
+  const projects: ProjectCardProject[] = filteredProjects.map((p) => {
+    const rawLogo = p.logo_url as string | null;
+    const resolved = rawLogo && isPrivate(rawLogo) ? (markerToUrl.get(rawLogo) ?? null) : rawLogo;
+    return {
     id: p.id,
     slug: p.slug,
     name: p.name,
     description: p.description,
-    logo_url: ((await resolveMediaValue(p.logo_url, undefined, admin)) as string | null) ?? null,
+    logo_url: resolved,
     visibility: p.visibility,
     lifecycle_status: p.lifecycle_status,
     last_activity_at: p.last_activity_at as string | null,
@@ -186,8 +221,8 @@ async function fetchHomePageData() {
     owner: p.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
     team: p.team as unknown as { name: string; slug: string } | null,
     member_count: projectMemberCountMap.get(p.id) ?? 0,
-    }))
-  );
+    };
+  });
 
   const sessions: LiveSessionWithManage[] = ((sessionRows ?? []) as LiveSessionRow[]).map(
     (session) => ({
@@ -212,12 +247,25 @@ const getHomePageData = unstable_cache(fetchHomePageData, ["home-page-data"], {
   revalidate: 30,
 });
 
-export default async function HomePage() {
+async function HomeDynamicSections() {
   const { teams, projects, sessions, countMembers, countTeams, countProjects, countBranches, feedItems } =
     await getHomePageData();
+  return (
+    <>
+      <FeaturedContent teams={teams} projects={projects} />
+      <AcademyPreview sessions={sessions} />
+      <FeedPreview items={feedItems} />
+      <CommunityNumbers
+        members={countMembers ?? 0}
+        teams={countTeams ?? 0}
+        projects={countProjects ?? 0}
+        branches={countBranches ?? 0}
+      />
+    </>
+  );
+}
 
-  
-
+export default function HomePage() {
   const url = siteUrl();
 
   return (
@@ -249,16 +297,11 @@ export default async function HomePage() {
         <About />
         <Ecosystem />
         <HowItWorks />
-        <FeaturedContent teams={teams} projects={projects} />
-        <AcademyPreview sessions={sessions} />
-        <FeedPreview items={feedItems} />
+        {/* Streaming: heavy DB sections render after TTFB */}
+        <Suspense fallback={<div className="py-16 flex justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" /></div>}>
+          <HomeDynamicSections />
+        </Suspense>
         <Features />
-        <CommunityNumbers
-          members={countMembers ?? 0}
-          teams={countTeams ?? 0}
-          projects={countProjects ?? 0}
-          branches={countBranches ?? 0}
-        />
         <Roadmap />
         <Faq />
         <FinalCta />

@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { fetchWithTimeout } from "@/lib/fetch-timeout";
 import { getSupabaseEnv } from "@/lib/supabase/env";
+import { instrumentSupabaseFetch, shouldInstrument } from "@/lib/supabase/instrumented-fetch";
 
 const getCookieStore = cache(() => cookies());
 
@@ -28,7 +29,9 @@ export async function createClient() {
       },
     },
     global: {
-      fetch: fetchWithTimeout,
+      fetch: shouldInstrument()
+        ? instrumentSupabaseFetch(fetchWithTimeout, "auth")
+        : fetchWithTimeout,
     },
   });
 }

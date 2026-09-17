@@ -89,22 +89,40 @@ export async function loadOnboardingData(userId: string): Promise<OnboardingData
     created_at: profile?.created_at ?? null,
   };
 
-  // ── Current branch membership ────────────────────────────────────────────
+  // If onboarding is not visible, skip heavy recommendation queries — this is
+  // the common path for 95%+ of authenticated users (already completed).
+  // We still need a minimal shape for the provider, but no branches/teams/projects.
+  if (!visible) {
+    return {
+      visible: false,
+      completed,
+      step: persistedStep,
+      profile: profileSubset,
+      currentBranch: null,
+      branches: [],
+      teams: [],
+      projects: [],
+    };
+  }
 
-  const { data: membership } = await admin
-    .from("branch_members")
-    .select("branch_id, branch:branches(id, slug, name)")
-    .eq("user_id", userId)
-    .maybeSingle();
+  // ── Recommendations: fetch all independent data in parallel ──────────────
+  const [membershipRes, branchesRes, branchCountsRes, featuredProjectIds, trendingTeamIds, projectRowsRes, teamRowsRes] =
+    await Promise.all([
+      admin.from("branch_members").select("branch_id, branch:branches(id, slug, name)").eq("user_id", userId).maybeSingle(),
+      admin.from("branches").select("id, slug, name, full_name, logo_url").order("name"),
+      admin.from("branch_members").select("branch_id"),
+      getFeaturedProjectIds(8),
+      getTrendingTeamIds(10),
+      admin.from("projects").select("id, slug, name, description, logo_url, last_activity_at").eq("visibility", "public").order("created_at", { ascending: false }).limit(30),
+      admin.from("teams").select("id, slug, name, description, logo_url, last_activity_at, created_at").eq("visibility", "public").order("created_at", { ascending: false }).limit(40),
+    ]);
 
+  const membership = membershipRes.data as unknown as { branch: { id: string; slug: string; name: string } | null } | null;
   const currentBranch = (membership?.branch as unknown as { id: string; slug: string; name: string } | null) ?? null;
-
-  // ── Recommendations ──────────────────────────────────────────────────────
-
-  const [branches, branchCounts] = await Promise.all([
-    admin.from("branches").select("id, slug, name, full_name, logo_url").order("name"),
-    admin.from("branch_members").select("branch_id"),
-  ]);
+  const branches = branchesRes;
+  const branchCounts = branchCountsRes;
+  const projectRows = projectRowsRes.data;
+  const teamRows = teamRowsRes.data;
 
   const countMap = new Map<string, number>();
   for (const r of branchCounts?.data ?? []) {
@@ -151,13 +169,7 @@ export async function loadOnboardingData(userId: string): Promise<OnboardingData
 
   // ── Featured + newest projects ───────────────────────────────────────────
 
-  const featuredProjectIds = await getFeaturedProjectIds(8);
-  const { data: projectRows } = await admin
-    .from("projects")
-    .select("id, slug, name, description, logo_url, last_activity_at")
-    .eq("visibility", "public")
-    .order("created_at", { ascending: false })
-    .limit(30);
+  // featuredProjectIds & projectRows already fetched in parallel above
 
   const activeProjects = (projectRows ?? []).filter(
     (p) =>
@@ -195,13 +207,7 @@ export async function loadOnboardingData(userId: string): Promise<OnboardingData
 
   // ── Trending + newest teams ──────────────────────────────────────────────
 
-  const trendingTeamIds = await getTrendingTeamIds(10);
-  const { data: teamRows } = await admin
-    .from("teams")
-    .select("id, slug, name, description, logo_url, last_activity_at, created_at")
-    .eq("visibility", "public")
-    .order("created_at", { ascending: false })
-    .limit(40);
+  // trendingTeamIds & teamRows already fetched in parallel above
 
   const activeTeams = (teamRows ?? []).filter(
     (t) => !isTeamHidden((t as { last_activity_at: string | null }).last_activity_at),
