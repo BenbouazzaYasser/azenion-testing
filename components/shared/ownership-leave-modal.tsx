@@ -63,7 +63,7 @@ export function OwnershipLeaveModal({ open, onClose, type, onGoToSettings }: Own
         tabIndex={-1}
         className="relative z-10 w-full max-w-[420px] overflow-hidden rounded-2xl panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
       >
-        <div className="flex flex-col items-center px-8 pb-8 pt-10 text-center">
+        <div className="flex flex-col items-center px-5 pb-8 pt-10 text-center sm:px-8">
           <div className="flex h-14 w-14 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">
             <ShieldAlert size={28} className="text-red-400" />
           </div>

@@ -94,7 +94,7 @@ export function TransferOwnershipConfirmModal({
         tabIndex={-1}
         className="relative z-10 w-full max-w-[440px] overflow-hidden rounded-2xl panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
       >
-        <div className="flex flex-col items-center px-8 pb-8 pt-10 text-center">
+        <div className="flex flex-col items-center px-5 pb-8 pt-10 text-center sm:px-8">
           <div className="flex h-14 w-14 items-center justify-center rounded-full border border-amber-500/30 bg-amber-500/10">
             <ShieldAlert size={28} className="text-amber-400" />
           </div>

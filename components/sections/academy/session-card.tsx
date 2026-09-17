@@ -49,7 +49,7 @@ export async function SessionCard({ session, hostOptions }: SessionCardProps) {
     <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:p-7">
       <div className="flex items-start justify-between gap-3">
         <SessionStatusBadge status={session.status} />
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <span
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
@@ -100,8 +100,8 @@ export async function SessionCard({ session, hostOptions }: SessionCardProps) {
 
       <div
         className={cn(
-          "mt-6 grid divide-x divide-white/10 rounded-xl bg-surface text-center",
-          hasEnd ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"
+          "mt-6 grid divide-y divide-white/10 rounded-xl bg-surface text-center sm:divide-y-0 sm:divide-x",
+          hasEnd ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 sm:grid-cols-2",
         )}
       >
         <div className="flex flex-col items-center gap-1.5 px-2 py-3">

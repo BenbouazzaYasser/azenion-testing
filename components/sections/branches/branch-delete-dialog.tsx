@@ -88,7 +88,7 @@ export function BranchDeleteDialog({ branch, onClose }: BranchDeleteDialogProps)
           transform: mounted ? "scale(1)" : "scale(0.95)",
         }}
       >
-        <div className="flex items-start justify-between border-b border-border px-8 py-5">
+        <div className="flex items-start justify-between border-b border-border px-5 py-5 sm:px-8">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 text-red-400">
               <AlertTriangle size={18} />
@@ -108,7 +108,7 @@ export function BranchDeleteDialog({ branch, onClose }: BranchDeleteDialogProps)
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 py-6">
+        <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-8">
           {error ? (
             <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               {error}
@@ -135,7 +135,7 @@ export function BranchDeleteDialog({ branch, onClose }: BranchDeleteDialogProps)
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-border px-8 py-5">
+        <div className="flex items-center justify-end gap-3 border-t border-border px-5 py-4 sm:px-8 sm:py-5">
           <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={isPending}>
             Cancel
           </Button>

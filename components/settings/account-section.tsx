@@ -101,7 +101,7 @@ export function AccountSection({
             </div>
 </div>
           <form onSubmit={handleEmail} className="w-full sm:w-[320px]">
-            <div className="flex items-end gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-2">
               <FormField label={t("settings.newEmail")} htmlFor="new-email-input" required>
                 <input
                   id="new-email-input"

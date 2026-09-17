@@ -34,8 +34,7 @@ export async function Hero() {
           >
             {await serverT("home.heroTitleA")}
             <br />
-            {await serverT("home.heroTitleB")}
-            {await serverT("home.heroImpact")}
+            {await serverT("home.heroTitleB")}<span className="text-accent">{await serverT("home.heroImpact")}</span>
           </h1>
 
           <p className="mt-6 animate-fade-in-up text-balance text-[1.05rem] leading-relaxed text-ink-400 opacity-0 motion-reduce:opacity-100 max-sm:animate-none max-sm:opacity-100 [animation-delay:180ms]">

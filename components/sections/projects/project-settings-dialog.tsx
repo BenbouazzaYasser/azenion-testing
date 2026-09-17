@@ -272,7 +272,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
                   transform: mounted ? "scale(1)" : "scale(0.95)",
                 }}
               >
-                <div className="flex items-start justify-between border-b border-border px-8 py-5">
+                <div className="flex items-start justify-between border-b border-border px-5 py-5 sm:px-8">
                   <div>
                     <h2 className="text-xl font-semibold text-ink-50">Project Settings</h2>
                     <p className="mt-1 text-sm text-ink-400">Manage your project configuration.</p>
@@ -290,7 +290,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-8 py-8">
+                <div className="flex-1 overflow-y-auto px-5 py-8 sm:px-8">
                   {error ? (
                     <div className="mb-8 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                       {error}
@@ -636,7 +636,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
 
                 {/* ── Sticky footer with Save ── */}
                 {hasChanges ? (
-                  <div className="flex items-center justify-between border-t border-border bg-void-950/95 px-8 py-4">
+                  <div className="flex items-center justify-between border-t border-border bg-void-950/95 px-5 py-4 sm:px-8">
                     <span className="flex items-center gap-2 text-sm text-amber-400">
                       <span className="h-2 w-2 rounded-full bg-amber-400" />
                       Unsaved changes

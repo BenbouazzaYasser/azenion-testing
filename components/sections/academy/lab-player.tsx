@@ -500,7 +500,7 @@ function QuestionBlockView({
               <label
                 key={option.id}
                 className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-colors",
+                  "flex cursor-pointer flex-wrap items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-colors",
                   selected ? "border-accent-400/60 bg-accent/[0.08] text-ink-50" : "border-border-strong text-ink-300 hover:border-accent-400/30",
                 )}
               >

@@ -19,9 +19,8 @@ export async function AcademyHero({ eyebrow, title, accent, subtitle, badge }: A
         </span>
       
 
-      
         <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
-          {title} {accent}
+          {title} <span className="text-accent-400">{accent}</span>
         </h1>
       
 

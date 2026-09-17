@@ -191,7 +191,7 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
         <img
           src={url}
           alt={meta.title ?? "GIF"}
-          className={cn("max-h-64 max-w-[260px] object-cover", imgLoading ? "hidden" : "block")}
+          className={cn("max-h-64 max-w-full object-cover", imgLoading ? "hidden" : "block")}
           onLoad={() => setImgLoading(false)}
           onError={() => setImgLoading(false)}
           loading="lazy"
@@ -325,7 +325,7 @@ export function QueuedAttachmentCard({
           className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500"
           aria-label="Remove attachment"
         >
-          ×
+          <span aria-hidden className="text-base leading-none">&times;</span>
         </button>
       </div>
       <div className="px-2 py-1.5">

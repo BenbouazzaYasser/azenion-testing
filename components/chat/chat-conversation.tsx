@@ -1421,7 +1421,10 @@ export function ChatConversation({
               </div>
             )}
             <form
-              className="flex items-center gap-2.5"
+              className={cn(
+                "flex items-center",
+                showAttachmentMenu ? "gap-0.5 sm:gap-2" : "gap-1.5 sm:gap-2",
+              )}
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSend();

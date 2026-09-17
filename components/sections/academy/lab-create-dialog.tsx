@@ -172,7 +172,7 @@ export function LabCreateDialog() {
                 className="relative z-10 flex max-h-[85vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium focus:outline-none"
                 style={{ opacity: mounted ? 1 : 0, transform: mounted ? "scale(1)" : "scale(0.95)" }}
               >
-                <div className="flex items-start justify-between border-b border-border px-8 py-5">
+                <div className="flex items-start justify-between border-b border-border px-5 py-5 sm:px-8">
                   <div>
                     <h2 className="text-xl font-semibold text-ink-50">Add Lab</h2>
                     <p className="mt-1 text-sm text-ink-400">Create a new practical lab for Azenion Academy.</p>
@@ -187,7 +187,7 @@ export function LabCreateDialog() {
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-8 py-6">
+                <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-8">
                   {error ? (
                     <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
                       {error}

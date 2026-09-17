@@ -380,7 +380,7 @@ export function InstructorSection() {
               required
               value={formData.full_name}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none"
+              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
           </FormField>
 
@@ -392,12 +392,12 @@ export function InstructorSection() {
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
               placeholder={t("settings.instructorBioPlaceholder")}
-              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none"
+              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
           </FormField>
 
           <FormField label={t("settings.instructorExpertiseRequiredHint")}>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 value={expertiseInput}
@@ -409,12 +409,12 @@ export function InstructorSection() {
                   }
                 }}
                 placeholder="e.g., JavaScript, React, System Design"
-                className="flex-1 rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-primary focus:outline-none"
+                className="flex-1 rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-primary focus:outline-none"
               />
               <button
                 type="button"
                 onClick={handleAddExpertise}
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-500"
+                className="shrink-0 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-500"
               >
                 {t("settings.instructorAdd")}
               </button>
@@ -424,15 +424,16 @@ export function InstructorSection() {
                 {formData.expertise_areas.map((area) => (
                   <span
                     key={area}
-                    className="inline-flex items-center gap-1 rounded-full bg-accent/20 px-3 py-1 text-sm text-accent"
+                    className="inline-flex items-center gap-1 rounded-full bg-accent/20 py-1 pl-3 pr-1 text-sm text-accent"
                   >
                     {area}
                     <button
                       type="button"
                       onClick={() => handleRemoveExpertise(area)}
-                      className="hover:text-accent/70"
+                      aria-label={`Remove ${area}`}
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-accent/70 transition-colors hover:bg-accent/40 hover:text-white"
                     >
-                      ×
+                      <span aria-hidden className="text-base leading-none">&times;</span>
                     </button>
                   </span>
                 ))}
@@ -447,7 +448,7 @@ export function InstructorSection() {
               value={formData.teaching_experience}
               onChange={(e) => setFormData({ ...formData, teaching_experience: e.target.value })}
               placeholder={t("settings.instructorTeachingPlaceholder")}
-              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none"
+              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
           </FormField>
         </div>
@@ -459,7 +460,7 @@ export function InstructorSection() {
           <button
             type="button"
             onClick={handleAddEducation}
-            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-500"
+            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-white hover:bg-accent-500"
           >
             {t("settings.instructorAddMore")}
           </button>
@@ -477,7 +478,7 @@ export function InstructorSection() {
                 <button
                   type="button"
                   onClick={() => handleRemoveEducation(index)}
-                  className="absolute right-3 top-3 text-ink-500 hover:text-danger"
+                  className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full bg-void-800 text-ink-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
                 >
                   ×
                 </button>
@@ -502,7 +503,7 @@ export function InstructorSection() {
                         value={edu.institution}
                         onChange={(e) => handleUpdateEducation(index, "institution", e.target.value)}
                         placeholder="e.g., MIT, Stanford University"
-                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-accent focus:outline-none"
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
                     </FormField>
                     <FormField label={t("settings.instructorDegree")}>
@@ -511,7 +512,7 @@ export function InstructorSection() {
                         value={edu.degree ?? ""}
                         onChange={(e) => handleUpdateEducation(index, "degree", e.target.value)}
                         placeholder="e.g., B.S., M.A., Ph.D."
-                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-accent focus:outline-none"
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
                     </FormField>
                     <FormField label={t("settings.instructorFieldStudy")}>
@@ -520,7 +521,7 @@ export function InstructorSection() {
                         value={edu.field ?? ""}
                         onChange={(e) => handleUpdateEducation(index, "field", e.target.value)}
                         placeholder="e.g., Computer Science"
-                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-accent focus:outline-none"
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
                     </FormField>
                     <FormField label={t("settings.instructorStartYear")}>
@@ -531,7 +532,7 @@ export function InstructorSection() {
                         placeholder="2020"
                         inputMode="numeric"
                         maxLength={4}
-                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-accent focus:outline-none"
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
                     </FormField>
                     <FormField label={t("settings.instructorEndYear")}>
@@ -542,7 +543,7 @@ export function InstructorSection() {
                         placeholder="2024 or leave blank if current"
                         inputMode="numeric"
                         maxLength={4}
-                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-accent focus:outline-none"
+                        className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
                     </FormField>
                   </div>
@@ -559,7 +560,7 @@ export function InstructorSection() {
           <button
             type="button"
             onClick={handleAddCertification}
-            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-500"
+            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-white hover:bg-accent-500"
           >
             {t("settings.instructorAddMore")}
           </button>
@@ -577,7 +578,7 @@ export function InstructorSection() {
                 <button
                   type="button"
                   onClick={() => handleRemoveCertification(index)}
-                  className="absolute right-3 top-3 text-ink-500 hover:text-danger"
+                  className="absolute -right-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full bg-void-800 text-ink-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
                 >
                   ×
                 </button>
@@ -589,7 +590,7 @@ export function InstructorSection() {
                       value={cert.name}
                       onChange={(e) => handleUpdateCertification(index, "name", e.target.value)}
                       placeholder="e.g., AWS Solutions Architect, Google Cloud Professional"
-                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-accent focus:outline-none"
+                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                     />
                   </FormField>
                   <FormField label={t("settings.instructorIssuingOrg")}>
@@ -598,7 +599,7 @@ export function InstructorSection() {
                       value={cert.issuer ?? ""}
                       onChange={(e) => handleUpdateCertification(index, "issuer", e.target.value)}
                       placeholder="e.g., Amazon, Google"
-                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-accent focus:outline-none"
+                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                     />
                   </FormField>
                   <FormField label={t("settings.instructorYear")}>
@@ -609,7 +610,7 @@ export function InstructorSection() {
                       placeholder="2024"
                       inputMode="numeric"
                       maxLength={4}
-                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-accent focus:outline-none"
+                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                     />
                   </FormField>
                   <FormField label={t("settings.instructorCredentialUrl")} className="sm:col-span-2">
@@ -618,7 +619,7 @@ export function InstructorSection() {
                       value={cert.url ?? ""}
                       onChange={(e) => handleUpdateCertification(index, "url", e.target.value)}
                       placeholder="https://..."
-                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-1.5 text-sm text-ink-50 focus:border-accent focus:outline-none"
+                      className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                     />
                   </FormField>
                 </div>
@@ -648,7 +649,7 @@ export function InstructorSection() {
                 } else { setError(null); }
               }}
               placeholder="https://yourportfolio.com"
-              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none"
+              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
           </FormField>
 
@@ -665,7 +666,7 @@ export function InstructorSection() {
                 } else { setError(null); }
               }}
               placeholder="https://linkedin.com/in/yourprofile"
-              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none"
+              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
           </FormField>
 
@@ -682,7 +683,7 @@ export function InstructorSection() {
                 } else { setError(null); }
               }}
               placeholder="https://github.com/yourusername"
-              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2 text-ink-50 focus:border-accent focus:outline-none"
+              className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
           </FormField>
         </div>
