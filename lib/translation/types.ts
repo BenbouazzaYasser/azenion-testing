@@ -553,6 +553,9 @@ export const dictKeys = [
   "projects.exploreProjects",
   "projects.myEyebrow",
   "projects.myTitle",
+  "projects.loadMore",
+  "projects.loadingMore",
+  "projects.errorLoadMore",
 
   // Project detail page
   "projects.pageArchived",

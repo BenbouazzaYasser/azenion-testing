@@ -1,0 +1,6 @@
+# Minimal Supabase CLI config for local development and CI.
+# `supabase start` fills every omitted section with defaults
+# (API :54321, DB :54322, Studio :54323); `supabase db reset` then applies
+# supabase/migrations/ in order. No secrets live here — local keys are
+# well-known dev-only values printed by `supabase status`.
+project_id = "azenion"

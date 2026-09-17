@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Search, Users, Rocket, ArrowDownWideNarrow } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,17 @@ import { ProjectCard, type ProjectCardProject } from "./project-card";
 import { filterAndSort, type SortKey, SORT_OPTIONS } from "@/lib/filter-sort";
 import { useTranslation } from "@/components/translation/translation-provider";
 import type { DictKey } from "@/lib/translation/types";
+import { getProjectsPageAction } from "@/actions/projects-list.actions";
+
+// Must match PROJECTS_PAGE_SIZE in actions/projects-list.actions.ts (a plain
+// const cannot be imported into a client component from a "use server"
+// module, so the value is duplicated here).
+const PAGE_SIZE = 24;
 
 interface AllProjectsProps {
   initialProjects: ProjectCardProject[];
+  initialNextCursor: string | null;
+  initialHasMore: boolean;
   technologies: string[];
   categories: { id: string; name: string; slug: string }[];
 }
@@ -23,15 +31,79 @@ const SORT_LABEL_KEYS: Record<SortKey, DictKey> = {
   alpha: "teams.sortAlpha",
 };
 
-export function AllProjects({ initialProjects, technologies, categories }: AllProjectsProps) {
+export function AllProjects({
+  initialProjects,
+  initialNextCursor,
+  initialHasMore,
+  technologies,
+  categories,
+}: AllProjectsProps) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("newest");
   const [techFilter, setTechFilter] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
+  // Keyset-paginated catalog: first page is SSR'd, further pages append via
+  // the getProjectsPageAction server action (cursor = created_at+id, never
+  // OFFSET, so inserts never shift or duplicate page boundaries).
+  const [projects, setProjects] = useState<ProjectCardProject[]>(initialProjects);
+  const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const projectsRef = useRef(initialProjects);
+  const cursorRef = useRef(initialNextCursor);
+  const hasMoreRef = useRef(initialHasMore);
+  const isFetchingRef = useRef(false);
+  const generationRef = useRef(0);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const loadMore = useCallback(async () => {
+    if (isFetchingRef.current || !hasMoreRef.current) return;
+    isFetchingRef.current = true;
+    setIsLoadingMore(true);
+    setError(null);
+    const generation = ++generationRef.current;
+    try {
+      const result = await getProjectsPageAction(cursorRef.current, PAGE_SIZE);
+      if (generation !== generationRef.current) return;
+      const seen = new Set(projectsRef.current.map((p) => p.id));
+      const fresh = result.projects.filter((p) => !seen.has(p.id));
+      const merged = [...projectsRef.current, ...fresh];
+      projectsRef.current = merged;
+      cursorRef.current = result.nextCursor;
+      hasMoreRef.current = result.hasMore;
+      setProjects(merged);
+      setNextCursor(result.nextCursor);
+      setHasMore(result.hasMore);
+    } catch {
+      if (generation !== generationRef.current) return;
+      setError(t("projects.errorLoadMore"));
+    } finally {
+      isFetchingRef.current = false;
+      setIsLoadingMore(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          void loadMore();
+        }
+      },
+      { rootMargin: "400px 0px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMore]);
+
   const filtered = useMemo(() => {
-    let result = filterAndSort(initialProjects, {
+    let result = filterAndSort(projects, {
       search,
       searchFields: [
         (p) => p.name,
@@ -65,7 +137,7 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
     }
 
     return result;
-  }, [initialProjects, search, sort, techFilter, categoryFilter]);
+  }, [projects, search, sort, techFilter, categoryFilter]);
 
   return (
     <section id="projects" className="relative scroll-mt-24 py-20 sm:py-24 lg:py-28" aria-labelledby="all-projects-heading">
@@ -180,11 +252,53 @@ export function AllProjects({ initialProjects, technologies, categories }: AllPr
             </div>
           
         ) : (
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((project, i) => (
-              <ProjectCard key={project.id} project={project} index={i} />
-            ))}
-          </div>
+          <>
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((project, i) => (
+                <ProjectCard key={project.id} project={project} index={i} />
+              ))}
+            </div>
+
+            {error ? (
+              <div className="mt-8 flex flex-col items-center gap-3 text-center">
+                <p className="text-sm text-ink-500">{error}</p>
+                <Button variant="secondary" size="sm" onClick={() => void loadMore()}>
+                  {t("projects.loadMore")}
+                </Button>
+              </div>
+            ) : null}
+
+            {isLoadingMore ? (
+              <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite" aria-busy="true">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="animate-pulse rounded-2xl bg-surface p-6 shadow-card backdrop-blur-xl"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-14 w-14 rounded-2xl bg-ink-500/20" />
+                      <div className="flex flex-1 flex-col gap-2">
+                        <div className="h-3 w-2/3 rounded-full bg-ink-500/20" />
+                        <div className="h-2.5 w-1/3 rounded-full bg-ink-500/20" />
+                      </div>
+                    </div>
+                    <div className="mt-4 h-3 w-full rounded-full bg-ink-500/20" />
+                    <div className="mt-2 h-3 w-4/5 rounded-full bg-ink-500/20" />
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {hasMore && !error ? (
+              <div className="mt-8 flex justify-center">
+                <Button variant="secondary" size="sm" onClick={() => void loadMore()}>
+                  {t("projects.loadMore")}
+                </Button>
+              </div>
+            ) : null}
+
+            <div ref={sentinelRef} aria-hidden="true" />
+          </>
         )}
       </div>
     </section>
