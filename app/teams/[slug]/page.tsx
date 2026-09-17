@@ -37,6 +37,9 @@ export async function generateMetadata({ params }: TeamPageProps): Promise<Metad
   return {
     title: `${team.name} | Azenion — The Limitless Network`,
     description: team.description ?? `Learn more about ${team.name} on Azenion.`,
+    alternates: {
+      canonical: `/teams/${slug}`,
+    },
   };
 }
 

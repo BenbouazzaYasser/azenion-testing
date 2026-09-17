@@ -46,7 +46,7 @@ export async function SessionCard({ session, hostOptions }: SessionCardProps) {
   const durationLabel = hasEnd ? formatDuration(session.duration_minutes ?? 0) : null;
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:p-7">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:p-7">
       <div className="flex items-start justify-between gap-3">
         <SessionStatusBadge status={session.status} />
         <div className="flex items-center gap-2">
@@ -107,18 +107,18 @@ export async function SessionCard({ session, hostOptions }: SessionCardProps) {
         <div className="flex flex-col items-center gap-1.5 px-2 py-3">
           <Calendar size={14} className="text-accent-400" />
           <span className="text-xs font-medium text-ink-200">{dateLabel}</span>
-          <span className="text-[10px] uppercase tracking-wider text-ink-600">{await serverT("academy.date")}</span>
+          <span className="text-[10px] uppercase tracking-normal text-ink-600">{await serverT("academy.date")}</span>
         </div>
         <div className="flex flex-col items-center gap-1.5 px-2 py-3">
           <Clock size={14} className="text-accent-400" />
           <span className="text-xs font-medium text-ink-200">{timeLabel}</span>
-          <span className="text-[10px] uppercase tracking-wider text-ink-600">{await serverT("academy.time")}</span>
+          <span className="text-[10px] uppercase tracking-normal text-ink-600">{await serverT("academy.time")}</span>
         </div>
         {hasEnd ? (
           <div className="flex flex-col items-center gap-1.5 px-2 py-3">
             <Timer size={14} className="text-accent-400" />
             <span className="text-xs font-medium text-ink-200">{durationLabel}</span>
-            <span className="text-[10px] uppercase tracking-wider text-ink-600">{await serverT("academy.duration")}</span>
+            <span className="text-[10px] uppercase tracking-normal text-ink-600">{await serverT("academy.duration")}</span>
           </div>
         ) : null}
       </div>

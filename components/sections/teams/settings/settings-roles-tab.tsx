@@ -271,7 +271,7 @@ export function SettingsRolesTab({
             </div>
 
             <div className="px-5 py-5 sm:px-6">
-              <p className="mb-4 text-xs font-medium uppercase tracking-[0.14em] text-ink-500">
+              <p className="mb-4 text-xs font-medium uppercase tracking-normal text-ink-500">
                 Permissions
               </p>
               {TEAM_PERMISSION_GROUPS.map((group) => (

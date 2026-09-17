@@ -24,7 +24,7 @@ const LEVEL_LABEL: Record<RoadmapSummary["level"], string> = {
  */
 export function RoadmapCard({ roadmap }: { roadmap: RoadmapSummary }) {
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40">
       <div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-accent/10 blur-[100px] transition-opacity duration-300 group-hover:opacity-100"
@@ -70,7 +70,8 @@ export function RoadmapCard({ roadmap }: { roadmap: RoadmapSummary }) {
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1">
             {roadmap.courseCount} {roadmap.courseCount === 1 ? "course" : "courses"}
-            {" · "}
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1">
             {roadmap.labCount} {roadmap.labCount === 1 ? "lab" : "labs"}
           </span>
         </div>
@@ -84,7 +85,7 @@ export function RoadmapCard({ roadmap }: { roadmap: RoadmapSummary }) {
         <div className="mt-5 flex items-center justify-end gap-3 border-t border-border pt-4">
           <Link
             href={`/academy/roadmaps/${roadmap.slug}`}
-            className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+            className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
           >
             View roadmap
             <ArrowUpRight size={13} aria-hidden />

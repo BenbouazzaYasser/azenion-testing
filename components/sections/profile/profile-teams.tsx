@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, Users } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface UserTeam {
   id: string;
@@ -30,9 +31,15 @@ export function ProfileTeams({ teams, cardClass }: ProfileTeamsProps) {
             href={`/teams/${team.slug}`}
             className="group flex items-center gap-3 rounded-xl bg-surface px-4 py-3 transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.04]"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-accent-400/30 bg-accent/[0.08] p-2">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-accent-400/30 bg-accent/[0.08] p-2">
               {team.logo_url ? (
-                <img src={team.logo_url} alt="" className="h-full w-full rounded object-cover" />
+                <OptimizedImage
+                  src={team.logo_url}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-full w-full rounded"
+                />
               ) : (
                 <Users size={16} className="text-accent-400" />
               )}
@@ -47,7 +54,7 @@ export function ProfileTeams({ teams, cardClass }: ProfileTeamsProps) {
             </div>
             <ArrowUpRight
               size={14}
-              className="shrink-0 text-ink-600 transition-all duration-300 group-hover:text-accent-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              className="shrink-0 text-ink-600 transition-all duration-300 group-hover:text-accent-400 group-hover:translate-x-0.5"
             />
           </Link>
         ))}

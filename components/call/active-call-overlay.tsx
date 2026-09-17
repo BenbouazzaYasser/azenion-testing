@@ -241,7 +241,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
 
             {/* Screen-share badge */}
             {call.screenActive && (
-              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-accent-300 backdrop-blur">
+              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-normal text-accent-300 backdrop-blur">
                 <ScreenShare className="h-3 w-3" />
                 Screen sharing
               </div>
@@ -279,7 +279,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
                   muted={false}
                   className="absolute inset-0 h-full w-full object-contain bg-void-950"
                 />
-                <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-accent-300 backdrop-blur">
+                <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-normal text-accent-300 backdrop-blur">
                   <ScreenShare className="h-3 w-3" />
                   Screen sharing
                 </div>

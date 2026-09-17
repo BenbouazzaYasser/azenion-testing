@@ -114,6 +114,7 @@ export async function getConversations(
   ];
 
   const { data: profiles } = await createAdminClient()
+    // SECURITY: conversation list already scoped to caller's RLS-visible memberships above; admin used only for public profile lookup.
     .from("profiles")
     .select("id, full_name, avatar_url, username")
     .in("id", allUserIds);
@@ -209,6 +210,7 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
   const senderIds = [...new Set(messages.map((m) => m.sender_id))];
 
   const [{ data: profiles }, { data: attachments }] = await Promise.all([
+    // SECURITY: messages read via RLS-scoped client above (non-members get empty); admin used only for public profile lookup.
     createAdminClient()
       .from("profiles")
       .select("id, full_name, avatar_url, username")
@@ -227,14 +229,17 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
   // Group attachments by message_id and resolve signed URLs server-side
   const attachmentsByMessage = new Map<string, ChatAttachmentForMessage[]>();
   if (attachments && attachments.length > 0) {
+    // SECURITY: conversation membership verified via RLS read above; admin used only for signed-URL minting.
     const admin = createAdminClient();
     const withUrls = await Promise.all(
       (attachments as ChatAttachmentForMessage[]).map(async (att) => {
         let signedUrl: string | null = null;
         if (att.storage_path) {
           const marker = `${CHAT_MEDIA_PREFIX}${att.storage_path}`;
-          // Use admin to generate signed URL; attachment RLS already ensured membership
-          if (isChatMediaMarker(marker)) {
+          // Use admin to generate signed URL; attachment RLS already ensured membership.
+          // Additionally bind the path to this conversation so a crafted
+          // cross-conversation storage_path value can never be signed here.
+          if (isChatMediaMarker(marker) && att.storage_path.startsWith(`chat/${conversationId}/`)) {
             const { data } = await admin.storage.from(CHAT_MEDIA_BUCKET).createSignedUrl(att.storage_path, CHAT_MEDIA_SIGNED_URL_TTL);
             signedUrl = data?.signedUrl ?? null;
           }

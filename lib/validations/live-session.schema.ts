@@ -10,6 +10,8 @@ export type LiveSessionStatus = (typeof LIVE_SESSION_STATUSES)[number];
 
 const DATETIME_24H_RE = /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/;
 
+const httpsUrl = (max: number) => z.string().trim().max(max).refine((u) => { try { const p = new URL(u); return p.protocol === "https:"; } catch { return false; } }, { message: "Must be a valid https URL" });
+
 export const createLiveSessionSchema = z.object({
   title: z
     .string()
@@ -42,9 +44,7 @@ export const createLiveSessionSchema = z.object({
     .max(500, "Location must be 500 characters or less")
     .nullable()
     .optional(),
-  meeting_url: z
-    .string()
-    .max(500, "Meeting link must be 500 characters or less")
+  meeting_url: httpsUrl(500)
     .nullable()
     .optional(),
   format: z.enum(LIVE_SESSION_FORMATS).default("ONLINE"),

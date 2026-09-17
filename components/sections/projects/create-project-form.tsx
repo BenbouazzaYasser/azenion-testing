@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
+import { FormField } from "@/components/ui/form-field";
 import { createProject } from "@/actions/project.actions";
 
 interface TeamOption {
@@ -27,8 +28,6 @@ interface CreateProjectFormProps {
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
-
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 const STANDALONE = "__standalone__";
 
@@ -98,8 +97,8 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/35 to-transparent" />
 
       <div className="mx-auto max-w-[640px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
-          <div className="overflow-hidden rounded-[2rem] card-surface p-8 shadow-card backdrop-blur-xl sm:p-10">
+        
+          <div className="overflow-hidden rounded-2xl card-surface p-8 shadow-card backdrop-blur-xl sm:p-10">
             {error ? (
               <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                 {error}
@@ -108,10 +107,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
 
             <form onSubmit={handleSubmit} className="space-y-7">
               {teams.length > 0 ? (
-                <div>
-                  <label htmlFor="cp-team" className={labelClass}>
-                    Team <span className="text-ink-500">(optional)</span>
-                  </label>
+                <FormField label="Team (optional)" htmlFor="cp-team">
                   <select
                     id="cp-team"
                     value={teamId}
@@ -138,22 +134,19 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                       The project gets a channel inside the team&apos;s server automatically.
                     </p>
                   )}
-                </div>
+                </FormField>
               ) : (
                 <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-sm text-amber-300">
                   You&apos;re not an owner or admin of any team yet — you can still create a
                   personal project below, or{" "}
-                  <a href="/teams/create" className="underline hover:text-amber-200">
+                  <Link href="/teams/create" className="underline hover:text-amber-200">
                     create a team
-                  </a>
+                  </Link>
                   .
                 </div>
               )}
 
-              <div>
-                <label htmlFor="cp-name" className={labelClass}>
-                  Project Name <span className="text-accent-400">*</span>
-                </label>
+              <FormField label="Project Name" htmlFor="cp-name" required>
                 <input
                   id="cp-name"
                   value={name}
@@ -163,12 +156,9 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                   placeholder="e.g. Azenion Mobile"
                   className={inputClass}
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label htmlFor="cp-slug" className={labelClass}>
-                  Slug <span className="text-accent-400">*</span>
-                </label>
+              <FormField label="Slug" htmlFor="cp-slug" required>
                 <input
                   id="cp-slug"
                   value={slug}
@@ -178,11 +168,11 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                   pattern="[a-z0-9-]+"
                   className={inputClass}
                 />
-              </div>
+              </FormField>
 
               {categories.length > 0 ? (
                 <div>
-                  <label className={labelClass}>Categories</label>
+                  <label className="mb-1.5 block text-sm font-medium text-ink-200">Categories</label>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {categories.map((cat) => {
                       const active = selectedCategoryIds.includes(cat.id);
@@ -211,10 +201,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                 </div>
               ) : null}
 
-              <div>
-                <label htmlFor="cp-description" className={labelClass}>
-                  Description
-                </label>
+              <FormField label="Description" htmlFor="cp-description" helper={`${description.length}/1000`}>
                 <textarea
                   id="cp-description"
                   value={description}
@@ -224,11 +211,10 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
                   placeholder="What does this project do?"
                   className={`${inputClass} resize-none`}
                 />
-                <p className="mt-1.5 text-xs text-ink-500">{description.length}/1000</p>
-              </div>
+              </FormField>
 
               <div>
-                <label className={labelClass}>Visibility</label>
+                <label className="mb-1.5 block text-sm font-medium text-ink-200">Visibility</label>
                 <div className="mt-2 flex flex-wrap gap-3">
                   {(["open", "private", "invite_only"] as const).map((v) => (
                     <label
@@ -260,7 +246,7 @@ export function CreateProjectForm({ teams, categories }: CreateProjectFormProps)
               </div>
             </form>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

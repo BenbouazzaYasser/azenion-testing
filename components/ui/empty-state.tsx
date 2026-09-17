@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 
 interface EmptyStateProps {
@@ -50,36 +49,36 @@ export function EmptyState({
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center text-center">
-        <Reveal>
+        
           <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
             {icon}
           </div>
-        </Reveal>
+        
 
         {eyebrow ? (
-          <Reveal delay={60}>
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-ink-600">
+          
+            <p className="mt-6 text-xs font-semibold uppercase tracking-normal text-ink-600">
               {eyebrow}
             </p>
-          </Reveal>
+          
         ) : null}
 
-        <Reveal delay={120}>
+        
           <h1
             id="empty-state-heading"
             className="mt-4 text-balance text-4xl font-semibold tracking-tight text-ink-50 sm:text-5xl"
           >
             {title}
           </h1>
-        </Reveal>
+        
 
-        <Reveal delay={200}>
+        
           <p className="mt-6 max-w-xl text-balance text-base text-ink-400 sm:text-lg">
             {description}
           </p>
-        </Reveal>
+        
 
-        <Reveal delay={300}>
+        
           {actionHref ? (
             <Button asChild size="lg" className="mt-[35px] backdrop-blur-xl">
               <Link href={actionHref}>
@@ -93,7 +92,7 @@ export function EmptyState({
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
-        </Reveal>
+        
       </div>
     </section>
   );

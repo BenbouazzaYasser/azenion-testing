@@ -13,7 +13,6 @@ import {
   Users,
   Globe,
 } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import {
   createBranchEvent,
@@ -195,8 +194,8 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
     const status = getEventStatus(event);
 
     return (
-      <Reveal key={event.id} delay={i * 60} className="h-full">
-        <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:flex-row">
+      <div className="h-full">
+        <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:flex-row">
           {event.cover_url ? (
             <div className="relative h-40 w-full shrink-0 sm:h-auto sm:w-44">
               <img src={event.cover_url} alt="" className="h-full w-full object-cover" />
@@ -306,16 +305,16 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
             ) : null}
           </div>
         </div>
-      </Reveal>
+      </div>
     );
   }
 
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="branch-events-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
+        
           <div className="flex items-center justify-between">
-            <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
               <Calendar size={12} />
               {t("branches.eventsEyebrow")}
             </div>
@@ -333,22 +332,22 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
               </Button>
             ) : null}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <h2
             id="branch-events-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
             {t("branches.eventsTitle")}
           </h2>
-        </Reveal>
+        
 
-        <Reveal delay={120}>
+        
           <p className="mt-3 max-w-2xl text-[0.95rem] leading-relaxed text-ink-400">
             {t("branches.eventsSub")}
           </p>
-        </Reveal>
+        
 
         {error ? (
           <div className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
@@ -357,7 +356,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
         ) : null}
 
         {showForm ? (
-          <Reveal delay={120}>
+          
             <div className="mt-8 overflow-hidden rounded-2xl card-surface p-6 shadow-card sm:p-8">
               <div className="mb-6 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-ink-50">
@@ -488,35 +487,35 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                 </div>
               </form>
             </div>
-          </Reveal>
+          
         ) : null}
 
         {events.length > 0 ? (
           <div className="mt-10 space-y-6">
             {upcoming.length > 0 ? (
               <>
-                <Reveal delay={120}>
-                  <h3 className="text-sm font-medium uppercase tracking-[0.15em] text-ink-500">
+                
+                  <h3 className="text-sm font-medium uppercase tracking-normal text-ink-500">
                     {t("branches.sectionUpcoming")}
                   </h3>
-                </Reveal>
+                
                 {upcoming.map((event, i) => renderEvent(event, i))}
               </>
             ) : null}
 
             {history.length > 0 ? (
               <>
-                <Reveal delay={120}>
-                  <h3 className="pt-6 text-sm font-medium uppercase tracking-[0.15em] text-ink-500">
+                
+                  <h3 className="pt-6 text-sm font-medium uppercase tracking-normal text-ink-500">
                     {t("branches.sectionPast")}
                   </h3>
-                </Reveal>
+                
                 {history.map((event, i) => renderEvent(event, i))}
               </>
             ) : null}
           </div>
         ) : (
-          <Reveal delay={120}>
+          
             <div className="mt-10 flex flex-col items-center gap-4 py-14 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent-300">
                 <Calendar className="h-6 w-6 text-accent-300" />
@@ -527,7 +526,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
                   : t("branches.noEventsVisitor")}
               </p>
             </div>
-          </Reveal>
+          
         )}
       </div>
     </section>

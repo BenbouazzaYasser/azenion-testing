@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -18,7 +19,6 @@ import {
   EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Reveal } from "@/components/ui/reveal";
 import { PageHero } from "@/components/layout/page-hero";
 import { submitLabAnswers } from "@/actions/academy-labs.actions";
 import type { LabContent, LabQuestionBlock, LabCategory, LabDifficulty, LabType } from "@/lib/validations/lab.schema";
@@ -166,7 +166,7 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
   return (
     <>
       <PageHero variant="academy" slug="academy" atmosphere={false}>
-        <Reveal>
+        
           <Link
             href="/academy/labs"
             className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-ink-500 transition-colors hover:text-accent-300"
@@ -174,23 +174,23 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
             <ArrowLeft size={13} />
             All Labs
           </Link>
-        </Reveal>
+        
 
-        <Reveal delay={60}>
+        
           <div className="mt-6 flex justify-center">
             <span className={cn("flex h-16 w-16 items-center justify-center rounded-2xl border shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]", meta.iconClass)}>
               <Icon size={28} />
             </span>
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={100}>
+        
           <h1 className="mt-6 text-balance text-[2.25rem] font-semibold leading-[1.1] tracking-tight text-ink-50 sm:text-[2.75rem]">
             {lab.title}
           </h1>
-        </Reveal>
+        
 
-        <Reveal delay={140}>
+        
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
             <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-ink-400">{meta.label}</span>
             <span className="rounded-full border border-accent/25 bg-accent/[0.06] px-3 py-1 text-xs font-medium text-accent-300">{lab.category}</span>
@@ -202,16 +202,16 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
               </span>
             ) : null}
           </div>
-        </Reveal>
+        
 
         {lab.description ? (
-          <Reveal delay={180}>
+          
             <p className="mx-auto mt-6 max-w-xl text-balance text-[1.02rem] leading-relaxed text-ink-400">{lab.description}</p>
-          </Reveal>
+          
         ) : null}
 
         {lab.tags && lab.tags.length > 0 ? (
-          <Reveal delay={220}>
+          
             <div className="mt-5 flex flex-wrap justify-center gap-1.5">
               {lab.tags.map((tag) => (
                 <span key={tag} className="inline-flex items-center gap-1 rounded-md bg-surface px-2 py-0.5 text-[11px] text-ink-500">
@@ -220,25 +220,25 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
                 </span>
               ))}
             </div>
-          </Reveal>
+          
         ) : null}
       </PageHero>
 
       <section className="relative pb-24 pt-4 sm:pb-28">
         <div className="mx-auto max-w-[720px] px-5 sm:px-8">
           {isUnpublished ? (
-            <Reveal>
+            
               <StatusBanner
                 icon={EyeOff}
                 tone="pending"
                 title="Preview — unpublished"
                 message="Only you can see this lab right now. Submitting answers is disabled until it's published."
               />
-            </Reveal>
+            
           ) : null}
 
           {alreadyPassed ? (
-            <Reveal>
+            
               <StatusBanner
                 icon={CheckCircle2}
                 tone="success"
@@ -246,18 +246,18 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
                 message="You've already passed this lab. You can review it below, and resubmit any time if you want to try again."
                 score={submission?.score ?? null}
               />
-            </Reveal>
+            
           ) : awaitingReview ? (
-            <Reveal>
+            
               <StatusBanner
                 icon={Clock3}
                 tone="pending"
                 title="Submission received"
                 message="Your lab is awaiting instructor review. You'll be notified once it's graded."
               />
-            </Reveal>
+            
           ) : previouslyFailed ? (
-            <Reveal>
+            
               <StatusBanner
                 icon={XCircle}
                 tone="failed"
@@ -265,20 +265,20 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
                 message="Some answers weren't correct. Review the feedback below and try again whenever you're ready."
                 score={submission?.score ?? null}
               />
-            </Reveal>
+            
           ) : null}
 
           {!version ? (
-            <Reveal delay={80}>
+            
               <div className="mt-8 rounded-2xl card-surface-soft px-6 py-10 text-center shadow-card backdrop-blur-xl">
                 <p className="text-sm text-ink-400">This lab doesn&apos;t have published content yet. Check back soon.</p>
               </div>
-            </Reveal>
+            
           ) : (
             <>
               <div className="mt-8 space-y-5">
                 {blocks.map((block, i) => (
-                  <Reveal key={block.id} delay={80 + i * 40}>
+                  <>
                     {block.type === "instructions" ? <InstructionsBlock body={block.body} /> : null}
                     {block.type === "evidence" ? <EvidenceBlock items={block.items} /> : null}
                     {block.type === "question" ? (
@@ -294,14 +294,14 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
                         showResult={Boolean(submission)}
                       />
                     ) : null}
-                  </Reveal>
+                  </>
                 ))}
               </div>
 
               <ResourcesSection version={version} />
 
               {questionBlocks.length > 0 ? (
-                <Reveal delay={80 + blocks.length * 40}>
+                
                   <div className="mt-8 rounded-2xl card-surface-soft p-6 shadow-card backdrop-blur-xl">
                     {isUnpublished ? (
                       <p className="text-center text-sm text-ink-400">
@@ -331,7 +331,7 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
                           type="button"
                           onClick={handleSubmit}
                           disabled={isPending}
-                          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-accent text-sm font-medium text-white shadow-glow-sm transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow disabled:pointer-events-none disabled:opacity-50"
+                          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-accent text-sm font-medium text-white shadow-glow-sm transition-all duration-300 ease-premium hover:bg-accent-glow disabled:pointer-events-none disabled:opacity-50"
                         >
                           {isPending ? (
                             <>
@@ -345,7 +345,7 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
                       </>
                     )}
                   </div>
-                </Reveal>
+                
               ) : null}
             </>
           )}
@@ -407,8 +407,15 @@ function EvidenceBlock({ items }: { items: { url: string; caption?: string }[] }
       <div className={cn("grid gap-4", items.length > 1 ? "sm:grid-cols-2" : "")}>
         {items.map((item, i) => (
           <figure key={i} className="overflow-hidden rounded-xl border border-border-strong bg-surface">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={item.url} alt={item.caption ?? "Evidence item"} loading="lazy" decoding="async" className="w-full object-contain" />
+            <span className="relative block aspect-[4/3] bg-void-950">
+              <Image
+                src={item.url}
+                alt={item.caption ?? "Evidence item"}
+                fill
+                sizes="(max-width: 640px) 100vw, 640px"
+                className="object-contain"
+              />
+            </span>
             {item.caption ? (
               <figcaption className="border-t border-border px-3 py-2 text-xs text-ink-400">{item.caption}</figcaption>
             ) : null}
@@ -433,7 +440,7 @@ function ResourcesSection({ version }: { version: PlayerVersion }) {
   if (items.length === 0) return null;
 
   return (
-    <Reveal>
+    
       <div className="mt-5 rounded-2xl card-surface-soft p-6 shadow-card backdrop-blur-xl">
         <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-500">Resources</div>
         <div className="flex flex-wrap gap-2">
@@ -451,7 +458,7 @@ function ResourcesSection({ version }: { version: PlayerVersion }) {
           ))}
         </div>
       </div>
-    </Reveal>
+    
   );
 }
 

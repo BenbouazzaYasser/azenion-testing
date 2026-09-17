@@ -6,7 +6,6 @@ import { useTransition } from "react";
 import { Users, Calendar, User, Building2, Settings, Clock, Archive } from "lucide-react";
 import { AmbientBg } from "@/components/graphics/ambient-bg";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
-import { Reveal } from "@/components/ui/reveal";
 import { TeamJoinButton, type TeamRequestStatus } from "./team-join-button";
 import { TeamCategoryBadge } from "./team-category-badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import { getTeamStatus, isTeamHidden } from "@/lib/lifecycle";
 import { reactivateTeam } from "@/actions/team.actions";
 import Link from "next/link";
 import { useTranslation } from "@/components/translation/translation-provider";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface TeamHeroProps {
   team: {
@@ -82,9 +82,9 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
       <AmbientBg />
 
       <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
-        <Reveal delay={0}>
+        
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
               <span className="flex h-2 w-2 rounded-full bg-accent-400" />
               {team.visibility === "public" ? t("teams.public") : t("teams.private")}
             </div>
@@ -106,10 +106,10 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
               </Link>
             ) : null}
           </div>
-        </Reveal>
+        
 
         {inactive || hidden ? (
-          <Reveal delay={40}>
+          
             <div className="mt-5 flex flex-col items-center gap-3">
               <div
                 className={`inline-flex max-w-xl items-center gap-2 rounded-2xl border px-4 py-3 text-left text-sm ${
@@ -140,32 +140,34 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
                 </Button>
               ) : null}
             </div>
-          </Reveal>
+          
         ) : null}
 
-        <Reveal delay={80}>
+        
           <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
             {team.name}
           </h1>
-        </Reveal>
+        
 
         {team.description ? (
-          <Reveal delay={160}>
+          
             <p className="mx-auto mt-6 max-w-2xl text-balance text-[1.05rem] leading-relaxed text-ink-500 dark:text-white/60 sm:text-[1.1rem] sm:leading-8">
               {team.description}
             </p>
-          </Reveal>
+          
         ) : null}
 
-        <Reveal delay={200}>
+        
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-600 dark:text-white/55">
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.03]">
                 {team.owner.avatar_url ? (
-                  <img
+                  <OptimizedImage
                     src={team.owner.avatar_url}
-                    alt=""
-                    className="h-full w-full rounded-full object-cover"
+                    alt={team.owner.full_name || `@${team.owner.username}`}
+                    width={28}
+                    height={28}
+                    className="h-full w-full rounded-full"
                   />
                 ) : (
                   <User size={13} className="text-accent-400" />
@@ -190,9 +192,9 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
               </>
             ) : null}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={240}>
+        
           <div className="mt-8 flex items-center justify-center gap-4">
             <TeamJoinButton
               teamId={team.id}
@@ -212,18 +214,18 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
               </Link>
             ) : null}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={320}>
+        
           <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
             <span className="flex h-8 w-5 items-start justify-center rounded-full p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
-            <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-700 dark:text-white/35">
+            <span className="text-xs font-medium uppercase tracking-normal text-ink-700 dark:text-white/35">
               {t("common.scrollToExplore")}
             </span>
           </div>
-        </Reveal>
+        
       </div>
 
       <div className="absolute bottom-0 left-1/2 hidden h-px w-[600px] -translate-x-1/2 bg-gradient-to-r from-transparent via-accent/30 to-transparent lg:block" />

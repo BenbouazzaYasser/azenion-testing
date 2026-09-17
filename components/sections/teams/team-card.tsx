@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { ArrowUpRight, Users, FolderKanban, MessageSquare } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { TeamCategoryBadge } from "./team-category-badge";
 import { formatDistanceToNow } from "@/lib/date";
 import { getTeamStatus, isTeamHidden } from "@/lib/lifecycle";
 import { useTranslation } from "@/components/translation/translation-provider";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 export interface TeamOpenRole {
   title: string;
@@ -59,17 +59,23 @@ export function TeamCard({ team, index }: TeamCardProps) {
   const hidden = isTeamHidden(team.last_activity_at);
 
   return (
-    <Reveal delay={index * 60}>
+    
       <Link href={`/teams/${team.slug}`} className="group block h-full focus-visible:outline-none">
-        <div className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm group-focus-visible:ring-2 group-focus-visible:ring-accent-400/60">
-          <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 group-focus-visible:ring-2 group-focus-visible:ring-accent-400/60">
+          <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
           <div className="relative flex flex-1 flex-col p-6 sm:p-8">
             {/* Top: Logo, Name, Owner, Category */}
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.25rem] border border-accent-400/30 bg-accent/[0.08] p-2.5">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-accent-400/30 bg-accent/[0.08] p-2.5">
                 {team.logo_url ? (
-                  <img src={team.logo_url} alt="" className="h-full w-full rounded-lg object-cover" />
+                  <OptimizedImage
+                    src={team.logo_url}
+                    alt={`${team.name} logo`}
+                    width={56}
+                    height={56}
+                    className="h-full w-full rounded-lg"
+                  />
                 ) : (
                   <Users className="h-6 w-6 text-accent-400" />
                 )}
@@ -199,6 +205,6 @@ export function TeamCard({ team, index }: TeamCardProps) {
           </div>
         </div>
       </Link>
-    </Reveal>
+    
   );
 }

@@ -25,6 +25,7 @@ function secureHeaders(): Record<string, string> {
   return {
     "Cache-Control": PRIVATE_NO_STORE,
     "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
   };
 }
 

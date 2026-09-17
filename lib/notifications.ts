@@ -103,18 +103,24 @@ export async function insertNotification(input: NotificationInput) {
   return { inserted: true };
 }
 
-const TARGET_TABLES: Record<string, string> = {
+// L10: explicit union + as const; no runtime change.
+export type NotificationTargetType =
+  | "project_update"
+  | "team_update"
+  | "branch_announcement";
+
+const TARGET_TABLES = {
   project_update: "project_updates",
   team_update: "team_updates",
   branch_announcement: "branch_announcements",
-};
+} as const satisfies Record<NotificationTargetType, string>;
 
 /**
  * Notifies the author of a post that `actorId` liked it.
  */
 export async function notifyPostLiked(actorId: string, targetType: string, targetId: string) {
   const supabase = createAdminClient();
-  const table = TARGET_TABLES[targetType];
+  const table = (TARGET_TABLES as Record<string, string>)[targetType];
   if (!table) return;
 
   const { data: target } = await supabase
@@ -144,7 +150,7 @@ export async function notifyPostCommented(
   preview: string,
 ) {
   const supabase = createAdminClient();
-  const table = TARGET_TABLES[targetType];
+  const table = (TARGET_TABLES as Record<string, string>)[targetType];
   if (!table) return;
 
   const { data: target } = await supabase

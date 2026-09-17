@@ -207,14 +207,14 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   <ChevronLeft className="h-3.5 w-3.5" />
                   Inbox
                 </button>
-                <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-ink-500">
+                <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-normal text-ink-500">
                   <Archive className="h-3.5 w-3.5" />
                   Archived
                 </h2>
               </>
             ) : (
               <>
-                <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-500">
+                <h2 className="text-xs font-semibold uppercase tracking-normal text-ink-500">
                   Messages
                 </h2>
                 <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
               <p className="mt-1.5 max-w-[220px] text-xs leading-relaxed text-ink-500">
                 Search for a user above to start messaging. Your conversations will appear here.
               </p>
-              <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+              <p className="mt-6 text-[11px] font-semibold uppercase tracking-normal text-ink-600">
                 Start a new chat
               </p>
             </div>

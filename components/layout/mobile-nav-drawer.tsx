@@ -165,8 +165,8 @@ export function MobileNavDrawer({
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <div className="flex flex-col gap-1 p-4">
+        <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="flex flex-col gap-1 p-4 pb-16">
             {NAV_LINKS.map((link) => {
               const active = isActive(link.href);
               return (
@@ -320,6 +320,11 @@ export function MobileNavDrawer({
             </div>
           </div>
         </div>
+
+        <div
+          className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-glass to-transparent pointer-events-none"
+          aria-hidden="true"
+        />
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
 
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
+import { FormField } from "@/components/ui/form-field";
 import { signUp } from "@/actions/auth.actions";
 
 const INPUT_CLASS =
@@ -63,8 +63,8 @@ export function JoinCard() {
         <BackgroundInfinity variant="join" />
 
         <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
-          <Reveal>
-            <div className="overflow-hidden rounded-[2rem] card-surface px-6 py-16 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:px-12 sm:py-20">
+          
+            <div className="overflow-hidden rounded-2xl card-surface px-6 py-16 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:px-12 sm:py-20">
               <div className="relative text-center">
                 <h1 className="text-balance text-[1.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2rem]">
                   Check Your Email
@@ -77,7 +77,7 @@ export function JoinCard() {
                 </Button>
               </div>
             </div>
-          </Reveal>
+          
         </div>
       </section>
     );
@@ -88,9 +88,9 @@ export function JoinCard() {
       <BackgroundInfinity variant="join" />
 
       <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
-        <Reveal>
-          <div className="group overflow-hidden rounded-[2rem] card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:shadow-glow-sm sm:px-12 sm:py-9">
-            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        
+          <div className="group overflow-hidden rounded-2xl card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:px-12 sm:py-9">
+            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-400/30 bg-accent/[0.08]">
@@ -108,10 +108,7 @@ export function JoinCard() {
             </div>
 
             <form className="relative mt-6 flex flex-col gap-5" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="join-name" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Full Name
-                </label>
+              <FormField label="Full Name" htmlFor="join-name" required>
                 <input
                   id="join-name"
                   name="full_name"
@@ -122,12 +119,9 @@ export function JoinCard() {
                   className={INPUT_CLASS}
                   required
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label htmlFor="join-username" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Username
-                </label>
+              <FormField label="Username" htmlFor="join-username" required>
                 <input
                   id="join-username"
                   name="username"
@@ -138,12 +132,9 @@ export function JoinCard() {
                   className={INPUT_CLASS}
                   required
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label htmlFor="join-email" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Email Address
-                </label>
+              <FormField label="Email Address" htmlFor="join-email" required>
                 <input
                   id="join-email"
                   name="email"
@@ -154,12 +145,9 @@ export function JoinCard() {
                   className={INPUT_CLASS}
                   required
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label htmlFor="join-password" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Password
-                </label>
+              <FormField label="Password" htmlFor="join-password" required>
                 <div className="relative">
                   <input
                     id="join-password"
@@ -180,12 +168,14 @@ export function JoinCard() {
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
                 </div>
-              </div>
+              </FormField>
 
-              <div>
-                <label htmlFor="join-confirm" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Confirm Password
-                </label>
+              <FormField
+                label="Confirm Password"
+                htmlFor="join-confirm"
+                error={error}
+                required
+              >
                 <div className="relative">
                   <input
                     id="join-confirm"
@@ -205,13 +195,7 @@ export function JoinCard() {
                     {showConfirm ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
                 </div>
-              </div>
-
-              {error && (
-                <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                  {error}
-                </p>
-              )}
+              </FormField>
 
               <Button type="submit" size="lg" className="w-full" disabled={loading}>
                 {loading ? (
@@ -227,7 +211,7 @@ export function JoinCard() {
 
             <div className="relative mt-6">
               <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent" />
-              <span className="relative mx-auto flex w-10 justify-center bg-void-950 text-xs uppercase tracking-[0.12em] text-ink-600">
+              <span className="relative mx-auto flex w-10 justify-center bg-void-950 text-xs uppercase tracking-normal text-ink-600">
                 or
               </span>
             </div>
@@ -277,7 +261,7 @@ export function JoinCard() {
               </p>
             </div>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

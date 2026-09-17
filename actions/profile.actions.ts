@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { profileSchema } from "@/lib/validations/profile.schema";
+import { safeRemoveStorageObjects } from "@/lib/storage-cleanup";
 
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
@@ -109,18 +110,22 @@ export async function uploadAvatar(formData: FormData) {
     return { error: "File too large. Maximum size is 2MB" };
   }
 
-  const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+  const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
   if (!allowedTypes.includes(file.type)) {
-    return { error: "Invalid file type. Use SVG, PNG, JPEG, or WebP" };
+    return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
+  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+  if (!/^(png|jpe?g|webp)$/.test(ext)) {
+    return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
+  }
+  const contentType = ({ png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp" } as Record<string, string>)[ext];
   const filePath = `avatars/${user.id}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
     .from("avatars")
     .upload(filePath, file, {
-      contentType: file.type,
+      contentType,
       upsert: false,
     });
 
@@ -138,7 +143,25 @@ export async function uploadAvatar(formData: FormData) {
     .eq("id", user.id);
 
   if (updateError) {
+    await safeRemoveStorageObjects(supabase, "avatars", [filePath]);
     return { error: updateError.message };
+  }
+
+  // Clean up previous avatar files (best-effort, non-blocking)
+  try {
+    const { data: oldFiles } = await supabase.storage
+      .from("avatars")
+      .list(`${user.id}`, { limit: 50 });
+    if (oldFiles && oldFiles.length > 0) {
+      const oldPaths = oldFiles
+        .map((f) => `${user.id}/${f.name}`)
+        .filter((p) => p !== filePath);
+      if (oldPaths.length > 0) {
+        await safeRemoveStorageObjects(supabase, "avatars", oldPaths);
+      }
+    }
+  } catch {
+    // Best-effort: old avatar cleanup is non-critical
   }
 
   revalidatePath("/profile");

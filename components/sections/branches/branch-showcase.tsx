@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { Landmark, Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Reveal } from "@/components/ui/reveal";
 import type { Branch } from "@/data/branches";
 import { useTranslation } from "@/components/translation/translation-provider";
 
@@ -54,7 +53,7 @@ export function BranchShowcase({
       className="relative scroll-mt-24 px-6 py-20 sm:py-24 lg:py-28"
     >
       <div className="mx-auto max-w-6xl">
-        <Reveal>
+        
           <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2
               id="branches-showcase-heading"
@@ -66,9 +65,9 @@ export function BranchShowcase({
               {t("branches.showcaseSub")}
             </p>
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <div className="relative mx-auto mb-12 flex max-w-md items-center gap-3">
             <div className="relative flex-1">
               <Search
@@ -90,10 +89,10 @@ export function BranchShowcase({
             </div>
             {canCreate ? <BranchCreateDialog /> : null}
           </div>
-        </Reveal>
+        
 
         {filtered.length === 0 ? (
-          <Reveal delay={160}>
+          
             <div className="flex flex-col items-center gap-4 py-20 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300">
                 <Landmark className="h-7 w-7 text-accent-300" aria-hidden="true" />
@@ -109,12 +108,12 @@ export function BranchShowcase({
                 </p>
               </div>
             </div>
-          </Reveal>
+          
         ) : (
           <div className="flex flex-col gap-6 sm:gap-8">
             {filtered.map((branch, index) => (
-              <Reveal key={branch.slug} delay={index * 120}>
-                <BranchSpotlight
+              <BranchSpotlight
+                key={branch.slug}
                   branch={branch}
                   index={index}
                   reversed={index % 2 === 1}
@@ -128,7 +127,7 @@ export function BranchShowcase({
                     if (branch.dbId) setDeletingBranch(branch as ManageableBranch);
                   }}
                 />
-              </Reveal>
+              
             ))}
           </div>
         )}

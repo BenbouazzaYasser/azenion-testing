@@ -19,6 +19,36 @@ import {
 } from "@/lib/validations/media.schema";
 import { notifyMentions } from "@/lib/notifications";
 import { TRENDING_WINDOW_DAYS } from "@/lib/trending";
+import { safeRemoveStorageObjects } from "@/lib/storage-cleanup";
+
+// M13: extension allow-lists mirror ALLOWED_IMAGE_TYPES / ALLOWED_VIDEO_TYPES
+// in lib/validations/media.schema.ts; contentType is set from these maps.
+const FEED_IMAGE_EXT_MIME: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+};
+const FEED_VIDEO_EXT_MIME: Record<string, string> = {
+  mp4: "video/mp4",
+  webm: "video/webm",
+  mov: "video/quicktime",
+};
+
+// L10: branch source-type -> table map, typed with explicit unions (no runtime change).
+export type BranchFeedSourceType =
+  | "branch_announcement"
+  | "branch_highlight"
+  | "branch_event";
+export type BranchFeedTable =
+  | "branch_announcements"
+  | "branch_highlights"
+  | "branch_events";
+const BRANCH_FEED_TABLES = {
+  branch_announcement: "branch_announcements",
+  branch_highlight: "branch_highlights",
+  branch_event: "branch_events",
+} as const satisfies Record<BranchFeedSourceType, BranchFeedTable>;
 
 export type FeedSourceType =
   | "project_update"
@@ -140,15 +170,19 @@ async function enrichPosts(
     grouped.set(post.source_type, list);
   }
 
-  // ── Entity + branch context ────────────────────────────────────────────
+  // ── Entity + branch context (parallelized) ────────────────────────────────
 
   const projectEntity = new Map<string, { name: string; slug: string; logo_url: string | null }>();
   const teamEntity = new Map<string, { name: string; slug: string; logo_url: string | null }>();
   const branchBySource = new Map<string, BranchRef>();
 
+  // Parallelize independent entity resolution queries
+  const entityPromises: Promise<void>[] = [];
+
   if (grouped.has("project_update")) {
-    const ids = grouped.get("project_update")!.map((p) => p.source_id!).filter(Boolean);
-    if (ids.length > 0) {
+    entityPromises.push((async () => {
+      const ids = grouped.get("project_update")!.map((p) => p.source_id!).filter(Boolean);
+      if (ids.length === 0) return;
       const { data: sourceRows } = await supabase
         .from("project_updates")
         .select("id, project_id")
@@ -172,12 +206,13 @@ async function enrichPosts(
         const branch = branchId ? branchMap.get(branchId) : null;
         if (branch) branchBySource.set(sourceRow.id, branch);
       }
-    }
+    })());
   }
 
   if (grouped.has("team_update")) {
-    const ids = grouped.get("team_update")!.map((p) => p.source_id!).filter(Boolean);
-    if (ids.length > 0) {
+    entityPromises.push((async () => {
+      const ids = grouped.get("team_update")!.map((p) => p.source_id!).filter(Boolean);
+      if (ids.length === 0) return;
       const { data: sourceRows } = await supabase
         .from("team_updates")
         .select("id, team_id")
@@ -195,37 +230,44 @@ async function enrichPosts(
         const branch = branchId ? branchMap.get(branchId) : null;
         if (branch) branchBySource.set(sourceRow.id, branch);
       }
-    }
+    })());
   }
 
   const branchTypes: FeedSourceType[] = ["branch_announcement", "branch_highlight", "branch_event"];
   for (const type of branchTypes) {
     if (!grouped.has(type)) continue;
-    const ids = grouped.get(type)!.map((p) => p.source_id!).filter(Boolean);
-    if (ids.length === 0) continue;
-    const table = type === "branch_announcement"
-      ? "branch_announcements"
-      : type === "branch_highlight"
-        ? "branch_highlights"
-        : "branch_events";
-    const { data: sourceRows } = await supabase
-      .from(table)
-      .select("id, branch_id")
-      .in("id", ids);
-    const branchIds = [...new Set((sourceRows ?? []).map((r) => r.branch_id))];
-    const branchMap = await fetchBranches(supabase, branchIds);
-    for (const sourceRow of sourceRows ?? []) {
-      const branch = sourceRow.branch_id ? branchMap.get(sourceRow.branch_id) : null;
-      if (branch) branchBySource.set(sourceRow.id, branch);
-    }
+    entityPromises.push((async () => {
+      const ids = grouped.get(type)!.map((p) => p.source_id!).filter(Boolean);
+      if (ids.length === 0) return;
+      const table = BRANCH_FEED_TABLES[type as BranchFeedSourceType];
+      const { data: sourceRows } = await supabase
+        .from(table)
+        .select("id, branch_id")
+        .in("id", ids);
+      const branchIds = [...new Set((sourceRows ?? []).map((r) => r.branch_id))];
+      const branchMap = await fetchBranches(supabase, branchIds);
+      for (const sourceRow of sourceRows ?? []) {
+        const branch = sourceRow.branch_id ? branchMap.get(sourceRow.branch_id) : null;
+        if (branch) branchBySource.set(sourceRow.id, branch);
+      }
+    })());
   }
 
-  // ── Event details ──────────────────────────────────────────────────────
+  // Wait for all entity/branch queries to complete
+  await Promise.all(entityPromises);
+
+  // ── Event details & Highlight links & Author profiles (parallelized) ──────
 
   const eventDetails = new Map<string, Partial<FeedItem>>();
-  if (grouped.has("branch_event")) {
-    const ids = grouped.get("branch_event")!.map((p) => p.source_id!).filter(Boolean);
-    if (ids.length > 0) {
+  const highlightLinks = new Map<string, string | null>();
+  const profileMap = new Map<string, { full_name: string | null; username: string | null; avatar_url: string | null }>();
+
+  await Promise.all([
+    // Event details
+    (async () => {
+      if (!grouped.has("branch_event")) return;
+      const ids = grouped.get("branch_event")!.map((p) => p.source_id!).filter(Boolean);
+      if (ids.length === 0) return;
       const { data: events } = await supabase
         .from("branch_events")
         .select("id, location, starts_at, ends_at, schedule, registration_url, visibility")
@@ -240,40 +282,35 @@ async function enrichPosts(
           event_visibility: e.visibility,
         });
       }
-    }
-  }
-
-  // ── Highlight links ────────────────────────────────────────────────────
-
-  const highlightLinks = new Map<string, string | null>();
-  if (grouped.has("branch_highlight")) {
-    const ids = grouped.get("branch_highlight")!.map((p) => p.source_id!).filter(Boolean);
-    if (ids.length > 0) {
+    })(),
+    // Highlight links
+    (async () => {
+      if (!grouped.has("branch_highlight")) return;
+      const ids = grouped.get("branch_highlight")!.map((p) => p.source_id!).filter(Boolean);
+      if (ids.length === 0) return;
       const { data: highlights } = await supabase
         .from("branch_highlights")
         .select("id, link_url")
         .in("id", ids);
       for (const h of highlights ?? []) highlightLinks.set(h.id, h.link_url);
-    }
-  }
+    })(),
+    // Author profiles
+    (async () => {
+      const authorIds = [
+        ...new Set(posts.map((p) => p.author_id).filter((id): id is string => Boolean(id))),
+      ];
+      if (authorIds.length === 0) return;
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, username, avatar_url")
+        .in("id", authorIds);
+      for (const p of profiles ?? []) {
+        profileMap.set(p.id, { full_name: p.full_name, username: p.username, avatar_url: p.avatar_url });
+      }
+    })(),
+  ]);
 
-  // ── Author profiles ────────────────────────────────────────────────────
-
-  const authorIds = [
-    ...new Set(posts.map((p) => p.author_id).filter((id): id is string => Boolean(id))),
-  ];
-  const profileMap = new Map<string, { full_name: string | null; username: string | null; avatar_url: string | null }>();
-  if (authorIds.length > 0) {
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, full_name, username, avatar_url")
-      .in("id", authorIds);
-    for (const p of profiles ?? []) {
-      profileMap.set(p.id, { full_name: p.full_name, username: p.username, avatar_url: p.avatar_url });
-    }
-  }
-
-  // ── Interaction data (batched) ─────────────────────────────────────────
+  // ── Interaction data (batched) ────────────────────────────────────────────
 
   const interactive = posts.filter((p) => !INTERACTIONLESS_TYPES.has(p.source_type));
   // user_post rows carry no separate source row (source_id is null) — the
@@ -420,8 +457,14 @@ export async function getFeedItems(
   let query = supabase.from("posts").select("id", { count: "exact", head: true });
   if (filter && filter !== "all") query = query.eq("source_type", filter);
 
+  // H4: caller-supplied viewer is never trusted (RLS bypass via admin
+  // client). An explicit null means anonymous (public content only — and
+  // cookie-free, so static prerender paths never touch cookies()). Any other
+  // value, including a caller-supplied id, resolves via the server session,
+  // matching actions/notifications.actions.ts + interactions.actions.ts.
+  // `_userId` is kept only for call-site compatibility.
   const [userId, { count: total }] = await Promise.all([
-    _userId !== undefined ? Promise.resolve(_userId) : getSessionUserId(),
+    _userId === null ? Promise.resolve(null) : getSessionUserId(),
     query,
   ]);
 
@@ -451,7 +494,8 @@ export async function getTrendingFeedItems(
   _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
-  const userId = _userId !== undefined ? _userId : await getSessionUserId();
+  // H4: explicit null = anonymous (prerender-safe); otherwise session-derived.
+  const userId = _userId === null ? null : await getSessionUserId();
 
   let posts: PostRow[] = [];
   try {
@@ -475,7 +519,8 @@ export async function getFeedItemById(
   _userId?: string | null,
 ): Promise<FeedItem | null> {
   const supabase = createAdminClient();
-  const userId = _userId !== undefined ? _userId : await getSessionUserId();
+  // H4: explicit null = anonymous (prerender-safe); otherwise session-derived.
+  const userId = _userId === null ? null : await getSessionUserId();
 
   const { data: post } = await supabase
     .from("posts")
@@ -506,7 +551,8 @@ export async function getSavedFeedItems(
   _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
-  const userId = _userId !== undefined ? _userId : await getSessionUserId();
+  // H4: explicit null = anonymous (prerender-safe); otherwise session-derived.
+  const userId = _userId === null ? null : await getSessionUserId();
   if (!userId) return { items: [], total: 0 };
 
   const { data: saved } = await supabase
@@ -555,7 +601,8 @@ export async function getBranchFeedItems(
   _userId?: string | null,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
-  const userId = _userId !== undefined ? _userId : await getSessionUserId();
+  // H4: explicit null = anonymous (prerender-safe); otherwise session-derived.
+  const userId = _userId === null ? null : await getSessionUserId();
 
   const { data: branchTeams } = await supabase
     .from("teams")
@@ -741,12 +788,22 @@ export async function uploadFeedPostMedia(formData: FormData) {
     };
   }
 
-  const ext = file.name.split(".").pop() ?? (isVideo ? "mp4" : "png");
+  const rawExt = file.name.split(".").pop() ?? (isVideo ? "mp4" : "png");
+  const ext = rawExt.toLowerCase();
+  const extMimeMap = isVideo ? FEED_VIDEO_EXT_MIME : FEED_IMAGE_EXT_MIME;
+  const mappedContentType = extMimeMap[ext];
+  if (!mappedContentType || /[^a-z0-9]/.test(ext)) {
+    return {
+      error: isVideo
+        ? "Unsupported video format. Use MP4, WebM, or MOV."
+        : "Invalid file type. Use PNG, JPEG, or WebP",
+    };
+  }
   const filePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
   const { error: uploadError } = await supabase.storage
     .from(bucket)
-    .upload(filePath, file, { contentType: file.type, upsert: false });
+    .upload(filePath, file, { contentType: mappedContentType, upsert: false });
 
   if (uploadError) return { error: uploadError.message };
 
@@ -763,13 +820,19 @@ export async function uploadFeedPostMedia(formData: FormData) {
 
   const media = Array.isArray(existing?.[column]) ? existing[column] : [];
 
-  const { error: updateError } = await supabase
+  const { data: updateResult, error: updateError } = await supabase
     .from("posts")
     .update({ [column]: [...media, publicUrl], updated_at: new Date().toISOString() })
     .eq("id", postId)
-    .eq("author_id", user.id);
+    .eq("author_id", user.id)
+    .select("id")
+    .maybeSingle();
 
-  if (updateError) return { error: updateError.message };
+  if (updateError || !updateResult) {
+    await safeRemoveStorageObjects(supabase, bucket, [filePath]);
+    if (updateError) return { error: updateError.message };
+    return { error: "Post not found or you are not the author" };
+  }
 
   return { success: true, media_url: publicUrl };
 }

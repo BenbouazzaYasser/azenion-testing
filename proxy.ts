@@ -1,7 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { applySecurityHeaders } from "@/lib/security-headers";
 
-const protectedRoutes = ["/profile", "/teams/create", "/projects/create"];
+// Edge session gate (defense in depth — every page also checks the session
+// server-side). Fail-closed: unknown session state redirects to /login.
+const protectedRoutes = [
+  "/profile",
+  "/teams/create",
+  "/projects/create",
+  "/settings",
+  "/admin",
+  "/chat",
+  "/servers/create",
+];
 
 const AUTH_TOKEN_COOKIE_RE = /^sb-.+-auth-token$/;
 
@@ -16,10 +27,11 @@ export async function proxy(request: NextRequest) {
     .getAll()
     .some(({ name }) => AUTH_TOKEN_COOKIE_RE.test(name));
   if (!isProtected && !hasSessionCookie) {
-    return NextResponse.next({ request });
+    return applySecurityHeaders(NextResponse.next({ request }));
   }
 
   const { supabase, response } = updateSession(request);
+  applySecurityHeaders(response);
 
   if (!isProtected) return response;
 
@@ -30,7 +42,7 @@ export async function proxy(request: NextRequest) {
   if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    return applySecurityHeaders(NextResponse.redirect(url));
   }
 
   return response;

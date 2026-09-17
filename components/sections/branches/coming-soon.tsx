@@ -1,7 +1,6 @@
 import { Rocket } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Reveal } from "@/components/ui/reveal";
 import { CONTACT } from "@/data/contact";
 import { serverT } from "@/lib/translation/server";
 
@@ -15,8 +14,8 @@ export async function ComingSoonTeaser() {
       className="relative px-6 pb-20 sm:pb-28"
     >
       <div className="mx-auto max-w-5xl">
-        <Reveal>
-          <div className="relative overflow-hidden rounded-[2rem] border border-dashed border-border-strong bg-surface p-10 text-center sm:p-16">
+        
+          <div className="relative overflow-hidden rounded-2xl border border-dashed border-border-strong bg-surface p-10 text-center sm:p-16">
             <div
               aria-hidden="true"
               className="animate-pulse-glow pointer-events-none absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgb(40,40,255)]/15 blur-[110px]"
@@ -44,7 +43,7 @@ export async function ComingSoonTeaser() {
                     <span className="text-2xl font-light" aria-hidden="true">
                       ∞
                     </span>
-                    <span className="text-xs uppercase tracking-[0.15em]">{await serverT(slot)}</span>
+                    <span className="text-xs uppercase tracking-normal">{await serverT(slot)}</span>
                   </div>
                 ))))}
               </div>
@@ -57,7 +56,7 @@ export async function ComingSoonTeaser() {
               </a>
             </div>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

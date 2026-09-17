@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
 import { InfinityHeroArt } from "@/components/graphics/infinity-hero-art";
-import { Reveal } from "@/components/ui/reveal";
 import { serverT } from "@/lib/translation/server";
 
 interface BranchesHeroProps {
@@ -28,14 +27,14 @@ export async function BranchesHero({ branchCount, memberCount }: BranchesHeroPro
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center text-center">
-        <Reveal>
+        
           <Badge className="mb-6 inline-flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             {await serverT("branches.heroBadge")}
           </Badge>
-        </Reveal>
+        
 
-        <Reveal delay={100}>
+        
           <h1
             id="branches-hero-heading"
             className="text-balance text-4xl font-semibold tracking-tight text-ink-50 sm:text-6xl"
@@ -43,15 +42,15 @@ export async function BranchesHero({ branchCount, memberCount }: BranchesHeroPro
             {await serverT("branches.heroLine1")}
             <br className="hidden sm:block" /> {await serverT("branches.heroLine2")}
           </h1>
-        </Reveal>
+        
 
-        <Reveal delay={200}>
+        
           <p className="mt-6 max-w-xl text-balance text-base text-ink-400 sm:text-lg">
             {await serverT("branches.heroSub")}
           </p>
-        </Reveal>
+        
 
-        <Reveal delay={300}>
+        
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row">
             <Button asChild size="lg" variant="primary">
               <Link href="#branches">
@@ -63,13 +62,13 @@ export async function BranchesHero({ branchCount, memberCount }: BranchesHeroPro
               <Link href="#coming-soon">{await serverT("branches.requestBranch")}</Link>
             </Button>
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={400}>
-          <p className="mt-6 text-xs uppercase tracking-[0.2em] text-ink-600">
+        
+          <p className="mt-6 text-xs uppercase tracking-normal text-ink-600">
             {branchCount} {await serverT("branches.activeBranches")} · {memberCount}+ {await serverT("branches.membersAndCounting")}
           </p>
-        </Reveal>
+        
       </div>
     </section>
   );

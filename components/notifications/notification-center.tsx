@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Bell,
@@ -69,9 +70,11 @@ function NotificationAvatar({
   const actor = notification.actor;
   if (actor?.avatar_url) {
     return (
-      <img
+      <Image
         src={actor.avatar_url}
         alt=""
+        width={36}
+        height={36}
         className="h-9 w-9 shrink-0 rounded-full object-cover"
       />
     );
@@ -382,7 +385,7 @@ export function NotificationCenter() {
             aria-hidden
             className="relative mx-4 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
           />
-          <p className="relative px-4 py-2.5 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-ink-600">
+          <p className="relative px-4 py-2.5 text-center text-[10px] font-medium uppercase tracking-normal text-ink-600">
             Azenion
           </p>
         </div>

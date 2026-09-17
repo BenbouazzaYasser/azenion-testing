@@ -72,7 +72,7 @@ export function StickerPicker({ onSelect, onClose }: StickerPickerProps) {
         )}
       </div>
 
-      <div className="shrink-0 border-t border-border/30 px-3 py-1.5 text-center text-[10px] uppercase tracking-widest text-ink-500">
+      <div className="shrink-0 border-t border-border/30 px-3 py-1.5 text-center text-[10px] uppercase tracking-normal text-ink-500">
         Azenion Stickers
       </div>
     </div>

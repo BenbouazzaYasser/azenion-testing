@@ -143,7 +143,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
       document.removeEventListener("keydown", handleKeyDown);
       setMounted(false);
     };
-  }, [open]);
+  }, [open, setOpen]);
 
   function resetState() {
     setName(project.name);

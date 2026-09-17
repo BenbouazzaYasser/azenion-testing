@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Calendar, GraduationCap, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/date";
@@ -24,10 +25,12 @@ export function PublicProfileHeader({ profile, cardClass }: PublicProfileHeaderP
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
         <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border border-accent-400/30 bg-accent/[0.08] sm:h-28 sm:w-28">
           {profile.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={profile.avatar_url}
               alt={profile.username}
+              width={112}
+              height={112}
+              priority
               className="h-full w-full object-cover"
             />
           ) : (

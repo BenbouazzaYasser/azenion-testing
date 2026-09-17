@@ -3,9 +3,16 @@ import { cookies } from "next/headers";
 export const AUTH_NEXT_COOKIE = "az_auth_next";
 
 export function sanitizeNextPath(next: string | null | undefined): string {
-  return typeof next === "string" && next.startsWith("/") && !next.startsWith("//")
-    ? next
-    : "/";
+  if (
+    !next ||
+    next.length > 500 ||
+    !next.startsWith("/") ||
+    next.startsWith("//") ||
+    next.includes("\\") ||
+    /[\u0000-\u001f\u007f]/.test(next)
+  )
+    return "/";
+  return next;
 }
 
 export async function setAuthNextCookie(next: string | null | undefined): Promise<string> {

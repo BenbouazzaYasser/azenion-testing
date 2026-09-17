@@ -120,7 +120,7 @@ export function ProfileAccount({
             <div className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-start">
-            <span className="bg-void-950 pr-4 text-xs font-medium uppercase tracking-widest text-ink-500">
+            <span className="bg-void-950 pr-4 text-xs font-medium uppercase tracking-normal text-ink-500">
               Danger Zone
             </span>
           </div>

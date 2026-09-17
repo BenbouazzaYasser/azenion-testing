@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ImagePlus, Save, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { updateTeam, uploadTeamLogo, uploadTeamBanner } from "@/actions/team.actions";
 import type { TeamSettingsClientProps } from "./team-settings-client";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
-
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 function PermissionNotice({ permission }: { permission: string }) {
   return (
@@ -108,10 +108,7 @@ export function SettingsOverviewTab({
           ) : null}
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <div>
-              <label htmlFor="settings-name" className={labelClass}>
-                Team Name
-              </label>
+            <FormField label="Team Name" htmlFor="settings-name" required>
               <input
                 id="settings-name"
                 value={name}
@@ -120,11 +117,8 @@ export function SettingsOverviewTab({
                 maxLength={100}
                 className={inputClass}
               />
-            </div>
-            <div>
-              <label htmlFor="settings-slug" className={labelClass}>
-                Slug
-              </label>
+            </FormField>
+            <FormField label="Slug" htmlFor="settings-slug" required>
               <input
                 id="settings-slug"
                 value={slug}
@@ -134,26 +128,28 @@ export function SettingsOverviewTab({
                 pattern="[a-z0-9-]+"
                 className={inputClass}
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="mt-5">
-            <label htmlFor="settings-description" className={labelClass}>
-              Description
-            </label>
-            <textarea
-              id="settings-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={500}
-              rows={4}
-              className={`${inputClass} resize-none`}
-            />
-            <p className="mt-1.5 text-xs text-ink-500">{description.length}/500</p>
+            <FormField
+              label="Description"
+              htmlFor="settings-description"
+              helper={`${description.length}/500`}
+            >
+              <textarea
+                id="settings-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={500}
+                rows={4}
+                className={`${inputClass} resize-none`}
+              />
+            </FormField>
           </div>
 
           <div className="mt-5">
-            <label className={labelClass}>Visibility</label>
+            <span className="mb-1.5 block text-sm font-medium text-ink-200">Visibility</span>
             <div className="mt-2 flex gap-4">
               {(["public", "private"] as const).map((opt) => (
                 <label
@@ -174,7 +170,7 @@ export function SettingsOverviewTab({
           </div>
 
           <div className="mt-5">
-            <label className={labelClass}>Categories</label>
+            <span className="mb-1.5 block text-sm font-medium text-ink-200">Categories</span>
             <div className="mt-2 flex flex-wrap gap-2">
               {categories.map((cat) => {
                 const active = selectedCategoryIds.includes(cat.id);
@@ -229,8 +225,13 @@ export function SettingsOverviewTab({
               <p className="mb-2 text-sm font-medium text-ink-200">Logo</p>
               <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl bg-surface">
                 {team.logo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={team.logo_url} alt="Team logo" className="h-full w-full object-cover" />
+                  <OptimizedImage
+                    src={team.logo_url}
+                    alt="Team logo"
+                    width={112}
+                    height={112}
+                    className="h-full w-full"
+                  />
                 ) : (
                   <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-accent-500 to-accent-400 text-3xl font-semibold text-white">
                     {team.name.charAt(0).toUpperCase()}
@@ -264,8 +265,13 @@ export function SettingsOverviewTab({
               <p className="mb-2 text-sm font-medium text-ink-200">Banner</p>
               <div className="flex h-28 w-full items-center justify-center overflow-hidden rounded-2xl bg-surface">
                 {team.banner_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={team.banner_url} alt="Team banner" className="h-full w-full object-cover" />
+                  <OptimizedImage
+                    src={team.banner_url}
+                    alt="Team banner"
+                    width={112}
+                    height={112}
+                    className="h-full w-full"
+                  />
                 ) : (
                   <span className="text-sm text-ink-600">No banner yet</span>
                 )}

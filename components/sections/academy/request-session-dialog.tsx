@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CalendarPlus, ChevronDown, MapPin, Shuffle, Video, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { createSessionRequest } from "@/actions/session-request.actions";
 import { SESSION_REQUEST_FORMATS } from "@/lib/validations/session-request.schema";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
@@ -21,8 +22,6 @@ const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
 const selectClass = `${inputClass} cursor-pointer appearance-none pr-10`;
-
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 const FORMAT_OPTIONS: {
   value: (typeof SESSION_REQUEST_FORMATS)[number];
@@ -174,10 +173,7 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                   ) : null}
 
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label htmlFor="session-title" className={labelClass}>
-                        {t("academy.sessionTitle")}
-                      </label>
+                    <FormField label={t("academy.sessionTitle")} htmlFor="session-title">
                       <input
                         id="session-title"
                         value={title}
@@ -187,12 +183,13 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                         placeholder={t("academy.sessionTitlePlaceholder")}
                         className={inputClass}
                       />
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="session-description" className={labelClass}>
-                        {t("common.description")}
-                      </label>
+                    <FormField
+                      label={t("common.description")}
+                      htmlFor="session-description"
+                      helper={`${description.length}/5000`}
+                    >
                       <textarea
                         id="session-description"
                         value={description}
@@ -203,11 +200,10 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                         placeholder={t("academy.requestDescPlaceholder")}
                         className={`${inputClass} resize-none`}
                       />
-                      <p className="mt-1.5 text-xs text-ink-500">{description.length}/5000</p>
-                    </div>
+                    </FormField>
 
                     <fieldset>
-                      <legend className={labelClass}>{t("academy.preferredFormat")}</legend>
+                      <legend className="mb-1.5 block text-sm font-medium text-ink-200">{t("academy.preferredFormat")}</legend>
                       <div className="grid gap-3 sm:grid-cols-3">
                         {FORMAT_OPTIONS.map((option) => {
                           const Icon = option.icon;
@@ -249,11 +245,11 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                       </div>
                     </fieldset>
 
-                    <div>
-                      <label htmlFor="session-branch" className={labelClass}>
-                        {t("academy.preferredBranch")} <span className="text-ink-600">({t("common.optional")})</span>
-                      </label>
-                      <div className="relative">
+                    <FormField
+                      label={`${t("academy.preferredBranch")} (${t("common.optional")})`}
+                      htmlFor="session-branch"
+                    >
+                      <div className="relative" id="session-branch-wrap">
                         <select
                           id="session-branch"
                           value={branchId}
@@ -272,7 +268,7 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
                           className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-500"
                         />
                       </div>
-                    </div>
+                    </FormField>
 
                     <div className="flex items-center justify-end gap-3 border-t border-border pt-5">
                       <Button

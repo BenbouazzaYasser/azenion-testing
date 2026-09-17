@@ -28,14 +28,11 @@ export async function GET(request: Request) {
         return response;
       }
 
-      loginUrl.searchParams.set("error", error.message);
+      console.error("Auth callback exchange failed:", error.message);
+      loginUrl.searchParams.set("error", "auth_callback_error");
     } catch (err) {
-      loginUrl.searchParams.set(
-        "error",
-        err instanceof Error
-          ? err.message
-          : "Unable to complete Google sign in",
-      );
+      console.error("Auth callback exception:", err instanceof Error ? err.message : err);
+      loginUrl.searchParams.set("error", "auth_callback_error");
     }
 
     return NextResponse.redirect(loginUrl);
@@ -44,10 +41,8 @@ export async function GET(request: Request) {
   const errorDescription = searchParams.get("error_description");
   const errorParam = searchParams.get("error");
   if (errorDescription || errorParam) {
-    loginUrl.searchParams.set(
-      "error",
-      errorDescription ?? errorParam ?? "OAuth callback error",
-    );
+    console.error("OAuth provider callback error:", errorParam ?? errorDescription);
+    loginUrl.searchParams.set("error", "auth_callback_error");
     return NextResponse.redirect(loginUrl);
   }
 

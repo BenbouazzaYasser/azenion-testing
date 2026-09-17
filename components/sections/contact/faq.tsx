@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-import { Reveal } from "@/components/ui/reveal";
 
 const FAQ_ITEMS = [
   {
@@ -42,7 +41,7 @@ export function Faq() {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="faq-heading">
       <div className="mx-auto max-w-[800px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
+        
           <h2
             id="faq-heading"
             className="text-center text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
@@ -52,12 +51,11 @@ export function Faq() {
           <p className="mx-auto mt-4 max-w-xl text-center text-[1.02rem] leading-7 text-ink-400">
             Everything you need to know about Azenion.
           </p>
-        </Reveal>
+        
 
         <div className="mt-12 space-y-3">
           {FAQ_ITEMS.map((item, i) => (
-            <Reveal key={item.id} delay={i * 60}>
-              <div className="group overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
+            <div key={item.id} className="group overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
                 <button
                   type="button"
                   onClick={() => toggle(item.id)}
@@ -91,7 +89,7 @@ export function Faq() {
                   </div>
                 </div>
               </div>
-            </Reveal>
+            
           ))}
         </div>
       </div>

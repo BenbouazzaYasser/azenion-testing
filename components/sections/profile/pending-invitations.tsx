@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Check, MailOpen, X } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { respondToTeamInvitation } from "@/actions/team-membership.actions";
 import { formatDistanceToNow } from "@/lib/date";
@@ -70,17 +69,16 @@ export function PendingInvitations({ invitations, cardClass }: PendingInvitation
           const initials = inv.team_name.charAt(0).toUpperCase();
 
           return (
-            <Reveal key={inv.id}>
-              <div className={`${cardClass} p-4`}>
+            <div key={inv.id} className={`${cardClass} p-4`}>
                 <div className="flex items-start gap-3">
                   {inv.team_logo_url ? (
                     <img
                       src={inv.team_logo_url}
                       alt=""
-                      className="h-10 w-10 shrink-0 rounded-[0.75rem] border border-accent-400/30 object-cover"
+                      className="h-10 w-10 shrink-0 rounded-lg border border-accent-400/30 object-cover"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.75rem] border border-accent-400/30 bg-accent/[0.08] text-sm font-semibold text-accent-400">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-accent-400/30 bg-accent/[0.08] text-sm font-semibold text-accent-400">
                       {initials}
                     </div>
                   )}
@@ -119,7 +117,7 @@ export function PendingInvitations({ invitations, cardClass }: PendingInvitation
                   </div>
                 </div>
               </div>
-            </Reveal>
+            
           );
         })}
       </div>

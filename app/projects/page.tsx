@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 import { Rocket } from "lucide-react";
 
 import { Footer } from "@/components/layout/footer";
@@ -27,11 +28,23 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectsPage() {
-  const adminClient = createAdminClient();
-  const supabase = await createClient();
+function parseRecruitment(raw: unknown) {
+  if (!raw) return [];
+  try {
+    const arr = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
 
-  const user = await getSessionUser();
+async function fetchPublicProjects() {
+  // Public, non-user-specific content: the full project catalog with
+  // counts, categories and signed logo URLs. Served through the admin
+  // client and shared across visitors via unstable_cache. revalidate: 30
+  // stays below the signed-URL TTL so cached logo URLs never expire.
+  // The per-user "my projects" section below stays fully dynamic.
+  const adminClient = createAdminClient();
 
   const { data: projects } = await adminClient
     .from("projects")
@@ -96,44 +109,54 @@ export default async function ProjectsPage() {
     categoryMap.set(cat.id, cat);
   }
 
-  function parseRecruitment(raw: unknown) {
-    if (!raw) return [];
-    try {
-      const arr = typeof raw === "string" ? JSON.parse(raw) : raw;
-      return Array.isArray(arr) ? arr : [];
-    } catch {
-      return [];
-    }
-  }
-
   const visibleProjects = await Promise.all(
     (projects ?? [])
       .filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED")
       .map(async (p) => ({
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    description: p.description,
-    logo_url: ((await resolveMediaValue(p.logo_url, undefined, supabase)) as string | null) ?? null,
-    visibility: p.visibility,
-    lifecycle_status: p.lifecycle_status,
-    last_activity_at: p.last_activity_at as string | null,
-    created_at: p.created_at,
-    updated_at: p.updated_at as string | null,
-    technologies: Array.isArray(p.technologies) ? p.technologies : [],
-    recruitment: parseRecruitment(p.recruitment) as {
-      id: string;
-      title: string;
-      experience: "beginner" | "intermediate" | "advanced";
-      positions: number;
-      description: string;
-    }[],
-    categories: (projectCategoryMap.get(p.id) ?? []).map((cid) => categoryMap.get(cid)).filter(Boolean) as { id: string; name: string; slug: string }[],
-    owner: p.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
-    team: p.team as unknown as { name: string; slug: string } | null,
-    member_count: memberCountMap.get(p.id) ?? 0,
-    }))
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        description: p.description,
+        logo_url: ((await resolveMediaValue(p.logo_url, undefined, adminClient)) as string | null) ?? null,
+        visibility: p.visibility,
+        lifecycle_status: p.lifecycle_status,
+        last_activity_at: p.last_activity_at as string | null,
+        created_at: p.created_at,
+        updated_at: p.updated_at as string | null,
+        technologies: Array.isArray(p.technologies) ? p.technologies : [],
+        recruitment: parseRecruitment(p.recruitment) as {
+          id: string;
+          title: string;
+          experience: "beginner" | "intermediate" | "advanced";
+          positions: number;
+          description: string;
+        }[],
+        categories: (projectCategoryMap.get(p.id) ?? []).map((cid) => categoryMap.get(cid)).filter(Boolean) as { id: string; name: string; slug: string }[],
+        owner: p.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
+        team: p.team as unknown as { name: string; slug: string } | null,
+        member_count: memberCountMap.get(p.id) ?? 0,
+      }))
   );
+
+  return { visibleProjects, technologyOptions, allCategories: allCategories ?? [] };
+}
+
+const getPublicProjects = unstable_cache(fetchPublicProjects, ["projects-page-data"], {
+  revalidate: 30,
+});
+
+export default async function ProjectsPage() {
+  const adminClient = createAdminClient();
+  const supabase = await createClient();
+
+  const user = await getSessionUser();
+
+  const { visibleProjects, technologyOptions, allCategories } = await getPublicProjects();
+
+  const categoryMap = new Map<string, { id: string; name: string; slug: string }>();
+  for (const cat of allCategories ?? []) {
+    categoryMap.set(cat.id, cat);
+  }
 
   let myProjects: {
     id: string;

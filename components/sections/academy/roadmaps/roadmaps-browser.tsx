@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { Route, Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Reveal } from "@/components/ui/reveal";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { useTranslation } from "@/components/translation/translation-provider";
 import type { RoadmapLevel, RoadmapSummary } from "@/lib/roadmaps/types";
@@ -48,7 +47,7 @@ export function RoadmapsBrowser({ roadmaps }: RoadmapsBrowserProps) {
       aria-labelledby="roadmaps-browser-heading"
     >
       <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
-        <Reveal>
+        
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
             <div className="relative w-full sm:max-w-sm">
               <Search
@@ -65,9 +64,9 @@ export function RoadmapsBrowser({ roadmaps }: RoadmapsBrowserProps) {
               />
             </div>
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <span className="text-xs font-medium uppercase tracking-wide text-ink-600">
               {t("academy.filtersDifficulty")}
@@ -81,9 +80,9 @@ export function RoadmapsBrowser({ roadmaps }: RoadmapsBrowserProps) {
               onSelect={setLevel}
             />
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={160}>
+        
           {filtered.length > 0 ? (
             <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((roadmap) => (
@@ -119,14 +118,14 @@ export function RoadmapsBrowser({ roadmaps }: RoadmapsBrowserProps) {
                     : t("academy.listRoadmapsEmptySub")}
                 </p>
                 {roadmaps.length === 0 ? (
-                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-ink-600">
+                  <p className="mt-8 text-xs font-semibold uppercase tracking-normal text-ink-600">
                     {t("academy.comingTo")}
                   </p>
                 ) : null}
               </div>
             </div>
           )}
-        </Reveal>
+        
       </div>
     </section>
   );

@@ -1,5 +1,4 @@
 import { CalendarClock } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { SessionCard } from "./session-card";
 import { SessionFormDialog } from "./session-form-dialog";
@@ -25,9 +24,9 @@ export async function UpcomingSessions({ sessions, canCreate, hostOptions }: Upc
       aria-labelledby="upcoming-sessions-heading"
     >
       <div className="mx-auto max-w-[1080px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
+        
           <div className="text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+            <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
               <CalendarClock size={12} />
               {await serverT("academy.upcomingEyebrow")}
             </span>
@@ -35,7 +34,7 @@ export async function UpcomingSessions({ sessions, canCreate, hostOptions }: Upc
               id="upcoming-sessions-heading"
               className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
             >
-              {await serverT("academy.upcomingH2")} <span className="text-accent-400">{await serverT("academy.upcomingH2Accent")}</span>
+              {await serverT("academy.upcomingH2")} {await serverT("academy.upcomingH2Accent")}
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-balance text-[1.05rem] leading-relaxed text-ink-400">
               {await serverT("academy.upcomingSub")}
@@ -46,18 +45,18 @@ export async function UpcomingSessions({ sessions, canCreate, hostOptions }: Upc
               </div>
             ) : null}
           </div>
-        </Reveal>
+        
 
         {hasSessions ? (
           <div className="mt-14 grid gap-5 md:grid-cols-2">
             {sessions.map((session, i) => (
-              <Reveal key={session.id} delay={(i % 2) * 100} className="h-full">
+              <div key={session.id} className="h-full">
                 <SessionCard session={session} hostOptions={hostOptions} />
-              </Reveal>
+              </div>
             ))}
           </div>
         ) : (
-          <Reveal delay={120}>
+          
             <div className="relative mt-14 flex flex-col items-center overflow-hidden rounded-2xl card-surface-soft px-8 py-20 text-center shadow-card backdrop-blur-xl">
               <div
                 aria-hidden
@@ -78,7 +77,7 @@ export async function UpcomingSessions({ sessions, canCreate, hostOptions }: Upc
                 </Button>
               </div>
             </div>
-          </Reveal>
+          
         )}
       </div>
     </section>

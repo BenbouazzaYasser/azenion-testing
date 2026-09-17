@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
@@ -8,6 +9,7 @@ import { AnnouncementsFeed } from "@/components/sections/announcements/announcem
 import { ClosingCta } from "@/components/sections/announcements/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionUser } from "@/lib/supabase/user";
 import type { Announcement } from "@/data/announcements";
 
@@ -18,6 +20,33 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+async function fetchPublishedAnnouncements(): Promise<Announcement[]> {
+  // Public, non-user-specific content: safe to share across visitors.
+  // Served through the admin client with the same public select the page
+  // previously ran under RLS, so anon visitors see identical rows.
+  const admin = createAdminClient();
+  const { data: rows } = await admin
+    .from("platform_announcements")
+    .select("id, emoji, title, category, description, badge, details")
+    .order("published_at", { ascending: false });
+
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    emoji: row.emoji,
+    title: row.title,
+    category: row.category,
+    description: row.description,
+    badge: row.badge ?? undefined,
+    details: row.details ?? undefined,
+  }));
+}
+
+const getPublishedAnnouncements = unstable_cache(
+  fetchPublishedAnnouncements,
+  ["announcements-page-data"],
+  { revalidate: 60 },
+);
 
 export default async function AnnouncementsPage() {
   const supabase = await createClient();
@@ -30,20 +59,7 @@ export default async function AnnouncementsPage() {
     canManage = !!authorized;
   }
 
-  const { data: rows } = await supabase
-    .from("platform_announcements")
-    .select("id, emoji, title, category, description, badge, details")
-    .order("published_at", { ascending: false });
-
-  const announcements: Announcement[] = (rows ?? []).map((row) => ({
-    id: row.id,
-    emoji: row.emoji,
-    title: row.title,
-    category: row.category,
-    description: row.description,
-    badge: row.badge ?? undefined,
-    details: row.details ?? undefined,
-  }));
+  const announcements = await getPublishedAnnouncements();
 
   return (
     <>

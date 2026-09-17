@@ -261,7 +261,7 @@ export function CommentSection({
                 type="button"
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
-                className="flex items-center gap-2 rounded-full bg-surface px-5 py-1.5 text-xs font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm disabled:opacity-50"
+                className="flex items-center gap-2 rounded-full bg-surface px-5 py-1.5 text-xs font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50 disabled:opacity-50"
               >
                 {isLoadingMore ? (
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" />

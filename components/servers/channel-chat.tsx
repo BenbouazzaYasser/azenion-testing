@@ -186,7 +186,7 @@ export function ChannelChat({
                 {showDivider && (
                   <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
                     <span aria-hidden className="h-px flex-1 bg-border" />
-                    <span className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-500 backdrop-blur-sm">
+                    <span className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-normal text-ink-500 backdrop-blur-sm">
                       {label}
                     </span>
                     <span aria-hidden className="h-px flex-1 bg-border" />

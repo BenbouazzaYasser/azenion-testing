@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -93,9 +94,11 @@ export function MessageBubble({
     <div className={cn("group flex items-start gap-3", isOwn ? "flex-row-reverse" : "flex-row")}>
       {showAvatar ? (
         sender_avatar ? (
-          <img
+          <Image
             src={sender_avatar}
             alt=""
+            width={32}
+            height={32}
             className="mt-2.5 h-8 w-8 shrink-0 rounded-full object-cover"
           />
         ) : (

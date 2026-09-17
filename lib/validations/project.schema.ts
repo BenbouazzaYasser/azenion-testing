@@ -1,9 +1,11 @@
 import { z } from "zod";
 
 export const MAX_ASSET_SIZE = 2 * 1024 * 1024;
-export const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+export const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
 export const ALLOWED_POST_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 export const ALLOWED_ASSET_TYPES = ALLOWED_POST_IMAGE_TYPES;
+
+const httpsUrl = (max: number) => z.string().trim().max(max).refine((u) => { try { const p = new URL(u); return p.protocol === "https:"; } catch { return false; } }, { message: "Must be a valid https URL" });
 
 export const createProjectSchema = z.object({
   // Omitted => standalone project (no parent team).
@@ -23,7 +25,7 @@ export const createProjectSchema = z.object({
     .nullable()
     .optional(),
   visibility: z.enum(["open", "private", "invite_only"]).default("open"),
-  logo_url: z.string().nullable().optional(),
+  logo_url: httpsUrl(2048).nullable().optional(),
 });
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;

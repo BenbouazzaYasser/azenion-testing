@@ -7,6 +7,7 @@ import { labSchema, labContentSchema, labAnswerInputSchema, labAnswerKeySchema, 
 import type { LabAnswerKey, LabContent } from "@/lib/validations/lab.schema";
 import { gradeSubmission, hashFlag, questionBlocksOf, validateSubmittedAnswers } from "@/lib/labs/grading";
 import { getLabsAuthContext } from "@/lib/labs/authorization";
+import { safeRemoveStorageObjects } from "@/lib/storage-cleanup";
 
 const LABS_PATH = "/academy/labs";
 
@@ -365,13 +366,29 @@ export async function deleteLab(formData: FormData) {
     return { error: "Not authorized - you can only delete your own labs" };
   }
 
+  // Collect version file URLs before deleting the lab row -- they hold the
+  // storage object paths for instructions/starter code/tests/solution/resources.
+  const { data: versions } = await admin
+    .from("lab_versions")
+    .select(
+      "instructions_url, starter_code_url, test_file_url, solution_url, resources_url",
+    )
+    .eq("lab_id", id);
+
   const { error: deleteError } = await admin.from("labs").delete().eq("id", id);
 
   if (deleteError) {
     return { error: deleteError.message };
   }
 
-  // Clean up storage files
+  const versionFileColumns = [
+    "instructions_url",
+    "starter_code_url",
+    "test_file_url",
+    "solution_url",
+    "resources_url",
+  ] as const;
+
   const objectsToRemove: string[] = [];
   if (existingLab.thumbnail_url) {
     // thumbnail_url carries a cache-busting "?v=..." query string (see
@@ -382,8 +399,17 @@ export async function deleteLab(formData: FormData) {
     if (thumbPath) objectsToRemove.push(thumbPath);
   }
 
+  for (const version of versions ?? []) {
+    for (const column of versionFileColumns) {
+      const url = version[column];
+      if (!url) continue;
+      const objectPath = url.split("/course-files/")[1]?.split("?")[0];
+      if (objectPath) objectsToRemove.push(objectPath);
+    }
+  }
+
   if (objectsToRemove.length > 0) {
-    await admin.storage.from("course-files").remove(objectsToRemove);
+    await safeRemoveStorageObjects(admin, "course-files", objectsToRemove);
   }
 
   revalidatePath(LABS_PATH);

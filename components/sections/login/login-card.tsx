@@ -6,7 +6,7 @@ import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
 
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
+import { FormField } from "@/components/ui/form-field";
 import { signIn } from "@/actions/auth.actions";
 
 const INPUT_CLASS =
@@ -48,9 +48,9 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
       <BackgroundInfinity variant="login" />
 
       <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
-        <Reveal>
-          <div className="group overflow-hidden rounded-[2rem] card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:shadow-glow-sm sm:px-12 sm:py-9">
-            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        
+          <div className="group overflow-hidden rounded-2xl card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:px-12 sm:py-9">
+            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-400/30 bg-accent/[0.08]">
@@ -68,10 +68,7 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
             </div>
 
             <form className="relative mt-6 flex flex-col gap-5" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="login-identifier" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Email or Username
-                </label>
+              <FormField label="Email or Username" htmlFor="login-identifier" error={error} required>
                 <input
                   id="login-identifier"
                   name="identifier"
@@ -83,12 +80,9 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
                   autoComplete="username"
                   required
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label htmlFor="login-password" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Password
-                </label>
+              <FormField label="Password" htmlFor="login-password" required>
                 <div className="relative">
                   <input
                     id="login-password"
@@ -109,7 +103,7 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
                 </div>
-              </div>
+              </FormField>
 
               <div className="flex items-center">
                 <label className="flex cursor-pointer items-center gap-2">
@@ -122,12 +116,6 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
                   <span className="text-sm text-ink-400">Remember me</span>
                 </label>
               </div>
-
-              {error && (
-                <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                  {error}
-                </p>
-              )}
 
               <Button type="submit" size="lg" className="w-full" disabled={loading}>
                 {loading ? (
@@ -143,7 +131,7 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
 
             <div className="relative mt-6">
               <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent" />
-              <span className="relative mx-auto flex w-10 justify-center bg-void-950 text-xs uppercase tracking-[0.12em] text-ink-600">
+              <span className="relative mx-auto flex w-10 justify-center bg-void-950 text-xs uppercase tracking-normal text-ink-600">
                 or
               </span>
             </div>
@@ -193,7 +181,7 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
               </p>
             </div>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

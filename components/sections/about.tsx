@@ -1,5 +1,4 @@
 import { Sparkles } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { DashboardButton } from "@/components/shared/dashboard-button";
 import { serverT } from "@/lib/translation/server";
 
@@ -7,10 +6,10 @@ export async function About() {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="about-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-        <Reveal className="mx-auto max-w-5xl rounded-[2rem] card-surface-soft p-8 shadow-card backdrop-blur-xl sm:p-10 lg:p-14">
+        <div className="mx-auto max-w-5xl rounded-2xl card-surface-soft p-8 shadow-card backdrop-blur-xl sm:p-10 lg:p-14">
           <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+              <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
                 <Sparkles size={13} />
                 {await serverT("home.aboutEyebrow")}
               </div>
@@ -31,9 +30,9 @@ export async function About() {
               </p>
             </div>
 
-            <div className="flex flex-col justify-between rounded-[1.4rem] bg-void-950/70 p-6 sm:p-7">
+            <div className="flex flex-col justify-between rounded-2xl bg-void-950/70 p-6 sm:p-7">
               <div>
-                <p className="text-sm font-medium uppercase tracking-[0.16em] text-ink-600">
+                <p className="text-sm font-medium uppercase tracking-normal text-ink-600">
                   {await serverT("home.aboutWhyJoin")}
                 </p>
                 <ul className="mt-5 space-y-3 text-sm leading-7 text-ink-400">
@@ -55,7 +54,7 @@ export async function About() {
               <DashboardButton size="lg" className="mt-6 w-full justify-center sm:w-auto" label={await serverT("home.joinMovement")} />
             </div>
           </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

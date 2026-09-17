@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Search, Users, ArrowDownWideNarrow } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { TeamCard, type TeamCardTeam } from "./team-card";
@@ -59,22 +58,22 @@ export function AllTeams({ initialTeams, categories }: AllTeamsProps) {
   return (
     <section id="teams" className="relative scroll-mt-24 py-20 sm:py-24 lg:py-28" aria-labelledby="all-teams-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+        
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
             {t("teams.allEyebrow")}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <h2
             id="all-teams-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
             {t("teams.allTitle")}
           </h2>
-        </Reveal>
+        
 
-        <Reveal delay={120}>
+        
           <div className="mt-6 space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative max-w-md flex-1">
@@ -123,10 +122,10 @@ export function AllTeams({ initialTeams, categories }: AllTeamsProps) {
               />
             ) : null}
           </div>
-        </Reveal>
+        
 
         {filtered.length === 0 ? (
-          <Reveal delay={160}>
+          
             <div className="mt-10 flex flex-col items-center gap-4 py-20 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300">
                 <Users className="h-7 w-7 text-accent-300" />
@@ -149,7 +148,7 @@ export function AllTeams({ initialTeams, categories }: AllTeamsProps) {
                 </Button>
               ) : null}
             </div>
-          </Reveal>
+          
         ) : (
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((team, i) => (

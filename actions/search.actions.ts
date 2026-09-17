@@ -47,6 +47,16 @@ const CATEGORY_ORDER: SearchCategory[] = [
   "Announcements",
 ];
 
+// Escape `%`, `_`, `\` so user input can't act as LIKE wildcards/escapes.
+const escapeIlike = (v: string) => v.replace(/[\\%_]/g, (m) => `\\${m}`);
+
+// Escape PostgREST `.or()` filter delimiters (`,`, `(`, `)`, `.`) plus LIKE
+// wildcards so raw input can't break out of the intended predicates.
+const escapeOrFilter = (v: string) =>
+  v
+    .replace(/[%_\\,().]/g, (c) => `\\${c}`)
+    .slice(0, 100);
+
 /** Newer-first small boost: older items pay a small penalty. */
 function recencyPenalty(createdAt: string | null): number {
   if (!createdAt) return 0;
@@ -89,7 +99,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
   }
 
   const supabase = await createClient();
-  const q = query;
+  const q = query.slice(0, 100);
   const results: SearchResultItem[] = [];
 
   // ---- Users
@@ -137,7 +147,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
     const { data } = await supabase
       .from("teams")
       .select("id, slug, name, description, logo_url, visibility, created_at")
-      .ilike("name", `%${q}%`)
+      .ilike("name", `%${escapeIlike(q)}%`)
       .limit(80);
     const rows = (data ?? []) as Array<{
       id: string;
@@ -176,7 +186,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
     const { data } = await supabase
       .from("projects")
       .select("id, slug, name, description, logo_url, visibility, created_at")
-      .ilike("name", `%${q}%`)
+      .ilike("name", `%${escapeIlike(q)}%`)
       .limit(80);
     const rows = (data ?? []) as Array<{
       id: string;
@@ -211,7 +221,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
     const { data } = await supabase
       .from("branches")
       .select("id, slug, name, full_name, description, logo_url, city, created_at")
-      .or(`name.ilike.%${q}%,full_name.ilike.%${q}%`)
+      .or(`name.ilike.%${escapeOrFilter(q)}%,full_name.ilike.%${escapeOrFilter(q)}%`)
       .limit(80);
     const rows = (data ?? []) as Array<{
       id: string;
@@ -252,7 +262,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
       .select(
         "id, title, body, author_id, created_at, profiles(full_name, username, avatar_url)",
       )
-      .or(`title.ilike.%${q}%,body.ilike.%${q}%`)
+      .or(`title.ilike.%${escapeOrFilter(q)}%,body.ilike.%${escapeOrFilter(q)}%`)
       .limit(60);
     const rows = (data ?? []) as unknown as Array<{
       id: string;
@@ -295,7 +305,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
     const { data } = await supabase
       .from("live_sessions")
       .select("id, title, instructor, starts_at, format, location, created_at")
-      .ilike("title", `%${q}%`)
+      .ilike("title", `%${escapeIlike(q)}%`)
       .limit(60);
     const rows = (data ?? []) as Array<{
       id: string;
@@ -332,7 +342,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
     const { data } = await supabase
       .from("platform_announcements")
       .select("id, emoji, title, category, description, published_at")
-      .ilike("title", `%${q}%`)
+      .ilike("title", `%${escapeIlike(q)}%`)
       .limit(60);
     const rows = (data ?? []) as Array<{
       id: string;

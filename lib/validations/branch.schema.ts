@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 export const MAX_BRANCH_ASSET_SIZE = 2 * 1024 * 1024;
-export const ALLOWED_BRANCH_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+export const ALLOWED_BRANCH_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
 export const ALLOWED_BRANCH_MEDIA_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
+const httpsUrl = (max: number) => z.string().trim().max(max).refine((u) => { try { const p = new URL(u); return p.protocol === "https:"; } catch { return false; } }, { message: "Must be a valid https URL" });
 
 export const createBranchSchema = z.object({
   name: z
@@ -29,7 +31,7 @@ export const createBranchSchema = z.object({
     .max(500, "Description must be 500 characters or less")
     .nullable()
     .optional(),
-  logo_url: z.string().nullable().optional(),
+  logo_url: httpsUrl(2048).nullable().optional(),
   sort_order: z
     .number()
     .int()
@@ -68,7 +70,7 @@ export const updateBranchSchema = z.object({
     .max(500, "Description must be 500 characters or less")
     .nullable()
     .optional(),
-  logo_url: z.string().nullable().optional(),
+  logo_url: httpsUrl(2048).nullable().optional(),
   sort_order: z
     .number()
     .int()
@@ -142,10 +144,8 @@ export const createBranchEventSchema = z.object({
     .refine((v) => v === "" || !Number.isNaN(new Date(v).getTime()), "Invalid end time")
     .nullable()
     .optional(),
-  cover_url: z.string().nullable().optional(),
-  registration_url: z
-    .string()
-    .max(500, "Registration URL must be 500 characters or less")
+  cover_url: httpsUrl(2048).nullable().optional(),
+  registration_url: httpsUrl(500)
     .nullable()
     .optional(),
   visibility: z.enum(["public", "members"]).default("public"),
@@ -185,10 +185,8 @@ export const updateBranchEventSchema = z.object({
     .refine((v) => v === "" || !Number.isNaN(new Date(v).getTime()), "Invalid end time")
     .nullable()
     .optional(),
-  cover_url: z.string().nullable().optional(),
-  registration_url: z
-    .string()
-    .max(500, "Registration URL must be 500 characters or less")
+  cover_url: httpsUrl(2048).nullable().optional(),
+  registration_url: httpsUrl(500)
     .nullable()
     .optional(),
   visibility: z.enum(["public", "members"]).optional(),
@@ -207,10 +205,8 @@ export const createBranchHighlightSchema = z.object({
     .max(1000, "Description must be 1000 characters or less")
     .nullable()
     .optional(),
-  image_url: z.string().nullable().optional(),
-  link_url: z
-    .string()
-    .max(500, "Link must be 500 characters or less")
+  image_url: httpsUrl(2048).nullable().optional(),
+  link_url: httpsUrl(500)
     .nullable()
     .optional(),
   sort_order: z
@@ -235,10 +231,8 @@ export const updateBranchHighlightSchema = z.object({
     .max(1000, "Description must be 1000 characters or less")
     .nullable()
     .optional(),
-  image_url: z.string().nullable().optional(),
-  link_url: z
-    .string()
-    .max(500, "Link must be 500 characters or less")
+  image_url: httpsUrl(2048).nullable().optional(),
+  link_url: httpsUrl(500)
     .nullable()
     .optional(),
   sort_order: z.number().int().optional(),

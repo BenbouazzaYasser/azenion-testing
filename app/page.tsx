@@ -18,6 +18,7 @@ import { Faq } from "@/components/sections/home/faq";
 import { FinalCta } from "@/components/sections/home/final-cta";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveMediaValue } from "@/lib/media";
+import { JsonLd, siteUrl } from "@/components/seo/json-ld";
 import { getFeedItems } from "@/actions/feed.actions";
 import { isTeamHidden } from "@/lib/lifecycle";
 import { getProjectLifecycleStatus } from "@/lib/lifecycle";
@@ -217,8 +218,29 @@ export default async function HomePage() {
 
   
 
+  const url = siteUrl();
+
   return (
     <>
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Azenion",
+            url,
+            logo: `${url}/logo.svg`,
+            description:
+              "Azenion is a global network connecting ambitious students, developers, designers, entrepreneurs and innovators through learning, collaboration and building impactful projects.",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Azenion",
+            url,
+          },
+        ]}
+      />
       <Navbar />
       <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />

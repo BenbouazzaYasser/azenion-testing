@@ -27,7 +27,6 @@ import {
 import { getBranchFeedItems, toggleFeedPin, type FeedItemWithAuthor } from "@/actions/feed.actions";
 import { FeedCard } from "@/components/feed/feed-card";
 import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/translation/translation-provider";
 
@@ -254,29 +253,29 @@ export function BranchFeed({
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="branch-feed-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+        
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
             {t("branches.feedEyebrow")}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <h2
             id="branch-feed-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
             {t("branches.feedTitle")}
           </h2>
-        </Reveal>
+        
 
-        <Reveal delay={120}>
+        
           <p className="mt-3 max-w-2xl text-[0.95rem] leading-relaxed text-ink-400">
             {t("branches.feedSub")}
           </p>
-        </Reveal>
+        
 
         {canManage ? (
-          <Reveal delay={160}>
+          
             <div className="mt-8 rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl sm:p-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-base font-medium text-ink-200">{t("branches.shareWith")}</h3>
@@ -422,7 +421,7 @@ export function BranchFeed({
                 </div>
               </div>
             </div>
-          </Reveal>
+          
         ) : null}
 
         {items.length > 0 ? (
@@ -432,7 +431,7 @@ export function BranchFeed({
               const pinable = canManage && PINNABLE_TYPES.has(item.source_type);
               const showMenu = manageable || pinable;
               return (
-                <Reveal key={`${item.source_type}-${item.source_id}`} delay={Math.min(i, 4) * 60}>
+                <>
                   {editingId === item.source_id ? (
                     <div className="rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
                       <h3 className="text-base font-medium text-ink-200">
@@ -549,12 +548,12 @@ export function BranchFeed({
                       />
                     </div>
                   )}
-                </Reveal>
+                </>
               );
             })}
           </div>
         ) : (
-          <Reveal delay={160}>
+          
             <div className="mt-10 flex flex-col items-center gap-4 py-16 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300">
                 <MessageSquare className="h-7 w-7 text-accent-300" />
@@ -568,7 +567,7 @@ export function BranchFeed({
                 </p>
               </div>
             </div>
-          </Reveal>
+          
         )}
 
         {hasMore && !isPending ? (
@@ -576,7 +575,7 @@ export function BranchFeed({
             <button
               type="button"
               onClick={handleLoadMore}
-              className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
+              className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50"
             >
               {t("feed.loadMore")}
             </button>

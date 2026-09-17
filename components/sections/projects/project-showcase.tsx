@@ -2,7 +2,6 @@
 
 import { ArrowUpRight, Users, Eye, Lock, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { Reveal } from "@/components/ui/reveal";
 
 interface ProjectCard {
   id: string;
@@ -35,13 +34,13 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="showcase-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+        
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
             Featured
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <h2
             id="showcase-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
@@ -51,14 +50,13 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
           <p className="mt-4 max-w-xl text-[1.02rem] leading-7 text-ink-400">
             Discover open projects seeking collaborators across the Limitless Network.
           </p>
-        </Reveal>
+        
 
         {projects.length > 0 ? (
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project, i) => (
-              <Reveal key={project.id} delay={i * 80}>
-                <Link href={`/projects/${project.slug}`} className="group block h-full">
-                  <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+              <Link key={project.id} href={`/projects/${project.slug}`} className="group block h-full">
+                  <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
                     <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                     <div className="relative flex flex-1 flex-col p-6 sm:p-7">
@@ -109,11 +107,11 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
                     </div>
                   </div>
                 </Link>
-              </Reveal>
+              
             ))}
           </div>
         ) : (
-          <Reveal delay={120}>
+          
             <div className="mt-10 rounded-2xl card-surface p-14 text-center shadow-card backdrop-blur-xl">
               <div className="flex flex-col items-center gap-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent-300">
@@ -127,7 +125,7 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
                 </div>
               </div>
             </div>
-          </Reveal>
+          
         )}
       </div>
     </section>

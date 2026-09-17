@@ -37,8 +37,8 @@ export function ServerRail({ servers, activeSlug }: ServerRailProps) {
             server.slug === activeSlug
               ? "rounded-xl bg-gradient-to-br from-accent to-accent-glow text-white shadow-glow"
               : server.icon_url
-                ? "bg-surface text-ink-200 hover:scale-105 hover:shadow-glow-sm"
-                : "bg-surface text-ink-200 hover:scale-105 hover:text-ink-50 hover:shadow-glow-sm",
+                ? "bg-surface text-ink-200 hover:scale-105"
+                : "bg-surface text-ink-200 hover:scale-105 hover:text-ink-50",
           )}
         >
           {server.slug === activeSlug && (

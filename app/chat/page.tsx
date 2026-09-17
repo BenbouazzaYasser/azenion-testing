@@ -1,11 +1,25 @@
 import type { Metadata } from "next";
+import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
-import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatLayout } from "@/components/chat/chat-layout";
 import { getConversations } from "@/data/chat";
+
+// Code-split: the interactive sidebar (search, archived view, unread state)
+// hydrates after the empty-state shell paints.
+const ChatSidebar = nextDynamic(
+  () =>
+    import("@/components/chat/chat-sidebar").then((mod) => ({
+      default: mod.ChatSidebar,
+    })),
+  {
+    loading: () => (
+      <div className="h-full w-full animate-pulse rounded-xl bg-surface/50" />
+    ),
+  },
+);
 
 export const metadata: Metadata = {
   title: "Chat — Azenion",
@@ -45,9 +59,6 @@ export default async function ChatPage() {
               </h2>
               <p className="relative mt-2 max-w-[320px] text-sm leading-relaxed text-ink-500">
                 Choose a conversation from the sidebar or search for someone to message. Your messages stay private and secure.
-              </p>
-              <p className="relative mt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-600">
-                Private · Secure · Real-time
               </p>
             </div>
           </div>

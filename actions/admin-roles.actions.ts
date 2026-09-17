@@ -240,18 +240,18 @@ export async function adminListUsersWithRoles(input: {
   }
 
   const users = (data ?? [])
-    .map((row: any) => {
+    .map((row: { id: string; username: string | null; full_name: string | null; avatar_url: string | null; user_roles: Array<{ roles: { name: string } | { name: string }[] | null } | null> | null }) => {
       const roles = (row.user_roles ?? [])
-        .map((ur: any) => {
-          const r = ur.roles as { name: string } | { name: string }[] | null;
+        .map((ur: { roles: { name: string } | { name: string }[] | null } | null) => {
+          const r = ur?.roles;
           if (!r) return null;
           return Array.isArray(r) ? r[0]?.name : r.name;
         })
-        .filter((name: string | null): name is string => name !== null);
+        .filter((name: string | null | undefined): name is string => name !== null && name !== undefined);
 
       return {
         user_id: row.id,
-        username: row.username,
+        username: row.username ?? "",
         full_name: row.full_name,
         avatar_url: row.avatar_url,
         roles,

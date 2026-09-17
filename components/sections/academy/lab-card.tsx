@@ -57,7 +57,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
   }
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40">
       <div
         aria-hidden
         className={cn(
@@ -154,7 +154,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
             ) : null}
             <Link
               href={`/academy/labs/${lab.id}`}
-              className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"
+              className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow"
             >
               {t("academy.open")}
               <ArrowUpRight size={13} />

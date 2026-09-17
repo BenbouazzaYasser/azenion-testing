@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { FileText, Code2, ImagePlus, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { createCourse } from "@/actions/academy-courses.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import {
@@ -17,8 +18,6 @@ import { cn } from "@/lib/utils";
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
-
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 export function CourseCreateDialog() {
   const router = useRouter();
@@ -189,10 +188,7 @@ export function CourseCreateDialog() {
                   ) : null}
 
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label htmlFor="course-title" className={labelClass}>
-                        Course title
-                      </label>
+                    <FormField label="Course title" htmlFor="course-title" required>
                       <input
                         id="course-title"
                         value={title}
@@ -202,12 +198,13 @@ export function CourseCreateDialog() {
                         placeholder="e.g. HTML & CSS Fundamentals"
                         className={inputClass}
                       />
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="course-description" className={labelClass}>
-                        Description
-                      </label>
+                    <FormField
+                      label="Description"
+                      htmlFor="course-description"
+                      helper={`${description.length}/5000`}
+                    >
                       <textarea
                         id="course-description"
                         value={description}
@@ -217,15 +214,9 @@ export function CourseCreateDialog() {
                         placeholder="What will students learn?"
                         className={`${inputClass} resize-none`}
                       />
-                      <p className="mt-1.5 text-xs text-ink-500">
-                        {description.length}/5000
-                      </p>
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="course-category" className={labelClass}>
-                        Category
-                      </label>
+                    <FormField label="Category" htmlFor="course-category" required>
                       <div className="relative">
                         <select
                           id="course-category"
@@ -242,13 +233,10 @@ export function CourseCreateDialog() {
                           ))}
                         </select>
                       </div>
-                    </div>
+                    </FormField>
 
                     <div className="grid gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="course-duration" className={labelClass}>
-                          Duration
-                        </label>
+                      <FormField label="Duration" htmlFor="course-duration">
                         <input
                           id="course-duration"
                           value={duration}
@@ -257,12 +245,9 @@ export function CourseCreateDialog() {
                           placeholder="e.g. 6 weeks, 2 hours"
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor="course-difficulty" className={labelClass}>
-                          Difficulty
-                        </label>
+                      <FormField label="Difficulty" htmlFor="course-difficulty">
                         <div className="relative">
                           <select
                             id="course-difficulty"
@@ -282,13 +267,14 @@ export function CourseCreateDialog() {
                             ))}
                           </select>
                         </div>
-                      </div>
+                      </FormField>
                     </div>
 
-                    <div>
-                      <label htmlFor="course-tags" className={labelClass}>
-                        Tags
-                      </label>
+                    <FormField
+                      label="Tags"
+                      htmlFor="course-tags"
+                      helper="Comma-separated, up to 10 tags."
+                    >
                       <input
                         id="course-tags"
                         value={tags}
@@ -297,15 +283,13 @@ export function CourseCreateDialog() {
                         placeholder="e.g. HTML, CSS, Responsive"
                         className={inputClass}
                       />
-                      <p className="mt-1.5 text-xs text-ink-500">
-                        Comma-separated, up to 10 tags.
-                      </p>
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="course-status" className={labelClass}>
-                        Visibility
-                      </label>
+                    <FormField
+                      label="Visibility"
+                      htmlFor="course-status"
+                      helper="Drafts are hidden from regular users; published courses are public."
+                    >
                       <select
                         id="course-status"
                         value={status}
@@ -315,13 +299,10 @@ export function CourseCreateDialog() {
                         <option value="published">Published — visible to everyone</option>
                         <option value="draft">Draft — managers only</option>
                       </select>
-                      <p className="mt-1.5 text-xs text-ink-500">
-                        Drafts are hidden from regular users; published courses are public.
-                      </p>
-                    </div>
+                    </FormField>
 
                     <fieldset>
-                      <legend className={labelClass}>Content type</legend>
+                      <legend className="mb-1.5 block text-sm font-medium text-ink-200">Content type</legend>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {(
                           [
@@ -379,7 +360,7 @@ export function CourseCreateDialog() {
                     </fieldset>
 
                     <div>
-                      <label className={labelClass}>Course file</label>
+                      <span className="mb-1.5 block text-sm font-medium text-ink-200">Course file</span>
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -404,7 +385,7 @@ export function CourseCreateDialog() {
                     </div>
 
                     <div>
-                      <label className={labelClass}>Thumbnail</label>
+                      <span className="mb-1.5 block text-sm font-medium text-ink-200">Thumbnail</span>
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                         <input
                           ref={thumbnailInputRef}

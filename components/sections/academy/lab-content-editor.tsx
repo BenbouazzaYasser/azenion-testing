@@ -192,9 +192,9 @@ export function hydrateDraftBlocks(content: { blocks: unknown[] } | null | undef
 
   return content.blocks
     .map((raw): DraftBlock | null => {
-      const b = raw as Record<string, any>;
+      const b = raw as Record<string, unknown>;
       if (b.type === "instructions") {
-        return { uid: nextUid("blk"), kind: "instructions", body: b.body ?? "" };
+        return { uid: nextUid("blk"), kind: "instructions", body: typeof b.body === "string" ? b.body : "" };
       }
       if (b.type === "evidence") {
         const items = Array.isArray(b.items) ? b.items : [];
@@ -203,40 +203,58 @@ export function hydrateDraftBlocks(content: { blocks: unknown[] } | null | undef
           kind: "evidence",
           items:
             items.length > 0
-              ? items.map((i: any) => ({ uid: nextUid("ev"), url: i.url ?? "", caption: i.caption ?? "" }))
+              ? items.map((i: unknown) => {
+                  const item = (i ?? {}) as Record<string, unknown>;
+                  return { uid: nextUid("ev"), url: typeof item.url === "string" ? item.url : "", caption: typeof item.caption === "string" ? item.caption : "" };
+                })
               : [{ uid: nextUid("ev"), url: "", caption: "" }],
         };
       }
       if (b.type === "question" && b.question_type === "qcm") {
         const options = Array.isArray(b.options) ? b.options : [];
+        const hints = Array.isArray(b.hints) ? b.hints : [];
         return {
           uid: nextUid("q"),
           kind: "qcm",
-          prompt: b.prompt ?? "",
+          prompt: typeof b.prompt === "string" ? b.prompt : "",
           multiSelect: Boolean(b.multi_select),
-          options: options.map((o: any) => ({ uid: nextUid("o"), text: o.text ?? "", correct: false })),
-          hints: Array.isArray(b.hints) ? b.hints.map((h: any) => h.text ?? "") : [],
+          options: options.map((o: unknown) => {
+            const opt = (o ?? {}) as Record<string, unknown>;
+            return { uid: nextUid("o"), text: typeof opt.text === "string" ? opt.text : "", correct: false };
+          }),
+          hints: hints.map((h: unknown) => {
+            const hint = (h ?? {}) as Record<string, unknown>;
+            return typeof hint.text === "string" ? hint.text : typeof h === "string" ? h : "";
+          }),
         };
       }
       if (b.type === "question" && b.question_type === "text_answer") {
+        const hints = Array.isArray(b.hints) ? b.hints : [];
         return {
           uid: nextUid("q"),
           kind: "text_answer",
-          prompt: b.prompt ?? "",
+          prompt: typeof b.prompt === "string" ? b.prompt : "",
           matchMode: "exact_ci",
           accepted: [""],
           manualOnly: true,
-          hints: Array.isArray(b.hints) ? b.hints.map((h: any) => h.text ?? "") : [],
+          hints: hints.map((h: unknown) => {
+            const hint = (h ?? {}) as Record<string, unknown>;
+            return typeof hint.text === "string" ? hint.text : typeof h === "string" ? h : "";
+          }),
         };
       }
       if (b.type === "question" && b.question_type === "flag") {
+        const hints = Array.isArray(b.hints) ? b.hints : [];
         return {
           uid: nextUid("q"),
           kind: "flag",
-          prompt: b.prompt ?? "",
+          prompt: typeof b.prompt === "string" ? b.prompt : "",
           expectedFlag: "",
           caseSensitive: Boolean(b.case_sensitive),
-          hints: Array.isArray(b.hints) ? b.hints.map((h: any) => h.text ?? "") : [],
+          hints: hints.map((h: unknown) => {
+            const hint = (h ?? {}) as Record<string, unknown>;
+            return typeof hint.text === "string" ? hint.text : typeof h === "string" ? h : "";
+          }),
         };
       }
       return null;

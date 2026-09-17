@@ -348,7 +348,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                     <div key={group.label} className="mb-1">
                       <div className="flex items-center gap-1.5 px-3 pt-3 pb-1.5">
                         <group.icon size={13} className="text-accent-300" />
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
+                        <span className="text-[11px] font-semibold uppercase tracking-normal text-ink-400">
                           {group.label}
                         </span>
                       </div>

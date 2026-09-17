@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Server } from "lucide-react";
 import { createUserServer } from "@/actions/server.actions";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 
 function slugify(value: string): string {
   return value
@@ -52,11 +53,8 @@ export function CreateServerForm() {
     "w-full rounded-xl bg-surface px-4 py-3 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input border-0";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label htmlFor="server-name" className="mb-1.5 block text-sm font-medium text-ink-200">
-          Server name
-        </label>
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <FormField label="Server name" htmlFor="server-name" error={error} required>
         <input
           id="server-name"
           value={name}
@@ -69,12 +67,14 @@ export function CreateServerForm() {
           placeholder="Design Club"
           className={inputClass}
         />
-      </div>
+      </FormField>
 
-      <div>
-        <label htmlFor="server-slug" className="mb-1.5 block text-sm font-medium text-ink-200">
-          Slug
-        </label>
+      <FormField
+        label="Slug"
+        htmlFor="server-slug"
+        helper="Lowercase letters, numbers and dashes."
+        required
+      >
         <div className="flex items-center gap-1.5">
           <span className="shrink-0 text-sm text-ink-600">/servers/</span>
           <input
@@ -91,13 +91,9 @@ export function CreateServerForm() {
             className={`${inputClass} font-mono text-sm`}
           />
         </div>
-        <p className="mt-1.5 text-xs text-ink-500">Lowercase letters, numbers and dashes.</p>
-      </div>
+      </FormField>
 
-      <div>
-        <label htmlFor="server-description" className="mb-1.5 block text-sm font-medium text-ink-200">
-          Description <span className="text-ink-600">(optional)</span>
-        </label>
+      <FormField label="Description" htmlFor="server-description">
         <textarea
           id="server-description"
           value={description}
@@ -107,13 +103,7 @@ export function CreateServerForm() {
           placeholder="What is this server about?"
           className={`${inputClass} resize-none`}
         />
-      </div>
-
-      {error ? (
-        <div role="alert" className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">
-          {error}
-        </div>
-      ) : null}
+      </FormField>
 
       <div className="flex items-center justify-end gap-3 pt-1">
         <Button type="button" variant="secondary" onClick={() => router.push("/servers")}>

@@ -8,6 +8,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { PageBridge } from "@/components/sections/page-bridge";
 import { PageHero } from "@/components/layout/page-hero";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import type {
   PlayerVersion,
   PlayerSubmission,
@@ -46,6 +47,9 @@ export async function generateMetadata({ params }: LabDetailPageProps): Promise<
   return {
     title: `${result.lab.title} | Azenion Academy Labs`,
     description: result.lab.description ?? `A hands-on lab on Azenion Academy.`,
+    alternates: {
+      canonical: `/academy/labs/${id}`,
+    },
   };
 }
 
@@ -101,7 +105,12 @@ export default async function LabDetailPage({ params }: LabDetailPageProps) {
       <Navbar />
       <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
-        <LabPlayer lab={lab} version={safeVersion} initialSubmission={initialSubmission} isAuthenticated={Boolean(user)} />
+        <ErrorBoundary
+          fallbackTitle="Lab player failed to load"
+          fallbackMessage="Unable to load the lab content. You can try reloading or go back to the labs list."
+        >
+          <LabPlayer lab={lab} version={safeVersion} initialSubmission={initialSubmission} isAuthenticated={Boolean(user)} />
+        </ErrorBoundary>
         <PageBridge />
       </main>
       <Footer />
@@ -126,7 +135,7 @@ function LabNotFound() {
             </p>
             <Link
               href="/academy/labs"
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow"
             >
               <ArrowLeft size={14} />
               Back to Labs

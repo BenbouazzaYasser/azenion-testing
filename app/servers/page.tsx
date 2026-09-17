@@ -66,7 +66,7 @@ export default async function ServersPage() {
                 <Link
                   key={server.id}
                   href={`/servers/${server.slug}`}
-                  className="group relative flex items-center gap-3 overflow-hidden rounded-2xl bg-surface/50 p-4 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:bg-surface/70 hover:shadow-glow-sm"
+                  className="group relative flex items-center gap-3 overflow-hidden rounded-2xl bg-surface/50 p-4 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:bg-surface/70"
                 >
                   {server.icon_url ? (
                     <img

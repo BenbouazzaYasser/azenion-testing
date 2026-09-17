@@ -74,7 +74,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+        className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-2xl panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
       >
         <div
           aria-hidden

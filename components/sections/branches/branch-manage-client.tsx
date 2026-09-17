@@ -3,7 +3,6 @@
 import { useRef, useState, useTransition } from "react";
 import { Plus, Pencil, Trash2, Users, MapPin, Building2, X, AlertTriangle, ShieldCheck, UserPlus, UserX, Check, ImagePlus, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { createBranch, updateBranch, deleteBranch, assignBranchLeader, removeBranchLeader, uploadBranchLogoAsset } from "@/actions/branch.actions";
@@ -250,10 +249,10 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
       <BackgroundInfinity variant="teams" />
 
       <div className="relative mx-auto max-w-[960px] px-5 pb-28 pt-16 sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
-        <Reveal>
+        
           <div className="flex items-center justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+              <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
                 Administration
               </div>
               <h1 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]">
@@ -275,7 +274,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
               Create Branch
             </Button>
           </div>
-        </Reveal>
+        
 
         {error ? (
           <div className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
@@ -284,7 +283,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
         ) : null}
 
         {showForm ? (
-          <Reveal delay={80}>
+          
             <div className="mt-8 overflow-hidden rounded-2xl card-surface p-8 shadow-card backdrop-blur-xl">
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-ink-50">
@@ -467,7 +466,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                 </div>
               </form>
             </div>
-          </Reveal>
+          
         ) : null}
 
         <div className="mt-10 grid gap-5">
@@ -483,8 +482,8 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
             </div>
           ) : (
             branches.map((branch, i) => (
-              <Reveal key={branch.id} delay={i * 80}>
-                <div className="group relative flex items-start gap-5 overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+              
+                <div key={branch.id} className="group relative flex items-start gap-5 overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08] p-2.5">
                     {branch.logo_url ? (
                       <img src={branch.logo_url} alt="" className="h-full w-full rounded-lg object-cover" />
@@ -549,7 +548,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                     <div className="mt-5 border-t border-border pt-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <ShieldCheck size={13} className="text-emerald-400" />
-                        <span className="text-xs font-medium uppercase tracking-[0.12em] text-ink-500">
+                        <span className="text-xs font-medium uppercase tracking-normal text-ink-500">
                           Leaders
                         </span>
                         <button
@@ -711,7 +710,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                     </div>
                   ) : null}
                 </div>
-              </Reveal>
+              
             ))
           )}
         </div>

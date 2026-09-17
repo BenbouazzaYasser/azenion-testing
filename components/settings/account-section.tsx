@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { CheckCircle, KeyRound, Mail, UserCircle, Calendar, LogIn, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { ChangePasswordModal } from "@/components/sections/profile/change-password-modal";
 import { SettingsPanel } from "./settings-panel";
 import { changeEmail, changeUsername } from "@/actions/settings.actions";
@@ -100,23 +101,22 @@ export function AccountSection({
             </div>
 </div>
           <form onSubmit={handleEmail} className="w-full sm:w-[320px]">
-            <label htmlFor="new-email-input" className="block text-xs font-medium text-ink-300">
-              {t("settings.newEmail")}
-            </label>
-            <div className="mt-1.5 flex gap-2">
-              <input
-                id="new-email-input"
-                name="email"
-                type="email"
-                value={emailValue}
-                onChange={(e) => {
-                  setEmailValue(e.target.value);
-                  registerDirty();
-                }}
-                placeholder="you@example.com"
-                className={inputClass}
-              />
-              <Button type="submit" variant="secondary" size="sm" disabled={!emailDirty || isPendingEmail}>
+            <div className="flex items-end gap-2">
+              <FormField label={t("settings.newEmail")} htmlFor="new-email-input" required>
+                <input
+                  id="new-email-input"
+                  name="email"
+                  type="email"
+                  value={emailValue}
+                  onChange={(e) => {
+                    setEmailValue(e.target.value);
+                    registerDirty();
+                  }}
+                  placeholder="you@example.com"
+                  className={inputClass}
+                />
+              </FormField>
+              <Button type="submit" variant="secondary" size="sm" className="shrink-0" disabled={!emailDirty || isPendingEmail}>
                 {isPendingEmail ? t("settings.emailSending") : t("settings.emailUpdate")}
               </Button>
             </div>
@@ -137,10 +137,11 @@ export function AccountSection({
               </p>
             </div>
           </div>
-          <form onSubmit={handleUsername} className="flex w-full sm:w-auto items-center gap-2">
-            <span className="text-ink-500">@</span>
+          <form onSubmit={handleUsername} className="flex w-full sm:w-auto items-center gap-2" noValidate>
+            <span className="text-ink-500" aria-hidden>@</span>
             <input
               name="username"
+              aria-label={t("settings.username")}
               value={usernameValue}
               onChange={(e) => {
                 setUsernameValue(e.target.value);

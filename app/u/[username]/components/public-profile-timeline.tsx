@@ -1,5 +1,4 @@
 import { Clock } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import {
   ActivityRenderer,
   SUPPORTED_ACTIVITY_TYPES,
@@ -25,8 +24,8 @@ export function PublicProfileTimeline({ activities, cardClass }: PublicProfileTi
 
   return (
     <div className={cardClass}>
-      <h2 className="text-sm font-medium uppercase tracking-wide text-ink-400">
-        Activity · last 30 days
+      <h2 className="text-sm font-medium uppercase tracking-normal text-ink-400">
+        Activity, last 30 days
       </h2>
 
       {supportedActivities.length === 0 ? (
@@ -45,12 +44,11 @@ export function PublicProfileTimeline({ activities, cardClass }: PublicProfileTi
         <div className="relative mt-6 space-y-6 pl-6">
           <div className="absolute bottom-1 left-[4.5px] top-1 w-px bg-border/50" />
           {supportedActivities.map((activity, index) => (
-            <Reveal key={activity.id} delay={index * 40}>
-              <div className="relative">
+            <div key={activity.id} className="relative">
                 <span className="absolute -left-6 top-1.5 h-2.5 w-2.5 rounded-full bg-accent shadow-glow-sm" />
                 <ActivityRenderer activity={activity} />
               </div>
-            </Reveal>
+            
           ))}
         </div>
       )}

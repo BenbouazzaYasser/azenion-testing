@@ -48,7 +48,7 @@ export function ChannelSidebar({
       <div className="flex shrink-0 items-center justify-between gap-2 px-4 py-3.5">
         <div className="min-w-0">
           <h1 className="truncate text-sm font-semibold text-ink-50">{serverName}</h1>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-600">
+          <p className="text-[10px] font-semibold uppercase tracking-normal text-ink-600">
             {kindLabel}
           </p>
         </div>
@@ -109,7 +109,7 @@ export function ChannelSidebar({
       ) : null}
 
       <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
-        <p className="px-3 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+        <p className="px-3 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
           {t("servers.channels")}
         </p>
         <ul className="flex flex-col gap-0.5">

@@ -1,6 +1,6 @@
 import { ArrowUpRight, Users } from "lucide-react";
+import Link from "next/link";
 
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { TeamCard, type TeamCardTeam } from "@/components/sections/teams/team-card";
 
@@ -14,10 +14,10 @@ export function TrendingTeams({ teams }: TrendingTeamsProps) {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="trending-teams-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
+        
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
                 <Users size={13} />
                 Trending Teams
               </span>
@@ -25,20 +25,20 @@ export function TrendingTeams({ teams }: TrendingTeamsProps) {
                 id="trending-teams-heading"
                 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[2.9rem]"
               >
-                Small crews, <span className="text-accent-400">big momentum.</span>
+                Small crews, big momentum.
               </h2>
               <p className="mt-5 text-[1.02rem] leading-relaxed text-ink-400">
                 The most active teams building products, startups and research together.
               </p>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
-              <a href="/teams">
+              <Link href="/teams">
                 Explore Teams
                 <ArrowUpRight size={16} />
-              </a>
+              </Link>
             </Button>
           </div>
-        </Reveal>
+        
 
         {preview.length > 0 ? (
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -47,8 +47,8 @@ export function TrendingTeams({ teams }: TrendingTeamsProps) {
             ))}
           </div>
         ) : (
-          <Reveal>
-            <div className="mt-14 flex flex-col items-center justify-center gap-3 rounded-[2rem] border border-dashed border-border-strong bg-white/[0.01] px-8 py-16 text-center">
+          
+            <div className="mt-14 flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-strong bg-white/[0.01] px-8 py-16 text-center">
               <span className="flex h-12 w-12 items-center justify-center rounded-full border border-accent-400/30 bg-accent/[0.08] text-accent-300">
                 <Users size={20} />
               </span>
@@ -58,7 +58,7 @@ export function TrendingTeams({ teams }: TrendingTeamsProps) {
                 teams as they appear.
               </p>
             </div>
-          </Reveal>
+          
         )}
       </div>
     </section>

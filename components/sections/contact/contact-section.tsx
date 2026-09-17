@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Mail, MessageCircle, Linkedin, Github, Send } from "lucide-react";
 
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { CONTACT } from "@/data/contact";
 
 const CHANNEL_ICONS: Record<string, typeof Mail> = {
@@ -25,30 +25,30 @@ export function ContactSection() {
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12">
         <div className="grid gap-14 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
           <div className="flex flex-col gap-6">
-            <Reveal>
+            
               <h2 className="text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]">
-                Reach out<span className="text-accent-400">.</span>
+                Reach out.
               </h2>
               <p className="mt-4 max-w-md text-[1.02rem] leading-relaxed text-ink-400">
                 However you prefer to connect, we&apos;re here. Pick the channel
                 that feels right and start the conversation.
               </p>
-            </Reveal>
+            
 
             <div className="mt-2 flex flex-col gap-3">
               {CONTACT.channels.map((channel, i) => {
                 const Icon = CHANNEL_ICONS[channel.label]!;
                 return (
-                  <Reveal key={channel.label} delay={i * 60}>
                     <a
+                      key={channel.label}
                       href={channel.href}
                       target={channel.href.startsWith("http") ? "_blank" : undefined}
                       rel={channel.href.startsWith("http") ? "noreferrer noopener" : undefined}
-                      className="group relative flex items-center gap-4 overflow-hidden rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm sm:p-6"
+                      className="group relative flex items-center gap-4 overflow-hidden rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:p-6"
                     >
                       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface text-accent-400 transition-all duration-500 ease-premium group-hover:-translate-y-0.5 group-hover:scale-[1.05] group-hover:border-accent-400/40 group-hover:bg-accent/[0.08] group-hover:shadow-glow-sm sm:h-14 sm:w-14">
+                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface text-accent-400 transition-all duration-500 ease-premium group-hover:scale-[1.05] group-hover:border-accent-400/40 group-hover:bg-accent/[0.08] sm:h-14 sm:w-14">
                         <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,rgba(40,40,255,0.15),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                         <Icon size={18} strokeWidth={1.75} className="relative sm:size-[20]" />
                       </div>
@@ -65,16 +65,16 @@ export function ContactSection() {
                         </p>
                       </div>
                     </a>
-                  </Reveal>
+                  
                 );
               })}
             </div>
           </div>
 
           <div className="flex flex-col justify-center">
-            <Reveal delay={80}>
-              <div className="group relative overflow-hidden rounded-[2rem] card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:p-8 lg:p-10">
-                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            
+              <div className="group relative overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:p-8 lg:p-10">
+                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                 <div className="relative">
                   <h3 className="text-[1.3rem] font-semibold text-ink-50">
@@ -89,10 +89,7 @@ export function ContactSection() {
                     className="mt-6 flex flex-col gap-5"
                     onSubmit={(e) => e.preventDefault()}
                   >
-                    <div>
-                      <label htmlFor="contact-name" className="sr-only">
-                        Full Name
-                      </label>
+                    <FormField label="Full Name" htmlFor="contact-name">
                       <input
                         id="contact-name"
                         type="text"
@@ -101,12 +98,9 @@ export function ContactSection() {
                         onChange={(e) => setName(e.target.value)}
                         className="w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
                       />
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="contact-email" className="sr-only">
-                        Email Address
-                      </label>
+                    <FormField label="Email Address" htmlFor="contact-email">
                       <input
                         id="contact-email"
                         type="email"
@@ -115,12 +109,9 @@ export function ContactSection() {
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
                       />
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="contact-subject" className="sr-only">
-                        Subject
-                      </label>
+                    <FormField label="Subject" htmlFor="contact-subject">
                       <input
                         id="contact-subject"
                         type="text"
@@ -129,12 +120,9 @@ export function ContactSection() {
                         onChange={(e) => setSubject(e.target.value)}
                         className="w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
                       />
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="contact-message" className="sr-only">
-                        Message
-                      </label>
+                    <FormField label="Message" htmlFor="contact-message">
                       <textarea
                         id="contact-message"
                         rows={5}
@@ -143,7 +131,7 @@ export function ContactSection() {
                         onChange={(e) => setMessage(e.target.value)}
                         className="w-full resize-none rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
                       />
-                    </div>
+                    </FormField>
 
                     <Button type="submit">
                       Send Message
@@ -152,7 +140,7 @@ export function ContactSection() {
                   </form>
                 </div>
               </div>
-            </Reveal>
+            
           </div>
         </div>
       </div>

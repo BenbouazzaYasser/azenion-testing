@@ -30,12 +30,14 @@ export const profileSchema = z.object({
   github_url: z
     .string()
     .url("Must be a valid URL")
+    .refine((u) => !u || u === "" || u.startsWith("https://"), { message: "Must be a valid https URL" })
     .nullable()
     .optional()
     .or(z.literal("")),
   linkedin_url: z
     .string()
     .url("Must be a valid URL")
+    .refine((u) => !u || u === "" || u.startsWith("https://"), { message: "Must be a valid https URL" })
     .nullable()
     .optional()
     .or(z.literal("")),

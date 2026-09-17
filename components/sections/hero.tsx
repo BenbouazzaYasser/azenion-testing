@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Globe2, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
 import { InfinityHeroArt } from "@/components/graphics/infinity-hero-art";
 import { DashboardButton } from "@/components/shared/dashboard-button";
 import { serverT } from "@/lib/translation/server";
@@ -20,60 +19,52 @@ export async function Hero() {
       </div>
 
       <div className="relative mx-auto grid w-full max-w-[1320px] grid-cols-1 items-center gap-16 px-5 pb-24 pt-6 sm:px-8 sm:pt-10 lg:pb-32 lg:px-12 lg:pt-10">
-        {/* Left — copy */}
+        {/* Left — copy. One staggered entrance on load; nothing else on the
+            page animates without a user action. */}
         <div className="relative z-10 max-w-xl">
-          <Reveal delay={0}>
+          <div className="animate-fade-in-up motion-reduce:opacity-100">
             <Badge className="inline-flex">
               <Globe2 size={13} className="text-accent-400" />
               {await serverT("home.heroBadge")}
             </Badge>
-          </Reveal>
+          </div>
 
-          <Reveal delay={80}>
-            <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[3.75rem]">
-              {await serverT("home.heroTitleA")}
-              <br />
-              {await serverT("home.heroTitleB")}<span className="text-accent">{await serverT("home.heroImpact")}</span>
-            </h1>
-          </Reveal>
+          <h1
+            className="mt-6 animate-fade-in-up text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 opacity-0 motion-reduce:opacity-100 [animation-delay:90ms] sm:text-[3.4rem] lg:text-[3.75rem]"
+          >
+            {await serverT("home.heroTitleA")}
+            <br />
+            {await serverT("home.heroTitleB")}
+            {await serverT("home.heroImpact")}
+          </h1>
 
-          <Reveal delay={160}>
-            <p className="mt-6 text-balance text-[1.05rem] leading-relaxed text-ink-400">
-              {await serverT("home.heroSubA")}
-              <br className="hidden sm:block" />
-              {await serverT("home.heroSubB")}
-            </p>
-          </Reveal>
+          <p className="mt-6 animate-fade-in-up text-balance text-[1.05rem] leading-relaxed text-ink-400 opacity-0 motion-reduce:opacity-100 [animation-delay:180ms]">
+            {await serverT("home.heroSubA")}
+            <br className="hidden sm:block" />
+            {await serverT("home.heroSubB")}
+          </p>
 
-          <Reveal delay={240}>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-8 flex animate-fade-in-up flex-col gap-3 opacity-0 motion-reduce:opacity-100 [animation-delay:270ms] sm:flex-row sm:items-center">
             <DashboardButton size="lg" label={await serverT("home.heroJoinCta")} />
-              <Button variant="secondary" size="lg" asChild>
-                <Link href="/projects">{await serverT("home.exploreProjects")}</Link>
-              </Button>
-            </div>
-          </Reveal>
+            <Button variant="secondary" size="lg" asChild>
+              <Link href="/projects">{await serverT("home.exploreProjects")}</Link>
+            </Button>
+          </div>
 
-          <Reveal delay={320}>
-            <div className="relative mt-6">
-              <div
-                aria-hidden
-                className="absolute -inset-x-4 -inset-y-6 rounded-[2rem] bg-accent-400/[0.14] blur-[60px]"
-              />
-              <div className="relative rounded-[1.6rem] card-surface-soft p-5 shadow-card backdrop-blur-xl">
-                <p className="text-sm font-medium text-ink-50">{await serverT("home.heroQuickOverview")}</p>
-                <p className="mt-2 text-sm leading-6 text-ink-400">
-                  {await serverT("home.heroOverviewSub")}
-                </p>
-              </div>
+          <div className="animate-fade-in-up motion-reduce:opacity-100 [animation-delay:360ms]">
+            <div className="relative mt-6 rounded-2xl card-surface-soft p-5">
+              <p className="text-sm font-medium text-ink-50">{await serverT("home.heroQuickOverview")}</p>
+              <p className="mt-2 text-sm leading-6 text-ink-400">
+                {await serverT("home.heroOverviewSub")}
+              </p>
             </div>
-          </Reveal>
+          </div>
 
           <div className="mt-12 hidden items-center gap-3 sm:flex">
             <span className="flex h-8 w-5 items-start justify-center rounded-full p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
-            <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
+            <span className="text-xs font-medium uppercase tracking-normal text-ink-600">
               {await serverT("home.heroScroll")}
             </span>
           </div>

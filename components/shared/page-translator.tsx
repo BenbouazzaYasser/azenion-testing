@@ -71,7 +71,7 @@ export function PageTranslator() {
             className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
           />
           <div className="px-3 pb-2 pt-3">
-            <p className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+            <p className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
               Choose language
             </p>
             <div data-no-translate translate="no" className="grid grid-cols-2 gap-1.5">

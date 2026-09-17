@@ -32,12 +32,29 @@ import {
   sanitizeFilename,
 } from "@/lib/chat-media";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
-import { EmojiPicker } from "@/components/chat/emoji-picker";
-import { GifPicker } from "@/components/chat/gif-picker";
-import { StickerPicker } from "@/components/chat/sticker-picker";
-import { AttachmentMenu } from "@/components/chat/attachment-menu";
+import Image from "next/image";
+import nextDynamic from "next/dynamic";
 import type { GifResult } from "@/lib/gif/provider";
 import type { Sticker as StickerType } from "@/lib/stickers/catalog";
+
+// Picker menus only render when opened — keep them out of the
+// conversation bundle until first use.
+const EmojiPicker = nextDynamic(
+  () => import("@/components/chat/emoji-picker").then((m) => m.EmojiPicker),
+  { ssr: false },
+);
+const GifPicker = nextDynamic(
+  () => import("@/components/chat/gif-picker").then((m) => m.GifPicker),
+  { ssr: false },
+);
+const StickerPicker = nextDynamic(
+  () => import("@/components/chat/sticker-picker").then((m) => m.StickerPicker),
+  { ssr: false },
+);
+const AttachmentMenu = nextDynamic(
+  () => import("@/components/chat/attachment-menu").then((m) => m.AttachmentMenu),
+  { ssr: false },
+);
 
 interface Message {
   id: string;
@@ -175,6 +192,57 @@ export function ChatConversation({
   useEffect(() => {
     setMessages(initialMessages);
   }, [initialMessages]);
+
+  const refetchMessages = useCallback(async () => {
+    try {
+      const supabase = createClient();
+      const { data: msgs } = await supabase
+        .from("messages")
+        .select("id, conversation_id, sender_id, content, image_url, created_at, edited_at, received_at")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+      if (msgs) {
+        const senderIds = [...new Set(msgs.map((m) => m.sender_id))];
+        const [{ data: profiles }, { data: attachments }] = await Promise.all([
+          supabase.from("profiles").select("id, full_name, avatar_url, username").in("id", senderIds),
+          supabase
+            .from("chat_message_attachments")
+            .select("id, message_id, conversation_id, uploader_id, type, storage_path, filename, mime_type, file_size, duration_seconds, provider, external_id, metadata, created_at")
+            .eq("conversation_id", conversationId)
+            .order("created_at", { ascending: true }),
+        ]);
+        const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+        const attachmentsByMessage = new Map<string, ChatAttachmentForMessage[]>();
+        if (attachments && attachments.length > 0) {
+          const admin = createClient();
+          const withUrls = await Promise.all(
+            (attachments as ChatAttachmentForMessage[]).map(async (att) => {
+              let signedUrl: string | null = null;
+              if (att.storage_path) {
+                const { data } = await admin.storage.from("chat-media").createSignedUrl(att.storage_path, 60);
+                signedUrl = data?.signedUrl ?? null;
+              }
+              return { ...att, signedUrl };
+            }),
+          );
+          for (const att of withUrls) {
+            const arr = attachmentsByMessage.get(att.message_id) ?? [];
+            arr.push(att);
+            attachmentsByMessage.set(att.message_id, arr);
+          }
+        }
+        setMessages((msgs) =>
+          msgs.map((m) => ({
+            ...m,
+            sender: profileMap.get(m.sender_id) ?? null,
+            attachments: attachmentsByMessage.get(m.id) ?? [],
+          })),
+        );
+      }
+    } catch {
+      // Silent failure; existing messages remain
+    }
+  }, [conversationId]);
 
   useEffect(() => {
     void markConversationRead(conversationId);
@@ -565,7 +633,8 @@ export function ChatConversation({
         ]);
 
         if (result && "error" in result && result.error) {
-          setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+          // On error, trigger a refetch to sync with server (handles network failure after successful insert)
+          setTimeout(() => void refetchMessages(), 500);
           toast.error(result.error);
           setInput(content);
         } else if (result && "success" in result && result.id) {
@@ -583,7 +652,8 @@ export function ChatConversation({
           );
         }
       } catch {
-        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        // On network error, trigger a refetch to sync with server
+        setTimeout(() => void refetchMessages(), 500);
         toast.error("GIF could not be sent.");
         setInput(content);
       } finally {
@@ -592,7 +662,7 @@ export function ChatConversation({
         void markConversationRead(conversationId);
       }
     },
-    [input, isSending, queued.length, voice, conversationId, currentUserId],
+    [input, queued.length, voice, conversationId, currentUserId, refetchMessages],
   );
 
   const handleStickerSelect = useCallback(
@@ -676,7 +746,8 @@ export function ChatConversation({
         ]);
 
         if (result && "error" in result && result.error) {
-          setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+          // On error, trigger a refetch to sync with server (handles network failure after successful insert)
+          setTimeout(() => void refetchMessages(), 500);
           toast.error(result.error);
           setInput(content);
         } else if (result && "success" in result && result.id) {
@@ -694,7 +765,8 @@ export function ChatConversation({
           );
         }
       } catch {
-        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        // On network error, trigger a refetch to sync with server
+        setTimeout(() => void refetchMessages(), 500);
         toast.error("Sticker could not be sent.");
         setInput(content);
       } finally {
@@ -703,7 +775,7 @@ export function ChatConversation({
         void markConversationRead(conversationId);
       }
     },
-    [input, isSending, queued.length, voice, conversationId, currentUserId],
+    [input, queued.length, voice, conversationId, currentUserId, refetchMessages],
   );
 
   // Voice helpers
@@ -1114,9 +1186,11 @@ export function ChatConversation({
         ) : null}
 
         {participant?.avatar_url ? (
-          <img
+          <Image
             src={participant.avatar_url}
             alt=""
+            width={40}
+            height={40}
             className="h-10 w-10 shrink-0 rounded-full object-cover shadow-[0_0_20px_-8px_rgba(109,109,255,0.5)]"
           />
         ) : (
@@ -1159,7 +1233,7 @@ export function ChatConversation({
           </div>
           <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1">
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
-            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-accent-300">Private</span>
+            <span className="text-[10px] font-medium uppercase tracking-normal text-accent-300">Private</span>
           </div>
         </div>
       </header>
@@ -1197,7 +1271,7 @@ export function ChatConversation({
                 {showDivider && (
                   <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
                     <span aria-hidden className="h-px flex-1 bg-border" />
-                    <span className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-500 backdrop-blur-sm">
+                    <span className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-normal text-ink-500 backdrop-blur-sm">
                       {label}
                     </span>
                     <span aria-hidden className="h-px flex-1 bg-border" />

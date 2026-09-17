@@ -397,7 +397,7 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
           <>
             {recent.length > 0 && (
               <div className="mb-3">
-                <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-widest text-ink-500">Recent</p>
+                <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-normal text-ink-500">Recent</p>
                 <div className="grid grid-cols-8 gap-1">
                   {recent.map((emoji) => (
                     <button
@@ -414,7 +414,7 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
             )}
             {CATEGORIES.filter((c) => c.id === activeCategory).map((cat) => (
               <div key={cat.id}>
-                <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-widest text-ink-500">{cat.label}</p>
+                <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-normal text-ink-500">{cat.label}</p>
                 <div className="grid grid-cols-8 gap-1">
                   {cat.emojis.map((e) => (
                     <button

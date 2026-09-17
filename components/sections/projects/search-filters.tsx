@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
 
-import { Reveal } from "@/components/ui/reveal";
 
 const TECHNOLOGIES = ["All", "Next.js", "TypeScript", "Tailwind CSS", "React Native", "Expo", "Supabase", "PostgreSQL"];
 
@@ -63,7 +62,7 @@ export function SearchFilters() {
   return (
     <section className="relative py-10 sm:py-12 lg:py-16" aria-label="Search and filter projects">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
+        
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
             <div className="relative flex-1">
               <Search
@@ -84,7 +83,7 @@ export function SearchFilters() {
               <Dropdown label="Technology" options={TECHNOLOGIES} value={tech} onChange={setTech} />
             </div>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

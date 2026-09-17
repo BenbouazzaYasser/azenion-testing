@@ -4,6 +4,7 @@ import { EditProfileDialog } from "@/components/sections/profile/edit-profile-di
 import { SettingsPanel } from "./settings-panel";
 import { Github, Linkedin, Sparkles, Building2, UserCircle, Link2 } from "lucide-react";
 import { useTranslation } from "@/components/translation/translation-provider";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface ProfileSheetProps {
   profile: {
@@ -33,7 +34,13 @@ export function ProfileSection({ profile, branch }: ProfileSheetProps) {
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-accent/[0.15] to-accent/[0.05]">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                <OptimizedImage
+                  src={profile.avatar_url}
+                  alt=""
+                  width={64}
+                  height={64}
+                  className="h-full w-full"
+                />
               ) : (
                 <span className="flex h-full w-full items-center justify-center text-xl font-semibold text-accent-300">
                   {(profile.full_name || profile.username || "U").charAt(0).toUpperCase()}
@@ -122,7 +129,7 @@ function SummaryRow({
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <h3 className="text-[11px] font-semibold uppercase tracking-widest text-ink-500">{label}</h3>
+        <h3 className="text-[11px] font-semibold uppercase tracking-normal text-ink-500">{label}</h3>
         <div className="mt-1.5 text-sm leading-relaxed">{children}</div>
       </div>
     </div>

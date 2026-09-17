@@ -60,7 +60,7 @@ export default function PrivacyPage() {
       <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <div className="relative mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
-          <p className="text-sm font-medium uppercase tracking-wider text-accent-400">
+          <p className="text-sm font-medium uppercase tracking-normal text-accent-400">
             Legal
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink-50 sm:text-4xl">
