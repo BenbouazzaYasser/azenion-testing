@@ -49,7 +49,7 @@ export function OptimizedImage({
       className={cn("object-cover", className)}
       priority={priority}
       fill={fill}
-      sizes={sizes ?? (fill ? "100%" : `${width}px`)}
+      sizes={sizes ?? (fill ? "100vw" : `${width}px`)}
       style={fill ? { objectFit: "cover" } : undefined}
     />
   );

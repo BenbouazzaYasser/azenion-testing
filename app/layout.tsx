@@ -58,6 +58,9 @@ const plexMono = IBM_Plex_Mono({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Required for env(safe-area-inset-*) to report real insets on notched
+  // iPhones. Never add maximumScale/user-scalable=no (accessibility).
+  viewportFit: "cover",
   themeColor: "#070A14",
 };
 

@@ -17,7 +17,13 @@ export function PageHero({ variant, slug, atmosphere = true, children }: PageHer
     >
       {atmosphere ? <AmbientBg /> : null}
       <BackgroundInfinity variant={variant} />
-      {atmosphere ? <BackgroundAtmosphere /> : null}
+      {/* One ambient layer on mobile (three on desktop): full-page blur
+          stacks re-composite on every mobile scroll tick. */}
+      {atmosphere ? (
+        <div className="hidden sm:contents">
+          <BackgroundAtmosphere />
+        </div>
+      ) : null}
 
       <div className="relative mx-auto max-w-[920px] px-5 pb-16 pt-12 text-center sm:px-8 sm:pt-14 lg:pb-24 lg:pt-16">
         {children}

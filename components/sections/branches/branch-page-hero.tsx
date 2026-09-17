@@ -55,7 +55,6 @@ export function BranchPageHero({
             src={branch.logo_url}
             alt=""
             fill
-            priority
             sizes="100vw"
             className="h-full w-full object-cover opacity-40"
           />

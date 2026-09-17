@@ -12,7 +12,7 @@ export async function Hero() {
       {/* On mobile the artwork sits behind the copy as ambient atmosphere
           rather than a competing second column — the brief for "intentionally
           designed" mobile, not a resized desktop layout. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px] opacity-40 lg:hidden">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px] overflow-hidden opacity-40 lg:hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(40,40,255,0.20),transparent_36%),radial-gradient(circle_at_75%_25%,rgba(255,255,255,0.08),transparent_28%)]" />
         <InfinityHeroArt idPrefix="hero-mobile" className="h-full w-full scale-[1.35]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-void-950/40 to-void-950" />
@@ -30,7 +30,7 @@ export async function Hero() {
           </div>
 
           <h1
-            className="mt-6 animate-fade-in-up text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 opacity-0 motion-reduce:opacity-100 [animation-delay:90ms] sm:text-[3.4rem] lg:text-[3.75rem]"
+            className="mt-6 animate-fade-in-up text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 opacity-0 motion-reduce:opacity-100 max-sm:animate-none max-sm:opacity-100 [animation-delay:90ms] sm:text-[3.4rem] lg:text-[3.75rem]"
           >
             {await serverT("home.heroTitleA")}
             <br />
@@ -38,20 +38,20 @@ export async function Hero() {
             {await serverT("home.heroImpact")}
           </h1>
 
-          <p className="mt-6 animate-fade-in-up text-balance text-[1.05rem] leading-relaxed text-ink-400 opacity-0 motion-reduce:opacity-100 [animation-delay:180ms]">
+          <p className="mt-6 animate-fade-in-up text-balance text-[1.05rem] leading-relaxed text-ink-400 opacity-0 motion-reduce:opacity-100 max-sm:animate-none max-sm:opacity-100 [animation-delay:180ms]">
             {await serverT("home.heroSubA")}
             <br className="hidden sm:block" />
             {await serverT("home.heroSubB")}
           </p>
 
-          <div className="mt-8 flex animate-fade-in-up flex-col gap-3 opacity-0 motion-reduce:opacity-100 [animation-delay:270ms] sm:flex-row sm:items-center">
+          <div className="mt-8 flex animate-fade-in-up flex-col gap-3 opacity-0 motion-reduce:opacity-100 max-sm:animate-none max-sm:opacity-100 [animation-delay:270ms] sm:flex-row sm:items-center">
             <DashboardButton size="lg" label={await serverT("home.heroJoinCta")} />
             <Button variant="secondary" size="lg" asChild>
               <Link href="/projects">{await serverT("home.exploreProjects")}</Link>
             </Button>
           </div>
 
-          <div className="animate-fade-in-up motion-reduce:opacity-100 [animation-delay:360ms]">
+          <div className="animate-fade-in-up motion-reduce:opacity-100 max-sm:animate-none max-sm:opacity-100 [animation-delay:360ms]">
             <div className="relative mt-6 rounded-2xl card-surface-soft p-5">
               <p className="text-sm font-medium text-ink-50">{await serverT("home.heroQuickOverview")}</p>
               <p className="mt-2 text-sm leading-6 text-ink-400">

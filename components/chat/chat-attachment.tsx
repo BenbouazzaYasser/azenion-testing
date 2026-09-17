@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { FileText, Download, AlertCircle, Loader2, Image as ImageIcon, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatChatFileSize } from "@/lib/chat-media";
@@ -61,7 +62,7 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
       className={cn(
         "flex items-center gap-3 rounded-2xl px-3 py-2.5",
         isOwn ? "bg-black/10" : "bg-surface/70",
-        "min-w-[220px] max-w-[260px]",
+        "min-w-0 w-full max-w-[260px] sm:w-auto sm:min-w-[220px]",
       )}
     >
       <button
@@ -121,6 +122,9 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
 export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
   const [imgError, setImgError] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
+  // Natural aspect once decoded: reserves exact space (no CLS) on re-renders
+  // and lets next/image serve a 260px variant instead of full resolution.
+  const [imgRatio, setImgRatio] = useState<string | null>(null);
 
   const isSticker = attachment.type === "sticker";
   const isAudio = attachment.type === "audio";
@@ -191,6 +195,7 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
           onLoad={() => setImgLoading(false)}
           onError={() => setImgLoading(false)}
           loading="lazy"
+          decoding="async"
         />
       </div>
     );
@@ -202,9 +207,9 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
 
   if (isImage && attachment.signedUrl && !imgError) {
     return (
-      <div className="overflow-hidden rounded-xl">
+      <div className="max-w-[260px] overflow-hidden rounded-xl">
         {imgLoading && (
-          <div className="flex h-32 w-48 items-center justify-center bg-surface/50">
+          <div className="flex h-32 w-48 max-w-full items-center justify-center bg-surface/50">
             <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
           </div>
         )}
@@ -212,14 +217,21 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
           href={attachment.signedUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block"
+          className={cn("relative block w-full", imgLoading && "hidden")}
+          style={imgRatio ? { aspectRatio: imgRatio, maxHeight: 256 } : undefined}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={attachment.signedUrl}
             alt={attachment.filename ?? "Image"}
-            className={cn("max-h-64 max-w-[260px] object-cover transition-opacity", imgLoading ? "hidden" : "block", "hover:opacity-90")}
-            onLoad={() => setImgLoading(false)}
+            fill
+            sizes="260px"
+            className="object-cover transition-opacity hover:opacity-90"
+            onLoadingComplete={(img) => {
+              if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                setImgRatio(`${img.naturalWidth} / ${img.naturalHeight}`);
+              }
+              setImgLoading(false);
+            }}
             onError={() => {
               setImgError(true);
               setImgLoading(false);
@@ -310,7 +322,7 @@ export function QueuedAttachmentCard({
         <button
           type="button"
           onClick={onRemove}
-          className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500"
+          className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500"
           aria-label="Remove attachment"
         >
           ×

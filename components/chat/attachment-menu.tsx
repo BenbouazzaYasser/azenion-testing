@@ -15,7 +15,7 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
     <div
       role="menu"
       aria-label="Attachment options"
-      className="flex items-center gap-1.5"
+      className="flex items-center gap-2.5"
     >
       <button
         type="button"
@@ -27,7 +27,7 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
           onSelectImages();
           setTimeout(onClose, 0);
         }}
-        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
         <ImageIcon size={16} />
       </button>
@@ -40,7 +40,7 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
           onSelectFiles();
           setTimeout(onClose, 0);
         }}
-        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
         <FileText size={16} />
       </button>
@@ -53,7 +53,7 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
           onSelectGif();
           setTimeout(onClose, 0);
         }}
-        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
         <Film size={16} />
       </button>
@@ -66,7 +66,7 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
           onSelectSticker();
           setTimeout(onClose, 0);
         }}
-        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
         <StickerIcon size={16} />
       </button>

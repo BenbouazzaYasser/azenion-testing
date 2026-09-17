@@ -52,7 +52,7 @@ export function ShareButton({ postId }: ShareButtonProps) {
       aria-label={status === "copied" ? t("feed.linkCopied") : t("feed.share")}
       title={status === "copied" ? t("feed.copied") : t("feed.share")}
       className={cn(
-        "flex items-center gap-1.5 rounded-full text-xs transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+        "flex min-h-[44px] items-center gap-1.5 rounded-full px-2.5 py-2 text-xs transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
         status === "copied"
           ? "text-accent-400 hover:text-accent-300"
           : status === "failed"

@@ -50,7 +50,7 @@ export default async function ConversationPage({ params }: Props) {
   return (
     <>
       <Navbar />
-      <main id="main" className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
+      <main id="main" className="relative flex h-dvh flex-col overflow-hidden pt-[96px] sm:pt-[104px]">
         <ChatLayout conversations={conversations} currentUserId={user.id}>
           <Suspense
             fallback={

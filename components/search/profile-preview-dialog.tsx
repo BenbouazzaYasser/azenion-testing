@@ -89,7 +89,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
           >
             <X size={15} />
           </button>

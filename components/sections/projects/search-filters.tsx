@@ -71,11 +71,15 @@ export function SearchFilters() {
                 aria-hidden="true"
               />
               <input
-                type="text"
+                type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search projects..."
-                className="w-full rounded-xl bg-surface py-2.5 pl-10 pr-4 text-sm text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 hover:border-accent-400/40 focus:border-accent-400/60 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                enterKeyHint="search"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                className="w-full rounded-xl bg-surface py-2.5 pl-10 pr-4 text-base text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 hover:border-accent-400/40 focus:border-accent-400/60 focus:outline-none focus:ring-1 focus:ring-accent-400/30 sm:text-sm"
               />
             </div>
 

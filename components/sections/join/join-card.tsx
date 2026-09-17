@@ -10,7 +10,7 @@ import { FormField } from "@/components/ui/form-field";
 import { signUp } from "@/actions/auth.actions";
 
 const INPUT_CLASS =
-  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-base text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30 sm:text-[0.95rem]";
 
 export function JoinCard() {
   const [name, setName] = useState("");
@@ -117,6 +117,8 @@ export function JoinCard() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={INPUT_CLASS}
+                  autoComplete="name"
+                  enterKeyHint="next"
                   required
                 />
               </FormField>
@@ -130,6 +132,11 @@ export function JoinCard() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className={INPUT_CLASS}
+                  autoComplete="username"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="next"
                   required
                 />
               </FormField>
@@ -143,6 +150,9 @@ export function JoinCard() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={INPUT_CLASS}
+                  autoComplete="email"
+                  inputMode="email"
+                  enterKeyHint="next"
                   required
                 />
               </FormField>
@@ -157,12 +167,14 @@ export function JoinCard() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={INPUT_CLASS + " pr-11"}
+                    autoComplete="new-password"
+                    enterKeyHint="next"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 transition-colors hover:text-ink-400"
+                    className="absolute right-1 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-ink-600 transition-colors hover:text-ink-400"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -184,12 +196,14 @@ export function JoinCard() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className={INPUT_CLASS + " pr-11"}
+                    autoComplete="new-password"
+                    enterKeyHint="go"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 transition-colors hover:text-ink-400"
+                    className="absolute right-1 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-ink-600 transition-colors hover:text-ink-400"
                     aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
                   >
                     {showConfirm ? <EyeOff size={17} /> : <Eye size={17} />}

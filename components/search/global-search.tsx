@@ -219,7 +219,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
           type="button"
           onClick={openPalette}
           aria-label="Search Azenion (Ctrl+K)"
-          className="group relative flex h-10 w-10 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+          className="group relative flex h-11 w-11 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
           <Search size={18} aria-hidden />
           <span
@@ -293,8 +293,12 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                     onChange={(e) => handleChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Search users, teams, projects, branches…"
-                    className="min-w-0 flex-1 bg-transparent text-[15px] text-ink-50 placeholder:text-ink-600 outline-none"
+                    className="min-w-0 flex-1 bg-transparent text-base text-ink-50 placeholder:text-ink-600 outline-none sm:text-[15px]"
                     aria-label="Search Azenion"
+                    enterKeyHint="search"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellCheck={false}
                   />
                   {loading ? (
                     <svg className="h-4 w-4 animate-spin text-accent-300" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -302,7 +306,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" />
                     </svg>
                   ) : (
-                    <Button variant="ghost" size="sm" className="h-10 w-10 p-0" onClick={closePalette} aria-label="Close">
+                    <Button variant="ghost" size="sm" className="h-11 w-11 p-0" onClick={closePalette} aria-label="Close">
                       <X size={17} />
                     </Button>
                   )}

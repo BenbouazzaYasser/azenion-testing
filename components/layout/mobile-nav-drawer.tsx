@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -94,7 +93,6 @@ export function MobileNavDrawer({
   hasChatUnread,
 }: MobileNavDrawerProps) {
   const { t } = useTranslation();
-  const [mounted, setMounted] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
 
   const labelOf = (href: string) => t(NAV_LABEL_KEYS[href] ?? "nav.home");
@@ -105,28 +103,14 @@ export function MobileNavDrawer({
     return pathname.startsWith(href) || (pendingNext?.startsWith(href) ?? false);
   };
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  if (!open && !mounted) return null;
-
+  // Visibility + body scroll lock are owned by the vanilla controller
+  // (components/layout/mobile-nav-vanilla.ts) via data-open, so the drawer
+  // works before React hydrates. `open` here only mirrors that state for
+  // focus management and SSR markup alignment.
   return (
     <div
+      id="mobile-nav-drawer"
+      data-open={open ? "true" : "false"}
       className="fixed inset-0 z-[70] xl:hidden"
       role="dialog"
       aria-modal="true"
@@ -135,29 +119,26 @@ export function MobileNavDrawer({
       <button
         type="button"
         aria-label="Close navigation"
-        className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-300"
-        style={{ opacity: mounted ? 1 : 0 }}
+        data-mobile-nav-close
+        className="mobile-nav-backdrop absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
       />
       <div
         ref={dialogFocusRef}
         tabIndex={-1}
-        className="absolute inset-y-0 left-0 flex w-[85%] max-w-[330px] flex-col overflow-hidden bg-glass shadow-dropdown backdrop-blur-2xl transition-all duration-300 ease-premium focus:outline-none"
-        style={{
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? "translateX(0)" : "translateX(-100%)",
-        }}
+        className="mobile-nav-panel absolute inset-y-0 left-0 flex w-[85%] max-w-[330px] flex-col overflow-hidden bg-glass shadow-dropdown backdrop-blur-2xl transition-all duration-300 ease-premium focus:outline-none"
       >
-        <div className="flex shrink-0 items-center gap-1 border-b border-border px-3 py-2.5">
+        <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2.5">
           {user ? <NotificationCenter /> : null}
           <GlobalSearch variant="mobile" />
           <LightModeButton />
           <button
             type="button"
             onClick={onClose}
+            data-mobile-nav-close
             aria-label="Close navigation"
             className={cn(
-              "-mr-1 rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium",
+              "-mr-1 flex h-11 w-11 items-center justify-center rounded-full p-2.5 text-ink-400 transition-all duration-300 ease-premium",
               "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
             )}
           >
@@ -166,7 +147,7 @@ export function MobileNavDrawer({
         </div>
 
         <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <div className="flex flex-col gap-1 p-4 pb-16">
+          <div className="flex flex-col gap-1 p-4 pb-[calc(4rem+env(safe-area-inset-bottom))]">
             {NAV_LINKS.map((link) => {
               const active = isActive(link.href);
               return (

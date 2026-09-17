@@ -70,15 +70,17 @@ export function PageAtmosphere({ className }: PageAtmosphereProps) {
 
       <div className="atmosphere-blob absolute left-[20%] top-[10%] h-80 w-80 rounded-full bg-accent/10 blur-[140px]" />
       <div className="atmosphere-blob absolute right-[12%] top-[32%] h-72 w-72 rounded-full bg-accent-400/10 blur-[120px]" />
-      <div className="atmosphere-blob absolute left-[15%] top-[55%] h-80 w-80 rounded-full bg-accent/10 blur-[140px]" />
-      <div className="atmosphere-blob absolute right-[18%] top-[78%] h-72 w-72 rounded-full bg-accent-400/10 blur-[120px]" />
-      <div className="atmosphere-blob absolute left-[45%] top-[40%] h-96 w-96 rounded-full bg-accent-400/[0.06] blur-[160px]" />
-      <div className="atmosphere-blob absolute left-[5%] top-[88%] h-72 w-72 rounded-full bg-accent/10 blur-[120px]" />
+      {/* Mobile GPUs re-composite every fixed blur layer per scroll tick: keep
+          2 blobs below md, full set on desktop. */}
+      <div className="atmosphere-blob absolute left-[15%] top-[55%] hidden h-80 w-80 rounded-full bg-accent/10 blur-[140px] md:block" />
+      <div className="atmosphere-blob absolute right-[18%] top-[78%] hidden h-72 w-72 rounded-full bg-accent-400/10 blur-[120px] md:block" />
+      <div className="atmosphere-blob absolute left-[45%] top-[40%] hidden h-96 w-96 rounded-full bg-accent-400/[0.06] blur-[160px] md:block" />
+      <div className="atmosphere-blob absolute left-[5%] top-[88%] hidden h-72 w-72 rounded-full bg-accent/10 blur-[120px] md:block" />
 
       {CURRENTS.map((current, i) => (
         <div
           key={i}
-          className={`${styles.current} ${current.theme}`}
+          className={`${styles.current} ${current.theme} max-md:[animation:none]`}
           style={current.style}
         />
       ))}

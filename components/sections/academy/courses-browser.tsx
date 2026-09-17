@@ -347,7 +347,7 @@ function CourseCard({
                 aria-label={t("academy.deleteCourseAria")}
                 title={confirming ? t("academy.clickAgain") : t("academy.deleteCourseAria")}
                 className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
+                  "flex h-11 w-11 items-center justify-center rounded-full border transition-colors",
                   confirming
                     ? "border-red-500/50 bg-red-500/10 text-red-300"
                     : "border-border-strong text-ink-400 hover:border-red-500/50 hover:text-red-300"

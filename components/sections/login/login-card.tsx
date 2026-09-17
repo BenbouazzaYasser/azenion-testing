@@ -10,7 +10,7 @@ import { FormField } from "@/components/ui/form-field";
 import { signIn } from "@/actions/auth.actions";
 
 const INPUT_CLASS =
-  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-base text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30 sm:text-[0.95rem]";
 
 export function LoginCard({ next, error: initialError }: { next?: string; error?: string }) {
   const [identifier, setIdentifier] = useState("");
@@ -78,6 +78,10 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
                   onChange={(e) => setIdentifier(e.target.value)}
                   className={INPUT_CLASS}
                   autoComplete="username"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="next"
                   required
                 />
               </FormField>
@@ -92,12 +96,14 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={INPUT_CLASS + " pr-11"}
+                    autoComplete="current-password"
+                    enterKeyHint="go"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 transition-colors hover:text-ink-400"
+                    className="absolute right-1 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-ink-600 transition-colors hover:text-ink-400"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -106,12 +112,12 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
               </FormField>
 
               <div className="flex items-center">
-                <label className="flex cursor-pointer items-center gap-2">
+                <label className="flex min-h-[44px] cursor-pointer items-center gap-2 py-1">
                   <input
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-4 w-4 rounded border-border-strong bg-surface text-accent-400 accent-accent-400 transition-colors focus:ring-accent-400/30"
+                    className="h-5 w-5 rounded border-border-strong bg-surface text-accent-400 accent-accent-400 transition-colors focus:ring-accent-400/30"
                   />
                   <span className="text-sm text-ink-400">Remember me</span>
                 </label>

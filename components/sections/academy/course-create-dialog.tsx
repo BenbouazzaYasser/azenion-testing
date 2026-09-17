@@ -174,7 +174,7 @@ export function CourseCreateDialog() {
                     type="button"
                     onClick={() => setOpen(false)}
                     aria-label="Close"
-                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="-mr-1.5 -mt-1.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -337,7 +337,7 @@ export function CourseCreateDialog() {
                             >
                               <span
                                 className={cn(
-                                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border",
+                                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border",
                                   selected
                                     ? "border-accent-400/50 bg-accent/10 text-accent-300"
                                     : "border-border-strong bg-surface text-ink-400"

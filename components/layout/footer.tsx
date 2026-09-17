@@ -101,7 +101,7 @@ export async function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                     aria-label={label}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface text-ink-400 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-accent-400"
+                    className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface text-ink-400 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-accent-400"
                   >
                     <Icon size={16} />
                   </a>

@@ -1169,17 +1169,17 @@ export function ChatConversation({
               "radial-gradient(circle at 22% 0%, rgba(40,40,255,0.10), transparent 42%), radial-gradient(circle at 88% 92%, rgba(109,109,255,0.08), transparent 40%)",
           }}
         />
-        <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-accent/[0.06] blur-[120px]" />
-        <div className="absolute -right-20 bottom-20 h-80 w-80 rounded-full bg-accent-glow/[0.05] blur-[130px]" />
+        <div className="absolute -left-24 top-12 hidden h-72 w-72 rounded-full bg-accent/[0.06] blur-[120px] sm:block" />
+        <div className="absolute -right-20 bottom-20 hidden h-80 w-80 rounded-full bg-accent-glow/[0.05] blur-[130px] sm:block" />
       </div>
 
-      <header className="relative z-10 flex shrink-0 items-center gap-3 border-0 bg-void-900/50 px-4 py-3 backdrop-blur-xl sm:px-6">
+      <header className="relative z-10 flex shrink-0 items-center gap-3 border-0 bg-void-900/90 px-4 py-3 sm:bg-void-900/50 sm:px-6 md:backdrop-blur-xl">
         {mobileConversations ? (
           <button
             type="button"
             onClick={mobileConversations.open}
             aria-label="Open conversations"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
           >
             <Menu size={18} />
           </button>
@@ -1208,15 +1208,15 @@ export function ChatConversation({
           )}
         </div>
 
-        <div className="ml-auto flex items-center gap-1.5 shrink-0">
-          <div className="flex items-center gap-1.5">
+        <div className="ml-auto flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               disabled={!peer?.id || !!amBlocked}
               onClick={() => requestCall(conversationId, "audio", peer)}
               aria-label={`Start a voice call with ${participantName}`}
               title={`Start a voice call with ${participantName}`}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
             >
               <Phone size={16} />
             </button>
@@ -1226,7 +1226,7 @@ export function ChatConversation({
               onClick={() => requestCall(conversationId, "video", peer)}
               aria-label={`Start a video call with ${participantName}`}
               title={`Start a video call with ${participantName}`}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
             >
               <Video size={16} />
             </button>
@@ -1321,7 +1321,7 @@ export function ChatConversation({
         </div>
       )}
 
-      <div className="relative z-10 shrink-0 border-0 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4 sm:pt-3">
+      <div className="relative z-10 shrink-0 border-0 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2.5 sm:px-4 sm:pb-4 sm:pt-3 md:backdrop-blur-xl">
         {amBlocked ? (
           <div
             role="status"
@@ -1411,17 +1411,17 @@ export function ChatConversation({
               </div>
             )}
             {showGifPicker && (
-              <div className="absolute bottom-full left-12 z-30 mb-2 sm:left-16">
+              <div className="absolute bottom-full left-0 z-30 mb-2 max-w-[calc(100vw-3rem)] sm:left-16">
                 <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
               </div>
             )}
             {showStickerPicker && (
-              <div className="absolute bottom-full left-24 z-30 mb-2 sm:left-32">
+              <div className="absolute bottom-full left-0 z-30 mb-2 max-w-[calc(100vw-3rem)] sm:left-32">
                 <StickerPicker onSelect={handleStickerSelect} onClose={() => setShowStickerPicker(false)} />
               </div>
             )}
             <form
-              className="flex items-center gap-1.5 sm:gap-2"
+              className="flex items-center gap-2.5"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSend();
@@ -1484,7 +1484,7 @@ export function ChatConversation({
                   }}
                   disabled={!!voice.blob || voice.isRecording}
                   className={cn(
-                    "h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                    "h-11 w-11 shrink-0 rounded-full p-0 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
                     showAttachmentMenu
                       ? "bg-accent text-white shadow-md rotate-45"
                       : "bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border",
@@ -1508,7 +1508,7 @@ export function ChatConversation({
                   }
                 }}
                 disabled={!!voice.blob || voice.isRecording}
-                className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border disabled:opacity-50"
+                className="h-11 w-11 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border disabled:opacity-50"
               >
                 <Smile size={17} />
               </Button>
@@ -1527,14 +1527,15 @@ export function ChatConversation({
                 }}
                 disabled={!!voice.blob || voice.isRecording}
                 rows={1}
-                className="min-w-0 flex-1 resize-none rounded-full bg-surface px-4 py-2.5 text-sm leading-5 text-ink-50 placeholder:text-ink-500 border-0 shadow-sm ring-1 ring-border focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent-400/40 disabled:opacity-50 max-h-24 overflow-y-auto"
+                enterKeyHint="send"
+                className="min-w-0 flex-1 resize-none rounded-full bg-surface px-4 py-2.5 text-base leading-5 text-ink-50 placeholder:text-ink-500 border-0 shadow-sm ring-1 ring-border focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent-400/40 disabled:opacity-50 max-h-24 overflow-y-auto sm:text-sm"
               />
               {canSend ? (
                 <Button
                   type="submit"
                   aria-label="Send message"
                   disabled={isSending}
-                  className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0"
+                  className="h-11 w-11 shrink-0 rounded-full p-0"
                 >
                   <Send size={16} />
                 </Button>
@@ -1545,7 +1546,7 @@ export function ChatConversation({
                   aria-label="Record voice message"
                   onClick={handleMicClick}
                   disabled={!voice.isSupported || isSending}
-                  className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover shadow-sm ring-1 ring-border disabled:opacity-50"
+                  className="h-11 w-11 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover shadow-sm ring-1 ring-border disabled:opacity-50"
                   title={!voice.isSupported ? "Voice not supported in this browser" : "Record voice message"}
                 >
                   <Mic size={17} />

@@ -160,8 +160,10 @@ export function InfinityHeroArt({ className, idPrefix = "hero", variant = "hero"
         filter={`url(#${blurLg})`}
       />
 
-      {/* Drifting star + dust field, gently fading toward the canvas edges */}
-      <g mask={`url(#${maskId})`} className={cfg.particleAnim} style={{ transformOrigin: "400px 260px" }}>
+      {/* Drifting star + dust field, gently fading toward the canvas edges.
+          Hidden below sm: ~128 individually-animated nodes + blur passes are
+          CPU-rasterized on phones; the glow paths below carry the mobile look. */}
+      <g mask={`url(#${maskId})`} className={`${cfg.particleAnim} max-sm:hidden`} style={{ transformOrigin: "400px 260px" }}>
         <ParticleField points={STARFIELD} prefix={`${idPrefix}-star`} />
         <ParticleField points={DUST_TRAIL} prefix={`${idPrefix}-dust`} />
       </g>

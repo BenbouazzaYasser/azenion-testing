@@ -57,9 +57,9 @@ export default function PrivacyPage() {
   return (
     <>
       <Navbar />
-      <main id="main" className="relative overflow-hidden">
+      <main id="main" className="relative overflow-hidden pt-[104px] sm:pt-[120px]">
         <PageAtmosphere />
-        <div className="relative mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24 lg:px-12">
+        <div className="relative mx-auto max-w-3xl px-5 pb-16 pt-4 sm:px-8 sm:pb-24 lg:px-12">
           <p className="text-sm font-medium uppercase tracking-normal text-accent-400">
             Legal
           </p>

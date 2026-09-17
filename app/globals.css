@@ -469,3 +469,30 @@
   background-color: rgb(var(--surface-hover));
   color: rgb(var(--ink-50));
 }
+
+/* Mobile nav drawer — visibility is owned by the vanilla controller
+   (components/layout/mobile-nav-vanilla.ts) via data-open, so the menu
+   works before React hydrates. Transitions come from the Tailwind
+   transition utilities on the backdrop/panel elements. */
+#mobile-nav-drawer {
+  visibility: hidden;
+  transition: visibility 0s linear 0.3s;
+}
+#mobile-nav-drawer[data-open="true"] {
+  visibility: visible;
+  transition-delay: 0s;
+}
+#mobile-nav-drawer .mobile-nav-backdrop {
+  opacity: 0;
+}
+#mobile-nav-drawer[data-open="true"] .mobile-nav-backdrop {
+  opacity: 1;
+}
+#mobile-nav-drawer .mobile-nav-panel {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+#mobile-nav-drawer[data-open="true"] .mobile-nav-panel {
+  opacity: 1;
+  transform: translateX(0);
+}

@@ -114,6 +114,9 @@ export function AccountSection({
                   }}
                   placeholder="you@example.com"
                   className={inputClass}
+                  autoComplete="email"
+                  inputMode="email"
+                  enterKeyHint="done"
                 />
               </FormField>
               <Button type="submit" variant="secondary" size="sm" className="shrink-0" disabled={!emailDirty || isPendingEmail}>
@@ -138,7 +141,7 @@ export function AccountSection({
             </div>
           </div>
           <form onSubmit={handleUsername} className="flex w-full sm:w-auto items-center gap-2" noValidate>
-            <span className="text-ink-500" aria-hidden>@</span>
+            <span className="shrink-0 text-ink-500" aria-hidden>@</span>
             <input
               name="username"
               aria-label={t("settings.username")}
@@ -147,10 +150,15 @@ export function AccountSection({
                 setUsernameValue(e.target.value);
                 registerDirty();
               }}
-              className={`${inputClass} w-full sm:w-40`}
+              className={`${inputClass} min-w-0 flex-1 sm:w-40 sm:flex-none`}
               maxLength={20}
+              autoComplete="username"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="done"
             />
-            <Button type="submit" variant="secondary" size="sm" disabled={!usernameDirty || isPendingUsername}>
+            <Button type="submit" variant="secondary" size="sm" className="shrink-0" disabled={!usernameDirty || isPendingUsername}>
               {isPendingUsername ? t("settings.usernameSaving") : t("settings.usernameSave")}
             </Button>
           </form>

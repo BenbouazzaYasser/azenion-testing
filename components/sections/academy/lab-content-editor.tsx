@@ -415,7 +415,7 @@ function EvidenceEditor({ block, onChange }: { block: DraftEvidence; onChange: (
               type="button"
               onClick={() => removeItem(item.uid)}
               aria-label="Remove evidence item"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-500 hover:bg-red-500/10 hover:text-red-300"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-500 hover:bg-red-500/10 hover:text-red-300"
             >
               <Trash2 size={13} />
             </button>
@@ -450,7 +450,7 @@ function HintsEditor({ hints, onChange }: { hints: string[]; onChange: (hints: s
               type="button"
               onClick={() => onChange(hints.filter((_, hi) => hi !== i))}
               aria-label="Remove hint"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-500 hover:bg-red-500/10 hover:text-red-300"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-500 hover:bg-red-500/10 hover:text-red-300"
             >
               <Trash2 size={13} />
             </button>
@@ -532,7 +532,7 @@ function QcmEditor({ block, onChange }: { block: DraftQcm; onChange: (b: DraftBl
                 type="button"
                 onClick={() => removeOption(option.uid)}
                 aria-label="Remove option"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-500 hover:bg-red-500/10 hover:text-red-300"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-500 hover:bg-red-500/10 hover:text-red-300"
               >
                 <Trash2 size={13} />
               </button>
@@ -609,7 +609,7 @@ function TextAnswerEditor({ block, onChange }: { block: DraftTextAnswer; onChang
                       type="button"
                       onClick={() => onChange({ ...block, accepted: block.accepted.filter((_, ai) => ai !== i) })}
                       aria-label="Remove accepted answer"
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-500 hover:bg-red-500/10 hover:text-red-300"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-500 hover:bg-red-500/10 hover:text-red-300"
                     >
                       <Trash2 size={13} />
                     </button>

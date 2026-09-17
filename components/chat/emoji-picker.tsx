@@ -345,12 +345,13 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
       <div className="shrink-0 border-b border-border/50 p-2">
         <input
           autoFocus
-          type="text"
+          type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search emoji…"
           aria-label="Search emoji"
-          className="w-full rounded-full bg-surface px-3 py-2 text-sm text-ink-50 placeholder:text-ink-500 outline-none focus:ring-2 focus:ring-accent-400/40"
+          enterKeyHint="search"
+          className="w-full rounded-full bg-surface px-3 py-2 text-base text-ink-50 placeholder:text-ink-500 outline-none focus:ring-2 focus:ring-accent-400/40 sm:text-sm"
         />
       </div>
 
@@ -364,7 +365,7 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
               aria-label={cat.label}
               aria-pressed={activeCategory === cat.id}
               className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-base transition-colors",
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base transition-colors",
                 activeCategory === cat.id ? "bg-accent text-white" : "bg-surface hover:bg-surface-hover text-ink-600",
               )}
             >
@@ -385,7 +386,7 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
                   key={e.emoji + e.name}
                   type="button"
                   onClick={() => handleSelect(e.emoji)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-xl hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg text-xl hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                   aria-label={e.name}
                 >
                   {e.emoji}
@@ -398,13 +399,13 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
             {recent.length > 0 && (
               <div className="mb-3">
                 <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-normal text-ink-500">Recent</p>
-                <div className="grid grid-cols-8 gap-1">
+                <div className="grid grid-cols-6 gap-1">
                   {recent.map((emoji) => (
                     <button
                       key={`recent-${emoji}`}
                       type="button"
                       onClick={() => handleSelect(emoji)}
-                      className="flex h-9 w-9 items-center justify-center rounded-lg text-xl hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-xl hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                     >
                       {emoji}
                     </button>
@@ -415,13 +416,13 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
             {CATEGORIES.filter((c) => c.id === activeCategory).map((cat) => (
               <div key={cat.id}>
                 <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-normal text-ink-500">{cat.label}</p>
-                <div className="grid grid-cols-8 gap-1">
+                <div className="grid grid-cols-6 gap-1">
                   {cat.emojis.map((e) => (
                     <button
                       key={e.emoji}
                       type="button"
                       onClick={() => handleSelect(e.emoji)}
-                      className="flex h-9 w-9 items-center justify-center rounded-lg text-xl hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-xl hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                       aria-label={e.name}
                     >
                       {e.emoji}

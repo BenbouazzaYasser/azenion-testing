@@ -116,15 +116,15 @@ export function ChannelBubble({
       {isOwn && !isEditing && (
         <div
           className={cn(
-            "absolute right-2 top-0 flex items-center gap-0.5 rounded-lg bg-glass p-0.5 opacity-0 shadow-dropdown backdrop-blur-xl transition-opacity",
-            "group-hover:opacity-100 focus-within:opacity-100",
+            "absolute right-2 top-0 flex items-center gap-2 rounded-lg bg-glass p-1.5 opacity-0 shadow-dropdown backdrop-blur-xl transition-opacity",
+            "group-hover:opacity-100 focus-within:opacity-100 max-sm:opacity-100",
           )}
         >
           <button
             type="button"
             aria-label={t("servers.editMessage")}
             onClick={() => setIsEditing(true)}
-            className="rounded-md p-1.5 text-ink-500 hover:bg-surface-hover hover:text-ink-100"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md p-2 text-ink-500 hover:bg-surface-hover hover:text-ink-100"
           >
             <Pencil size={13} />
           </button>
@@ -132,7 +132,7 @@ export function ChannelBubble({
             type="button"
             aria-label={t("servers.deleteMessage")}
             onClick={handleDelete}
-            className="rounded-md p-1.5 text-ink-500 hover:bg-red-400/10 hover:text-red-300"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md p-2 text-ink-500 hover:bg-red-400/10 hover:text-red-300"
           >
             <Trash2 size={13} />
           </button>

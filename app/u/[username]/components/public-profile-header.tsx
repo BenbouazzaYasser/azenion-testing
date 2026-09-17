@@ -47,14 +47,14 @@ export function PublicProfileHeader({ profile, cardClass }: PublicProfileHeaderP
           </div>
 
           {profile.bio ? (
-            <p className="max-w-xl text-sm leading-relaxed text-ink-200">{profile.bio}</p>
+            <p className="max-w-xl break-words text-sm leading-relaxed text-ink-200 [overflow-wrap:anywhere]">{profile.bio}</p>
           ) : null}
 
           <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs text-ink-400">
             {profile.institution ? (
-              <Badge className="border-ink-500/30 bg-ink-500/10 text-ink-300 h-5 px-2.5 py-0 gap-1.5">
-                <GraduationCap className="h-3 w-3" />
-                {profile.institution}
+              <Badge className="border-ink-500/30 bg-ink-500/10 text-ink-300 h-5 max-w-full px-2.5 py-0 gap-1.5">
+                <GraduationCap className="h-3 w-3 shrink-0" />
+                <span className="truncate">{profile.institution}</span>
               </Badge>
             ) : null}
             <Badge className="border-ink-500/30 bg-ink-500/10 text-ink-300 h-5 px-2.5 py-0 gap-1.5">

@@ -73,7 +73,7 @@ export function AvatarUpload({ avatarUrl, username }: AvatarUploadProps) {
           </div>
         )}
 
-        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-void-950/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-void-950/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-within:opacity-100">
           {loading ? (
             <Loader2 size={20} className="animate-spin text-ink-50" />
           ) : (

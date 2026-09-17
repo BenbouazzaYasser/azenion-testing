@@ -100,7 +100,7 @@ export function ProjectShowcase({ projects }: ProjectShowcaseProps) {
                         </span>
                       </div>
 
-                      <div className="mt-6 flex items-center gap-1.5 text-[13px] font-medium text-accent-400 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                      <div className="mt-6 flex items-center gap-1.5 text-[13px] font-medium text-accent-400 opacity-0 transition-all duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-within:opacity-100 max-sm:opacity-100">
                         View Project
                         <ArrowUpRight size={14} />
                       </div>

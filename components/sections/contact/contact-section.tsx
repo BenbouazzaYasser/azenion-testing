@@ -21,7 +21,7 @@ export function ContactSection() {
   const [message, setMessage] = useState("");
 
   return (
-    <section aria-label="Contact us" className="relative py-20 sm:py-24 lg:py-28">
+      <section aria-label="Contact us" className="relative pb-20 pt-[104px] sm:pb-24 sm:pt-[120px] lg:pb-28">
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12">
         <div className="grid gap-14 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
           <div className="flex flex-col gap-6">
@@ -96,7 +96,9 @@ export function ContactSection() {
                         placeholder="Full Name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                        className="w-full rounded-xl bg-surface px-4 py-3.5 text-base text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30 sm:text-[0.95rem]"
+                        autoComplete="name"
+                        enterKeyHint="next"
                       />
                     </FormField>
 
@@ -107,7 +109,10 @@ export function ContactSection() {
                         placeholder="Email Address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                        className="w-full rounded-xl bg-surface px-4 py-3.5 text-base text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30 sm:text-[0.95rem]"
+                        autoComplete="email"
+                        inputMode="email"
+                        enterKeyHint="next"
                       />
                     </FormField>
 
@@ -118,7 +123,8 @@ export function ContactSection() {
                         placeholder="Subject"
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        className="w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                        className="w-full rounded-xl bg-surface px-4 py-3.5 text-base text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30 sm:text-[0.95rem]"
+                        enterKeyHint="next"
                       />
                     </FormField>
 
@@ -129,7 +135,8 @@ export function ContactSection() {
                         placeholder="Message"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        className="w-full resize-none rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                        className="w-full resize-none rounded-xl bg-surface px-4 py-3.5 text-base text-ink-50 placeholder:text-ink-600 transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30 sm:text-[0.95rem]"
+                        enterKeyHint="send"
                       />
                     </FormField>
 

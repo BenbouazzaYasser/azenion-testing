@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Route, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog } from "lucide-react";
+import { User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Route, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog, Menu, X } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS } from "@/data/nav-links";
@@ -15,6 +15,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useChatUnread } from "@/lib/chat-unread";
 import { LightModeButton } from "@/components/theme/light-mode-button";
 import { MobileNavDrawer } from "@/components/layout/mobile-nav-drawer";
+import {
+  MOBILE_NAV_CHANGE_EVENT,
+  setMobileNavOpen,
+} from "@/components/layout/mobile-nav-vanilla";
 import { useTranslation } from "@/components/translation/translation-provider";
 import type { DictKey } from "@/lib/translation/types";
 
@@ -65,7 +69,14 @@ export function Navbar() {
   const { user, profile, loading, isAdmin } = useUser();
   const { t } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Mirrors the vanilla controller's DOM truth (data-open on
+  // #mobile-nav-drawer) for the toggle icon/aria only. The tap path itself
+  // never goes through React, so the menu works before hydration.
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(
+    () =>
+      typeof document !== "undefined" &&
+      document.getElementById("mobile-nav-drawer")?.dataset.open === "true",
+  );
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -128,8 +139,19 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
+    const sync = () => {
+      setIsMenuOpen(
+        document.getElementById("mobile-nav-drawer")?.dataset.open === "true",
+      );
+    };
+    sync();
+    window.addEventListener(MOBILE_NAV_CHANGE_EVENT, sync);
+    return () => window.removeEventListener(MOBILE_NAV_CHANGE_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
     if (!pathname) return;
-    setIsMenuOpen(false);
+    setMobileNavOpen(false);
     setOpenDropdown(null);
     setIsAdminOpen(false);
     setIsAvatarOpen(false);
@@ -604,20 +626,43 @@ export function Navbar() {
         </div>
       </div>
 
+      <div className="fixed left-4 top-4 z-50 xl:hidden">
+        <Logo
+          withWordmark={false}
+          markSize={44}
+          className="h-16 w-16 justify-center rounded-full ring-1 ring-inset ring-border bg-glass-nav shadow-[0_8px_30px_-15px_rgba(40,40,255,0.35)] transition-all duration-300 ease-premium hover:border-accent-400/40 hover:bg-surface-hover hover:shadow-[0_0_22px_-6px_rgba(109,109,255,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+        />
+      </div>
+
       <button
         type="button"
-        onClick={() => setIsMenuOpen((v) => !v)}
+        data-mobile-nav-toggle
         aria-label={isMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
         aria-expanded={isMenuOpen}
         aria-controls="mobile-nav-drawer"
-        className="fixed right-4 top-4 z-50 flex h-16 w-16 items-center justify-center rounded-full ring-1 ring-inset ring-border bg-glass-nav text-ink-50 shadow-[0_8px_30px_-15px_rgba(40,40,255,0.35)] transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:bg-surface-hover hover:shadow-[0_0_22px_-6px_rgba(109,109,255,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
+        className="fixed right-4 top-4 z-50 flex h-16 w-16 touch-manipulation select-none items-center justify-center rounded-full ring-1 ring-inset ring-border bg-glass-nav text-ink-50 shadow-[0_8px_30px_-15px_rgba(40,40,255,0.35)] transition-all duration-300 ease-premium hover:border-accent-400/40 hover:bg-surface-hover hover:shadow-[0_0_22px_-6px_rgba(109,109,255,0.55)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
       >
-        <Logo withWordmark={false} markSize={44} />
+        <span aria-hidden="true" className="relative flex h-6 w-6 items-center justify-center">
+          <Menu
+            size={24}
+            className={cn(
+              "absolute transition-all duration-300",
+              isMenuOpen ? "rotate-90 scale-50 opacity-0" : "rotate-0 scale-100 opacity-100"
+            )}
+          />
+          <X
+            size={24}
+            className={cn(
+              "absolute transition-all duration-300",
+              isMenuOpen ? "rotate-0 scale-100 opacity-100" : "-rotate-90 scale-50 opacity-0"
+            )}
+          />
+        </span>
       </button>
 
       <MobileNavDrawer
         open={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
+        onClose={() => setMobileNavOpen(false)}
         user={user}
         profile={profile}
         isAdmin={isAdmin}

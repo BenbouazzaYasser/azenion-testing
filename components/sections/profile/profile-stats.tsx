@@ -63,9 +63,10 @@ export function ProfileStats({
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
       {cards.map((card, index) => {
         const Icon = card.icon;
+        const isLastOdd = cards.length % 2 === 1 && index === cards.length - 1;
         const content = (
           <div className={`${cardClass} h-full transition-all duration-300 ease-premium hover:border-accent-400/40`}>
             <Icon className="h-4 w-4 text-accent-400" />
@@ -77,7 +78,7 @@ export function ProfileStats({
         );
 
         return (
-          <div key={card.label} className="h-full">
+          <div key={card.label} className={`h-full${isLastOdd ? " col-span-2 sm:col-span-1" : ""}`}>
             {card.href ? (
               <Link
                 href={card.href}

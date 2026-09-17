@@ -402,7 +402,7 @@ export function BranchFeed({
                   <button
                     type="button"
                     onClick={() => imageInputRef.current?.click()}
-                    className="inline-flex h-9 items-center gap-1.5 text-sm text-ink-400 transition-colors hover:text-accent-400"
+                    className="inline-flex min-h-[44px] items-center gap-1.5 py-2 text-sm text-ink-400 transition-colors hover:text-accent-400"
                   >
                     <ImagePlus size={16} />
                     {t("branches.addImage")}

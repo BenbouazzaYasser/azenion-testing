@@ -198,7 +198,7 @@ export function TeamCard({ team, index }: TeamCardProps) {
             </div>
 
             {/* Footer */}
-            <div className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-accent-400 opacity-0 transition-all duration-300 group-hover:opacity-100">
+            <div className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-accent-400 opacity-0 transition-all duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-within:opacity-100 max-sm:opacity-100">
               {t("teams.viewTeam")}
               <ArrowUpRight size={14} />
             </div>
