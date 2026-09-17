@@ -74,7 +74,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-[1.5rem] panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
+        className="relative z-10 flex max-h-full w-full max-w-2xl flex-col overflow-hidden rounded-2xl panel-gradient shadow-dialog backdrop-blur-2xl transition-all duration-200 ease-premium"
       >
         <div
           aria-hidden
@@ -89,7 +89,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
           >
             <X size={15} />
           </button>

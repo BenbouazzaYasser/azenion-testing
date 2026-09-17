@@ -1,6 +1,5 @@
 import { FlaskConical, GraduationCap, Milestone, Route } from "lucide-react";
 
-import { Reveal } from "@/components/ui/reveal";
 import { serverT } from "@/lib/translation/server";
 
 /**
@@ -33,8 +32,8 @@ export async function RoadmapsComingSoon() {
       aria-labelledby="roadmaps-coming-soon-heading"
     >
       <div className="mx-auto max-w-[880px] px-5 sm:px-8">
-        <Reveal>
-          <div className="relative overflow-hidden rounded-[2rem] card-surface-soft px-8 py-16 text-center shadow-card backdrop-blur-xl sm:py-20">
+        
+          <div className="relative overflow-hidden rounded-2xl card-surface-soft px-8 py-16 text-center shadow-card backdrop-blur-xl sm:py-20">
             <div
               aria-hidden
               className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(244,245,248,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(244,245,248,0.04)_1px,transparent_1px)] bg-[size:32px_32px]"
@@ -45,7 +44,7 @@ export async function RoadmapsComingSoon() {
             />
 
             <div className="relative flex flex-col items-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+              <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
                 {await serverT("academy.roadmapsComingSoon")}
               </span>
 
@@ -80,7 +79,7 @@ export async function RoadmapsComingSoon() {
               </ul>
             </div>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

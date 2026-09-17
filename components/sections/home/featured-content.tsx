@@ -1,6 +1,6 @@
 import { ArrowUpRight, Plus } from "lucide-react";
+import Link from "next/link";
 
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { TeamCard, type TeamCardTeam } from "@/components/sections/teams/team-card";
 import { ProjectCard, type ProjectCardProject } from "@/components/sections/projects/project-card";
@@ -19,27 +19,27 @@ export async function FeaturedContent({ teams, projects }: FeaturedContentProps)
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="featured-content-heading">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
+        
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
-              <span className="inline-flex items-center rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+              <p className="text-xs font-medium uppercase tracking-normal text-ink-500">
                 {await serverT("home.featuredEyebrow")}
-              </span>
+              </p>
               <h2
                 id="featured-content-heading"
                 className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem] lg:text-[2.9rem]"
               >
-                {await serverT("home.featuredTitle")}<span className="text-accent-400">{await serverT("home.featuredAccent")}</span>
+                {await serverT("home.featuredTitle")}{await serverT("home.featuredAccent")}
               </h2>
             </div>
             <Button asChild variant="ghost" className="shrink-0">
-              <a href="/teams">
+              <Link href="/teams">
                 {await serverT("home.browseAllTeams")}
                 <ArrowUpRight size={16} />
-              </a>
+              </Link>
             </Button>
           </div>
-        </Reveal>
+        
 
         {featuredTeams.length > 0 ? (
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -54,9 +54,9 @@ export async function FeaturedContent({ teams, projects }: FeaturedContentProps)
             {featuredProjects.map((project, i) => (
               <ProjectCard key={project.id} project={project} index={i} />
             ))}
-            <Reveal delay={featuredProjects.length * 60}>
-              <a href="/projects" className="group block h-full">
-                <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-3 rounded-[2rem] border border-dashed border-border-strong bg-white/[0.01] p-8 text-center transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:bg-accent/[0.03] hover:shadow-glow-sm">
+            
+              <Link href="/projects" className="group block h-full">
+                <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border-strong bg-white/[0.01] p-8 text-center transition-colors duration-200 hover:border-accent-400/40 hover:bg-accent/[0.03]">
                   <span className="flex h-12 w-12 items-center justify-center rounded-full border border-accent-400/30 bg-accent/[0.08] text-accent-300">
                     <Plus size={20} />
                   </span>
@@ -71,8 +71,8 @@ export async function FeaturedContent({ teams, projects }: FeaturedContentProps)
                     <ArrowUpRight size={14} />
                   </span>
                 </div>
-              </a>
-            </Reveal>
+              </Link>
+            
           </div>
         ) : null}
       </div>

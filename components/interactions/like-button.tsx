@@ -51,7 +51,7 @@ export function LikeButton({
       aria-label={liked ? t("feed.unlike") : t("feed.like")}
       title={liked ? t("feed.unlike") : t("feed.like")}
       className={cn(
-        "flex items-center gap-1.5 rounded-full px-2 py-1 text-xs transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+        "flex min-h-[44px] items-center gap-1.5 rounded-full px-2.5 py-2 text-xs transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
         liked
           ? "text-red-400 hover:text-red-300"
           : "text-ink-600 hover:text-ink-200",

@@ -1,4 +1,3 @@
-import { Reveal } from "@/components/ui/reveal";
 import { serverT } from "@/lib/translation/server";
 import type { DictKey } from "@/lib/translation/types";
 
@@ -12,49 +11,49 @@ export async function FutureVision() {
   return (
     <section className="relative py-24 sm:py-28 lg:py-36" aria-labelledby="future-vision-heading">
       <div className="relative mx-auto max-w-[920px] px-5 text-center sm:px-8 lg:px-12">
-        <Reveal>
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+        
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
             {await serverT("teams.visionEyebrow")}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <h2
             id="future-vision-heading"
             className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3rem] lg:text-[3.5rem]"
           >
-            {await serverT("teams.visionTitle")} <span className="text-accent-400">{await serverT("teams.visionTitleAccent")}</span>
+            {await serverT("teams.visionTitle")} {await serverT("teams.visionTitleAccent")}
           </h2>
-        </Reveal>
+        
 
-        <Reveal delay={160}>
+        
           <div className="mx-auto mt-6 max-w-3xl space-y-6 text-[1.02rem] leading-8 text-ink-400">
             <p>{await serverT("teams.visionP1")}</p>
             <p>{await serverT("teams.visionP2")}</p>
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={240}>
+        
           <div className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-6">
             {(await Promise.all(STATS.map(async (item) => (
               <div
                 key={item.statKey}
-                className="group rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm"
+                className="group rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40"
               >
                 <p className="text-lg font-semibold text-accent-400">{await serverT(item.statKey)}</p>
                 <p className="mt-1 text-sm text-ink-400">{await serverT(item.descKey)}</p>
               </div>
             ))))}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={320}>
+        
           <p className="mx-auto mt-12 max-w-2xl text-balance text-[1.3rem] font-medium leading-relaxed text-ink-200 sm:text-[1.45rem]">
             {await serverT("teams.visionCta")}
             <br />
-            <span className="text-accent-400">{await serverT("teams.visionCtaAccent")}</span>
+            {await serverT("teams.visionCtaAccent")}
           </p>
-        </Reveal>
+        
       </div>
     </section>
   );

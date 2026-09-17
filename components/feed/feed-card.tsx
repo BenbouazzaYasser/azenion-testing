@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Image from "next/image";
 import {
   Calendar,
   GitBranch,
@@ -146,7 +147,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
   const schedule = isEvent ? eventScheduleText(item) : null;
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl card-surface-soft p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-glow-sm sm:p-6">
+    <div className="group relative overflow-hidden rounded-2xl card-surface-soft p-5 shadow-card transition-all duration-500 ease-premium hover:border-accent-400/30 sm:p-6">
       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative">
@@ -154,9 +155,11 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
           <div className="flex min-w-0 items-center gap-3">
             <div className="shrink-0">
               {avatarSrc ? (
-                <img
+                <Image
                   src={avatarSrc}
                   alt=""
+                  width={40}
+                  height={40}
                   className="h-10 w-10 rounded-full object-cover"
                 />
               ) : (
@@ -228,9 +231,11 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
         {showAuthor ? (
           <div className="mt-3 flex items-center gap-2">
             {item.author_avatar ? (
-              <img
+              <Image
                 src={item.author_avatar}
                 alt=""
+                width={20}
+                height={20}
                 className="h-5 w-5 rounded-full object-cover"
               />
             ) : (
@@ -246,13 +251,13 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
         ) : null}
 
         {item.title ? (
-          <h3 className="mt-3 text-[1.05rem] font-semibold leading-snug text-ink-50">
+          <h3 className="mt-3 break-words text-[1.05rem] font-semibold leading-snug text-ink-50 [overflow-wrap:anywhere]">
             {item.title}
           </h3>
         ) : null}
 
         {item.body ? (
-          <p className="mt-2 text-sm leading-relaxed text-ink-400 line-clamp-3">
+          <p className="mt-2 break-words text-sm leading-relaxed text-ink-400 line-clamp-3 [overflow-wrap:anywhere]">
             {item.body}
           </p>
         ) : null}
@@ -268,8 +273,8 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
 
         {isEvent && item.event_location ? (
           <div className="mt-3 flex items-center gap-1.5 text-sm text-ink-400">
-            <MapPin size={13} className="text-accent-400" />
-            {item.event_location}
+            <MapPin size={13} className="shrink-0 text-accent-400" />
+            <span className="min-w-0 flex-1 break-words">{item.event_location}</span>
           </div>
         ) : null}
 

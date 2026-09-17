@@ -13,10 +13,12 @@ import { FutureVision } from "@/components/sections/projects/future-vision";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/supabase/user";
-import { getProjectLifecycleStatus } from "@/lib/lifecycle";
-import { resolveMediaValue } from "@/lib/media";
+import {
+  getPublicProjectsPage,
+  getProjectsFilterMeta,
+} from "@/actions/projects-list.actions";
+import { PROJECTS_PAGE_SIZE } from "@/lib/projects-pagination";
 import { serverT } from "@/lib/translation/server";
 
 export const metadata: Metadata = {
@@ -25,115 +27,34 @@ export const metadata: Metadata = {
     "Discover projects built by the Azenion community — find collaborators, build real-world products, and turn ideas into reality.",
 };
 
-export const dynamic = "force-dynamic";
+function parseRecruitment(raw: unknown) {
+  if (!raw) return [];
+  try {
+    const arr = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
 
 export default async function ProjectsPage() {
   const adminClient = createAdminClient();
-  const supabase = await createClient();
 
-  const user = await getSessionUser();
-
-  const { data: projects } = await adminClient
-    .from("projects")
-    .select(`
-      id,
-      slug,
-      name,
-      description,
-      logo_url,
-      visibility,
-      lifecycle_status,
-      last_activity_at,
-      created_at,
-      updated_at,
-      technologies,
-      recruitment,
-      owner:owner_id ( username, full_name, avatar_url ),
-      team:team_id ( name, slug )
-    `)
-    .order("created_at", { ascending: false });
-
-  const projectIds = (projects ?? []).map((p) => p.id);
-  const { data: memberRows } = projectIds.length > 0
-    ? await adminClient.from("project_members").select("project_id").in("project_id", projectIds)
-    : { data: [] };
-
-  const memberCountMap = new Map<string, number>();
-  for (const row of memberRows ?? []) {
-    memberCountMap.set(row.project_id, (memberCountMap.get(row.project_id) ?? 0) + 1);
-  }
-
-  const allTechs = new Set<string>();
-  for (const p of projects ?? []) {
-    if (p.technologies && Array.isArray(p.technologies)) {
-      for (const t of p.technologies) {
-        if (t) allTechs.add(t);
-      }
-    }
-  }
-  const technologyOptions = [...allTechs].sort((a, b) =>
-    a.localeCompare(b, undefined, { sensitivity: "base" })
-  );
-
-  const { data: projectCategoryEdges } = projectIds.length > 0
-    ? await adminClient.from("project_category_members").select("project_id, category_id").in("project_id", projectIds)
-    : { data: [] };
-
-  const projectCategoryMap = new Map<string, string[]>();
-  for (const edge of projectCategoryEdges ?? []) {
-    const ids = projectCategoryMap.get(edge.project_id) ?? [];
-    ids.push(edge.category_id);
-    projectCategoryMap.set(edge.project_id, ids);
-  }
-
-  const { data: allCategories } = await adminClient
-    .from("project_categories")
-    .select("id, name, slug")
-    .order("name");
+  // First catalog page (cursor=null, keyset on created_at+id) + filter chips
+  // + session load concurrently. Public catalog pages are cached per-cursor
+  // (30s); filter meta is cached 5 min. The per-user "my projects" section
+  // below stays fully dynamic.
+  const [user, firstPage, filterMeta] = await Promise.all([
+    getSessionUser(),
+    getPublicProjectsPage(null, PROJECTS_PAGE_SIZE),
+    getProjectsFilterMeta(),
+  ]);
+  const { technologyOptions, allCategories } = filterMeta;
 
   const categoryMap = new Map<string, { id: string; name: string; slug: string }>();
   for (const cat of allCategories ?? []) {
     categoryMap.set(cat.id, cat);
   }
-
-  function parseRecruitment(raw: unknown) {
-    if (!raw) return [];
-    try {
-      const arr = typeof raw === "string" ? JSON.parse(raw) : raw;
-      return Array.isArray(arr) ? arr : [];
-    } catch {
-      return [];
-    }
-  }
-
-  const visibleProjects = await Promise.all(
-    (projects ?? [])
-      .filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED")
-      .map(async (p) => ({
-    id: p.id,
-    slug: p.slug,
-    name: p.name,
-    description: p.description,
-    logo_url: ((await resolveMediaValue(p.logo_url, undefined, supabase)) as string | null) ?? null,
-    visibility: p.visibility,
-    lifecycle_status: p.lifecycle_status,
-    last_activity_at: p.last_activity_at as string | null,
-    created_at: p.created_at,
-    updated_at: p.updated_at as string | null,
-    technologies: Array.isArray(p.technologies) ? p.technologies : [],
-    recruitment: parseRecruitment(p.recruitment) as {
-      id: string;
-      title: string;
-      experience: "beginner" | "intermediate" | "advanced";
-      positions: number;
-      description: string;
-    }[],
-    categories: (projectCategoryMap.get(p.id) ?? []).map((cid) => categoryMap.get(cid)).filter(Boolean) as { id: string; name: string; slug: string }[],
-    owner: p.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
-    team: p.team as unknown as { name: string; slug: string } | null,
-    member_count: memberCountMap.get(p.id) ?? 0,
-    }))
-  );
 
   let myProjects: {
     id: string;
@@ -175,19 +96,20 @@ export default async function ProjectsPage() {
         (m) => (m.project as unknown as { id: string }).id
       );
 
-      const { data: myMemberRows } = await adminClient
-        .from("project_members")
-        .select("project_id")
-        .in("project_id", myProjectIds);
+      const [memberRes, catEdgeRes] = await Promise.all([
+        adminClient.from("project_members").select("project_id").in("project_id", myProjectIds),
+        myProjectIds.length > 0
+          ? adminClient.from("project_category_members").select("project_id, category_id").in("project_id", myProjectIds)
+          : Promise.resolve({ data: [] as { project_id: string; category_id: string }[] }),
+      ]);
+
+      const myMemberRows = memberRes.data;
+      const myCategoryEdges = catEdgeRes.data;
 
       const myMemberCountMap = new Map<string, number>();
       for (const row of myMemberRows ?? []) {
         myMemberCountMap.set(row.project_id, (myMemberCountMap.get(row.project_id) ?? 0) + 1);
       }
-
-      const { data: myCategoryEdges } = myProjectIds.length > 0
-        ? await adminClient.from("project_category_members").select("project_id, category_id").in("project_id", myProjectIds)
-        : { data: [] };
 
       const myCategoryMap = new Map<string, { id: string; name: string; slug: string }[]>();
       for (const edge of myCategoryEdges ?? []) {
@@ -197,8 +119,28 @@ export default async function ProjectsPage() {
         myCategoryMap.set(edge.project_id, entries);
       }
 
-      myProjects = await Promise.all(
-        myMemberships.map(async (m) => {
+      // Batch private logo resolution for myProjects (one storage call)
+      const PRIVATE_PREFIX = "private-media/";
+      const isPrivate = (v: string | null | undefined): boolean => typeof v === "string" && v.startsWith(PRIVATE_PREFIX);
+      const objectPath = (m: string) => m.slice(PRIVATE_PREFIX.length);
+      const isSafe = (p: string) => p.length > 0 && p.length <= 500 && !p.includes("..") && /^[A-Za-z0-9._\/-]+$/.test(p) && (p.startsWith("team/") || p.startsWith("project/"));
+      const privatePaths = new Set<string>();
+      for (const m of myMemberships) {
+        const p = m.project as unknown as { logo_url: string | null };
+        if (isPrivate(p.logo_url)) {
+          const op = objectPath(p.logo_url as string);
+          if (isSafe(op)) privatePaths.add(op);
+        }
+      }
+      const markerToUrl = new Map<string, string>();
+      if (privatePaths.size > 0) {
+        try {
+          const { data } = await adminClient.storage.from("private-media").createSignedUrls([...privatePaths], 60);
+          if (data) for (const e of data) if (!e.error && e.signedUrl && e.path) markerToUrl.set(`${PRIVATE_PREFIX}${e.path}`, e.signedUrl);
+        } catch {}
+      }
+
+      myProjects = myMemberships.map((m) => {
         const p = m.project as unknown as {
           id: string;
           slug: string;
@@ -215,12 +157,14 @@ export default async function ProjectsPage() {
           owner: { username: string; full_name: string; avatar_url: string | null } | null;
           team: { name: string; slug: string } | null;
         };
+        const rawLogo = p.logo_url;
+        const resolvedLogo = rawLogo && isPrivate(rawLogo) ? (markerToUrl.get(rawLogo) ?? null) : rawLogo;
         return {
           id: p.id,
           slug: p.slug,
           name: p.name,
           description: p.description,
-          logo_url: ((await resolveMediaValue(p.logo_url, undefined, supabase)) as string | null) ?? null,
+          logo_url: resolvedLogo,
           visibility: p.visibility,
           lifecycle_status: p.lifecycle_status,
           last_activity_at: p.last_activity_at,
@@ -240,8 +184,7 @@ export default async function ProjectsPage() {
           member_count: myMemberCountMap.get(p.id) ?? 0,
           role: m.role as "owner" | "admin" | "member",
         };
-      })
-      );
+      });
     }
   }
 
@@ -263,7 +206,13 @@ export default async function ProjectsPage() {
           <ProjectsHero />
         )}
         {user && myProjects.length > 0 ? <MyProjects projects={myProjects} /> : null}
-        <AllProjects initialProjects={visibleProjects} technologies={technologyOptions} categories={allCategories ?? []} />
+        <AllProjects
+          initialProjects={firstPage.projects}
+          initialNextCursor={firstPage.nextCursor}
+          initialHasMore={firstPage.hasMore}
+          technologies={technologyOptions}
+          categories={allCategories ?? []}
+        />
         <CreateProject />
         <WhyBuild />
         <FutureVision />

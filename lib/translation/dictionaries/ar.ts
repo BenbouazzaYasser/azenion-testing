@@ -611,6 +611,9 @@ export const ar: TranslationResource = {
   "projects.exploreProjects": "استكشف المشاريع",
   "projects.myEyebrow": "مشاريعك",
   "projects.myTitle": "مشاريعي",
+  "projects.loadMore": "تحميل المزيد من المشاريع",
+  "projects.loadingMore": "جارٍ تحميل المزيد من المشاريع...",
+  "projects.errorLoadMore": "تعذّر تحميل المزيد من المشاريع. يرجى المحاولة مرة أخرى.",
 
   "projects.pageArchived":
     "تمت أرشفة هذا المشروع بسبب عدم النشاط. لا يزال متاحاً للأعضاء لكنه مخفي عن الاكتشاف.",

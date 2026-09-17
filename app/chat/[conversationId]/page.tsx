@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/supabase/user";
 import { Navbar } from "@/components/layout/navbar";
 import { ChatLayout } from "@/components/chat/chat-layout";
 import { getConversations, getMessages, getConversationBlockState } from "@/data/chat";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 // Code-split: the ~1500-line interactive conversation (pickers, realtime,
 // call wiring) hydrates after the shell paints; the Suspense fallback below
@@ -49,7 +50,7 @@ export default async function ConversationPage({ params }: Props) {
   return (
     <>
       <Navbar />
-      <main id="main" className="relative flex h-dvh flex-col overflow-hidden pt-[80px] sm:pt-[90px]">
+      <main id="main" className="relative flex h-dvh flex-col overflow-hidden pt-[96px] sm:pt-[104px]">
         <ChatLayout conversations={conversations} currentUserId={user.id}>
           <Suspense
             fallback={
@@ -58,13 +59,18 @@ export default async function ConversationPage({ params }: Props) {
               </div>
             }
           >
-            <ChatConversation
-              conversationId={params.conversationId}
-              initialMessages={messages}
-              currentUserId={user.id}
-              amBlocked={blockState.am_blocked}
-              peer={peer}
-            />
+            <ErrorBoundary
+              fallbackTitle="Chat failed to load"
+              fallbackMessage="Unable to load the conversation. You can try reloading or navigate back to your chats."
+            >
+              <ChatConversation
+                conversationId={params.conversationId}
+                initialMessages={messages}
+                currentUserId={user.id}
+                amBlocked={blockState.am_blocked}
+                peer={peer}
+              />
+            </ErrorBoundary>
           </Suspense>
         </ChatLayout>
       </main>

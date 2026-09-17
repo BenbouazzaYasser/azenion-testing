@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { Search, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Reveal } from "@/components/ui/reveal";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { useTranslation } from "@/components/translation/translation-provider";
 import { LabCreateDialog } from "./lab-create-dialog";
@@ -52,7 +51,7 @@ export function LabsBrowser({ labs, canCreate, isPlatformAdmin, currentUserId, a
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="labs-browser-heading">
       <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
-        <Reveal>
+        
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
             <div className="relative w-full sm:max-w-sm">
               <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-500" />
@@ -67,9 +66,9 @@ export function LabsBrowser({ labs, canCreate, isPlatformAdmin, currentUserId, a
             </div>
             {canCreate ? <LabCreateDialog /> : null}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <div className="mt-6 flex flex-col items-center gap-3">
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
               <span className="text-xs font-medium uppercase tracking-wide text-ink-600">{t("academy.filtersType")}</span>
@@ -88,9 +87,9 @@ export function LabsBrowser({ labs, canCreate, isPlatformAdmin, currentUserId, a
               <FilterBubbles options={LAB_CATEGORIES.map((c) => ({ id: c, label: c }))} selected={category} onSelect={setCategory} />
             </div>
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={160}>
+        
           {filtered.length > 0 ? (
             <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((lab) => (
@@ -126,12 +125,12 @@ export function LabsBrowser({ labs, canCreate, isPlatformAdmin, currentUserId, a
                     : t("academy.listLabsEmptySub")}
                 </p>
                 {labs.length === 0 ? (
-                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-ink-600">{t("academy.comingTo")}</p>
+                  <p className="mt-8 text-xs font-semibold uppercase tracking-normal text-ink-600">{t("academy.comingTo")}</p>
                 ) : null}
               </div>
             </div>
           )}
-        </Reveal>
+        
       </div>
     </section>
   );

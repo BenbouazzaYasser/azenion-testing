@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -93,9 +94,11 @@ export function MessageBubble({
     <div className={cn("group flex items-start gap-3", isOwn ? "flex-row-reverse" : "flex-row")}>
       {showAvatar ? (
         sender_avatar ? (
-          <img
+          <Image
             src={sender_avatar}
             alt=""
+            width={32}
+            height={32}
             className="mt-2.5 h-8 w-8 shrink-0 rounded-full object-cover"
           />
         ) : (
@@ -218,7 +221,7 @@ export function MessageBubble({
         {isOwn && !isEditing && (
           <div
             className={cn(
-              "absolute right-0 -top-[40px] z-20 flex items-center gap-0.5 rounded-full bg-void-900/95 p-1 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.8)] backdrop-blur transition-all duration-200 ease-premium",
+              "absolute right-0 -top-[52px] z-20 flex items-center gap-2 rounded-full bg-void-900/95 p-1.5 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.8)] backdrop-blur transition-all duration-200 ease-premium",
               showActions
                 ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
                 : "pointer-events-none -translate-y-1 scale-95 opacity-0",
@@ -232,7 +235,7 @@ export function MessageBubble({
                 setEditText(content);
                 setIsEditing(true);
               }}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
             >
               <Pencil className="h-3.5 w-3.5" />
             </button>
@@ -241,7 +244,7 @@ export function MessageBubble({
               aria-label="Delete message"
               title="Delete"
               onClick={handleDelete}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>

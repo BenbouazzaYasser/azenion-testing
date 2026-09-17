@@ -8,6 +8,7 @@ import {
   validateChatAttachmentInput,
   CHAT_MEDIA_BUCKET,
 } from "@/lib/chat-media";
+import { cleanupOrphanedStorageObjects } from "@/lib/storage-cleanup";
 import { isValidStickerId, getStickerById } from "@/lib/stickers/catalog";
 
 export async function sendMessage(conversationId: string, content: string) {
@@ -21,6 +22,17 @@ export async function sendMessage(conversationId: string, content: string) {
     return { error: "Not authenticated" };
   }
 
+  const { data: members } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  // Verify caller is member (defense in depth — RLS also checks)
+  const isMember = (members ?? []).some((m) => m.user_id === user.id);
+  if (!isMember) {
+    return { error: "You are not a member of this conversation." };
+  }
+
   if (!content.trim()) {
     return { error: "Message cannot be empty" };
   }
@@ -29,11 +41,6 @@ export async function sendMessage(conversationId: string, content: string) {
   // message must not be sent. This mirrors the RLS INSERT policy (which is
   // what actually stops direct client inserts), but also gives the UI a clean
   // error message before the DB rejects the write.
-  const { data: members } = await supabase
-    .from("conversation_members")
-    .select("user_id")
-    .eq("conversation_id", conversationId);
-
   const otherMember = (members ?? []).find((m) => m.user_id !== user.id);
 
   if (otherMember) {
@@ -212,14 +219,11 @@ export async function sendMessageWithAttachments(
   const { error: attError } = await supabase.from("chat_message_attachments").insert(rows);
 
   if (attError) {
-    // Roll back message to avoid orphan; best-effort clean storage objects (only for storage-backed)
+    // Roll back message to avoid orphan; robustly clean storage objects via centralized helper
     await supabase.from("messages").delete().eq("id", msg.id).eq("sender_id", user.id);
-    try {
-      const admin = createAdminClient();
-      const paths = attachments.map((a) => a.storage_path).filter((p): p is string => !!p);
-      if (paths.length > 0) await admin.storage.from(CHAT_MEDIA_BUCKET).remove(paths);
-    } catch {
-      // best effort, ignore
+    const paths = attachments.map((a) => a.storage_path).filter((p): p is string => !!p);
+    if (paths.length > 0) {
+      await cleanupOrphanedStorageObjects(CHAT_MEDIA_BUCKET, paths);
     }
     return { error: attError.message };
   }
@@ -267,6 +271,30 @@ export async function deleteMessage(messageId: string) {
     return { error: "Not authenticated" };
   }
 
+  const { data: message, error: fetchError } = await supabase
+    .from("messages")
+    .select("id, sender_id")
+    .eq("id", messageId)
+    .maybeSingle();
+
+  if (fetchError) {
+    return { error: fetchError.message };
+  }
+
+  if (!message || message.sender_id !== user.id) {
+    return { error: "Message not found" };
+  }
+
+  const { data: attachments } = await supabase
+    .from("chat_message_attachments")
+    .select("storage_path")
+    .eq("message_id", messageId);
+
+  const paths =
+    (attachments ?? [])
+      .map((a) => a.storage_path)
+      .filter((p): p is string => typeof p === "string" && p.trim().length > 0) ?? [];
+
   const { error } = await supabase
     .from("messages")
     .delete()
@@ -275,6 +303,10 @@ export async function deleteMessage(messageId: string) {
 
   if (error) {
     return { error: error.message };
+  }
+
+  if (paths.length > 0) {
+    await cleanupOrphanedStorageObjects(CHAT_MEDIA_BUCKET, paths);
   }
 
   return { success: true };

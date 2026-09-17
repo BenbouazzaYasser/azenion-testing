@@ -115,7 +115,7 @@ export function TeamSettingsClient(props: TeamSettingsClientProps) {
         </Link>
 
         <div className="mt-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
             Team Settings
           </div>
           <h2

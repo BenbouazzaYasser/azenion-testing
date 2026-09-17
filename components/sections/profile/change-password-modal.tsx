@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { X, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { updatePassword } from "@/actions/profile.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { useTranslation } from "@/components/translation/translation-provider";
@@ -106,21 +107,21 @@ export function ChangePasswordModal() {
                 <form onSubmit={handleSubmit} className="px-5 py-5 sm:px-8 sm:py-6">
                   <div className="space-y-5">
                     {error ? (
-                      <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                      <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                         {error}
                       </div>
                     ) : null}
 
                     {success ? (
-                      <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+                      <div role="status" className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
                         {t("settings.passwordUpdated")}
                       </div>
                     ) : null}
 
-                    <label className="block space-y-1.5">
-                      <span className="text-sm font-medium text-ink-200">{t("settings.newPassword")}</span>
+                    <FormField label={t("settings.newPassword")} htmlFor="new-password" required>
                       <div className="relative">
                         <input
+                          id="new-password"
                           name="password"
                           type={showPassword ? "text" : "password"}
                           required
@@ -133,17 +134,17 @@ export function ChangePasswordModal() {
                           type="button"
                           onClick={() => setShowPassword((v) => !v)}
                           aria-label={showPassword ? t("settings.hidePassword") : t("settings.showPassword")}
-                          className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                          className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                         >
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
-                    </label>
+                    </FormField>
 
-                    <label className="block space-y-1.5">
-                      <span className="text-sm font-medium text-ink-200">{t("settings.confirmNewPassword")}</span>
+                    <FormField label={t("settings.confirmNewPassword")} htmlFor="confirm-new-password" required>
                       <div className="relative">
                         <input
+                          id="confirm-new-password"
                           name="confirm_password"
                           type={showConfirm ? "text" : "password"}
                           required
@@ -155,12 +156,12 @@ export function ChangePasswordModal() {
                           type="button"
                           onClick={() => setShowConfirm((v) => !v)}
                           aria-label={showConfirm ? t("settings.hideConfirmation") : t("settings.showConfirmation")}
-                          className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                          className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                         >
                           {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
-                    </label>
+                    </FormField>
                   </div>
 
                   <div className="mt-6 flex items-center justify-end gap-3 border-t border-border pt-5">

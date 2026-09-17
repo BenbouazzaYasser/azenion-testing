@@ -4,11 +4,11 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Check, Hourglass, MessageSquareText, X } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { reviewTeamJoinRequest } from "@/actions/team-membership.actions";
 import { formatDistanceToNow } from "@/lib/date";
 import { useTranslation } from "@/components/translation/translation-provider";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 export interface JoinRequest {
   id: string;
@@ -54,14 +54,14 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="team-join-requests-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
-          <div className="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-yellow-400">
+        
+          <div className="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-yellow-400">
             <Hourglass size={12} />
             {t("teams.pendingRequests")}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <h2
             id="team-join-requests-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
@@ -69,13 +69,13 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
             {t("teams.joinRequests")}
             <span className="ml-3 text-lg font-normal text-ink-500">({pending.length})</span>
           </h2>
-        </Reveal>
+        
 
-        <Reveal delay={160}>
+        
           <p className="mt-4 max-w-2xl text-[1rem] leading-relaxed text-ink-400">
             {t("teams.joinRequestsSub")}
           </p>
-        </Reveal>
+        
 
         <div className="mt-10 space-y-4">
           {pending.map((request, i) => {
@@ -85,14 +85,15 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
             const isBusy = isPending && busyRequestId === request.id;
 
             return (
-              <Reveal key={request.id} delay={i * 60}>
-                <div className="flex flex-col gap-4 rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6">
+              <div key={request.id} className="flex flex-col gap-4 rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6">
                   <div className="flex min-w-0 items-start gap-4">
                     {request.avatar_url ? (
-                      <img
+                      <OptimizedImage
                         src={request.avatar_url}
                         alt=""
-                        className="h-12 w-12 shrink-0 rounded-xl border border-accent-400/30 object-cover"
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 shrink-0 rounded-xl border border-accent-400/30"
                       />
                     ) : (
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08] text-lg font-semibold text-accent-400">
@@ -142,7 +143,7 @@ export function TeamJoinRequests({ requests }: TeamJoinRequestsProps) {
                     </Button>
                   </div>
                 </div>
-              </Reveal>
+              
             );
           })}
         </div>

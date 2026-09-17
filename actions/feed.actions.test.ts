@@ -43,16 +43,16 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("feed viewer override (native bearer support)", () => {
-  it("passes an explicit viewer id to the visibility RPC", async () => {
+describe("feed viewer is always session-derived (IDOR hardening)", () => {
+  it("ignores a caller-supplied viewer id", async () => {
     const { rpcCalls } = setup();
     await getFeedItems("all", 1, 20, "viewer-9");
     const call = rpcCalls.find((c) => c.name === "get_global_feed_posts");
     expect(call).toBeDefined();
-    expect(call?.args).toMatchObject({ p_viewer: "viewer-9" });
+    expect(call?.args).toMatchObject({ p_viewer: "session-user" });
   });
 
-  it("passes null viewer for anonymous reads", async () => {
+  it("treats an explicit null viewer as anonymous (public only)", async () => {
     const { rpcCalls } = setup();
     await getFeedItems("all", 1, 20, null);
     const call = rpcCalls.find((c) => c.name === "get_global_feed_posts");

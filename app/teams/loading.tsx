@@ -1,5 +1,5 @@
 function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-[0.75rem] bg-surface ${className}`} />;
+  return <div className={`animate-pulse rounded-lg bg-surface ${className}`} />;
 }
 
 export default function TeamsLoading() {

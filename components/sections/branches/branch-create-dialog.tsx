@@ -6,13 +6,12 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Building2, ImagePlus, Loader2, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { createBranch, uploadBranchLogoAsset } from "@/actions/branch.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
-
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 export function BranchCreateDialog() {
   const router = useRouter();
@@ -180,7 +179,7 @@ export function BranchCreateDialog() {
                     type="button"
                     onClick={() => setOpen(false)}
                     aria-label="Close"
-                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="-mr-1.5 -mt-1.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -188,17 +187,14 @@ export function BranchCreateDialog() {
 
                 <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-8">
                   {error ? (
-                    <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                    <div role="alert" className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                       {error}
                     </div>
                   ) : null}
 
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="branch-name" className={labelClass}>
-                          Name <span className="text-accent-400">*</span>
-                        </label>
+                      <FormField label="Name" htmlFor="branch-name" required>
                         <input
                           id="branch-name"
                           value={name}
@@ -208,11 +204,8 @@ export function BranchCreateDialog() {
                           placeholder="e.g. EMSI"
                           className={inputClass}
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="branch-slug" className={labelClass}>
-                          Slug <span className="text-accent-400">*</span>
-                        </label>
+                      </FormField>
+                      <FormField label="Slug" htmlFor="branch-slug" required>
                         <input
                           id="branch-slug"
                           value={slug}
@@ -222,14 +215,11 @@ export function BranchCreateDialog() {
                           pattern="[a-z0-9-]+"
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
                     </div>
 
                     <div className="grid gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="branch-institution" className={labelClass}>
-                          Institution
-                        </label>
+                      <FormField label="Institution" htmlFor="branch-institution">
                         <input
                           id="branch-institution"
                           value={institution}
@@ -238,11 +228,8 @@ export function BranchCreateDialog() {
                           placeholder="e.g. École Marocaine des Sciences de l'Ingénieur"
                           className={inputClass}
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="branch-city" className={labelClass}>
-                          City
-                        </label>
+                      </FormField>
+                      <FormField label="City" htmlFor="branch-city">
                         <input
                           id="branch-city"
                           value={city}
@@ -251,11 +238,12 @@ export function BranchCreateDialog() {
                           placeholder="e.g. Rabat"
                           className={inputClass}
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="branch-order" className={labelClass}>
-                          Order
-                        </label>
+                      </FormField>
+                      <FormField
+                        label="Order"
+                        htmlFor="branch-order"
+                        helper="Lower values appear first in the branch list."
+                      >
                         <input
                           id="branch-order"
                           type="number"
@@ -268,16 +256,10 @@ export function BranchCreateDialog() {
                           placeholder="e.g. 1"
                           className={inputClass}
                         />
-                        <p className="mt-1.5 text-xs text-ink-500">
-                          Lower values appear first in the branch list.
-                        </p>
-                      </div>
+                      </FormField>
                     </div>
 
-<div>
-                    <label htmlFor="branch-description" className={labelClass}>
-                      Description
-                    </label>
+<FormField label="Description" htmlFor="branch-description">
                     <textarea
                       id="branch-description"
                       value={description}
@@ -287,12 +269,9 @@ export function BranchCreateDialog() {
                       placeholder="What makes this branch unique?"
                       className={`${inputClass} resize-none`}
                     />
-                  </div>
+                  </FormField>
 
-                  <div>
-                    <label htmlFor="branch-logo" className={labelClass}>
-                      Branch Logo
-                    </label>
+                  <FormField label="Branch Logo" htmlFor="branch-logo">
                     <div className="flex items-center gap-4">
                       <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-accent-400/30 bg-accent/[0.08]">
                         {logoPreview || logoUrl ? (
@@ -350,7 +329,7 @@ export function BranchCreateDialog() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </FormField>
 
                     <div className="flex items-center justify-end gap-3 border-t border-border pt-5">
                       <Button

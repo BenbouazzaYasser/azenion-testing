@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
+import { useAuth } from "@/components/auth/auth-provider";
 import type {
   CallKind,
   CallPeer,
@@ -69,6 +70,7 @@ const LazyCallRuntime = dynamic(
  * any page, exactly like the chat-unread / notification realtime modules.
  */
 export function CallProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const lastErrorShownRef = useRef<string | null>(null);
 
   // Surface outgoing-call errors (media/support) as toasts.
@@ -90,7 +92,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   return (
     <CallContext.Provider value={EMPTY_RUNTIME}>
       {children}
-      <LazyCallRuntime />
+      {user ? <LazyCallRuntime /> : null}
     </CallContext.Provider>
   );
 }

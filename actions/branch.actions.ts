@@ -16,6 +16,7 @@ import {
   ALLOWED_BRANCH_MEDIA_TYPES,
 } from "@/lib/validations/branch.schema";
 import { parseEventSchedule } from "@/lib/event-schedule";
+import { safeRemoveStorageObjects } from "@/lib/storage-cleanup";
 
 function revalidateBranchPaths(slug?: string | null) {
   revalidatePath("/branches");
@@ -42,6 +43,24 @@ function validateUpload(file: File) {
   if (file.size > MAX_BRANCH_ASSET_SIZE) return "File too large. Maximum size is 2MB";
   if (!ALLOWED_BRANCH_MEDIA_TYPES.includes(file.type)) return "Invalid file type. Use PNG, JPEG, or WebP";
   return null;
+}
+
+// M13: extension allow-lists mirror ALLOWED_BRANCH_LOGO_TYPES /
+// ALLOWED_BRANCH_MEDIA_TYPES (image/png, image/jpeg, image/webp); contentType
+// is set from this map instead of raw file.type. SVG is not in the MIME
+// allow-list so it is rejected here too (matching the MIME check above).
+const BRANCH_IMAGE_EXT_MIME: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+};
+
+function branchImageExtError(fileName: string): { ext: string; contentType: string } | null {
+  const ext = (fileName.split(".").pop() ?? "").toLowerCase();
+  const contentType = BRANCH_IMAGE_EXT_MIME[ext];
+  if (!contentType || /[^a-z0-9]/.test(ext)) return null;
+  return { ext, contentType };
 }
 
 export async function joinBranch(branchId: string) {
@@ -242,12 +261,16 @@ export async function uploadBranchLogo(formData: FormData) {
     return { error: uploadError };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
+  const logoExt = branchImageExtError(file.name);
+  if (!logoExt) {
+    return { error: "Invalid file type. Use PNG, JPEG, WebP, or SVG" };
+  }
+  const ext = logoExt.ext;
   const filePath = `${branchId}/logos/${crypto.randomUUID()}.${ext}`;
 
   const { error: storageError } = await supabase.storage
     .from("branch-assets")
-    .upload(filePath, file, { contentType: file.type, upsert: false });
+    .upload(filePath, file, { contentType: logoExt.contentType, upsert: false });
 
   if (storageError) {
     return { error: storageError.message };
@@ -263,12 +286,8 @@ export async function uploadBranchLogo(formData: FormData) {
   });
 
   if (updateError) {
-    return {
-      error: updateError.message,
-      code: updateError.code,
-      details: updateError.details,
-      hint: updateError.hint,
-    };
+    await safeRemoveStorageObjects(supabase, "branch-assets", [filePath]);
+    return { error: updateError.message };
   }
 
   revalidateBranchPaths(slug);
@@ -311,12 +330,15 @@ export async function uploadBranchLogoAsset(formData: FormData) {
     return { error: uploadError };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `00000000-0000-0000-0000-000000000000/logos/${crypto.randomUUID()}.${ext}`;
+  const stagingLogoExt = branchImageExtError(file.name);
+  if (!stagingLogoExt) {
+    return { error: "Invalid file type. Use PNG, JPEG, WebP, or SVG" };
+  }
+  const filePath = `00000000-0000-0000-0000-000000000000/logos/${crypto.randomUUID()}.${stagingLogoExt.ext}`;
 
   const { error: storageError } = await supabase.storage
     .from("branch-assets")
-    .upload(filePath, file, { contentType: file.type, upsert: false });
+    .upload(filePath, file, { contentType: stagingLogoExt.contentType, upsert: false });
 
   if (storageError) {
     return { error: storageError.message };
@@ -556,17 +578,43 @@ export async function uploadBranchAnnouncementImage(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
+  const [{ data: isPlatformAdmin }, { data: isBranchLeader }] = await Promise.all([
+    supabase.rpc("is_platform_admin"),
+    supabase.rpc("is_branch_leader", { p_branch_id: branchId }),
+  ]);
+
+  if (!isPlatformAdmin && !isBranchLeader) {
+    return { error: "Only platform admins or the leader of this branch can manage its announcements" };
+  }
+
+  const { data: announcementOwner } = await supabase
+    .from("branch_announcements")
+    .select("branch_id")
+    .eq("id", announcementId)
+    .maybeSingle();
+
+  if (!announcementOwner) {
+    return { error: "Announcement not found" };
+  }
+
+  if (announcementOwner.branch_id !== branchId) {
+    return { error: "Announcement does not belong to this branch" };
+  }
+
   const uploadError = validateUpload(file);
   if (uploadError) {
     return { error: uploadError };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+  const announcementExt = branchImageExtError(file.name);
+  if (!announcementExt) {
+    return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
+  }
+  const filePath = `${user.id}/${crypto.randomUUID()}.${announcementExt.ext}`;
 
   const { error: storageError } = await supabase.storage
     .from("feed-images")
-    .upload(filePath, file, { contentType: file.type, upsert: false });
+    .upload(filePath, file, { contentType: announcementExt.contentType, upsert: false });
 
   if (storageError) {
     return { error: storageError.message };
@@ -584,17 +632,21 @@ export async function uploadBranchAnnouncementImage(formData: FormData) {
 
   const images = Array.isArray(existing?.images) ? existing.images : [];
 
-  const { error: updateError } = await supabase
+  const { data: updateResult, error: updateError } = await supabase
     .from("branch_announcements")
     .update({
       images: [...images, publicUrl],
       image_url: existing?.image_url ?? publicUrl,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", announcementId);
+    .eq("id", announcementId)
+    .select("id")
+    .maybeSingle();
 
-  if (updateError) {
-    return { error: updateError.message };
+  if (updateError || !updateResult) {
+    await safeRemoveStorageObjects(supabase, "feed-images", [filePath]);
+    if (updateError) return { error: updateError.message };
+    return { error: "Announcement not found" };
   }
 
   revalidateBranchPaths(formData.get("slug") as string);
@@ -836,17 +888,43 @@ export async function uploadBranchEventCover(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
+  const [{ data: isPlatformAdmin }, { data: isBranchLeader }] = await Promise.all([
+    supabase.rpc("is_platform_admin"),
+    supabase.rpc("is_branch_leader", { p_branch_id: branchId }),
+  ]);
+
+  if (!isPlatformAdmin && !isBranchLeader) {
+    return { error: "Only platform admins or the leader of this branch can manage its events" };
+  }
+
+  const { data: eventOwner } = await supabase
+    .from("branch_events")
+    .select("branch_id")
+    .eq("id", eventId)
+    .maybeSingle();
+
+  if (!eventOwner) {
+    return { error: "Event not found" };
+  }
+
+  if (eventOwner.branch_id !== branchId) {
+    return { error: "Event does not belong to this branch" };
+  }
+
   const uploadError = validateUpload(file);
   if (uploadError) {
     return { error: uploadError };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `${branchId}/events/${crypto.randomUUID()}.${ext}`;
+  const eventCoverExt = branchImageExtError(file.name);
+  if (!eventCoverExt) {
+    return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
+  }
+  const filePath = `${branchId}/events/${crypto.randomUUID()}.${eventCoverExt.ext}`;
 
   const { error: storageError } = await supabase.storage
     .from("branch-assets")
-    .upload(filePath, file, { contentType: file.type, upsert: false });
+    .upload(filePath, file, { contentType: eventCoverExt.contentType, upsert: false });
 
   if (storageError) {
     return { error: storageError.message };
@@ -862,6 +940,7 @@ export async function uploadBranchEventCover(formData: FormData) {
   });
 
   if (rpcError) {
+    await safeRemoveStorageObjects(supabase, "branch-assets", [filePath]);
     return { error: rpcError.message };
   }
 
@@ -1006,17 +1085,43 @@ export async function uploadBranchHighlightImage(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
+  const [{ data: isPlatformAdmin }, { data: isBranchLeader }] = await Promise.all([
+    supabase.rpc("is_platform_admin"),
+    supabase.rpc("is_branch_leader", { p_branch_id: branchId }),
+  ]);
+
+  if (!isPlatformAdmin && !isBranchLeader) {
+    return { error: "Only platform admins or the leader of this branch can manage its highlights" };
+  }
+
+  const { data: highlightOwner } = await supabase
+    .from("branch_highlights")
+    .select("branch_id")
+    .eq("id", highlightId)
+    .maybeSingle();
+
+  if (!highlightOwner) {
+    return { error: "Highlight not found" };
+  }
+
+  if (highlightOwner.branch_id !== branchId) {
+    return { error: "Highlight does not belong to this branch" };
+  }
+
   const uploadError = validateUpload(file);
   if (uploadError) {
     return { error: uploadError };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
-  const filePath = `${branchId}/highlights/${crypto.randomUUID()}.${ext}`;
+  const highlightExt = branchImageExtError(file.name);
+  if (!highlightExt) {
+    return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
+  }
+  const filePath = `${branchId}/highlights/${crypto.randomUUID()}.${highlightExt.ext}`;
 
   const { error: storageError } = await supabase.storage
     .from("branch-assets")
-    .upload(filePath, file, { contentType: file.type, upsert: false });
+    .upload(filePath, file, { contentType: highlightExt.contentType, upsert: false });
 
   if (storageError) {
     return { error: storageError.message };
@@ -1032,6 +1137,7 @@ export async function uploadBranchHighlightImage(formData: FormData) {
   });
 
   if (rpcError) {
+    await safeRemoveStorageObjects(supabase, "branch-assets", [filePath]);
     return { error: rpcError.message };
   }
 

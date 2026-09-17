@@ -23,7 +23,7 @@ export async function PageBridge() {
       <div className="mx-auto flex h-full max-w-[1320px] items-center justify-center px-5 sm:px-8 lg:px-12">
         <div className="flex flex-col items-center gap-3">
           <span className="h-10 w-px bg-gradient-to-b from-accent-400/40 to-transparent" />
-          <span className="animate-pulse text-[11px] font-medium uppercase tracking-[0.18em] text-ink-600">
+          <span className="animate-pulse text-[11px] font-medium uppercase tracking-normal text-ink-600">
             {await serverT("home.journeyContinues")}
           </span>
         </div>

@@ -48,7 +48,7 @@ export function ChannelSidebar({
       <div className="flex shrink-0 items-center justify-between gap-2 px-4 py-3.5">
         <div className="min-w-0">
           <h1 className="truncate text-sm font-semibold text-ink-50">{serverName}</h1>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-600">
+          <p className="text-[10px] font-semibold uppercase tracking-normal text-ink-600">
             {kindLabel}
           </p>
         </div>
@@ -58,7 +58,7 @@ export function ChannelSidebar({
             onClick={() => setShowForm((v) => !v)}
             aria-label={t("servers.createChannelAria")}
             title={t("servers.createChannelAria")}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-100"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-100"
           >
             {showForm ? <X size={15} /> : <Plus size={16} />}
           </button>
@@ -98,6 +98,10 @@ export function ChannelSidebar({
               onChange={(e) => setName(e.target.value)}
               placeholder="channel-name"
               maxLength={40}
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="go"
               className="min-w-0 flex-1 rounded-lg border-0 bg-transparent px-1 py-1 text-sm text-ink-50 placeholder:text-ink-600 focus:outline-none"
             />
             <Button type="submit" size="sm" disabled={!name.trim() || isPending}>
@@ -109,7 +113,7 @@ export function ChannelSidebar({
       ) : null}
 
       <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
-        <p className="px-3 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+        <p className="px-3 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
           {t("servers.channels")}
         </p>
         <ul className="flex flex-col gap-0.5">

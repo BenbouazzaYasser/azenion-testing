@@ -124,7 +124,7 @@ export function RoadmapNode({
       </span>
       <span className="min-w-0 flex-1 rounded-2xl border border-border bg-surface/60 px-4 py-3.5 backdrop-blur-xl">
         <span className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-ink-500">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-normal text-ink-500">
             <KindIcon size={12} aria-hidden />
             {kindMeta.label}
           </span>
@@ -134,7 +134,7 @@ export function RoadmapNode({
             </span>
           ) : null}
           {isOptional ? (
-            <span className="rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-ink-500">
+            <span className="rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-medium uppercase tracking-normal text-ink-500">
               Optional
             </span>
           ) : null}

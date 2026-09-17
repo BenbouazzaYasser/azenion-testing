@@ -6,16 +6,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ImagePlus, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { createLab, createLabVersion } from "@/actions/academy-labs.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { LAB_CATEGORIES, LAB_DIFFICULTIES, LAB_TYPES } from "@/lib/validations/lab.schema";
 import { LabContentEditor, serializeDraftBlocks, type DraftBlock } from "./lab-content-editor";
 import { cn } from "@/lib/utils";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
-
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 export function LabCreateDialog() {
   const router = useRouter();
@@ -181,7 +181,7 @@ export function LabCreateDialog() {
                     type="button"
                     onClick={() => setOpen(false)}
                     aria-label="Close"
-                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="-mr-1.5 -mt-1.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -195,10 +195,7 @@ export function LabCreateDialog() {
                   ) : null}
 
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label htmlFor="lab-title" className={labelClass}>
-                        Lab title
-                      </label>
+                    <FormField label="Lab title" htmlFor="lab-title" required>
                       <input
                         id="lab-title"
                         value={title}
@@ -208,12 +205,9 @@ export function LabCreateDialog() {
                         placeholder="e.g. Investigating a Suspicious Profile"
                         className={inputClass}
                       />
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="lab-description" className={labelClass}>
-                        Description
-                      </label>
+                    <FormField label="Description" htmlFor="lab-description">
                       <textarea
                         id="lab-description"
                         value={description}
@@ -223,13 +217,10 @@ export function LabCreateDialog() {
                         placeholder="What will learners practice?"
                         className={cn(inputClass, "resize-none")}
                       />
-                    </div>
+                    </FormField>
 
                     <div className="grid gap-6 sm:grid-cols-3">
-                      <div>
-                        <label htmlFor="lab-category" className={labelClass}>
-                          Category
-                        </label>
+                      <FormField label="Category" htmlFor="lab-category" required>
                         <select
                           id="lab-category"
                           value={category}
@@ -244,12 +235,9 @@ export function LabCreateDialog() {
                             </option>
                           ))}
                         </select>
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor="lab-type" className={labelClass}>
-                          Type
-                        </label>
+                      <FormField label="Type" htmlFor="lab-type">
                         <select
                           id="lab-type"
                           value={type}
@@ -263,12 +251,9 @@ export function LabCreateDialog() {
                             </option>
                           ))}
                         </select>
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor="lab-difficulty" className={labelClass}>
-                          Difficulty
-                        </label>
+                      <FormField label="Difficulty" htmlFor="lab-difficulty" required>
                         <select
                           id="lab-difficulty"
                           value={difficulty}
@@ -283,14 +268,11 @@ export function LabCreateDialog() {
                             </option>
                           ))}
                         </select>
-                      </div>
+                      </FormField>
                     </div>
 
                     <div className="grid gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="lab-duration" className={labelClass}>
-                          Estimated duration (minutes)
-                        </label>
+                      <FormField label="Estimated duration (minutes)" htmlFor="lab-duration">
                         <input
                           id="lab-duration"
                           type="number"
@@ -301,12 +283,9 @@ export function LabCreateDialog() {
                           placeholder="e.g. 45"
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor="lab-tags" className={labelClass}>
-                          Tags
-                        </label>
+                      <FormField label="Tags" htmlFor="lab-tags">
                         <input
                           id="lab-tags"
                           value={tags}
@@ -315,11 +294,11 @@ export function LabCreateDialog() {
                           placeholder="e.g. Recon, Metadata"
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
                     </div>
 
                     <div>
-                      <label className={labelClass}>Thumbnail</label>
+                      <span className="mb-1.5 block text-sm font-medium text-ink-200">Thumbnail</span>
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                         <input
                           ref={thumbnailInputRef}
@@ -354,11 +333,16 @@ export function LabCreateDialog() {
                     </label>
 
                     <div className="border-t border-border pt-6">
-                      <label className={labelClass}>Content</label>
+                      <span className="mb-1.5 block text-sm font-medium text-ink-200">Content</span>
                       <p className="mb-4 text-xs text-ink-500">
                         Add instructions, evidence, and questions. You can also skip this and add it later from Edit.
                       </p>
-                      <LabContentEditor blocks={blocks} onChange={setBlocks} />
+                      <ErrorBoundary
+                        fallbackTitle="Editor failed to load"
+                        fallbackMessage="Unable to load the content editor. You can try closing and reopening the dialog."
+                      >
+                        <LabContentEditor blocks={blocks} onChange={setBlocks} />
+                      </ErrorBoundary>
                     </div>
 
                     <div className="flex items-center justify-end gap-3 border-t border-border pt-5">

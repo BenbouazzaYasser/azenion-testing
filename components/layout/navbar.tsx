@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Route, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog } from "lucide-react";
+import { User, Shield, ChevronDown, Building2, Users, Rocket, Settings, LogOut, GraduationCap, Route, Video, FlaskConical, Newspaper, Megaphone, Sparkles, UserCog, Menu, X } from "lucide-react";
 import { Logo } from "@/components/graphics/logo";
 import { Button } from "@/components/ui/button";
 import { NAV_LINKS } from "@/data/nav-links";
@@ -15,6 +15,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useChatUnread } from "@/lib/chat-unread";
 import { LightModeButton } from "@/components/theme/light-mode-button";
 import { MobileNavDrawer } from "@/components/layout/mobile-nav-drawer";
+import {
+  MOBILE_NAV_CHANGE_EVENT,
+  setMobileNavOpen,
+} from "@/components/layout/mobile-nav-vanilla";
 import { useTranslation } from "@/components/translation/translation-provider";
 import type { DictKey } from "@/lib/translation/types";
 
@@ -40,7 +44,7 @@ function MenuLink({ href, icon, title, description, onNavigate }: MenuLinkProps)
     <Link
       href={href}
       onClick={onNavigate}
-      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-surface-hover hover:shadow-glow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+      className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-premium hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
     >
       <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg bg-surface text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-accent-400/30 group-hover:bg-accent/[0.08] group-hover:text-accent-300 group-hover:shadow-[0_0_16px_-6px_rgba(40,40,255,0.5)]">
         {icon}
@@ -65,12 +69,21 @@ export function Navbar() {
   const { user, profile, loading, isAdmin } = useUser();
   const { t } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Mirrors the vanilla controller's DOM truth (data-open on
+  // #mobile-nav-drawer) for the toggle icon/aria only. The tap path itself
+  // never goes through React, so the menu works before hydration.
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(
+    () =>
+      typeof document !== "undefined" &&
+      document.getElementById("mobile-nav-drawer")?.dataset.open === "true",
+  );
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [pendingNext, setPendingNext] = useState<string | null>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
+  const adminRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const CHILD_ICONS: Record<string, ReactNode> = {
     "/academy/courses": <GraduationCap size={16} />,
@@ -126,21 +139,56 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
+    const sync = () => {
+      setIsMenuOpen(
+        document.getElementById("mobile-nav-drawer")?.dataset.open === "true",
+      );
+    };
+    sync();
+    window.addEventListener(MOBILE_NAV_CHANGE_EVENT, sync);
+    return () => window.removeEventListener(MOBILE_NAV_CHANGE_EVENT, sync);
+  }, []);
+
+  useEffect(() => {
     if (!pathname) return;
-    setIsMenuOpen(false);
+    setMobileNavOpen(false);
+    setOpenDropdown(null);
+    setIsAdminOpen(false);
+    setIsAvatarOpen(false);
   }, [pathname]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        (avatarRef.current && avatarRef.current.contains(target)) ||
+        (adminRef.current && adminRef.current.contains(target)) ||
+        (dropdownRef.current && dropdownRef.current.contains(target))
+      ) {
+        return;
+      }
+      setIsAvatarOpen(false);
+      setIsAdminOpen(false);
+      setOpenDropdown(null);
+    }
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
         setIsAvatarOpen(false);
+        setIsAdminOpen(false);
+        setOpenDropdown(null);
       }
     }
-    if (isAvatarOpen) {
+
+    if (isAvatarOpen || isAdminOpen || openDropdown !== null) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isAvatarOpen]);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAvatarOpen, isAdminOpen, openDropdown]);
 
   // If we were bounced to /login?next=..., keep the intended page highlighted.
   useEffect(() => {
@@ -194,22 +242,33 @@ export function Navbar() {
                     return (
                       <li key={link.href} className="flex">
                         <div
+                          ref={openDropdown === link.href ? dropdownRef : undefined}
                           className="relative"
                           onMouseEnter={() => setOpenDropdown(link.href)}
                           onMouseLeave={() => setOpenDropdown(null)}
-                          onFocus={() => setOpenDropdown(link.href)}
-                          onBlur={(e) => {
-                            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                              setOpenDropdown(null);
-                            }
-                          }}
                         >
-                          <Link href={link.href} className={navLinkClass} aria-haspopup="true" aria-expanded={isDropdownOpen}>
-                            {labelOf(link.href)}
-                            <ChevronDown size={12} className="ml-1 opacity-60" />
-                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => setOpenDropdown(isDropdownOpen ? null : link.href)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setOpenDropdown(isDropdownOpen ? null : link.href);
+                              }
+                            }}
+                            className={navLinkClass}
+                            aria-haspopup="true"
+                            aria-expanded={isDropdownOpen}
+                            aria-controls={`dropdown-${link.href.replace(/\//g, "-")}`}
+                          >
+                            <span>{labelOf(link.href)}</span>
+                            <ChevronDown size={12} className={cn("ml-1 opacity-60 transition-transform duration-200", isDropdownOpen && "rotate-180")} />
+                          </button>
                           {isDropdownOpen ? (
-                            <div className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2">
+                            <div
+                              id={`dropdown-${link.href.replace(/\//g, "-")}`}
+                              className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2"
+                            >
                               <div aria-hidden className="absolute -top-3 left-0 right-0 h-3" />
                               <div className="relative overflow-hidden rounded-2xl bg-glass shadow-dropdown backdrop-blur-2xl backdrop-saturate-150 animate-dropdown-in">
                                 <div
@@ -221,7 +280,7 @@ export function Navbar() {
                                   className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-accent/30 blur-[64px]"
                                 />
                                 <div className="px-2.5 pb-3 pt-2">
-                                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                                  <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
                                     {labelOf(link.href)}
                                   </p>
                                   {link.children.map((child) => (
@@ -268,6 +327,7 @@ export function Navbar() {
               <>
                 {isAdmin ? (
                   <div
+                    ref={adminRef}
                     className="relative"
                     onMouseEnter={() => setIsAdminOpen(true)}
                     onMouseLeave={() => setIsAdminOpen(false)}
@@ -276,15 +336,17 @@ export function Navbar() {
                       variant="ghost"
                       size="sm"
                       className="h-10"
+                      aria-haspopup="true"
                       aria-expanded={isAdminOpen}
+                      aria-controls="admin-dropdown-menu"
                       onClick={() => setIsAdminOpen((v) => !v)}
                     >
                       <Shield size={14} />
                       {t("nav.admin")}
-                      <ChevronDown size={12} className="ml-0.5" />
+                      <ChevronDown size={12} className={cn("ml-0.5 transition-transform duration-200", isAdminOpen && "rotate-180")} />
                     </Button>
                     {isAdminOpen ? (
-                      <div className="absolute right-0 top-full mt-3 w-72">
+                      <div id="admin-dropdown-menu" className="absolute right-0 top-full mt-3 w-72">
                         <div
                           aria-hidden
                           className="absolute -top-3 left-0 right-0 h-3"
@@ -331,7 +393,7 @@ export function Navbar() {
                         </div>
 
                         <div className="px-2.5 pb-3 pt-2">
-                          <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                          <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
                             {t("nav.management")}
                           </p>
                           <MenuLink
@@ -433,7 +495,7 @@ export function Navbar() {
                       </div>
 
                       <div className="px-2.5 pb-2.5 pt-2">
-                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
                           {t("nav.workspace")}
                         </p>
                         <MenuLink
@@ -471,7 +533,7 @@ export function Navbar() {
                       </div>
 
                       <div className="px-2.5 pb-2.5 pt-2">
-                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
                           {t("nav.account")}
                         </p>
                         <MenuLink
@@ -502,7 +564,7 @@ export function Navbar() {
                       </div>
 
                       <div className="px-2.5 pb-3 pt-2">
-                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+                        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
                           {t("nav.dangerZone")}
                         </p>
                         <button
@@ -512,7 +574,7 @@ export function Navbar() {
                             await supabase.auth.signOut();
                             window.location.href = "/";
                           }}
-                          className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-premium hover:-translate-y-px hover:bg-red-500/[0.08] hover:shadow-[0_0_24px_-10px_rgba(248,113,113,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                          className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200 ease-premium hover:bg-red-500/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                         >
                             <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg bg-surface text-ink-400 transition-all duration-200 ease-premium group-hover:translate-x-0.5 group-hover:border-red-400/30 group-hover:bg-red-500/[0.1] group-hover:text-red-400">
                               <LogOut size={16} />
@@ -564,20 +626,43 @@ export function Navbar() {
         </div>
       </div>
 
+      <div className="fixed left-4 top-4 z-50 xl:hidden">
+        <Logo
+          withWordmark={false}
+          markSize={44}
+          className="h-16 w-16 justify-center rounded-full ring-1 ring-inset ring-border bg-glass-nav shadow-[0_8px_30px_-15px_rgba(40,40,255,0.35)] transition-all duration-300 ease-premium hover:border-accent-400/40 hover:bg-surface-hover hover:shadow-[0_0_22px_-6px_rgba(109,109,255,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+        />
+      </div>
+
       <button
         type="button"
-        onClick={() => setIsMenuOpen((v) => !v)}
+        data-mobile-nav-toggle
         aria-label={isMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
         aria-expanded={isMenuOpen}
         aria-controls="mobile-nav-drawer"
-        className="fixed right-4 top-4 z-50 flex h-16 w-16 items-center justify-center rounded-full ring-1 ring-inset ring-border bg-glass-nav text-ink-50 shadow-[0_8px_30px_-15px_rgba(40,40,255,0.35)] transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:bg-surface-hover hover:shadow-[0_0_22px_-6px_rgba(109,109,255,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
+        className="fixed right-4 top-4 z-50 flex h-16 w-16 touch-manipulation select-none items-center justify-center rounded-full ring-1 ring-inset ring-border bg-glass-nav text-ink-50 shadow-[0_8px_30px_-15px_rgba(40,40,255,0.35)] transition-all duration-300 ease-premium hover:border-accent-400/40 hover:bg-surface-hover hover:shadow-[0_0_22px_-6px_rgba(109,109,255,0.55)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 xl:hidden"
       >
-        <Logo withWordmark={false} markSize={44} />
+        <span aria-hidden="true" className="relative flex h-6 w-6 items-center justify-center">
+          <Menu
+            size={24}
+            className={cn(
+              "absolute transition-all duration-300",
+              isMenuOpen ? "rotate-90 scale-50 opacity-0" : "rotate-0 scale-100 opacity-100"
+            )}
+          />
+          <X
+            size={24}
+            className={cn(
+              "absolute transition-all duration-300",
+              isMenuOpen ? "rotate-0 scale-100 opacity-100" : "-rotate-90 scale-50 opacity-0"
+            )}
+          />
+        </span>
       </button>
 
       <MobileNavDrawer
         open={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
+        onClose={() => setMobileNavOpen(false)}
         user={user}
         profile={profile}
         isAdmin={isAdmin}

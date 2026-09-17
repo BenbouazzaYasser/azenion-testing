@@ -163,7 +163,7 @@ export function RoleManager({ roleCatalog }: RoleManagerProps) {
                     </span>
                     <span className="block truncate text-xs text-ink-500">
                       @{u.username}
-                      {u.institution ? ` · ${u.institution}` : ""}
+                      {u.institution ? `, ${u.institution}` : ""}
                     </span>
                   </span>
                   {selected?.id === u.id ? (
@@ -198,7 +198,7 @@ export function RoleManager({ roleCatalog }: RoleManagerProps) {
               </p>
               <p className="truncate text-xs text-ink-500">
                 @{selected.username}
-                {selected.institution ? ` · ${selected.institution}` : ""}
+                {selected.institution ? `, ${selected.institution}` : ""}
               </p>
             </div>
           </div>

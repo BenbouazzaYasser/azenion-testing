@@ -157,7 +157,7 @@ export function ChannelChat({
 
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-      <header className="relative z-10 flex shrink-0 items-center gap-2.5 bg-void-900/50 px-4 py-3 backdrop-blur-xl sm:px-5">
+      <header className="relative z-10 flex shrink-0 items-center gap-2.5 bg-void-900/90 px-4 py-3 sm:bg-void-900/50 sm:px-5 md:backdrop-blur-xl">
         <Hash size={16} className="shrink-0 text-accent-300" />
         <h1 className="truncate text-sm font-semibold text-ink-50">{channelName}</h1>
         {topic ? (
@@ -186,7 +186,7 @@ export function ChannelChat({
                 {showDivider && (
                   <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
                     <span aria-hidden className="h-px flex-1 bg-border" />
-                    <span className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-ink-500 backdrop-blur-sm">
+                    <span className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-normal text-ink-500 backdrop-blur-sm">
                       {label}
                     </span>
                     <span aria-hidden className="h-px flex-1 bg-border" />
@@ -211,7 +211,7 @@ export function ChannelChat({
         )}
       </div>
 
-      <div className="relative z-10 shrink-0 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-3 pt-2.5 backdrop-blur-xl sm:px-4 sm:pb-4">
+      <div className="relative z-10 shrink-0 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2.5 sm:px-4 sm:pb-4 md:backdrop-blur-xl">
         <form
           className="flex items-center gap-3"
           onSubmit={(e) => {

@@ -22,6 +22,44 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
 
+  // Global security headers (H6). No enforcing script-src CSP here — a
+  // static script CSP breaks Next.js inline hydration scripts; script
+  // lockdown requires nonce-based middleware (see lib/security-headers.ts).
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          {
+            key: "Content-Security-Policy-Report-Only",
+            value:
+              "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+          },
+        ],
+      },
+    ];
+  },
+
   // Caching headers
   onDemandEntries: {
     maxInactiveAge: 60 * 60 * 1000,

@@ -13,7 +13,6 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { FeedCard } from "@/components/feed/feed-card";
 import { useRouter } from "next/navigation";
@@ -369,23 +368,23 @@ export function EntityUpdatesFeed({
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="entity-updates-heading">
       <div className={cn("mx-auto px-5 sm:px-8 lg:px-12", wide ? "max-w-[960px]" : "max-w-[920px]")}>
-        <Reveal>
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+        
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
             {labels.badge}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <h2
             id="entity-updates-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
             {labels.heading}
           </h2>
-        </Reveal>
+        
 
         {canPostPermission ? (
-          <Reveal delay={120}>
+          
             <div className="mt-8 rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
               <div className="flex items-center gap-2">
                 <Sparkles size={16} className="shrink-0 text-accent-400" />
@@ -536,13 +535,13 @@ export function EntityUpdatesFeed({
                 </Button>
               </div>
             </div>
-          </Reveal>
+          
         ) : null}
 
         {updates.length > 0 ? (
           <div className="mt-10 space-y-6">
             {updates.map((update, i) => (
-              <Reveal key={update.id} delay={Math.min(i, 4) * 60}>
+              <>
                 {editingId === update.id ? (
                   <div className="rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
                     <h3 className="text-base font-medium text-ink-200">{t("entityFeed.editHeading")}</h3>
@@ -646,11 +645,11 @@ export function EntityUpdatesFeed({
                     }
                   />
                 )}
-              </Reveal>
+              </>
             ))}
           </div>
         ) : (
-          <Reveal delay={160}>
+          
             <div className="mt-10 flex flex-col items-center gap-4 py-16 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300">
                 <MessageSquare className="h-7 w-7 text-accent-300" />
@@ -666,7 +665,7 @@ export function EntityUpdatesFeed({
                 </p>
               </div>
             </div>
-          </Reveal>
+          
         )}
       </div>
     </section>

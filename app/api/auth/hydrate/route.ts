@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { authenticateBearer } from "@/lib/supabase/bearer";
 import { getLabsAuthContext } from "@/lib/labs/authorization";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ function secureHeaders(): Record<string, string> {
   return {
     "Cache-Control": PRIVATE_NO_STORE,
     "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
   };
 }
 
@@ -65,6 +67,15 @@ export async function GET(request: Request) {
   }
 
   const { user, supabase } = auth.principal;
+
+  // Rate limit: 60 requests per user per minute
+  const rl = await checkRateLimit("auth_hydrate", `user:${user.id}`, 60, 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Rate limited — please try again shortly." },
+      { status: 429, headers: secureHeaders() },
+    );
+  }
 
   const [roleRowsRes, adminRowRes, managerRes, leadershipRes, labs] = await Promise.all([
     supabase.from("user_roles").select("roles(name)").eq("user_id", user.id),

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { GraduationCap, Route, Video, FlaskConical, ArrowRight } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { serverT } from "@/lib/translation/server";
 
@@ -43,24 +42,24 @@ export async function AcademyFeatures() {
       aria-labelledby="academy-features-heading"
     >
       <div className="mx-auto max-w-[1080px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
+        
           <div className="text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+            <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
               {await serverT("academy.featuresEyebrow")}
             </span>
             <h2
               id="academy-features-heading"
               className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
             >
-              {await serverT("academy.featuresH2")} <span className="text-accent-400">{await serverT("academy.featuresH2Accent")}</span>
+              {await serverT("academy.featuresH2")} {await serverT("academy.featuresH2Accent")}
             </h2>
           </div>
-        </Reveal>
+        
 
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {(await Promise.all(FEATURES.map(async (feature, i) => (
-            <Reveal key={feature.titleKey} delay={i * 120}>
-              <article className="group flex h-full flex-col rounded-[2rem] card-surface p-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+            
+              <article key={feature.titleKey} className="group flex h-full flex-col rounded-2xl card-surface p-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
                 <div className="flex items-center justify-between">
                   <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-accent-400/25 bg-accent/[0.08] text-accent-300 shadow-[0_0_24px_-6px_rgba(109,109,255,0.5)]">
                     <feature.icon size={22} />
@@ -86,7 +85,7 @@ export async function AcademyFeatures() {
                   </Button>
                 </div>
               </article>
-            </Reveal>
+            
           ))))}
         </div>
       </div>

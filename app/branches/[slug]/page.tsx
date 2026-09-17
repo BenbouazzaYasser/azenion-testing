@@ -36,6 +36,9 @@ export async function generateMetadata({ params }: BranchPageProps): Promise<Met
   return {
     title: `${branch.name} | Azenion — The Limitless Network`,
     description: branch.description ?? `Explore the ${branch.name} branch hub on Azenion.`,
+    alternates: {
+      canonical: `/branches/${slug}`,
+    },
   };
 }
 

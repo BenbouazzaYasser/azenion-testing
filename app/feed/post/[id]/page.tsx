@@ -10,6 +10,7 @@ import { PostViewTracker } from "@/components/interactions/post-view-tracker";
 import { getFeedItemById } from "@/actions/feed.actions";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { serverT } from "@/lib/translation/server";
+import { JsonLd, siteUrl } from "@/components/seo/json-ld";
 
 interface FeedPostPageProps {
   params: { id: string };
@@ -23,6 +24,9 @@ export async function generateMetadata({ params }: FeedPostPageProps): Promise<M
   return {
     title: item.title ? `${item.title} — Azenion` : "Post — Azenion",
     description: item.body ?? undefined,
+    alternates: {
+      canonical: `/feed/post/${params.id}`,
+    },
   };
 }
 
@@ -58,6 +62,21 @@ async function FeedPost({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-8">
+      <h1 className="sr-only">{item.title ?? "Post on Azenion"}</h1>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: item.title ?? "Post on Azenion",
+          description: item.body ?? undefined,
+          url: `${siteUrl()}/feed/post/${item.id}`,
+          publisher: {
+            "@type": "Organization",
+            name: "Azenion",
+            url: siteUrl(),
+          },
+        }}
+      />
       <PostViewTracker postId={item.id} />
       <FeedCard item={item} currentUserId={userId} />
 

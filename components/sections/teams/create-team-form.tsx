@@ -4,7 +4,7 @@ import { useState, useRef, useTransition, useEffect } from "react";
 import { ImagePlus, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
+import { FormField } from "@/components/ui/form-field";
 import { createClient } from "@/lib/supabase/client";
 import { createTeam, uploadTeamLogo } from "@/actions/team.actions";
 
@@ -34,8 +34,8 @@ function TeamPreviewCard({
   logoPreview: string | null;
 }) {
   return (
-    <div className="group overflow-hidden rounded-[2rem] card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium">
-      <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+    <div className="group overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium">
+      <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative p-6 sm:p-8">
         <div className="flex items-center gap-4">
@@ -64,6 +64,7 @@ export function CreateTeamForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
@@ -116,17 +117,19 @@ export function CreateTeamForm() {
     if (selectedCategoryIds.length > 0) formData.set("category_ids", JSON.stringify(selectedCategoryIds));
 
     startTransition(async () => {
+      setFieldErrors({});
       const result = await createTeam(formData);
       if (result && "error" in result && result.error) {
         setError(result.error);
+        if ("fieldErrors" in result && result.fieldErrors) {
+          setFieldErrors(result.fieldErrors as Record<string, string[]>);
+        }
       }
     });
   }
 
   const inputClass =
     "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30";
-
-  const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
   return (
     <section className="relative overflow-hidden pb-24 pt-6 sm:pb-28 lg:pb-36">
@@ -135,102 +138,98 @@ export function CreateTeamForm() {
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
         <div className="grid gap-12 lg:grid-cols-[1fr_380px] lg:gap-16">
           <div>
-            <Reveal>
+            
               <form
                 onSubmit={handleSubmit}
-                className="overflow-hidden rounded-[2rem] card-surface p-6 shadow-card backdrop-blur-xl sm:p-8"
+                className="overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl sm:p-8"
               >
-                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)]" />
+                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)]" />
 
                 <div className="relative space-y-7">
-                  {error ? (
-                    <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                      {error}
-                    </div>
-                  ) : null}
-
                   <div>
-                    <label htmlFor="team-name" className={labelClass}>
-                      Team Name <span className="text-accent-400">*</span>
-                    </label>
-                    <input
-                      id="team-name"
-                      type="text"
-                      placeholder="Enter your team name"
-                      value={name}
-                      onChange={(e) => handleNameChange(e.target.value)}
-                      required
-                      maxLength={100}
-                      className={inputClass}
-                    />
+                    <FormField label="Team Name" htmlFor="team-name" error={error} required>
+                      <input
+                        id="team-name"
+                        type="text"
+                        placeholder="Enter your team name"
+                        value={name}
+                        onChange={(e) => handleNameChange(e.target.value)}
+                        required
+                        maxLength={100}
+                        className={inputClass}
+                      />
+                    </FormField>
                   </div>
 
                   <div>
-                    <label htmlFor="team-slug" className={labelClass}>
-                      Slug <span className="text-accent-400">*</span>
-                    </label>
-                    <input
-                      id="team-slug"
-                      type="text"
-                      placeholder="your-team-slug"
-                      value={slug}
-                      onChange={(e) => {
-                        setSlugEdited(true);
-                        setSlug(slugify(e.target.value));
-                      }}
+                    <FormField
+                      label="Slug"
+                      htmlFor="team-slug"
+                      helper="Auto-generated from the name. You can edit it."
                       required
-                      maxLength={80}
-                      pattern="[a-z0-9-]+"
-                      title="Lowercase letters, numbers, and hyphens only"
-                      className={inputClass}
-                    />
-                    <p className="mt-1.5 text-xs text-ink-500">
-                      Auto-generated from the name. You can edit it.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className={labelClass}>Team Logo</label>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      onChange={handleLogoChange}
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex w-full items-center gap-3 rounded-xl border border-dashed border-border-strong bg-surface px-5 py-8 text-ink-500 transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.03] hover:text-ink-300"
                     >
-                      <ImagePlus size={24} />
-                      <span className="text-sm">
-                        {logoPreview ? "Change logo" : "Upload team logo"}
-                      </span>
-                    </button>
-                    {logoPreview && (
-                      <div className="mt-3 flex items-center gap-3">
-                        <img
-                          src={logoPreview}
-                          alt="Logo preview"
-                          className="h-12 w-12 rounded-xl object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setLogoPreview(null);
-                            setLogoFile(null);
-                          }}
-                          className="text-sm text-ink-500 transition-colors hover:text-accent-400"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    )}
+                      <input
+                        id="team-slug"
+                        type="text"
+                        placeholder="your-team-slug"
+                        value={slug}
+                        onChange={(e) => {
+                          setSlugEdited(true);
+                          setSlug(slugify(e.target.value));
+                        }}
+                        required
+                        maxLength={80}
+                        pattern="[a-z0-9-]+"
+                        title="Lowercase letters, numbers, and hyphens only"
+                        className={inputClass}
+                      />
+                    </FormField>
+                  </div>
+
+                  <div>
+                    <FormField label="Team Logo" htmlFor="team-logo">
+                      <input
+                        ref={fileInputRef}
+                        id="team-logo"
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        onChange={handleLogoChange}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex w-full items-center gap-3 rounded-xl border border-dashed border-border-strong bg-surface px-5 py-8 text-ink-500 transition-all duration-300 hover:border-accent-400/40 hover:bg-accent/[0.03] hover:text-ink-300"
+                      >
+                        <ImagePlus size={24} />
+                        <span className="text-sm">
+                          {logoPreview ? "Change logo" : "Upload team logo"}
+                        </span>
+                      </button>
+                      {logoPreview && (
+                        <div className="mt-3 flex items-center gap-3">
+                          <img
+                            src={logoPreview}
+                            alt="Logo preview"
+                            className="h-12 w-12 rounded-xl object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLogoPreview(null);
+                              setLogoFile(null);
+                            }}
+                            className="text-sm text-ink-500 transition-colors hover:text-accent-400"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </FormField>
                   </div>
 
                   <fieldset>
-                    <legend className={labelClass}>
+                    <legend className="mb-1.5 block text-sm font-medium text-ink-200">
                       Visibility <span className="text-accent-400">*</span>
                     </legend>
                     <div className="mt-2 flex gap-4">
@@ -261,7 +260,7 @@ export function CreateTeamForm() {
                   </fieldset>
 
                   <div>
-                    <label className={labelClass}>Categories</label>
+                    <span className="mb-1.5 block text-sm font-medium text-ink-200">Categories</span>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {categories.map((cat) => {
                         const active = selectedCategoryIds.includes(cat.id);
@@ -290,21 +289,21 @@ export function CreateTeamForm() {
                   </div>
 
                   <div>
-                    <label htmlFor="team-description" className={labelClass}>
-                      Description
-                    </label>
-                    <textarea
-                      id="team-description"
-                      rows={4}
-                      maxLength={500}
-                      placeholder="Tell people what your team is about..."
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className={`${inputClass} resize-none`}
-                    />
-                    <p className="mt-1.5 text-xs text-ink-500">
-                      {description.length}/500 characters
-                    </p>
+                    <FormField
+                      label="Description"
+                      htmlFor="team-description"
+                      helper={`${description.length}/500 characters`}
+                    >
+                      <textarea
+                        id="team-description"
+                        rows={4}
+                        maxLength={500}
+                        placeholder="Tell people what your team is about..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className={`${inputClass} resize-none`}
+                      />
+                    </FormField>
                   </div>
 
                   <div className="pt-2">
@@ -314,13 +313,13 @@ export function CreateTeamForm() {
                   </div>
                 </div>
               </form>
-            </Reveal>
+            
           </div>
 
           <div className="lg:pt-8">
             <div className="lg:sticky lg:top-32">
-              <Reveal delay={120}>
-                <p className="mb-5 text-xs font-medium uppercase tracking-[0.15em] text-ink-500">
+              
+                <p className="mb-5 text-xs font-medium uppercase tracking-normal text-ink-500">
                   Preview
                 </p>
                 <TeamPreviewCard
@@ -328,7 +327,7 @@ export function CreateTeamForm() {
                   description={description}
                   logoPreview={logoPreview}
                 />
-              </Reveal>
+              
             </div>
           </div>
         </div>

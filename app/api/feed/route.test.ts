@@ -38,7 +38,7 @@ beforeEach(() => {
 });
 
 describe("GET /api/feed", () => {
-  it("serves anonymous global feed with null viewer (public content only)", async () => {
+  it("serves anonymous global feed without forwarding a viewer (public content only)", async () => {
     bearerMock.mockResolvedValue({ ok: false, status: 401, error: "Unauthorized" });
     (getFeedItems as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
       items: [ITEM],
@@ -46,13 +46,13 @@ describe("GET /api/feed", () => {
     });
     const res = await GET(req("?scope=global&page=1&pageSize=20", null));
     expect(res.status).toBe(200);
-    expect(getFeedItems).toHaveBeenCalledWith("all", 1, 20, null);
+    expect(getFeedItems).toHaveBeenCalledWith("all", 1, 20);
     const body = await res.json();
     expect(body.items).toEqual([ITEM]);
     expect(res.headers.get("cache-control")).toBe("private, no-store");
   });
 
-  it("derives the viewer from the bearer principal, never from parameters", async () => {
+  it("never forwards viewer parameters — identity stays server-derived", async () => {
     bearerMock.mockResolvedValue({
       ok: true,
       principal: { user: { id: "viewer-9" }, supabase: {} },
@@ -60,7 +60,7 @@ describe("GET /api/feed", () => {
     (getFeedItems as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ items: [], total: 0 });
     const res = await GET(req("?scope=global&userId=someone-else&viewer=attacker", "Bearer tok"));
     expect(res.status).toBe(200);
-    expect(getFeedItems).toHaveBeenCalledWith("all", 1, 20, "viewer-9");
+    expect(getFeedItems).toHaveBeenCalledWith("all", 1, 20);
   });
 
   it("requires authentication for saved scope", async () => {
@@ -94,10 +94,10 @@ describe("GET /api/feed", () => {
       req("?scope=single&postId=123e4567-e89b-12d3-a456-426614174000", "Bearer tok"),
     );
     expect(res.status).toBe(404);
-    expect(getFeedItemById).toHaveBeenCalledWith("123e4567-e89b-12d3-a456-426614174000", "viewer-9");
+    expect(getFeedItemById).toHaveBeenCalledWith("123e4567-e89b-12d3-a456-426614174000");
   });
 
-  it("forwards branch and trending scopes with the bearer viewer", async () => {
+  it("forwards branch and trending scopes without a viewer argument", async () => {
     bearerMock.mockResolvedValue({
       ok: true,
       principal: { user: { id: "viewer-9" }, supabase: {} },
@@ -106,8 +106,8 @@ describe("GET /api/feed", () => {
     (getTrendingFeedItems as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ items: [], total: 0 });
     const branchId = "123e4567-e89b-12d3-a456-426614174000";
     await GET(req(`?scope=branch&branchId=${branchId}`, "Bearer tok"));
-    expect(getBranchFeedItems).toHaveBeenCalledWith(branchId, 1, 20, "viewer-9");
+    expect(getBranchFeedItems).toHaveBeenCalledWith(branchId, 1, 20);
     await GET(req("?scope=trending&pageSize=10", "Bearer tok"));
-    expect(getTrendingFeedItems).toHaveBeenCalledWith(10, "viewer-9");
+    expect(getTrendingFeedItems).toHaveBeenCalledWith(10);
   });
 });

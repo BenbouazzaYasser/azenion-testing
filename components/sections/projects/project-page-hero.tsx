@@ -4,7 +4,6 @@ import { useTransition, useState } from "react";
 import { Users, Plus, LogOut, User, Lock, Eye, UserPlus, Globe, Building2, Archive, Clock } from "lucide-react";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
 import { joinProject, leaveProject, restoreProject } from "@/actions/project.actions";
 import { OwnershipLeaveModal } from "@/components/shared/ownership-leave-modal";
 import type { RecruitmentRole } from "./recruitment-editor";
@@ -13,6 +12,7 @@ import { getProjectLifecycleStatus } from "@/lib/lifecycle";
 import Link from "next/link";
 import { useTranslation } from "@/components/translation/translation-provider";
 import type { DictKey } from "@/lib/translation/types";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface MemberInfo {
   id: string;
@@ -97,9 +97,9 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
       <BackgroundInfinity variant="projects" />
 
       <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
-        <Reveal delay={0}>
+        
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] bg-surface border-border-strong text-ink-400">
+            <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal bg-surface border-border-strong text-ink-400">
               <span className={`flex h-2 w-2 rounded-full ${visConfig.class.split(" ")[0]}`} />
               <VisIcon size={12} />
               {t(visConfig.labelKey)}
@@ -114,10 +114,10 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
                   </Link>
                 ) : null}
               </div>
-            </Reveal>
+            
 
         {lifecycle !== "ACTIVE" ? (
-          <Reveal delay={40}>
+          
             <div className="mt-5 flex flex-col items-center gap-3">
               <div
                 className={`inline-flex max-w-xl items-center gap-2 rounded-2xl border px-4 py-3 text-left text-sm ${
@@ -149,29 +149,36 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
                 </Button>
               ) : null}
             </div>
-          </Reveal>
+          
         ) : null}
 
-        <Reveal delay={80}>
+        
           <div className="mt-6 flex items-center justify-center gap-4">
             {project.logo_url ? (
-              <img src={project.logo_url} alt="" className="h-16 w-16 rounded-2xl border border-accent-400/30 object-cover" />
+              <OptimizedImage
+                src={project.logo_url}
+                alt={`${project.name} logo`}
+                width={64}
+                height={64}
+                priority
+                className="h-16 w-16 rounded-2xl border border-accent-400/30"
+              />
             ) : null}
             <h1 className="text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
               {project.name}
             </h1>
           </div>
-        </Reveal>
+        
 
         {project.description ? (
-          <Reveal delay={160}>
+          
             <p className="mx-auto mt-6 max-w-2xl text-balance text-[1.05rem] leading-relaxed text-ink-400 sm:text-[1.1rem] sm:leading-8">
               {project.description}
             </p>
-          </Reveal>
+          
         ) : null}
 
-        <Reveal delay={200}>
+        
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
             {project.team ? (
               <Link
@@ -188,9 +195,9 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
               {project.member_count} {project.member_count === 1 ? t("teams.memberOne") : t("teams.memberMany")}
             </span>
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={240}>
+        
           <div className="mt-8 flex items-center justify-center gap-4">
             {currentUserId ? (
               <>
@@ -236,18 +243,18 @@ export function ProjectPageHero({ project, isMember, currentUserId, userRole, me
               </>
             ) : null}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={320}>
+        
           <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
             <span className="flex h-8 w-5 items-start justify-center rounded-full p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
-            <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
+            <span className="text-xs font-medium uppercase tracking-normal text-ink-600">
               {t("common.scrollToExplore")}
             </span>
           </div>
-        </Reveal>
+        
       </div>
 
       <div className="absolute bottom-0 left-1/2 h-px w-[600px] -translate-x-1/2 bg-gradient-to-r from-transparent via-accent/30 to-transparent" />

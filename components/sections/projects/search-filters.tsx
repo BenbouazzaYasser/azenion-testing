@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
 
-import { Reveal } from "@/components/ui/reveal";
 
 const TECHNOLOGIES = ["All", "Next.js", "TypeScript", "Tailwind CSS", "React Native", "Expo", "Supabase", "PostgreSQL"];
 
@@ -63,7 +62,7 @@ export function SearchFilters() {
   return (
     <section className="relative py-10 sm:py-12 lg:py-16" aria-label="Search and filter projects">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
+        
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
             <div className="relative flex-1">
               <Search
@@ -72,11 +71,15 @@ export function SearchFilters() {
                 aria-hidden="true"
               />
               <input
-                type="text"
+                type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search projects..."
-                className="w-full rounded-xl bg-surface py-2.5 pl-10 pr-4 text-sm text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 hover:border-accent-400/40 focus:border-accent-400/60 focus:outline-none focus:ring-1 focus:ring-accent-400/30"
+                enterKeyHint="search"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                className="w-full rounded-xl bg-surface py-2.5 pl-10 pr-4 text-base text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-all duration-300 hover:border-accent-400/40 focus:border-accent-400/60 focus:outline-none focus:ring-1 focus:ring-accent-400/30 sm:text-sm"
               />
             </div>
 
@@ -84,7 +87,7 @@ export function SearchFilters() {
               <Dropdown label="Technology" options={TECHNOLOGIES} value={tech} onChange={setTech} />
             </div>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

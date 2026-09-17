@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { courseSchema } from "@/lib/validations/course.schema";
+import { safeRemoveStorageObjects } from "@/lib/storage-cleanup";
 
 const COURSES_PATH = "/academy/courses";
 
@@ -22,6 +23,15 @@ const CONTENT_TYPES: Record<string, string> = {
   css: "text/css",
   js: "text/javascript",
   mjs: "text/javascript",
+};
+
+const THUMBNAIL_EXT_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+  avif: "image/avif",
 };
 
 const COURSE_STATUSES = new Set(["draft", "published", "archived"]);
@@ -115,7 +125,9 @@ export async function createCourse(formData: FormData) {
   const allowedExts =
     raw.content_type === "pdf" ? PDF_EXTENSIONS : HTML_CSS_EXTENSIONS;
 
-  if (!allowedExts.has(ext)) {
+  // M13: ext is already lowercased; reject non-alphanumeric extensions and
+  // anything outside the per-content-type allow-list.
+  if (/[^a-z0-9]/.test(ext) || !allowedExts.has(ext)) {
     return {
       error:
         raw.content_type === "pdf"
@@ -132,7 +144,7 @@ export async function createCourse(formData: FormData) {
   const { error: uploadError } = await admin.storage
     .from("course-files")
     .upload(objectPath, file, {
-      contentType: CONTENT_TYPES[ext] ?? (file.type || "application/octet-stream"),
+      contentType: CONTENT_TYPES[ext],
       upsert: false,
       metadata: { created_by: user.id },
     });
@@ -164,7 +176,7 @@ export async function createCourse(formData: FormData) {
     .single();
 
   if (insertError || !inserted?.id) {
-    await admin.storage.from("course-files").remove([objectPath]);
+    await safeRemoveStorageObjects(admin, "course-files", [objectPath]);
     return { error: insertError?.message ?? "Failed to create course" };
   }
 
@@ -174,14 +186,15 @@ export async function createCourse(formData: FormData) {
       return { error: "Thumbnail too large. Maximum size is 5MB" };
     }
     const thumbExt = fileExtension(thumbnail.name);
-    if (!THUMBNAIL_EXTENSIONS.has(thumbExt)) {
+    // M13: ext is already lowercased; reject non-alphanumeric extensions.
+    if (/[^a-z0-9]/.test(thumbExt) || !THUMBNAIL_EXTENSIONS.has(thumbExt)) {
       return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
     }
     const thumbnailPath = `courses/${inserted.id}/thumbnail.${thumbExt}`;
     const { error: thumbError } = await admin.storage
       .from("course-files")
       .upload(thumbnailPath, thumbnail, {
-        contentType: thumbnail.type || `image/${thumbExt === "jpg" ? "jpeg" : thumbExt}`,
+        contentType: THUMBNAIL_EXT_MIME[thumbExt],
         upsert: true,
       });
 
@@ -189,7 +202,10 @@ export async function createCourse(formData: FormData) {
       const {
         data: { publicUrl: thumbUrl },
       } = admin.storage.from("course-files").getPublicUrl(thumbnailPath);
-      await admin.from("courses").update({ thumbnail: thumbUrl }).eq("id", inserted.id);
+      const { error: thumbUpdateError } = await admin.from("courses").update({ thumbnail: thumbUrl }).eq("id", inserted.id);
+      if (thumbUpdateError) {
+        await safeRemoveStorageObjects(admin, "course-files", [thumbnailPath]);
+      }
     }
   }
 
@@ -240,7 +256,7 @@ export async function deleteCourse(formData: FormData) {
   }
 
   if (objectsToRemove.length > 0) {
-    await admin.storage.from("course-files").remove(objectsToRemove);
+    await safeRemoveStorageObjects(admin, "course-files", objectsToRemove);
   }
 
   revalidatePath(COURSES_PATH);
@@ -300,7 +316,8 @@ export async function updateCourse(formData: FormData) {
 
   if (hasNewThumbnail) {
     const ext = fileExtension(thumbnail.name);
-    if (!THUMBNAIL_EXTENSIONS.has(ext)) {
+    // M13: ext is already lowercased; reject non-alphanumeric extensions.
+    if (/[^a-z0-9]/.test(ext) || !THUMBNAIL_EXTENSIONS.has(ext)) {
       return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
     }
 
@@ -309,7 +326,7 @@ export async function updateCourse(formData: FormData) {
     const { error: uploadError } = await admin.storage
       .from("course-files")
       .upload(thumbnailPath, thumbnail, {
-        contentType: thumbnail.type || `image/${ext === "jpg" ? "jpeg" : ext}`,
+        contentType: THUMBNAIL_EXT_MIME[ext],
         upsert: true,
       });
 
@@ -350,7 +367,7 @@ export async function updateCourse(formData: FormData) {
     if (existing?.thumbnail) {
       const oldThumbPath = existing.thumbnail.split("/course-files/")[1];
       if (oldThumbPath) {
-        await admin.storage.from("course-files").remove([oldThumbPath]);
+        await safeRemoveStorageObjects(admin, "course-files", [oldThumbPath]);
       }
     }
   }
@@ -361,6 +378,9 @@ export async function updateCourse(formData: FormData) {
     .eq("id", parsed.data.id);
 
   if (updateError) {
+    if (hasNewThumbnail && thumbnailPath) {
+      await safeRemoveStorageObjects(admin, "course-files", [thumbnailPath]);
+    }
     return { error: updateError.message };
   }
 

@@ -1,0 +1,56 @@
+# Projects pagination boundary integration test.
+#
+# Runs ONLY on PRs touching the pagination data path — not on every commit —
+# so unrelated PRs pay nothing:
+#   - actions/projects-list.actions.ts   (the deployed query)
+#   - actions/projects-pagination.it.test.ts (the test itself)
+#   - lib/projects-pagination.ts (+ unit test: codec, helpers, predicate pin)
+#   - supabase/migrations/00137_projects_pagination.sql (keyset index)
+#   - this workflow
+#
+# Target is an ephemeral LOCAL Supabase (`supabase start` + `db reset` on the
+# GitHub runner, which has Docker). Production is never touched: the test
+# refuses any URL containing the production project ref, and the workflow
+# only ever exports the local container's URL/keys.
+name: projects-pagination-it
+
+on:
+  pull_request:
+    paths:
+      - "actions/projects-list.actions.ts"
+      - "actions/projects-pagination.it.test.ts"
+      - "lib/projects-pagination.ts"
+      - "lib/projects-pagination.test.ts"
+      - "supabase/migrations/00137_projects_pagination.sql"
+      - ".github/workflows/projects-pagination-it.yml"
+
+jobs:
+  pagination-it:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase and apply migrations
+        run: |
+          supabase start
+          supabase db reset
+
+      - name: Run pagination boundary integration test
+        run: |
+          eval "$(supabase status -o env)"
+          export PROJECTS_PAGINATION_IT=1
+          export PROJECTS_PAGINATION_IT_URL="$API_URL"
+          export PROJECTS_PAGINATION_IT_SERVICE_KEY="$SERVICE_ROLE_KEY"
+          npx vitest run actions/projects-pagination.it.test.ts

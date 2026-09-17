@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ImagePlus, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { updateCourse } from "@/actions/academy-courses.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { COURSE_CATEGORIES, COURSE_DIFFICULTIES, type CourseRow } from "@/lib/validations/course.schema";
@@ -13,8 +14,6 @@ import { cn } from "@/lib/utils";
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
-
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 export function CourseEditDialog({ course }: { course: CourseRow }) {
   const router = useRouter();
@@ -127,7 +126,7 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
         }}
         aria-label="Edit course"
         title="Edit course"
-        className="flex h-8 w-8 items-center justify-center rounded-full text-ink-400 transition-colors hover:border-accent-400/50 hover:text-accent-300"
+        className="flex h-11 w-11 items-center justify-center rounded-full text-ink-400 transition-colors hover:border-accent-400/50 hover:text-accent-300"
       >
         <Pencil size={13} />
       </button>
@@ -168,7 +167,7 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                     type="button"
                     onClick={() => setOpen(false)}
                     aria-label="Close"
-                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="-mr-1.5 -mt-1.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -182,10 +181,7 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                   ) : null}
 
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label htmlFor="course-title" className={labelClass}>
-                        Course title
-                      </label>
+                    <FormField label="Course title" htmlFor="course-title" required>
                       <input
                         id="course-title"
                         value={title}
@@ -194,12 +190,13 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                         maxLength={200}
                         className={inputClass}
                       />
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="course-description" className={labelClass}>
-                        Description
-                      </label>
+                    <FormField
+                      label="Description"
+                      htmlFor="course-description"
+                      helper={`${description.length}/5000`}
+                    >
                       <textarea
                         id="course-description"
                         value={description}
@@ -208,15 +205,9 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                         rows={3}
                         className={`${inputClass} resize-none`}
                       />
-                      <p className="mt-1.5 text-xs text-ink-500">
-                        {description.length}/5000
-                      </p>
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="course-category" className={labelClass}>
-                        Category
-                      </label>
+                    <FormField label="Category" htmlFor="course-category" required>
                       <div className="relative">
                         <select
                           id="course-category"
@@ -233,13 +224,10 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                           ))}
                         </select>
                       </div>
-                    </div>
+                    </FormField>
 
                     <div className="grid gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="course-duration" className={labelClass}>
-                          Duration
-                        </label>
+                      <FormField label="Duration" htmlFor="course-duration">
                         <input
                           id="course-duration"
                           value={duration}
@@ -248,12 +236,9 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                           placeholder="e.g. 6 weeks, 2 hours"
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor="course-difficulty" className={labelClass}>
-                          Difficulty
-                        </label>
+                      <FormField label="Difficulty" htmlFor="course-difficulty">
                         <div className="relative">
                           <select
                             id="course-difficulty"
@@ -273,13 +258,14 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                             ))}
                           </select>
                         </div>
-                      </div>
+                      </FormField>
                     </div>
 
-                    <div>
-                      <label htmlFor="course-tags" className={labelClass}>
-                        Tags
-                      </label>
+                    <FormField
+                      label="Tags"
+                      htmlFor="course-tags"
+                      helper="Comma-separated, up to 10 tags."
+                    >
                       <input
                         id="course-tags"
                         value={tags}
@@ -288,15 +274,9 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                         placeholder="e.g. HTML, CSS, Responsive"
                         className={inputClass}
                       />
-                      <p className="mt-1.5 text-xs text-ink-500">
-                        Comma-separated, up to 10 tags.
-                      </p>
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="course-status" className={labelClass}>
-                        Visibility
-                      </label>
+                    <FormField label="Visibility" htmlFor="course-status">
                       <select
                         id="course-status"
                         value={status}
@@ -307,10 +287,10 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                         <option value="draft">Draft — managers only</option>
                         <option value="archived">Archived — managers only</option>
                       </select>
-                    </div>
+                    </FormField>
 
                     <div>
-                      <label className={labelClass}>Thumbnail</label>
+                      <span className="mb-1.5 block text-sm font-medium text-ink-200">Thumbnail</span>
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                         <input
                           ref={fileInputRef}

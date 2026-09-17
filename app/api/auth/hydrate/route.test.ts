@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "@/app/api/auth/hydrate/route";
 
 vi.mock("@/lib/supabase/bearer", () => ({ authenticateBearer: vi.fn() }));
+vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: vi.fn().mockResolvedValue({ allowed: true, remaining: 59 }) }));
 
 import { authenticateBearer } from "@/lib/supabase/bearer";
 

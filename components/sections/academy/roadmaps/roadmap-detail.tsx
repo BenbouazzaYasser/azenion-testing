@@ -72,7 +72,8 @@ export function RoadmapDetailView({
         <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-400">
           <Milestone size={11} aria-hidden />
           {roadmap.stageCount} {roadmap.stageCount === 1 ? "stage" : "stages"}
-          {" · "}
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-400">
           {roadmap.nodeCount} {roadmap.nodeCount === 1 ? "step" : "steps"}
         </span>
       </div>
@@ -86,7 +87,7 @@ export function RoadmapDetailView({
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl card-surface-soft px-4 py-4 shadow-card backdrop-blur-xl">
-          <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-ink-500">
+          <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-normal text-ink-500">
             <GraduationCap size={12} aria-hidden />
             Courses
           </p>
@@ -95,7 +96,7 @@ export function RoadmapDetailView({
           </p>
         </div>
         <div className="rounded-2xl card-surface-soft px-4 py-4 shadow-card backdrop-blur-xl">
-          <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-ink-500">
+          <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-normal text-ink-500">
             <FlaskConical size={12} aria-hidden />
             Labs
           </p>
@@ -124,7 +125,7 @@ export function RoadmapDetailView({
 
       <div
         aria-label="Node status legend"
-        className="mt-10 flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-ink-600"
+        className="mt-10 flex items-center gap-2 text-[11px] font-medium uppercase tracking-normal text-ink-600"
       >
         <span>Legend:</span>
         <span className="flex flex-wrap items-center gap-2 normal-case tracking-normal">

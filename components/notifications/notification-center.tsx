@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Bell,
@@ -69,9 +70,11 @@ function NotificationAvatar({
   const actor = notification.actor;
   if (actor?.avatar_url) {
     return (
-      <img
+      <Image
         src={actor.avatar_url}
         alt=""
+        width={36}
+        height={36}
         className="h-9 w-9 shrink-0 rounded-full object-cover"
       />
     );
@@ -214,7 +217,7 @@ export function NotificationCenter() {
   }, [userId]);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    function handleClickOutside(e: MouseEvent | TouchEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
@@ -224,10 +227,12 @@ export function NotificationCenter() {
     }
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside, { passive: true });
       document.addEventListener("keydown", handleKey);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
       document.removeEventListener("keydown", handleKey);
     };
   }, [open]);
@@ -318,7 +323,7 @@ export function NotificationCenter() {
               <button
                 type="button"
                 onClick={handleMarkAllRead}
-                className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium text-accent-400 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 hover:text-accent-300"
+                className="flex min-h-[44px] items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium text-accent-400 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 hover:text-accent-300"
               >
                 <CheckCheck size={13} />
                 Mark all read
@@ -382,7 +387,7 @@ export function NotificationCenter() {
             aria-hidden
             className="relative mx-4 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent"
           />
-          <p className="relative px-4 py-2.5 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-ink-600">
+          <p className="relative px-4 py-2.5 text-center text-[10px] font-medium uppercase tracking-normal text-ink-600">
             Azenion
           </p>
         </div>

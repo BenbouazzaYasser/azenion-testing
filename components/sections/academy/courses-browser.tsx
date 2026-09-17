@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -13,7 +14,6 @@ import {
   Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Reveal } from "@/components/ui/reveal";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { useTranslation } from "@/components/translation/translation-provider";
 import { CourseCreateDialog } from "./course-create-dialog";
@@ -85,7 +85,7 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="courses-browser-heading">
       <div className="mx-auto max-w-[880px] px-5 sm:px-8">
-        <Reveal>
+        
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
             <div className="relative w-full sm:max-w-sm">
               <Search
@@ -103,9 +103,9 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
             </div>
             {canManage ? <CourseCreateDialog /> : null}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <div className="mt-6 flex justify-center">
             <FilterBubbles
               options={CATEGORIES.map((c) => ({ id: c, label: c }))}
@@ -113,9 +113,9 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
               onSelect={setCategory}
             />
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={160}>
+        
           {filtered.length > 0 ? (
             <div className="mt-14 grid gap-5 sm:grid-cols-2">
               {filtered.map((course) => (
@@ -151,14 +151,14 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
                     : t("academy.listCoursesEmptySub")}
                 </p>
                 {courses.length === 0 ? (
-                  <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-ink-600">
+                  <p className="mt-8 text-xs font-semibold uppercase tracking-normal text-ink-600">
                     {t("academy.comingTo")}
                   </p>
                 ) : null}
               </div>
             </div>
           )}
-        </Reveal>
+        
       </div>
     </section>
   );
@@ -215,7 +215,7 @@ function CourseCard({
   }
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40">
       <div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-accent/10 blur-[100px] transition-opacity duration-300 group-hover:opacity-100"
@@ -229,9 +229,12 @@ function CourseCard({
             rel="noopener noreferrer"
             className="relative -mx-6 -mt-6 mb-5 overflow-hidden border-b border-border hover:opacity-100 transition-opacity duration-300"
           >
-            <img
+            <Image
               src={`/api/academy/courses/${course.id}/file?view=thumbnail`}
               alt={`${course.title} thumbnail`}
+              width={640}
+              height={160}
+              sizes="(max-width: 768px) 100vw, 640px"
               className="h-40 w-full object-cover"
             />
           </a>
@@ -344,7 +347,7 @@ function CourseCard({
                 aria-label={t("academy.deleteCourseAria")}
                 title={confirming ? t("academy.clickAgain") : t("academy.deleteCourseAria")}
                 className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-full border transition-colors",
+                  "flex h-11 w-11 items-center justify-center rounded-full border transition-colors",
                   confirming
                     ? "border-red-500/50 bg-red-500/10 text-red-300"
                     : "border-border-strong text-ink-400 hover:border-red-500/50 hover:text-red-300"

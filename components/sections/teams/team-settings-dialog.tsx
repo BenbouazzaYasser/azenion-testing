@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { X, Settings, ImagePlus, AlertTriangle, Users, ShieldAlert, User, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { updateTeam, deleteTeam } from "@/actions/team.actions";
 import { TransferOwnershipConfirmModal } from "@/components/shared/transfer-ownership-confirm-modal";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
@@ -46,8 +47,6 @@ interface TeamSettingsDialogProps {
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
 
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
-
 export function TeamSettingsDialog({ team, categories, canDelete, open: controlledOpen, onOpenChange, currentUserId, members }: TeamSettingsDialogProps) {
   const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
@@ -88,7 +87,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
       document.removeEventListener("keydown", handleKeyDown);
       setMounted(false);
     };
-  }, [open]);
+  }, [open, setOpen]);
 
   function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -186,7 +185,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                     type="button"
                     onClick={() => setOpen(false)}
                     aria-label="Close"
-                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="-mr-1.5 -mt-1.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -218,10 +217,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
 
                   {activeTab === "general" ? (
                     <form onSubmit={handleSave} className="space-y-6">
-                      <div>
-                        <label htmlFor="settings-name" className={labelClass}>
-                          Team Name
-                        </label>
+                      <FormField label="Team Name" htmlFor="settings-name" required>
                         <input
                           id="settings-name"
                           value={name}
@@ -230,12 +226,9 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                           maxLength={100}
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor="settings-slug" className={labelClass}>
-                          Slug
-                        </label>
+                      <FormField label="Slug" htmlFor="settings-slug" required>
                         <input
                           id="settings-slug"
                           value={slug}
@@ -245,12 +238,13 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                           pattern="[a-z0-9-]+"
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor="settings-description" className={labelClass}>
-                          Description
-                        </label>
+                      <FormField
+                        label="Description"
+                        htmlFor="settings-description"
+                        helper={`${description.length}/500`}
+                      >
                         <textarea
                           id="settings-description"
                           value={description}
@@ -259,11 +253,10 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                           rows={4}
                           className={`${inputClass} resize-none`}
                         />
-                        <p className="mt-1.5 text-xs text-ink-500">{description.length}/500</p>
-                      </div>
+                      </FormField>
 
                       <div>
-                        <label className={labelClass}>Visibility</label>
+                        <span className="mb-1.5 block text-sm font-medium text-ink-200">Visibility</span>
                         <div className="mt-2 flex gap-4">
                           {(["public", "private"] as const).map((opt) => (
                             <label
@@ -284,7 +277,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
                       </div>
 
                       <div>
-                        <label className={labelClass}>Categories</label>
+                        <span className="mb-1.5 block text-sm font-medium text-ink-200">Categories</span>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {categories.map((cat) => {
                             const active = selectedCategoryIds.includes(cat.id);

@@ -133,10 +133,12 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
       {open
         ? createPortal(
             <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 py-8">
-              <div
-                className="absolute inset-0 bg-void-950/85 backdrop-blur-md transition-opacity duration-200"
+              <button
+                type="button"
+                onClick={dismiss}
+                aria-label="Close onboarding"
+                className="absolute inset-0 cursor-default bg-void-950/85 backdrop-blur-md transition-opacity duration-200 focus-visible:outline-none"
                 style={{ opacity: mounted ? 1 : 0 }}
-                aria-hidden="true"
               />
 
               <div
@@ -168,14 +170,14 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
                       onClick={dismiss}
                       disabled={busy}
                       aria-label="Close onboarding"
-                      className="-mr-1 -mt-1 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:pointer-events-none disabled:opacity-50"
+                      className="-mr-1 -mt-1 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:pointer-events-none disabled:opacity-50"
                     >
                       <X size={16} />
                     </button>
                   ) : null}
                 </div>
 
-                <div className="overflow-y-auto px-7 py-6">
+                <div className="overflow-y-auto px-5 py-6 sm:px-7">
                   {error ? (
                     <div className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
                       {error}
@@ -347,7 +349,7 @@ function ProfileStep({
               {profile.username.charAt(0).toUpperCase() || "A"}
             </span>
           )}
-          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-void-950/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-void-950/60 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-within:opacity-100">
             <Camera size={18} className="text-ink-50" />
           </span>
         </button>

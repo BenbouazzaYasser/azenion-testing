@@ -6,11 +6,11 @@ import { Eye, EyeOff, Github, Loader2 } from "lucide-react";
 
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
 import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
+import { FormField } from "@/components/ui/form-field";
 import { signIn } from "@/actions/auth.actions";
 
 const INPUT_CLASS =
-  "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30";
+  "w-full rounded-xl bg-surface px-4 py-3.5 text-base text-ink-50 placeholder:text-ink-600 backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/50 focus:outline-none focus:ring-1 focus:ring-accent-400/30 sm:text-[0.95rem]";
 
 export function LoginCard({ next, error: initialError }: { next?: string; error?: string }) {
   const [identifier, setIdentifier] = useState("");
@@ -48,9 +48,9 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
       <BackgroundInfinity variant="login" />
 
       <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
-        <Reveal>
-          <div className="group overflow-hidden rounded-[2rem] card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 hover:shadow-glow-sm sm:px-12 sm:py-9">
-            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-[2rem] bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        
+          <div className="group overflow-hidden rounded-2xl card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:px-12 sm:py-9">
+            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-400/30 bg-accent/[0.08]">
@@ -68,10 +68,7 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
             </div>
 
             <form className="relative mt-6 flex flex-col gap-5" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="login-identifier" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Email or Username
-                </label>
+              <FormField label="Email or Username" htmlFor="login-identifier" error={error} required>
                 <input
                   id="login-identifier"
                   name="identifier"
@@ -81,14 +78,15 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
                   onChange={(e) => setIdentifier(e.target.value)}
                   className={INPUT_CLASS}
                   autoComplete="username"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="next"
                   required
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label htmlFor="login-password" className="mb-1.5 block text-sm font-medium text-ink-200">
-                  Password
-                </label>
+              <FormField label="Password" htmlFor="login-password" required>
                 <div className="relative">
                   <input
                     id="login-password"
@@ -98,36 +96,32 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={INPUT_CLASS + " pr-11"}
+                    autoComplete="current-password"
+                    enterKeyHint="go"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-600 transition-colors hover:bg-surface-hover hover:text-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+                    className="absolute right-1 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full text-ink-600 transition-colors hover:bg-surface-hover hover:text-ink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
                 </div>
-              </div>
+              </FormField>
 
               <div className="flex items-center">
-                <label className="flex cursor-pointer items-center gap-2">
+                <label className="flex min-h-[44px] cursor-pointer items-center gap-2 py-1">
                   <input
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-4 w-4 rounded border-border-strong bg-surface text-accent-400 accent-accent-400 transition-colors focus:ring-accent-400/30"
+                    className="h-5 w-5 rounded border-border-strong bg-surface text-accent-400 accent-accent-400 transition-colors focus:ring-accent-400/30"
                   />
                   <span className="text-sm text-ink-400">Remember me</span>
                 </label>
               </div>
-
-              {error && (
-                <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                  {error}
-                </p>
-              )}
 
               <Button type="submit" size="lg" className="w-full" disabled={loading}>
                 {loading ? (
@@ -143,7 +137,7 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
 
             <div className="relative mt-6">
               <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-border-strong to-transparent" />
-              <span className="relative mx-auto flex w-10 justify-center bg-void-950 text-xs uppercase tracking-[0.12em] text-ink-600">
+              <span className="relative mx-auto flex w-10 justify-center bg-void-950 text-xs uppercase tracking-normal text-ink-600">
                 or
               </span>
             </div>
@@ -197,7 +191,7 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
               </p>
             </div>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

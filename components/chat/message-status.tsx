@@ -1,5 +1,4 @@
-"use client";
-
+import Image from "next/image";
 import { Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,9 +28,11 @@ export function MessageStatus({
         )}
       >
         {avatarUrl ? (
-          <img
+          <Image
             src={avatarUrl}
             alt=""
+            width={16}
+            height={16}
             className={cn(
               "h-full w-full rounded-full object-cover",
               ring && "ring-2 ring-void-950",

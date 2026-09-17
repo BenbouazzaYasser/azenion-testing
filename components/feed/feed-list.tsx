@@ -177,7 +177,7 @@ export function FeedList({
               <button
                 type="button"
                 onClick={() => handleFilter("all")}
-                className="mt-1 rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
+                className="mt-1 rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50"
               >
                 {t("feed.showAll")}
               </button>
@@ -191,7 +191,7 @@ export function FeedList({
             <button
               type="button"
               onClick={handleRetry}
-              className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
+              className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50"
             >
               {t("feed.retry")}
             </button>
@@ -231,7 +231,7 @@ export function FeedList({
             <button
               type="button"
               onClick={handleRetry}
-              className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm"
+              className="rounded-full bg-surface px-6 py-2.5 text-sm font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50"
             >
               {t("feed.retry")}
             </button>

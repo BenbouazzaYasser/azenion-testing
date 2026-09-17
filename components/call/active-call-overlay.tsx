@@ -119,7 +119,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
       <div
         role="dialog"
         aria-label="Minimized call"
-        className="fixed bottom-6 right-6 z-[120] flex items-center gap-3 rounded-2xl border border-border-strong bg-void-950/90 p-3 shadow-dialog backdrop-blur-2xl animate-fade-in"
+        className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-[120] flex items-center gap-3 rounded-2xl border border-border-strong bg-void-950/90 p-3 shadow-dialog backdrop-blur-2xl animate-fade-in"
       >
         <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-void-900">
           {isVideo && call.remoteStream ? (
@@ -138,13 +138,13 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
             {call.phase === "active" && call.startedAt ? formatClock(durationSec) : "Calling…"}
           </div>
         </div>
-        <div className="flex items-center gap-1.5 ml-2">
+        <div className="flex items-center gap-2.5 ml-2">
           <button
             type="button"
             onClick={() => setIsMinimized(false)}
             aria-label="Expand call"
             title="Expand call"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong bg-surface text-ink-300 hover:text-ink-50 transition-all"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-border-strong bg-surface text-ink-300 hover:text-ink-50 transition-all"
           >
             <Maximize2 className="h-3.5 w-3.5" />
           </button>
@@ -153,7 +153,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
             onClick={manager.endCall}
             aria-label="End call"
             title="End call"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-all"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-all"
           >
             <PhoneCall className="h-3.5 w-3.5 rotate-[135deg]" />
           </button>
@@ -167,7 +167,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
       role="dialog"
       aria-modal="true"
       aria-label="Active call"
-      className="fixed inset-0 z-[120] flex flex-col bg-void-950/95 backdrop-blur-xl"
+      className="fixed inset-0 z-[120] flex flex-col bg-void-950/95 backdrop-blur-xl pt-[env(safe-area-inset-top)]"
     >
       {/* ── Status bar ── */}
       <div className="flex items-center justify-between px-5 py-4 sm:px-8">
@@ -198,7 +198,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
             onClick={() => setIsMinimized(true)}
             aria-label="Minimize call"
             title="Minimize call"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-surface text-ink-300 hover:text-ink-50 transition-all"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-border-strong bg-surface text-ink-300 hover:text-ink-50 transition-all"
           >
             <Minimize2 className="h-4 w-4" />
           </button>
@@ -241,7 +241,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
 
             {/* Screen-share badge */}
             {call.screenActive && (
-              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-accent-300 backdrop-blur">
+              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-normal text-accent-300 backdrop-blur">
                 <ScreenShare className="h-3 w-3" />
                 Screen sharing
               </div>
@@ -279,7 +279,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
                   muted={false}
                   className="absolute inset-0 h-full w-full object-contain bg-void-950"
                 />
-                <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-accent-300 backdrop-blur">
+                <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-normal text-accent-300 backdrop-blur">
                   <ScreenShare className="h-3 w-3" />
                   Screen sharing
                 </div>
@@ -324,7 +324,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
       </div>
 
       {/* ── Controls ── */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 flex items-center justify-center gap-3 px-4">
+      <div className="pointer-events-none absolute inset-x-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-10 flex items-center justify-center gap-3 px-4">
         <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-border-strong bg-glass-strong px-4 py-3 shadow-dialog backdrop-blur-2xl">
           <CallButton
             label={call.muted ? "Unmute microphone" : "Mute microphone"}

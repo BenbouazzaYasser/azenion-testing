@@ -144,12 +144,16 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
           <div className="relative">
             <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-500" />
             <input
-              type="text"
+              type="search"
               aria-label="Search users"
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full rounded-full bg-surface px-4 py-3 pl-11 text-sm text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/60 focus:ring-2 focus:ring-accent-400/30"
+              enterKeyHint="search"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              className="w-full rounded-full bg-surface px-4 py-3 pl-11 text-base text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/60 focus:ring-2 focus:ring-accent-400/30 sm:text-sm"
             />
           </div>
 
@@ -207,14 +211,14 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   <ChevronLeft className="h-3.5 w-3.5" />
                   Inbox
                 </button>
-                <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-ink-500">
+                <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-normal text-ink-500">
                   <Archive className="h-3.5 w-3.5" />
                   Archived
                 </h2>
               </>
             ) : (
               <>
-                <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-ink-500">
+                <h2 className="text-xs font-semibold uppercase tracking-normal text-ink-500">
                   Messages
                 </h2>
                 <div className="flex items-center gap-2">
@@ -228,7 +232,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                     onClick={handleOpenArchived}
                     aria-label="View archived conversations"
                     className={cn(
-                      "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                      "flex min-h-[44px] items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-medium transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
                       "border-border-strong text-ink-400 hover:border-accent-400/50 hover:bg-surface-hover hover:text-ink-100",
                     )}
                   >
@@ -289,7 +293,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
               <p className="mt-1.5 max-w-[220px] text-xs leading-relaxed text-ink-500">
                 Search for a user above to start messaging. Your conversations will appear here.
               </p>
-              <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-600">
+              <p className="mt-6 text-[11px] font-semibold uppercase tracking-normal text-ink-600">
                 Start a new chat
               </p>
             </div>

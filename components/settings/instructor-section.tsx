@@ -14,6 +14,7 @@ import { ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "@/components/translation/translation-provider";
 import type { DictKey } from "@/lib/translation/types";
+import { FormField } from "@/components/ui/form-field";
 
 const GITHUB_HOSTS = ["github.com", "www.github.com"];
 const LINKEDIN_HOSTS = ["linkedin.com", "www.linkedin.com", "linkedin.in", "www.linkedin.in"];
@@ -372,10 +373,7 @@ export function InstructorSection() {
         <h3 className="mb-4 text-lg font-semibold text-ink-50">{t("settings.instructorBasicInfo")}</h3>
 
         <div className="space-y-4">
-          <div>
-            <label htmlFor="full_name" className="mb-2 block text-sm font-medium text-ink-200">
-              {t("settings.instructorFullNameRequired")}
-            </label>
+          <FormField label={t("settings.instructorFullNameRequired")} htmlFor="full_name" required>
             <input
               id="full_name"
               type="text"
@@ -384,12 +382,9 @@ export function InstructorSection() {
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label htmlFor="bio" className="mb-2 block text-sm font-medium text-ink-200">
-              {t("settings.instructorBioRequired")}
-            </label>
+          <FormField label={t("settings.instructorBioRequired")} htmlFor="bio" required>
             <textarea
               id="bio"
               required
@@ -399,12 +394,9 @@ export function InstructorSection() {
               placeholder={t("settings.instructorBioPlaceholder")}
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-ink-200">
-              {t("settings.instructorExpertiseRequiredHint")}
-            </label>
+          <FormField label={t("settings.instructorExpertiseRequiredHint")}>
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
@@ -447,15 +439,9 @@ export function InstructorSection() {
                 ))}
               </div>
             )}
-          </div>
+          </FormField>
 
-          <div>
-            <label
-              htmlFor="teaching_experience"
-              className="mb-2 block text-sm font-medium text-ink-200"
-            >
-              {t("settings.instructorTeachingOptional")}
-            </label>
+          <FormField label={t("settings.instructorTeachingOptional")} htmlFor="teaching_experience">
             <textarea
               id="teaching_experience"
               rows={3}
@@ -464,7 +450,7 @@ export function InstructorSection() {
               placeholder={t("settings.instructorTeachingPlaceholder")}
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
-          </div>
+          </FormField>
         </div>
       </div>
 
@@ -511,10 +497,7 @@ export function InstructorSection() {
 
                 {!edu.self_taught && (
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                      <label className="mb-1 block text-xs font-medium text-ink-400">
-                        {t("settings.instructorInstitutionRequired")}
-                      </label>
+                    <FormField label={t("settings.instructorInstitutionRequired")} className="sm:col-span-2">
                       <input
                         type="text"
                         value={edu.institution}
@@ -522,9 +505,8 @@ export function InstructorSection() {
                         placeholder="e.g., MIT, Stanford University"
                         className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-ink-400">{t("settings.instructorDegree")}</label>
+                    </FormField>
+                    <FormField label={t("settings.instructorDegree")}>
                       <input
                         type="text"
                         value={edu.degree ?? ""}
@@ -532,11 +514,8 @@ export function InstructorSection() {
                         placeholder="e.g., B.S., M.A., Ph.D."
                         className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-ink-400">
-                        {t("settings.instructorFieldStudy")}
-                      </label>
+                    </FormField>
+                    <FormField label={t("settings.instructorFieldStudy")}>
                       <input
                         type="text"
                         value={edu.field ?? ""}
@@ -544,11 +523,8 @@ export function InstructorSection() {
                         placeholder="e.g., Computer Science"
                         className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-ink-400">
-                        {t("settings.instructorStartYear")}
-                      </label>
+                    </FormField>
+                    <FormField label={t("settings.instructorStartYear")}>
                       <input
                         type="text"
                         value={edu.start_year ?? ""}
@@ -558,11 +534,8 @@ export function InstructorSection() {
                         maxLength={4}
                         className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-ink-400">
-                        {t("settings.instructorEndYear")}
-                      </label>
+                    </FormField>
+                    <FormField label={t("settings.instructorEndYear")}>
                       <input
                         type="text"
                         value={edu.end_year ?? ""}
@@ -572,7 +545,7 @@ export function InstructorSection() {
                         maxLength={4}
                         className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                       />
-                    </div>
+                    </FormField>
                   </div>
                 )}
               </div>
@@ -611,10 +584,7 @@ export function InstructorSection() {
                 </button>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-xs font-medium text-ink-400">
-                      {t("settings.instructorCertificationName")}
-                    </label>
+                  <FormField label={t("settings.instructorCertificationName")} className="sm:col-span-2">
                     <input
                       type="text"
                       value={cert.name}
@@ -622,11 +592,8 @@ export function InstructorSection() {
                       placeholder="e.g., AWS Solutions Architect, Google Cloud Professional"
                       className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                     />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-ink-400">
-                      {t("settings.instructorIssuingOrg")}
-                    </label>
+                  </FormField>
+                  <FormField label={t("settings.instructorIssuingOrg")}>
                     <input
                       type="text"
                       value={cert.issuer ?? ""}
@@ -634,9 +601,8 @@ export function InstructorSection() {
                       placeholder="e.g., Amazon, Google"
                       className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                     />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-ink-400">{t("settings.instructorYear")}</label>
+                  </FormField>
+                  <FormField label={t("settings.instructorYear")}>
                     <input
                       type="text"
                       value={cert.year ?? ""}
@@ -646,11 +612,8 @@ export function InstructorSection() {
                       maxLength={4}
                       className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                     />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-xs font-medium text-ink-400">
-                      {t("settings.instructorCredentialUrl")}
-                    </label>
+                  </FormField>
+                  <FormField label={t("settings.instructorCredentialUrl")} className="sm:col-span-2">
                     <input
                       type="url"
                       value={cert.url ?? ""}
@@ -658,7 +621,7 @@ export function InstructorSection() {
                       placeholder="https://..."
                       className="w-full rounded-lg border border-ink-700 bg-void-800 px-3 py-2 text-sm text-ink-50 focus:border-accent focus:outline-none"
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             ))}
@@ -670,10 +633,7 @@ export function InstructorSection() {
         <h3 className="mb-4 text-lg font-semibold text-ink-50">{t("settings.instructorLinks")}</h3>
 
         <div className="space-y-4">
-          <div>
-            <label htmlFor="portfolio_url" className="mb-2 block text-sm font-medium text-ink-200">
-              {t("settings.instructorPortfolioUrl")}
-            </label>
+          <FormField label={t("settings.instructorPortfolioUrl")} htmlFor="portfolio_url">
             <input
               id="portfolio_url"
               type="url"
@@ -691,12 +651,9 @@ export function InstructorSection() {
               placeholder="https://yourportfolio.com"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label htmlFor="linkedin_url" className="mb-2 block text-sm font-medium text-ink-200">
-              LinkedIn URL
-            </label>
+          <FormField label="LinkedIn URL" htmlFor="linkedin_url">
             <input
               id="linkedin_url"
               type="url"
@@ -711,12 +668,9 @@ export function InstructorSection() {
               placeholder="https://linkedin.com/in/yourprofile"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label htmlFor="github_url" className="mb-2 block text-sm font-medium text-ink-200">
-              GitHub URL
-            </label>
+          <FormField label="GitHub URL" htmlFor="github_url">
             <input
               id="github_url"
               type="url"
@@ -731,7 +685,7 @@ export function InstructorSection() {
               placeholder="https://github.com/yourusername"
               className="w-full rounded-lg border border-ink-700 bg-void-800 px-4 py-2.5 text-ink-50 focus:border-accent focus:outline-none"
             />
-          </div>
+          </FormField>
         </div>
       </div>
 

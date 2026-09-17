@@ -73,12 +73,20 @@ const config: Config = {
       fontFamily: {
         display: [
           "Proxima Nova",
+          "var(--font-display)",
           "var(--font-inter)",
           "ui-sans-serif",
           "system-ui",
           "sans-serif",
         ],
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: [
+          "var(--font-plex-mono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "monospace",
+        ],
       },
       backgroundImage: {
         "radial-fade":

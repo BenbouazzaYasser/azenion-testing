@@ -252,11 +252,11 @@ export function ConversationMenu({
           onOpenChange(!open);
         }}
         className={cn(
-          "absolute right-0.5 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-ink-500 transition-all duration-200 ease-premium",
+          "absolute right-1.5 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-ink-500 transition-all duration-200 ease-premium",
           "hover:bg-surface-hover hover:text-ink-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
           open
             ? "bg-surface-hover text-ink-100"
-            : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 max-sm:opacity-70",
+            : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 max-sm:opacity-100",
         )}
       >
         <MoreVertical className="h-4 w-4" />

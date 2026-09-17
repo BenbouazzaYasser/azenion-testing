@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ImagePlus, Pencil, X, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import {
   updateLab,
   createLabVersion,
@@ -18,11 +19,10 @@ import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { LAB_CATEGORIES, LAB_DIFFICULTIES, LAB_TYPES, type LabRow } from "@/lib/validations/lab.schema";
 import { LabContentEditor, serializeDraftBlocks, hydrateDraftBlocks, type DraftBlock } from "./lab-content-editor";
 import { cn } from "@/lib/utils";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
-
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 interface AvailableCourse {
   id: string;
@@ -203,7 +203,7 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Edit lab"
-        className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong text-ink-400 transition-colors hover:border-accent-400/50 hover:text-accent-300"
+        className="flex h-11 w-11 items-center justify-center rounded-full border border-border-strong text-ink-400 transition-colors hover:border-accent-400/50 hover:text-accent-300"
       >
         <Pencil size={13} />
       </button>
@@ -234,7 +234,7 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                     type="button"
                     onClick={() => setOpen(false)}
                     aria-label="Close"
-                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="-mr-1.5 -mt-1.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -248,10 +248,7 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                   ) : null}
 
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label htmlFor={`lab-title-${lab.id}`} className={labelClass}>
-                        Lab title
-                      </label>
+                    <FormField label="Lab title" htmlFor={`lab-title-${lab.id}`} required>
                       <input
                         id={`lab-title-${lab.id}`}
                         value={title}
@@ -260,12 +257,9 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                         maxLength={200}
                         className={inputClass}
                       />
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor={`lab-description-${lab.id}`} className={labelClass}>
-                        Description
-                      </label>
+                    <FormField label="Description" htmlFor={`lab-description-${lab.id}`}>
                       <textarea
                         id={`lab-description-${lab.id}`}
                         value={description}
@@ -274,13 +268,10 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                         rows={3}
                         className={cn(inputClass, "resize-none")}
                       />
-                    </div>
+                    </FormField>
 
                     <div className="grid gap-6 sm:grid-cols-3">
-                      <div>
-                        <label htmlFor={`lab-category-${lab.id}`} className={labelClass}>
-                          Category
-                        </label>
+                      <FormField label="Category" htmlFor={`lab-category-${lab.id}`} required>
                         <select
                           id={`lab-category-${lab.id}`}
                           value={category}
@@ -294,12 +285,9 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                             </option>
                           ))}
                         </select>
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor={`lab-type-${lab.id}`} className={labelClass}>
-                          Type
-                        </label>
+                      <FormField label="Type" htmlFor={`lab-type-${lab.id}`}>
                         <select
                           id={`lab-type-${lab.id}`}
                           value={type}
@@ -313,12 +301,9 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                             </option>
                           ))}
                         </select>
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor={`lab-difficulty-${lab.id}`} className={labelClass}>
-                          Difficulty
-                        </label>
+                      <FormField label="Difficulty" htmlFor={`lab-difficulty-${lab.id}`} required>
                         <select
                           id={`lab-difficulty-${lab.id}`}
                           value={difficulty}
@@ -332,14 +317,11 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                             </option>
                           ))}
                         </select>
-                      </div>
+                      </FormField>
                     </div>
 
                     <div className="grid gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor={`lab-duration-${lab.id}`} className={labelClass}>
-                          Estimated duration (minutes)
-                        </label>
+                      <FormField label="Estimated duration (minutes)" htmlFor={`lab-duration-${lab.id}`}>
                         <input
                           id={`lab-duration-${lab.id}`}
                           type="number"
@@ -349,12 +331,9 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                           onChange={(e) => setDuration(e.target.value)}
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
 
-                      <div>
-                        <label htmlFor={`lab-tags-${lab.id}`} className={labelClass}>
-                          Tags
-                        </label>
+                      <FormField label="Tags" htmlFor={`lab-tags-${lab.id}`}>
                         <input
                           id={`lab-tags-${lab.id}`}
                           value={tags}
@@ -362,11 +341,11 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                           maxLength={300}
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
                     </div>
 
                     <div>
-                      <label className={labelClass}>Thumbnail</label>
+                      <span className="mb-1.5 block text-sm font-medium text-ink-200">Thumbnail</span>
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                         <input
                           ref={thumbnailInputRef}
@@ -411,17 +390,22 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                   </form>
 
                   <div className="mt-8 border-t border-border pt-6">
-                    <label className={labelClass}>Content — publish a new version</label>
+                    <span className="mb-1.5 block text-sm font-medium text-ink-200">Content — publish a new version</span>
                     <p className="mb-4 text-xs text-ink-500">
                       Versions are immutable, so changes here are saved as a new version. Instructions and questions are
                       pre-filled from the current version, but correct answers and flags are never sent back to this app for
                       security reasons — re-enter them if this question should stay auto-graded.
                     </p>
-                    {contentLoaded ? (
-                      <LabContentEditor blocks={blocks} onChange={setBlocks} />
-                    ) : (
-                      <p className="text-sm text-ink-500">Loading current content…</p>
-                    )}
+{contentLoaded ? (
+                        <ErrorBoundary
+                          fallbackTitle="Editor failed to load"
+                          fallbackMessage="Unable to load the content editor. You can try closing and reopening the dialog."
+                        >
+                          <LabContentEditor blocks={blocks} onChange={setBlocks} />
+                        </ErrorBoundary>
+                      ) : (
+                        <p className="text-sm text-ink-500">Loading current content…</p>
+                      )}
                     <div className="mt-4 flex justify-end">
                       <Button type="button" variant="secondary" size="sm" onClick={handlePublishVersion} disabled={publishingVersion || !contentLoaded}>
                         {publishingVersion ? "Publishing..." : "Publish new version"}
@@ -430,10 +414,10 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
                   </div>
 
                   <div className="mt-8 border-t border-border pt-6">
-                    <label className={labelClass}>
+                    <span className="mb-1.5 block text-sm font-medium text-ink-200">
                       <Link2 size={13} className="mr-1.5 inline" />
                       Linked courses
-                    </label>
+                    </span>
                     <p className="mb-4 text-xs text-ink-500">
                       This lab can be linked to any number of courses. Linking doesn&apos;t affect course progress or unlocking.
                     </p>

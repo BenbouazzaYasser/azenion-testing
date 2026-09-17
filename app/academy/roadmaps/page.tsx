@@ -15,7 +15,8 @@ export const metadata: Metadata = {
     "Structured learning paths combining courses, labs, and hands-on challenges to help you build your skills from the ground up. Coming soon to Azenion Academy.",
 };
 
-export const dynamic = "force-dynamic";
+// Fully static: no data fetches on this page (Coming Soon shell).
+export const dynamic = "force-static";
 
 export default async function RoadmapsPage() {
   // Coming Soon: the interactive roadmap foundation (lib/roadmaps +

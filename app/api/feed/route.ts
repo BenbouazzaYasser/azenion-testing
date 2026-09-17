@@ -35,6 +35,7 @@ function secureHeaders(): Record<string, string> {
   return {
     "Cache-Control": PRIVATE_NO_STORE,
     "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
   };
 }
 
@@ -55,11 +56,19 @@ function clientIp(request: Request): string {
 
 export async function GET(request: Request) {
   const bearer = await authenticateBearer(request);
-  const viewerId = bearer.ok ? bearer.principal.user.id : null;
 
-  // Abuse guard for anonymous readers only; authenticated callers are bound
-  // to their identity and PostgREST defaults.
-  if (!bearer.ok) {
+  // Abuse guards: per-user limit for bearer-authed callers, per-IP limit
+  // for anonymous readers. Authenticated callers remain bound to their
+  // identity for visibility inside the feed RPCs.
+  if (bearer.ok) {
+    const rl = await checkRateLimit("feed_read", `user:${bearer.principal.user.id}`, 300, 60);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Rate limited — please try again shortly." },
+        { status: 429, headers: secureHeaders() },
+      );
+    }
+  } else {
     const rl = await checkRateLimit("feed_read", `ip:${clientIp(request)}`, 120, 60);
     if (!rl.allowed) {
       return NextResponse.json(
@@ -81,7 +90,7 @@ export async function GET(request: Request) {
       if (!postId) {
         return NextResponse.json({ error: "postId is required." }, { status: 422, headers: secureHeaders() });
       }
-      const item = await getFeedItemById(postId, viewerId);
+      const item = await getFeedItemById(postId);
       if (!item) {
         return NextResponse.json({ error: "Not found." }, { status: 404, headers: secureHeaders() });
       }
@@ -89,7 +98,7 @@ export async function GET(request: Request) {
     }
 
     if (scope === "trending") {
-      const { items, total } = await getTrendingFeedItems(pageSize, viewerId);
+      const { items, total } = await getTrendingFeedItems(pageSize);
       return NextResponse.json({ items, total, page: 1, pageSize }, { status: 200, headers: secureHeaders() });
     }
 
@@ -97,7 +106,7 @@ export async function GET(request: Request) {
       if (!branchId) {
         return NextResponse.json({ error: "branchId is required." }, { status: 422, headers: secureHeaders() });
       }
-      const { items, total } = await getBranchFeedItems(branchId, page, pageSize, viewerId);
+      const { items, total } = await getBranchFeedItems(branchId, page, pageSize);
       return NextResponse.json({ items, total, page, pageSize }, { status: 200, headers: secureHeaders() });
     }
 
@@ -105,11 +114,11 @@ export async function GET(request: Request) {
       if (!bearer.ok) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: secureHeaders() });
       }
-      const { items, total } = await getSavedFeedItems(viewerId);
+      const { items, total } = await getSavedFeedItems();
       return NextResponse.json({ items, total, page: 1, pageSize }, { status: 200, headers: secureHeaders() });
     }
 
-    const { items, total } = await getFeedItems(filter ?? "all", page, pageSize, viewerId);
+    const { items, total } = await getFeedItems(filter ?? "all", page, pageSize);
     return NextResponse.json({ items, total, page, pageSize }, { status: 200, headers: secureHeaders() });
   } catch {
     return NextResponse.json({ error: "Unable to load feed." }, { status: 500, headers: secureHeaders() });

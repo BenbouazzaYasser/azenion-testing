@@ -2,11 +2,11 @@
 
 import { useTransition, useState } from "react";
 import { Users, Crown, Shield, X, UserPlus } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { removeMember } from "@/actions/team.actions";
 import { InviteMemberDialog } from "./invite-member-dialog";
 import { useTranslation } from "@/components/translation/translation-provider";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface MemberWithProfile {
   role: string;
@@ -49,13 +49,13 @@ export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="team-members-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+        
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
             {t("teams.membersEyebrow")}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
             <h2
               id="team-members-heading"
@@ -73,7 +73,7 @@ export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId
               </Button>
             ) : null}
           </div>
-        </Reveal>
+        
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {members.map((member, i) => {
@@ -84,19 +84,21 @@ export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId
             const canRemove = canRemoveMembers && !isSelf && member.role !== "owner";
 
             return (
-              <Reveal key={profile.id} delay={i * 80}>
-                <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+              
+                <div key={profile.id} className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
                   <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                   <div className="relative flex flex-1 flex-col items-center p-8 text-center sm:p-9">
                     {profile.avatar_url ? (
-                      <img
+                      <OptimizedImage
                         src={profile.avatar_url}
                         alt=""
-                        className="h-16 w-16 rounded-xl border border-accent-400/30 object-cover transition-all duration-500 ease-premium group-hover:-translate-y-1 group-hover:scale-[1.05] group-hover:shadow-glow-sm"
+                        width={64}
+                        height={64}
+                        className="h-16 w-16 rounded-xl border border-accent-400/30 transition-all duration-500 ease-premium group-hover:scale-[1.05]"
                       />
                     ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08] text-xl font-semibold text-accent-400 transition-all duration-500 ease-premium group-hover:-translate-y-1 group-hover:scale-[1.05] group-hover:shadow-glow-sm">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-accent-400/30 bg-accent/[0.08] text-xl font-semibold text-accent-400 transition-all duration-500 ease-premium group-hover:scale-[1.05]">
                         {initials}
                       </div>
                     )}
@@ -139,7 +141,7 @@ export function TeamMembers({ members, teamId, teamName, teamSlug, currentUserId
                     ) : null}
                   </div>
                 </div>
-              </Reveal>
+              
             );
           })}
         </div>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { Branch } from "@/data/branches";
 import { BranchJoinButton } from "./branch-join-button";
 import { useTranslation } from "@/components/translation/translation-provider";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 interface BranchSpotlightProps {
   branch: Branch;
@@ -35,7 +36,7 @@ export function BranchSpotlight({
   const order = String(index + 1).padStart(2, "0");
 
   return (
-    <article className="group relative overflow-hidden rounded-[2rem] card-surface p-6 backdrop-blur-xl transition-all duration-700 ease-premium hover:border-[rgba(40,40,255,0.4)] sm:p-10 lg:p-12">
+    <article className="group relative overflow-hidden rounded-2xl card-surface p-6 backdrop-blur-xl transition-all duration-700 ease-premium hover:border-[rgba(40,40,255,0.4)] sm:p-10 lg:p-12">
       {/* Background index numeral */}
       <span
         aria-hidden="true"
@@ -56,7 +57,13 @@ export function BranchSpotlight({
           <div className="mb-6 flex items-center gap-4">
             <div className="animate-pulse-glow flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[rgba(40,40,255,0.35)] bg-[rgb(40,40,255)]/10">
               {branch.logo_url ? (
-                <img src={branch.logo_url} alt={`${branch.shortName} logo`} className="h-full w-full object-cover" />
+                <OptimizedImage
+                  src={branch.logo_url}
+                  alt={`${branch.shortName} logo`}
+                  width={64}
+                  height={64}
+                  className="h-full w-full"
+                />
               ) : (
                 <div className="p-2.5">
                   <svg viewBox="0 0 512 512" className="h-full w-full" aria-hidden="true">
@@ -151,7 +158,7 @@ export function BranchSpotlight({
         {/* Detail column */}
         <div className={`flex flex-col gap-6 ${reversed ? "lg:order-1" : "lg:order-2"}`}>
           <div className="rounded-2xl bg-surface p-6">
-            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-ink-500">
+            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-normal text-ink-500">
               <Calendar className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
               {t("branches.upcomingEvents")}
             </div>
@@ -165,7 +172,7 @@ export function BranchSpotlight({
           </div>
 
           <div className="rounded-2xl bg-surface p-6">
-            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-ink-500">
+            <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-normal text-ink-500">
               <Sparkles className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
               {t("branches.branchHighlights")}
             </div>

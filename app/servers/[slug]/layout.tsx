@@ -30,7 +30,7 @@ export default async function ServerLayout({ params, children }: ServerLayoutPro
   return (
     <>
       <Navbar />
-      <main id="main" className="relative h-dvh overflow-hidden pt-[80px] sm:pt-[90px]">
+      <main id="main" className="relative h-dvh overflow-hidden pt-[96px] sm:pt-[104px]">
         <div className="mx-auto flex h-full w-full max-w-[1440px] gap-2 p-2 sm:gap-3 sm:p-4">
           <ServerRail servers={servers} activeSlug={view.server.slug} />
 

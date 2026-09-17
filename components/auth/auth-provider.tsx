@@ -65,12 +65,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
     let cancelled = false;
 
-    supabase.auth.getUser().then(({ data }) => {
-      if (cancelled) return;
-      setUser(data.user);
-      if (data.user) void fetchProfileAndRoles(data.user.id);
+    // Fast-path for anonymous: if no auth cookie in document.cookie, skip
+    // the network getUser() entirely (mirrors server proxy optimization).
+    const hasAuthCookie = typeof document !== "undefined" && /(?:^|;\s*)sb-[^;]*-auth-token=/.test(document.cookie);
+    if (!hasAuthCookie) {
       setLoading(false);
-    });
+    } else {
+      supabase.auth.getUser().then(({ data }) => {
+        if (cancelled) return;
+        setUser(data.user);
+        if (data.user) void fetchProfileAndRoles(data.user.id);
+        setLoading(false);
+      });
+    }
 
     const {
       data: { subscription },

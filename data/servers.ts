@@ -209,6 +209,7 @@ export async function getChannelMessages(
   const senderIds = [...new Set(messages.map((m) => m.sender_id))];
 
   const { data: profiles } = await createAdminClient()
+    // SECURITY: channel messages read via RLS-scoped client above (non-members get empty); admin used only for public profile lookup.
     .from("profiles")
     .select("id, full_name, avatar_url, username")
     .in("id", senderIds);
@@ -243,6 +244,7 @@ export async function getServerMembers(serverId: string): Promise<ServerMemberRo
 
   if (!members) return [];
 
+  // SECURITY: server membership read via RLS-scoped client above (non-members get empty); admin used only for public profile lookup.
   const admin = createAdminClient();
   const { data: profiles } = await admin
     .from("profiles")

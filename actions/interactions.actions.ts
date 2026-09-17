@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { cleanupOrphanedStorageObjects } from "@/lib/storage-cleanup";
+import { IMAGE_STORAGE_BUCKET, VIDEO_STORAGE_BUCKET } from "@/lib/validations/media.schema";
 import type { CommentWithAuthor } from "@/data/interactions";
 import { getBatchCommentLikeCounts, getUserCommentLikes } from "@/data/interactions";
 import {
@@ -71,6 +73,14 @@ export async function toggleLike(targetType: string, targetId: string) {
     return { error: "Missing target" };
   }
 
+  if (!getTargetTable(targetType) && targetType !== "user_post") {
+    return { error: "Invalid target type" };
+  }
+
+  if (!(await isTargetVisible(targetType, targetId, user.id))) {
+    return { error: "Not authorized" };
+  }
+
   const { data: existing } = await supabase
     .from("update_likes")
     .select("id")
@@ -83,7 +93,8 @@ export async function toggleLike(targetType: string, targetId: string) {
     const { error } = await supabase
       .from("update_likes")
       .delete()
-      .eq("id", existing.id);
+      .eq("id", existing.id)
+      .eq("user_id", user.id);
 
     if (error) return { error: error.message };
 
@@ -127,6 +138,20 @@ export async function toggleCommentLike(commentId: string) {
     return { error: "Not authenticated" };
   }
 
+  const { data: targetComment } = await supabaseAdmin
+    .from("update_comments")
+    .select("target_type, target_id")
+    .eq("id", commentId)
+    .maybeSingle();
+
+  if (!targetComment) {
+    return { error: "Comment not found" };
+  }
+
+  if (!(await isTargetVisible(targetComment.target_type, targetComment.target_id, user.id))) {
+    return { error: "Not authorized" };
+  }
+
   const { data: existing } = await supabase
     .from("comment_likes")
     .select("id")
@@ -138,7 +163,8 @@ export async function toggleCommentLike(commentId: string) {
     const { error } = await supabase
       .from("comment_likes")
       .delete()
-      .eq("id", existing.id);
+      .eq("id", existing.id)
+      .eq("user_id", user.id);
 
     if (error) return { error: error.message };
 
@@ -228,14 +254,21 @@ export async function createComment(
   if (!user) return { error: "Not authenticated" };
   if (!body.trim()) return { error: "Comment cannot be empty" };
 
+  if (!(await isTargetVisible(targetType, targetId, user.id))) {
+    return { error: "Not authorized" };
+  }
+
   // Enforce one level of nesting: replies always attach to a top-level comment.
   let resolvedParent: string | null = parentCommentId ?? null;
   if (resolvedParent) {
     const { data: parent } = await supabaseAdmin
       .from("update_comments")
-      .select("parent_comment_id")
+      .select("parent_comment_id, target_type, target_id")
       .eq("id", resolvedParent)
       .single();
+    if (!parent || parent.target_type !== targetType || parent.target_id !== targetId) {
+      return { error: "Invalid parent comment" };
+    }
     if (parent?.parent_comment_id) {
       resolvedParent = parent.parent_comment_id;
     }
@@ -459,6 +492,26 @@ export async function deleteFeedPost(postId: string) {
 
   if (!user) return { error: "Not authenticated" };
 
+  const { data: post, error: fetchError } = await supabase
+    .from("posts")
+    .select("images, videos")
+    .eq("id", postId)
+    .eq("author_id", user.id)
+    .maybeSingle();
+
+  if (fetchError) return { error: fetchError.message };
+  if (!post) return { error: "Post not found or not authorized" };
+
+  const imagePaths =
+    (post.images ?? [])
+      .map((url: string) => url.split("/feed-images/")[1]?.split("?")[0])
+      .filter((p: string | undefined): p is string => typeof p === "string" && p.length > 0) ?? [];
+
+  const videoPaths =
+    (post.videos ?? [])
+      .map((url: string) => url.split("/feed-videos/")[1]?.split("?")[0])
+      .filter((p: string | undefined): p is string => typeof p === "string" && p.length > 0) ?? [];
+
   const { error } = await supabase
     .from("posts")
     .delete()
@@ -466,6 +519,14 @@ export async function deleteFeedPost(postId: string) {
     .eq("author_id", user.id);
 
   if (error) return { error: error.message };
+
+  if (imagePaths.length > 0) {
+    await cleanupOrphanedStorageObjects(IMAGE_STORAGE_BUCKET, imagePaths);
+  }
+  if (videoPaths.length > 0) {
+    await cleanupOrphanedStorageObjects(VIDEO_STORAGE_BUCKET, videoPaths);
+  }
+
   return { success: true };
 }
 

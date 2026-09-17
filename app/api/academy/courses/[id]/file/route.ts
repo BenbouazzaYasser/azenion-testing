@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authenticateBearer } from "@/lib/supabase/bearer";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 /**
  * Serve an uploaded course file or thumbnail through the Azenion origin so
@@ -75,6 +76,12 @@ function isCourseManagerResult(value: unknown): boolean {
   return value === true;
 }
 
+function clientIp(req: NextRequest): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0]?.trim() || "unknown";
+  return "unknown";
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -96,9 +103,25 @@ export async function GET(
   // checked below before the storage read, using the same canonical rules
   // for both credential types.
   const supabase = await createClient();
-  const {
-    data: { user: cookieUser },
-  } = await supabase.auth.getUser();
+
+  // Rate limit: 60 req/min for authenticated users, 20 req/min for anonymous
+  const { data: { user: cookieUser } } = await supabase.auth.getUser();
+  let rateKey: string;
+  let rateLimit: number;
+  if (cookieUser) {
+    rateKey = `user:${cookieUser.id}`;
+    rateLimit = 60;
+  } else {
+    rateKey = `ip:${clientIp(request)}`;
+    rateLimit = 20;
+  }
+  const rl = await checkRateLimit("course_file_download", rateKey, rateLimit, 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Rate limited — please try again shortly." },
+      { status: 429 },
+    );
+  }
 
   let user = cookieUser;
   let scoped = supabase;

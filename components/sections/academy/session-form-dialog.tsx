@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
 import { createLiveSession, updateLiveSession } from "@/actions/live-session.actions";
 import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { useTranslation } from "@/components/translation/translation-provider";
@@ -35,8 +36,6 @@ interface SessionFormDialogProps {
 
 const inputClass =
   "w-full rounded-xl bg-surface px-4 py-3.5 text-[0.95rem] text-ink-50 placeholder:text-ink-600 outline-none transition-colors focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input";
-
-const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
 function isoToLocalParts(iso: string) {
   const date = new Date(iso);
@@ -266,7 +265,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
           type="button"
           onClick={() => setOpen(true)}
           aria-label={t("academy.editSession")}
-          className="flex h-8 w-8 items-center justify-center rounded-full text-ink-400 transition-colors hover:border-accent-400/50 hover:text-accent-400"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-ink-400 transition-colors hover:border-accent-400/50 hover:text-accent-400"
         >
           <Pencil size={13} />
         </button>
@@ -312,7 +311,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                     type="button"
                     onClick={() => setOpen(false)}
                     aria-label={t("common.close")}
-                    className="-mr-1.5 -mt-1.5 rounded-full p-1.5 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+                    className="-mr-1.5 -mt-1.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -326,10 +325,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                   ) : null}
 
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label htmlFor="session-title" className={labelClass}>
-                        {t("academy.sessionTitle")}
-                      </label>
+                    <FormField label={t("academy.sessionTitle")} htmlFor="session-title">
                       <input
                         id="session-title"
                         value={title}
@@ -339,12 +335,13 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                         placeholder={t("academy.sessionTitlePlaceholder")}
                         className={inputClass}
                       />
-                    </div>
+                    </FormField>
 
-                    <div>
-                      <label htmlFor="session-description" className={labelClass}>
-                        {t("common.description")}
-                      </label>
+                    <FormField
+                      label={t("common.description")}
+                      htmlFor="session-description"
+                      helper={`${description.length}/5000`}
+                    >
                       <textarea
                         id="session-description"
                         value={description}
@@ -355,13 +352,10 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                         placeholder={t("academy.sessionDescPlaceholder")}
                         className={`${inputClass} resize-none`}
                       />
-                      <p className="mt-1.5 text-xs text-ink-500">
-                        {description.length}/5000
-                      </p>
-                    </div>
+                    </FormField>
 
                     <fieldset>
-                      <legend className={labelClass}>{t("academy.hostType")}</legend>
+                      <legend className="mb-1.5 block text-sm font-medium text-ink-200">{t("academy.hostType")}</legend>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {(
                           [
@@ -389,7 +383,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                             >
                               <span
                                 className={cn(
-                                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border",
+                                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border",
                                   selected
                                     ? "border-accent-400/50 bg-accent/10 text-accent-300"
                                     : "border-border-strong bg-surface text-ink-400"
@@ -406,11 +400,11 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                       </div>
                     </fieldset>
 
-                    <div>
-                      <label htmlFor="session-host" className={labelClass}>
-                        {hostType === "BRANCH" ? t("academy.hostBranch") : t("academy.hostTeam")}
-                      </label>
-                      <div className="relative">
+                    <FormField
+                      label={hostType === "BRANCH" ? t("academy.hostBranch") : t("academy.hostTeam")}
+                      htmlFor="session-host"
+                    >
+                      <div className="relative" id="session-host-wrap">
                         <select
                           id="session-host"
                           value={hostId}
@@ -438,13 +432,10 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-ink-500"
                         />
                       </div>
-                    </div>
+                    </FormField>
 
                     <div className="grid gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="session-instructor" className={labelClass}>
-                          {t("academy.instructor")}
-                        </label>
+                      <FormField label={t("academy.instructor")} htmlFor="session-instructor">
                         <input
                           id="session-instructor"
                           value={instructor}
@@ -454,12 +445,11 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           placeholder={t("academy.instructorPlaceholder")}
                           className={inputClass}
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="session-capacity" className={labelClass}>
-                          {t("academy.capacity")}{" "}
-                          <span className="text-ink-600">({t("common.optional")})</span>
-                        </label>
+                      </FormField>
+                      <FormField
+                        label={`${t("academy.capacity")} (${t("common.optional")})`}
+                        htmlFor="session-capacity"
+                      >
                         <input
                           id="session-capacity"
                           type="number"
@@ -469,14 +459,16 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           placeholder={t("academy.capacityPlaceholder")}
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
                     </div>
 
                     <div className="grid gap-6 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="session-starts-date" className={labelClass}>
-                          {t("academy.startsAt")}
-                        </label>
+                      <FormField
+                        label={t("academy.startsAt")}
+                        htmlFor="session-starts-date"
+                        error={startsTimeError}
+                        helper={startsTimeError ? undefined : t("academy.timeFormatHint")}
+                      >
                         <input
                           id="session-starts-date"
                           type="date"
@@ -501,18 +493,13 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                               "border-red-500/50 focus:border-red-500/60 focus:shadow-input-error"
                           )}
                         />
-                        {startsTimeError ? (
-                          <p className="mt-1.5 text-xs text-red-300">{startsTimeError}</p>
-                        ) : (
-                          <p className="mt-1.5 text-xs text-ink-500">
-                            {t("academy.timeFormatHint")}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label htmlFor="session-ends-date" className={labelClass}>
-                          {t("academy.endTime")} <span className="text-ink-600">({t("common.optional")})</span>
-                        </label>
+                      </FormField>
+                      <FormField
+                        label={`${t("academy.endTime")} (${t("common.optional")})`}
+                        htmlFor="session-ends-date"
+                        error={endsTimeError}
+                        helper={endsTimeError ? undefined : t("academy.endTimeFormatHint")}
+                      >
                         <input
                           id="session-ends-date"
                           type="date"
@@ -536,18 +523,11 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                               "border-red-500/50 focus:border-red-500/60 focus:shadow-input-error"
                           )}
                         />
-                        {endsTimeError ? (
-                          <p className="mt-1.5 text-xs text-red-300">{endsTimeError}</p>
-                        ) : (
-                          <p className="mt-1.5 text-xs text-ink-500">
-                            {t("academy.endTimeFormatHint")}
-                          </p>
-                        )}
-                      </div>
+                      </FormField>
                     </div>
 
                     <fieldset>
-                      <legend className={labelClass}>{t("academy.format")}</legend>
+                      <legend className="mb-1.5 block text-sm font-medium text-ink-200">{t("academy.format")}</legend>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {(
                           [
@@ -572,7 +552,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                             >
                               <span
                                 className={cn(
-                                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border",
+                                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border",
                                   selected
                                     ? "border-accent-400/50 bg-accent/10 text-accent-300"
                                     : "border-border-strong bg-surface text-ink-400"
@@ -590,25 +570,21 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                     </fieldset>
 
                     {format === "IN_PERSON" ? (
-                      <div>
-                        <label htmlFor="session-location" className={labelClass}>
-                          {t("academy.location")}
-                        </label>
-                        <input
-                          id="session-location"
-                          value={location}
-                          onChange={(e) => setLocation(e.target.value)}
-                          maxLength={500}
-                          placeholder={t("academy.locationPlaceholder")}
-                          className={inputClass}
-                        />
-                      </div>
+                    <FormField label={t("academy.location")} htmlFor="session-location">
+                      <input
+                        id="session-location"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        maxLength={500}
+                        placeholder={t("academy.locationPlaceholder")}
+                        className={inputClass}
+                      />
+                    </FormField>
                     ) : (
-                      <div>
-                        <label htmlFor="session-meeting-url" className={labelClass}>
-                          {t("academy.meetingLink")}{" "}
-                          <span className="text-ink-600">({t("common.optional")})</span>
-                        </label>
+                      <FormField
+                        label={`${t("academy.meetingLink")} (${t("common.optional")})`}
+                        htmlFor="session-meeting-url"
+                      >
                         <input
                           id="session-meeting-url"
                           type="url"
@@ -618,13 +594,14 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                           placeholder="https://meet.example.com/..."
                           className={inputClass}
                         />
-                      </div>
+                      </FormField>
                     )}
 
-                    <div>
-                      <label htmlFor="session-topics" className={labelClass}>
-                        {t("academy.topics")} <span className="text-ink-600">{t("academy.topicsHint")}</span>
-                      </label>
+                    <FormField
+                      label={`${t("academy.topics")} ${t("academy.topicsHint")}`}
+                      htmlFor="session-topics"
+                      helper={t("academy.topicsChipHint")}
+                    >
                       <textarea
                         id="session-topics"
                         value={topics}
@@ -633,10 +610,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                         placeholder={"Programming\nDocker\nAlgorithms"}
                         className={`${inputClass} resize-none`}
                       />
-                      <p className="mt-1.5 text-xs text-ink-500">
-                        {t("academy.topicsChipHint")}
-                      </p>
-                    </div>
+                    </FormField>
 
                     <div className="flex items-center justify-end gap-3 border-t border-border pt-5">
                       <Button

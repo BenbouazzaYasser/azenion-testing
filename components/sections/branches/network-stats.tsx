@@ -1,6 +1,5 @@
 import { Building2, CalendarClock, Users } from "lucide-react";
 
-import { Reveal } from "@/components/ui/reveal";
 import { serverT } from "@/lib/translation/server";
 
 interface NetworkStatsProps {
@@ -29,8 +28,8 @@ export async function NetworkStats({ branchCount, memberCount, upcomingEvents }:
   ] as const;
   return (
     <section aria-label={await serverT("branches.networkGlance")} className="relative px-6 pb-16 sm:pb-24">
-      <Reveal>
-        <div className="mx-auto grid max-w-4xl grid-cols-1 divide-y divide-border-strong card-surface rounded-[2rem] backdrop-blur-xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      
+        <div className="mx-auto grid max-w-4xl grid-cols-1 divide-y divide-border-strong card-surface rounded-2xl backdrop-blur-xl sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           {stats.map((stat) => (
             <div
               key={stat.label}
@@ -38,13 +37,13 @@ export async function NetworkStats({ branchCount, memberCount, upcomingEvents }:
             >
               <stat.icon className="h-5 w-5 text-[rgb(40,40,255)]" aria-hidden="true" />
               <span className="text-3xl font-semibold text-ink-50">{stat.value}</span>
-              <span className="text-xs uppercase tracking-[0.15em] text-ink-500">
+              <span className="text-xs uppercase tracking-normal text-ink-500">
                 {stat.label}
               </span>
             </div>
           ))}
         </div>
-      </Reveal>
+      
     </section>
   );
 }

@@ -41,7 +41,7 @@ export function PublicProfilePosts({ posts, cardClass }: PublicProfilePostsProps
             <Link
               key={post.id}
               href={`/feed/post/${post.id}`}
-              className="group block rounded-2xl bg-surface p-5 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:shadow-glow-sm"
+              className="group block rounded-2xl bg-surface p-5 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40"
             >
               {post.images.length > 0 ? (
                 <ImageGallery images={post.images} className="mb-4" />

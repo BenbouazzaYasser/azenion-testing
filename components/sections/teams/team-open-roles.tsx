@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { UserPlus, Plus, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
 import { saveOpenRole, deleteOpenRole } from "@/actions/team.actions";
 import { useTranslation } from "@/components/translation/translation-provider";
 
@@ -116,7 +115,7 @@ function OpenRoleCard({
   }
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+    <div className="group relative overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
       <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative p-6 sm:p-8">
@@ -181,13 +180,13 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="team-open-roles-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+        
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
             {t("teams.rolesEyebrow")}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <div className="mt-6 flex items-center justify-between">
             <h2
               id="team-open-roles-heading"
@@ -202,7 +201,7 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
               </Button>
             ) : null}
           </div>
-        </Reveal>
+        
 
         <div className="mt-10 space-y-5">
           {isAdding ? (
@@ -267,9 +266,10 @@ export function TeamOpenRoles({ roles, teamId, teamSlug, canManage }: TeamOpenRo
             </div>
           ) : (
             roles.map((role, i) => (
-              <Reveal key={role.id} delay={i * 80}>
-                <OpenRoleCard role={role} teamId={teamId} teamSlug={teamSlug} canManage={canManage} />
-              </Reveal>
+              <OpenRoleCard
+                key={role.id}
+                role={role} teamId={teamId} teamSlug={teamSlug} canManage={canManage} />
+              
             ))
           )}
         </div>

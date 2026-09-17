@@ -36,6 +36,7 @@ export async function getBatchLikeCounts(
 ): Promise<Record<string, number>> {
   if (targetIds.length === 0) return {};
 
+  // SECURITY: public aggregate like counts only (no PII); caller enforces post visibility; admin bypasses RLS for counting.
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("update_likes")
@@ -59,6 +60,7 @@ export async function getBatchCommentCounts(
 ): Promise<Record<string, number>> {
   if (targetIds.length === 0) return {};
 
+  // SECURITY: public aggregate comment counts only (no PII); caller enforces post visibility; admin bypasses RLS for counting.
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("update_comments")
@@ -99,6 +101,7 @@ export async function getBatchCommentLikeCounts(
 ): Promise<Record<string, number>> {
   if (commentIds.length === 0) return {};
 
+  // SECURITY: public aggregate comment-like counts only (no PII); caller enforces post visibility; admin bypasses RLS for counting.
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("comment_likes")
@@ -176,6 +179,7 @@ export async function getBatchLikerNames(
 
   let likes = preFetchedLikes;
   if (!likes || likes.length === 0) {
+    // SECURITY: liker user-ids aggregated from visibility-checked caller input or public like rows; admin bypasses RLS for aggregation.
     const supabase = createAdminClient();
     const { data } = await supabase
       .from("update_likes")
@@ -194,6 +198,7 @@ export async function getBatchLikerNames(
   }
 
   const likerIds = [...new Set(likes.map((l) => l.user_id))];
+  // SECURITY: display names are public profile fields for already-aggregated liker ids; admin used only for profile lookup.
   const supabase = createAdminClient();
   const { data: profiles } = likerIds.length > 0
     ? await supabase

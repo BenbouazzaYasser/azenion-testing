@@ -36,9 +36,17 @@ export function isAllowedGifUrl(url: string, provider: GifProviderId): boolean {
   }
 }
 
+let warnedMissingKey = false;
 function getGiphyKey(): string | null {
   const key = process.env.GIPHY_API_KEY || null;
-  return key && key.trim().length > 0 ? key.trim() : null;
+  const trimmed = key && key.trim().length > 0 ? key.trim() : null;
+  if (!trimmed && process.env.NODE_ENV === "development" && !warnedMissingKey) {
+    warnedMissingKey = true;
+    console.warn(
+      "[Azenion] Notice: GIPHY_API_KEY is not set. GIF search is operating in fallback/mock mode.",
+    );
+  }
+  return trimmed;
 }
 
 // Curated fallback GIFs (public Giphy CDN, no API key required to render) — used when GIPHY_API_KEY is not set so the feature works in local/dev

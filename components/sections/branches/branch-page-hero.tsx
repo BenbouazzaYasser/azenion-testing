@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Calendar, GitBranch, MapPin, ShieldCheck, Users } from "lucide-react";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
-import { Reveal } from "@/components/ui/reveal";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { BranchJoinButton } from "./branch-join-button";
 import { BranchSettingsDialog } from "./branch-settings-dialog";
 import { formatDate } from "@/lib/date";
@@ -55,7 +55,6 @@ export function BranchPageHero({
             src={branch.logo_url}
             alt=""
             fill
-            priority
             sizes="100vw"
             className="h-full w-full object-cover opacity-40"
           />
@@ -65,16 +64,20 @@ export function BranchPageHero({
       <BackgroundInfinity variant="teams" />
 
       <div className="relative mx-auto max-w-[920px] px-5 pb-28 pt-16 text-center sm:px-8 sm:pt-20 lg:pb-36 lg:pt-24">
-        <Reveal delay={0}>
+        
           <div className="mb-9 flex justify-center sm:mb-10">
             <div className="relative">
-              <div className="absolute -inset-3 rounded-[2.25rem] bg-accent/10 blur-2xl" />
-              <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.75rem] border branch-hero-frame shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_20px_60px_-20px_rgba(40,40,255,0.35)] backdrop-blur-xl sm:h-28 sm:w-28 sm:rounded-[2rem] lg:h-32 lg:w-32">
+              <div className="absolute -inset-3 rounded-2xl bg-accent/10 blur-2xl" />
+              <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border branch-hero-frame shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_20px_60px_-20px_rgba(40,40,255,0.35)] backdrop-blur-xl sm:h-28 sm:w-28 sm:rounded-2xl lg:h-32 lg:w-32">
                 {branch.logo_url ? (
-                  <img
+                  <OptimizedImage
                     src={branch.logo_url}
                     alt={`${branch.name} logo`}
-                    className="h-full w-full object-cover"
+                    width={128}
+                    height={128}
+                    priority
+                    sizes="(max-width: 640px) 96px, 128px"
+                    className="h-full w-full"
                   />
                 ) : (
                   <GitBranch className="h-12 w-12 text-accent-400 sm:h-14 sm:w-14" />
@@ -82,11 +85,11 @@ export function BranchPageHero({
               </div>
             </div>
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={0}>
+        
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
               <span className="flex h-2 w-2 rounded-full bg-accent-400" />
               {t("branches.activeBranch")}
             </div>
@@ -103,29 +106,29 @@ export function BranchPageHero({
               </span>
             ) : null}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
             {branch.name}
           </h1>
-        </Reveal>
+        
 
         {branch.full_name ? (
-          <Reveal delay={140}>
+          
             <p className="mt-2 text-base font-medium text-accent-300/90">{branch.full_name}</p>
-          </Reveal>
+          
         ) : null}
 
         {branch.description ? (
-          <Reveal delay={160}>
+          
             <p className="mx-auto mt-6 max-w-2xl text-balance text-[1.05rem] leading-relaxed text-ink-400 sm:text-[1.1rem] sm:leading-8">
               {branch.description}
             </p>
-          </Reveal>
+          
         ) : null}
 
-        <Reveal delay={200}>
+        
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-ink-400">
             <span className="inline-flex items-center gap-1.5">
               <Users size={14} className="text-accent-400" />
@@ -141,19 +144,21 @@ export function BranchPageHero({
               </>
             ) : null}
           </div>
-        </Reveal>
+        
 
         {leaderProfiles.length > 0 ? (
-          <Reveal delay={220}>
+          
             <div className="mt-6 flex items-center justify-center gap-3">
               <div className="flex -space-x-2">
                 {leaderProfiles.slice(0, 5).map((m) =>
                   m.avatar_url ? (
-                    <img
+                    <OptimizedImage
                       key={m.id}
                       src={m.avatar_url}
-                      alt=""
-                      className="h-9 w-9 rounded-full border border-void-950 object-cover"
+                      alt={m.full_name || `@${m.username}`}
+                      width={36}
+                      height={36}
+                      className="h-9 w-9 rounded-full border border-void-950"
                     />
                   ) : (
                     <span
@@ -170,10 +175,10 @@ export function BranchPageHero({
                 {leaderProfiles.length > 3 ? ` +${leaderProfiles.length - 3}` : ""}
               </span>
             </div>
-          </Reveal>
+          
         ) : null}
 
-        <Reveal delay={240}>
+        
           <div className="mt-8 flex flex-wrap items-start justify-center gap-4">
             <BranchJoinButton
               branchId={branch.id}
@@ -196,18 +201,18 @@ export function BranchPageHero({
               />
             ) : null}
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={320}>
+        
           <div className="mt-14 hidden items-center justify-center gap-3 sm:flex">
             <span className="flex h-8 w-5 items-start justify-center rounded-full p-1.5">
               <span className="h-1.5 w-1.5 animate-scroll-dot rounded-full bg-accent-400" />
             </span>
-            <span className="text-xs font-medium uppercase tracking-[0.14em] text-ink-600">
+            <span className="text-xs font-medium uppercase tracking-normal text-ink-600">
               {t("common.scrollToExplore")}
             </span>
           </div>
-        </Reveal>
+        
       </div>
 
       <div className="absolute bottom-0 left-1/2 h-px w-[600px] -translate-x-1/2 bg-gradient-to-r from-transparent via-accent/30 to-transparent" />

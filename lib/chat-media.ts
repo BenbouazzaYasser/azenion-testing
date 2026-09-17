@@ -341,6 +341,17 @@ export async function resolveChatMediaValue(
   if (!isChatMediaMarker(value)) return value;
   const client = supabase ?? createAdminClient();
   const objectPath = objectPathFromChatMarker(value);
+  // Fail closed on paths outside the `chat/<conversation>/<attachment>/<file>`
+  // layout (traversal or cross-prefix values must never be signed).
+  if (
+    objectPath.length === 0 ||
+    objectPath.length > 500 ||
+    !objectPath.startsWith("chat/") ||
+    objectPath.includes("..") ||
+    !/^[A-Za-z0-9._/-]+$/.test(objectPath)
+  ) {
+    return null;
+  }
   const { data, error } = await client.storage.from(CHAT_MEDIA_BUCKET).createSignedUrl(objectPath, ttlSeconds);
   if (error || !data) return null;
   return data.signedUrl;

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
+import { Suspense } from "react";
 
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -14,7 +15,6 @@ import { FeaturedProjects } from "@/components/sections/community/featured-proje
 import { AcademySessions } from "@/components/sections/community/academy-sessions";
 import { CommunityCta } from "@/components/sections/community/final-cta";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { resolveMediaValue } from "@/lib/media";
 import { getFeedItems, getTrendingFeedItems } from "@/actions/feed.actions";
 import {
   getTrendingTeamIds,
@@ -36,8 +36,6 @@ export const metadata: Metadata = {
     "The Azenion Community — the feed, showcase, announcements, teams, projects and live sessions across the Limitless Network.",
 };
 
-export const dynamic = "force-dynamic";
-
 async function fetchCommunityPageData() {
   const admin = createAdminClient();
 
@@ -45,6 +43,10 @@ async function fetchCommunityPageData() {
     getTrendingTeamIds(8),
     getFeaturedProjectIds(8),
   ]);
+
+  // Trending feed is independent of team/project rows — start it concurrently
+  // with the entity queries instead of sequentially after.
+  const trendingFeedPromise = getTrendingFeedItems(6, null);
 
   const [
     { data: teamRows },
@@ -203,16 +205,32 @@ async function fetchCommunityPageData() {
     }
   }
 
-const teams: TeamCardTeam[] = await Promise.all(
-    (orderedTeamRows ?? [])
-      .filter((team) => !isTeamHidden(team.last_activity_at as string | null))
-      .slice(0, 3)
-      .map(async (team) => ({
+  const filteredTeams = (orderedTeamRows ?? []).filter((team) => !isTeamHidden(team.last_activity_at as string | null)).slice(0, 3);
+  const filteredProjects = (orderedProjectRows ?? []).filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED").slice(0, 4);
+  const PRIVATE_PREFIX = "private-media/";
+  const isPrivate = (v: string | null | undefined): boolean => typeof v === "string" && v.startsWith(PRIVATE_PREFIX);
+  const objectPath = (m: string) => m.slice(PRIVATE_PREFIX.length);
+  const isSafe = (p: string) => p.length > 0 && p.length <= 500 && !p.includes("..") && /^[A-Za-z0-9._\/-]+$/.test(p) && (p.startsWith("team/") || p.startsWith("project/"));
+  const privatePaths = new Set<string>();
+  for (const t of filteredTeams) if (isPrivate(t.logo_url)) { const op = objectPath(t.logo_url as string); if (isSafe(op)) privatePaths.add(op); }
+  for (const p of filteredProjects) if (isPrivate(p.logo_url)) { const op = objectPath(p.logo_url as string); if (isSafe(op)) privatePaths.add(op); }
+  const markerToUrl = new Map<string, string>();
+  if (privatePaths.size > 0) {
+    try {
+      const { data } = await admin.storage.from("private-media").createSignedUrls([...privatePaths], 60);
+      if (data) for (const e of data) if (!e.error && e.signedUrl && e.path) markerToUrl.set(`${PRIVATE_PREFIX}${e.path}`, e.signedUrl);
+    } catch {}
+  }
+
+  const teams: TeamCardTeam[] = filteredTeams.map((team) => {
+    const rawLogo = team.logo_url as string | null;
+    const resolved = rawLogo && isPrivate(rawLogo) ? (markerToUrl.get(rawLogo) ?? null) : rawLogo;
+    return {
     id: team.id,
     slug: team.slug,
     name: team.name,
     description: team.description,
-    logo_url: ((await resolveMediaValue(team.logo_url, undefined, admin)) as string | null) ?? null,
+    logo_url: resolved,
     visibility: team.visibility,
     status: team.status,
     last_activity_at: team.last_activity_at as string | null,
@@ -225,19 +243,18 @@ const teams: TeamCardTeam[] = await Promise.all(
     project_count: projectCountMap.get(team.id) ?? 0,
     update_count: 0,
     open_roles: [],
-    }))
-  );
+    };
+  });
 
-  const projects: ProjectCardProject[] = await Promise.all(
-    (orderedProjectRows ?? [])
-      .filter((p) => getProjectLifecycleStatus(p.last_activity_at as string | null) !== "ARCHIVED")
-      .slice(0, 4)
-      .map(async (p) => ({
+  const projects: ProjectCardProject[] = filteredProjects.map((p) => {
+    const rawLogo = p.logo_url as string | null;
+    const resolved = rawLogo && isPrivate(rawLogo) ? (markerToUrl.get(rawLogo) ?? null) : rawLogo;
+    return {
     id: p.id,
     slug: p.slug,
     name: p.name,
     description: p.description,
-    logo_url: ((await resolveMediaValue(p.logo_url, undefined, admin)) as string | null) ?? null,
+    logo_url: resolved,
     visibility: p.visibility,
     lifecycle_status: p.lifecycle_status,
     last_activity_at: p.last_activity_at as string | null,
@@ -255,8 +272,8 @@ const teams: TeamCardTeam[] = await Promise.all(
     owner: p.owner as unknown as { username: string; full_name: string; avatar_url: string | null } | null,
     team: p.team as unknown as { name: string; slug: string } | null,
     member_count: projectMemberCountMap.get(p.id) ?? 0,
-    }))
-  );
+    };
+  });
 
   const sessions: LiveSessionWithManage[] = ((sessionRows ?? []) as LiveSessionRow[]).map(
     (session) => ({
@@ -278,7 +295,7 @@ const teams: TeamCardTeam[] = await Promise.all(
   // Public feed with an explicit null viewer: no cookies/session reads, so the
   // result is identical for every visitor and safe to cache. Per-user state
   // (likes/saves) is not part of the community preview.
-  const { items: trendedFeed } = await getTrendingFeedItems(6, null);
+  const { items: trendedFeed } = await trendingFeedPromise;
   const feedItems =
     trendedFeed.length > 0
       ? trendedFeed
@@ -300,22 +317,30 @@ const getCommunityPageData = unstable_cache(fetchCommunityPageData, ["community-
   revalidate: 30,
 });
 
-export default async function CommunityPage() {
-  const { teams, projects, sessions, announcements, feedItems } =
-    await getCommunityPageData();
+async function CommunityDynamicSections() {
+  const { teams, projects, sessions, announcements, feedItems } = await getCommunityPageData();
+  return (
+    <>
+      <LatestFeed items={feedItems} />
+      <ShowcasePreview />
+      <AnnouncementsPreview announcements={announcements} />
+      <TrendingTeams teams={teams} />
+      <FeaturedProjects projects={projects} />
+      <AcademySessions sessions={sessions} />
+    </>
+  );
+}
 
+export default function CommunityPage() {
   return (
     <>
       <Navbar />
       <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <CommunityHero />
-        <LatestFeed items={feedItems} />
-        <ShowcasePreview />
-        <AnnouncementsPreview announcements={announcements} />
-        <TrendingTeams teams={teams} />
-        <FeaturedProjects projects={projects} />
-        <AcademySessions sessions={sessions} />
+        <Suspense fallback={<div className="py-16 flex justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" /></div>}>
+          <CommunityDynamicSections />
+        </Suspense>
         <CommunityCta />
         <PageBridge />
       </main>

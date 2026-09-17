@@ -217,7 +217,7 @@ export function CommentSection({
         type="button"
         onClick={toggleOpen}
         className={cn(
-          "flex items-center gap-1.5 text-xs transition-all duration-300 ease-premium",
+          "flex min-h-[44px] items-center gap-1.5 px-2.5 py-2 text-xs transition-all duration-300 ease-premium",
           isOpen ? "text-accent-400" : "text-ink-600 hover:text-ink-200",
         )}
       >
@@ -261,7 +261,7 @@ export function CommentSection({
                 type="button"
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
-                className="flex items-center gap-2 rounded-full bg-surface px-5 py-1.5 text-xs font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-glow-sm disabled:opacity-50"
+                className="flex items-center gap-2 rounded-full bg-surface px-5 py-1.5 text-xs font-medium text-ink-200 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50 disabled:opacity-50"
               >
                 {isLoadingMore ? (
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" />
@@ -285,13 +285,14 @@ export function CommentSection({
                     handlePost();
                   }
                 }}
-                className="min-w-0 flex-1 rounded-lg bg-surface px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-[border-color,box-shadow] focus:border-accent-400/50 focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
+                enterKeyHint="send"
+                className="min-w-0 flex-1 rounded-lg bg-surface px-3 py-2 text-base text-ink-50 placeholder:text-ink-600 outline-none transition-[border-color,box-shadow] focus:border-accent-400/50 focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400 sm:text-sm"
               />
               <button
                 type="button"
                 onClick={handlePost}
                 disabled={!input.trim() || isPending}
-                className="rounded-lg bg-accent px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
+                className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
               >
                 {t("feed.commentPost")}
               </button>
@@ -403,18 +404,18 @@ function CommentItem({
           <span className="text-xs font-medium text-ink-200">
             {comment.author.full_name ?? `@${comment.author.username}`}
           </span>
-          <span className="text-[10px] text-ink-600">
+          <span className="text-[11px] text-ink-600">
             {timeAgo}
             {isEdited && ` (${t("feed.edited")})`}
           </span>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2">
             {canReply && !isEditing && !isConfirmingDelete && (
               <button
                 type="button"
                 onClick={toggleReply}
                 aria-expanded={isReplying}
-                className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-ink-600 transition-colors hover:text-accent-300"
+                className="flex min-h-[44px] items-center gap-1 px-2 py-2 text-xs text-ink-600 transition-colors hover:text-accent-300"
               >
                 <Reply size={11} />
                 {t("feed.reply")}
@@ -422,11 +423,11 @@ function CommentItem({
             )}
 
             {isOwner && !isEditing && !isConfirmingDelete && (
-              <div className="flex items-center gap-3 opacity-0 transition-opacity duration-300 ease-premium group-hover:opacity-100 max-sm:opacity-100">
+              <div className="flex items-center gap-2 opacity-0 transition-opacity duration-300 ease-premium group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-within:opacity-100 max-sm:opacity-100">
                 <button
                   type="button"
                   onClick={startEdit}
-                  className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-ink-600 transition-colors hover:text-accent-300"
+                  className="flex min-h-[44px] items-center gap-1 px-2 py-2 text-xs text-ink-600 transition-colors hover:text-accent-300"
                 >
                   <Pencil size={11} />
                   {t("common.edit")}
@@ -434,7 +435,7 @@ function CommentItem({
                 <button
                   type="button"
                   onClick={() => setIsConfirmingDelete(true)}
-                  className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-ink-600 transition-colors hover:text-red-400"
+                  className="flex min-h-[44px] items-center gap-1 px-2 py-2 text-xs text-ink-600 transition-colors hover:text-red-400"
                 >
                   <Trash2 size={11} />
                   {t("common.delete")}
@@ -451,14 +452,14 @@ function CommentItem({
               onChange={(e) => setDraft(e.target.value)}
               autoFocus
               rows={2}
-              className="w-full resize-y rounded-lg bg-surface px-3 py-2 text-sm text-ink-50 outline-none transition-[border-color,box-shadow] focus:border-accent-400/50 focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
+              className="w-full resize-y rounded-lg bg-surface px-3 py-2 text-base text-ink-50 outline-none transition-[border-color,box-shadow] focus:border-accent-400/50 focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400 sm:text-sm"
             />
             <div className="mt-2 flex items-center gap-2">
               <button
                 type="button"
                 onClick={saveEdit}
                 disabled={!draft.trim() || isSaving}
-                className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
+                className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
               >
                 {t("common.save")}
               </button>
@@ -466,7 +467,7 @@ function CommentItem({
                 type="button"
                 onClick={cancelEdit}
                 disabled={isSaving}
-                className="rounded-lg px-3 py-1.5 text-xs text-ink-400 transition-colors hover:text-ink-200"
+                className="min-h-[44px] rounded-lg px-4 py-2 text-xs text-ink-400 transition-colors hover:text-ink-200"
               >
                 {t("common.cancel")}
               </button>
@@ -481,7 +482,7 @@ function CommentItem({
               type="button"
               onClick={confirmDelete}
               disabled={isDeleting}
-              className="rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-medium text-white transition-all duration-300 hover:bg-red-500 disabled:opacity-50"
+              className="min-h-[44px] rounded-lg bg-red-500/90 px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-red-500 disabled:opacity-50"
             >
               {t("common.delete")}
             </button>
@@ -489,13 +490,13 @@ function CommentItem({
               type="button"
               onClick={() => setIsConfirmingDelete(false)}
               disabled={isDeleting}
-              className="rounded-lg px-2 py-1.5 text-xs text-ink-400 transition-colors hover:text-ink-200"
+              className="min-h-[44px] rounded-lg px-3 py-2 text-xs text-ink-400 transition-colors hover:text-ink-200"
             >
               {t("common.cancel")}
             </button>
           </div>
         ) : (
-          <p className="mt-0.5 text-sm leading-relaxed text-ink-400">
+          <p className="mt-0.5 break-words text-sm leading-relaxed text-ink-400 [overflow-wrap:anywhere]">
             {comment.body}
           </p>
         )}
@@ -525,20 +526,21 @@ function CommentItem({
                 }
               }}
               autoFocus
-              className="min-w-0 flex-1 rounded-lg bg-surface px-3 py-2 text-sm text-ink-50 placeholder:text-ink-600 outline-none transition-[border-color,box-shadow] focus:border-accent-400/50 focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400"
+              enterKeyHint="send"
+              className="min-w-0 flex-1 rounded-lg bg-surface px-3 py-2 text-base text-ink-50 placeholder:text-ink-600 outline-none transition-[border-color,box-shadow] focus:border-accent-400/50 focus:shadow-input focus-visible:ring-2 focus-visible:ring-accent-400 sm:text-sm"
             />
             <button
               type="button"
               onClick={postReply}
               disabled={!replyDraft.trim() || isPending}
-              className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
+              className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
             >
               {t("feed.reply")}
             </button>
             <button
               type="button"
               onClick={() => setIsReplying(false)}
-              className="rounded-lg px-2 py-1.5 text-xs text-ink-400 transition-colors hover:text-ink-200"
+              className="min-h-[44px] rounded-lg px-3 py-2 text-xs text-ink-400 transition-colors hover:text-ink-200"
             >
               {t("common.cancel")}
             </button>
@@ -550,7 +552,7 @@ function CommentItem({
             type="button"
             onClick={onToggleReplies}
             aria-expanded={repliesExpanded}
-            className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-accent-400 transition-colors hover:text-accent-300"
+            className="mt-1.5 flex min-h-[32px] items-center gap-1 px-1 py-1 text-xs font-medium text-accent-400 transition-colors hover:text-accent-300"
           >
             {repliesExpanded
               ? t("feed.hideReplies")

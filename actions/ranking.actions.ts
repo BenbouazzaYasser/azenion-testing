@@ -1,5 +1,6 @@
 "use server";
 
+import { unstable_cache } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TRENDING_WINDOW_DAYS } from "@/lib/trending";
 
@@ -16,7 +17,7 @@ interface TrendingRankRow {
  * fall back to their previous behaviour instead of breaking the page.
  */
 
-export async function getTrendingTeamIds(limit = 12): Promise<string[]> {
+async function fetchTrendingTeamIds(limit: number): Promise<string[]> {
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase.rpc("get_trending_teams", {
@@ -29,8 +30,7 @@ export async function getTrendingTeamIds(limit = 12): Promise<string[]> {
     return [];
   }
 }
-
-export async function getFeaturedProjectIds(limit = 12): Promise<string[]> {
+async function fetchFeaturedProjectIds(limit: number): Promise<string[]> {
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase.rpc("get_featured_projects", {
@@ -42,4 +42,21 @@ export async function getFeaturedProjectIds(limit = 12): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+const getCachedTrendingTeamIds =
+  process.env.NODE_ENV === "test" || process.env.VITEST === "true" || process.env.VITEX_TEST === "true"
+    ? fetchTrendingTeamIds
+    : unstable_cache(fetchTrendingTeamIds, ["trending-team-ids"], { revalidate: 30 });
+const getCachedFeaturedProjectIds =
+  process.env.NODE_ENV === "test" || process.env.VITEST === "true" || process.env.VITEX_TEST === "true"
+    ? fetchFeaturedProjectIds
+    : unstable_cache(fetchFeaturedProjectIds, ["featured-project-ids"], { revalidate: 30 });
+
+export async function getTrendingTeamIds(limit = 12): Promise<string[]> {
+  return getCachedTrendingTeamIds(limit);
+}
+
+export async function getFeaturedProjectIds(limit = 12): Promise<string[]> {
+  return getCachedFeaturedProjectIds(limit);
 }

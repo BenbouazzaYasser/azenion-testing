@@ -1,4 +1,3 @@
-import { Reveal } from "@/components/ui/reveal";
 
 const REASONS = [
   "struggle to find collaborators who share their ambition",
@@ -11,7 +10,7 @@ export function OurStory() {
   return (
     <section className="relative py-20 sm:py-24 lg:py-28" aria-labelledby="story-heading">
       <div className="mx-auto max-w-[920px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
+        
           <div className="relative pl-8 sm:pl-14">
             <div className="absolute left-0 top-2 h-[calc(100%-1rem)] w-px bg-gradient-to-b from-accent-400/40 via-accent-400/15 to-transparent" />
             <div className="absolute left-[-3px] top-2 h-[7px] w-[7px] rounded-full bg-accent-400 shadow-[0_0_10px_rgba(40,40,255,0.5)]" />
@@ -65,7 +64,7 @@ export function OurStory() {
               </p>
             </div>
           </div>
-        </Reveal>
+        
       </div>
     </section>
   );

@@ -57,7 +57,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
   }
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-1 hover:border-accent-400/40 hover:shadow-glow">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40">
       <div
         aria-hidden
         className={cn(
@@ -143,7 +143,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
                 aria-label={t("academy.deleteLabAria")}
                 title={confirming ? t("academy.clickAgain") : t("academy.deleteLabAria")}
                 className={cn(
-                  "flex h-9 w-9 items-center justify-center rounded-full border transition-colors",
+                  "flex h-11 w-11 items-center justify-center rounded-full border transition-colors",
                   confirming
                     ? "border-red-500/50 bg-red-500/10 text-red-300"
                     : "border-border-strong text-ink-400 hover:border-red-500/50 hover:text-red-300",

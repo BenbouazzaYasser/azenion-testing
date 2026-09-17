@@ -9,6 +9,17 @@ interface LogoProps {
   wordmarkClassName?: string;
   className?: string;
   markSize?: number;
+  /**
+   * Preload the mark. Keep false everywhere except the single LCP logo per
+   * page — a local SVG is instant and must not occupy preload slots.
+   */
+  priority?: boolean;
+  /**
+   * Render as a link to "/". Set false when the logo sits inside another
+   * interactive element (e.g. the mobile menu toggle) — a nested <a> would
+   * hijack taps and navigate instead. Defaults to true.
+   */
+  link?: boolean;
 }
 
 /**
@@ -16,25 +27,15 @@ interface LogoProps {
  * (public/logo.svg) and must never be recreated, redrawn, or restyled here —
  * only positioned and paired with the wordmark.
  */
-export function Logo({ withWordmark = true, wordmarkClassName, className, markSize = 28 }: LogoProps) {
-  return (
-    <Link
-      href="/"
-      aria-label="Azenion — home"
-      data-no-translate
-      translate="no"
-      dir="ltr"
-      className={cn(
-        "group flex items-center gap-2.5 transition-opacity duration-200 hover:opacity-90",
-        className
-      )}
-    >
+export function Logo({ withWordmark = true, wordmarkClassName, className, markSize = 28, priority = false, link = true }: LogoProps) {
+  const inner = (
+    <>
       <Image
         src="/logo.svg"
         alt=""
         width={markSize}
         height={markSize}
-        priority
+        priority={priority}
         className="shrink-0"
       />
       {withWordmark && (
@@ -50,6 +51,29 @@ export function Logo({ withWordmark = true, wordmarkClassName, className, markSi
           AZENION
         </span>
       )}
+    </>
+  );
+  const sharedClassName = cn(
+    "group flex items-center gap-2.5 transition-opacity duration-200 hover:opacity-90",
+    className
+  );
+  if (!link) {
+    return (
+      <span aria-hidden="true" data-no-translate translate="no" dir="ltr" className={sharedClassName}>
+        {inner}
+      </span>
+    );
+  }
+  return (
+    <Link
+      href="/"
+      aria-label="Azenion — home"
+      data-no-translate
+      translate="no"
+      dir="ltr"
+      className={sharedClassName}
+    >
+      {inner}
     </Link>
   );
 }

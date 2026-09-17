@@ -612,6 +612,9 @@ export const en: TranslationResource = {
   "projects.exploreProjects": "Explore Projects",
   "projects.myEyebrow": "Your Projects",
   "projects.myTitle": "My Projects",
+  "projects.loadMore": "Load more projects",
+  "projects.loadingMore": "Loading more projects...",
+  "projects.errorLoadMore": "Couldn't load more projects. Please try again.",
 
   "projects.pageArchived":
     "This project has been archived due to inactivity. It remains accessible to members but is hidden from discovery.",

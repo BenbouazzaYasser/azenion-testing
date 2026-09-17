@@ -21,7 +21,6 @@ function GalleryTile({
         src={src}
         alt=""
         fill
-        unoptimized
         sizes={sizes}
         className="object-cover transition-transform duration-500 ease-premium group-hover/tile:scale-[1.04]"
       />

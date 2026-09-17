@@ -20,6 +20,7 @@ export function LazyToaster() {
           border: "1px solid rgba(244,245,248,0.14)",
           color: "#F4F5F8",
           backdropFilter: "blur(20px)",
+          marginBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
         },
         duration: 4000,
       }}

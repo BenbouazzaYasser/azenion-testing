@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 export const MAX_LOGO_SIZE = 2 * 1024 * 1024;
-export const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+export const ALLOWED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
+const httpsUrl = (max: number) => z.string().trim().max(max).refine((u) => { try { const p = new URL(u); return p.protocol === "https:"; } catch { return false; } }, { message: "Must be a valid https URL" });
 
 export const createTeamSchema = z.object({
   name: z
@@ -19,7 +21,7 @@ export const createTeamSchema = z.object({
     .nullable()
     .optional(),
   visibility: z.enum(["public", "private"]).default("public"),
-  logo_url: z.string().nullable().optional(),
+  logo_url: httpsUrl(2048).nullable().optional(),
   category_ids: z.array(z.string().uuid()).optional(),
 });
 
@@ -44,8 +46,8 @@ export const updateTeamSchema = z.object({
     .nullable()
     .optional(),
   visibility: z.enum(["public", "private"]).optional(),
-  logo_url: z.string().nullable().optional(),
-  banner_url: z.string().nullable().optional(),
+  logo_url: httpsUrl(2048).nullable().optional(),
+  banner_url: httpsUrl(2048).nullable().optional(),
   category_ids: z.array(z.string().uuid()).optional(),
   technologies: z.array(z.string()).optional(),
 });

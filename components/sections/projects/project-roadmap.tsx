@@ -1,6 +1,5 @@
 import { CheckCircle2, Circle, LucideIcon } from "lucide-react";
 
-import { Reveal } from "@/components/ui/reveal";
 import type { Project } from "@/data/projects";
 
 interface ProjectRoadmapProps {
@@ -23,27 +22,27 @@ export function ProjectRoadmap({ project }: ProjectRoadmapProps) {
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="project-roadmap-heading">
       <div className="mx-auto max-w-[960px] px-5 sm:px-8 lg:px-12">
-        <Reveal>
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.18em] text-accent-300">
+        
+          <div className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">
             Roadmap
           </div>
-        </Reveal>
+        
 
-        <Reveal delay={80}>
+        
           <h2
             id="project-roadmap-heading"
             className="mt-6 text-balance text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[2.5rem]"
           >
             Project roadmap
           </h2>
-        </Reveal>
+        
 
         <div className="mt-10 space-y-4">
           {project.roadmap.map((item, i) => {
             const Icon = STATUS_ICONS[item.status] || Circle;
             return (
-              <Reveal key={item.id} delay={i * 80}>
-                <div className="group relative overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-accent-400/40 hover:shadow-glow-sm">
+              
+                <div key={item.id} className="group relative overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
                   <div className="relative p-6 sm:p-7">
                     <div className="flex items-start gap-4">
                       <div className={`mt-0.5 ${STATUS_COLORS[item.status] || "text-ink-600"}`}>
@@ -70,7 +69,7 @@ export function ProjectRoadmap({ project }: ProjectRoadmapProps) {
                     </div>
                   </div>
                 </div>
-              </Reveal>
+              
             );
           })}
         </div>

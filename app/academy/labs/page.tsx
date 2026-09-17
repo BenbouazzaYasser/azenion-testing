@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
@@ -8,6 +9,7 @@ import { LabsBrowser } from "@/components/sections/academy/labs-browser";
 import { AcademyClosingCta } from "@/components/sections/academy/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionUser } from "@/lib/supabase/user";
 import { getLabsAuthContext } from "@/lib/labs/authorization";
 import type { LabRow } from "@/lib/validations/lab.schema";
@@ -20,6 +22,27 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+const LAB_SELECT =
+  "id, title, description, category, difficulty, type, estimated_duration_minutes, tags, thumbnail_url, is_published, published_at, archived_at, created_by, created_at, updated_at";
+
+async function fetchPublishedLabs() {
+  // Public, non-user-specific content: published labs only, served through
+  // the admin client with the same explicit filter anon visitors previously
+  // got under RLS. Creators bypass this cache (see below) so unpublished
+  // labs never leak into the shared entry.
+  const admin = createAdminClient();
+  const { data: labRows } = await admin
+    .from("labs")
+    .select(LAB_SELECT)
+    .eq("is_published", true)
+    .order("created_at", { ascending: false });
+  return labRows ?? [];
+}
+
+const getPublishedLabs = unstable_cache(fetchPublishedLabs, ["labs-page-data"], {
+  revalidate: 120,
+});
 
 export default async function LabsPage() {
   const supabase = await createClient();
@@ -43,14 +66,13 @@ export default async function LabsPage() {
   // Published labs for everyone; a manager also sees their own unpublished
   // labs (matching the existing "creators can read their own labs" /
   // "platform admins can read all labs" RLS policies).
-  const labsQuery = supabase
-    .from("labs")
-    .select(
-      "id, title, description, category, difficulty, type, estimated_duration_minutes, tags, thumbnail_url, is_published, published_at, archived_at, created_by, created_at, updated_at",
-    )
-    .order("created_at", { ascending: false });
-
-  const { data: labRows } = canCreate ? await labsQuery : await labsQuery.eq("is_published", true);
+  let labRows: unknown[];
+  if (canCreate) {
+    const { data } = await supabase.from("labs").select(LAB_SELECT).order("created_at", { ascending: false });
+    labRows = (data ?? []) as unknown[];
+  } else {
+    labRows = (await getPublishedLabs()) as unknown[];
+  }
 
   const labs = (labRows ?? []) as unknown as LabRow[];
 

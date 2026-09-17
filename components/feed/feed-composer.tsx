@@ -336,7 +336,7 @@ export function FeedComposer({
                   onClick={() => removeMedia(i)}
                   disabled={submitting || disabled}
                   aria-label={`Remove ${kindLabel(item.kind)} ${i + 1}`}
-                  className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
+                  className="absolute right-2 top-2 rounded-full bg-black/60 p-3 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
                 >
                   <X size={14} />
                 </button>
@@ -368,7 +368,7 @@ export function FeedComposer({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={submitting || disabled || media.length >= maxMedia}
-          className="inline-flex h-9 items-center gap-1.5 text-sm text-ink-400 transition-colors hover:text-accent-400 disabled:pointer-events-none disabled:opacity-40"
+          className="inline-flex min-h-[44px] items-center gap-1.5 py-2 text-sm text-ink-400 transition-colors hover:text-accent-400 disabled:pointer-events-none disabled:opacity-40"
           title={t("feed.composerMediaTitle")}
         >
           <ImagePlus size={16} />

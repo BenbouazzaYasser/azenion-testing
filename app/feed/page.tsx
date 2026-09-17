@@ -9,15 +9,32 @@ import { FeedList } from "@/components/feed/feed-list";
 import { getFeedItems } from "@/actions/feed.actions";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { serverT } from "@/lib/translation/server";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+
+export const metadata: Metadata = {
+  title: "Feed | Azenion — The Limitless Network",
+  description:
+    "Follow the latest updates from Azenion teams, projects, branches and members across the network.",
+  alternates: {
+    canonical: "/feed",
+  },
+};
 
 export default async function FeedPage() {
   const user = await getSessionUser();
-  const supabase = await createClient();
   const userId = user?.id ?? null;
 
-  const isPlatformAdmin = user ? (await supabase.rpc("is_platform_admin"))?.data === true : false;
-
-  const { items, total } = await getFeedItems("all", 1, 20, userId);
+  // is_platform_admin and initial feed load are independent — run concurrently
+  const [isPlatformAdmin, feed] = await Promise.all([
+    (async () => {
+      if (!user) return false;
+      const supabase = await createClient();
+      const { data } = await supabase.rpc("is_platform_admin");
+      return data === true;
+    })(),
+    getFeedItems("all", 1, 20, userId),
+  ]);
+  const { items, total } = feed;
 
   return (
     <>
@@ -34,7 +51,14 @@ export default async function FeedPage() {
             </p>
           </div>
 
-          {user ? <FeedComposer className="mb-8" /> : null}
+          {user ? (
+            <ErrorBoundary
+              fallbackTitle="Composer failed to load"
+              fallbackMessage="Unable to load the post composer. You can try reloading the page."
+            >
+              <FeedComposer className="mb-8" />
+            </ErrorBoundary>
+          ) : null}
 
           <Suspense
             fallback={
@@ -43,12 +67,17 @@ export default async function FeedPage() {
               </div>
             }
           >
-            <FeedList
-              initialItems={items}
-              initialTotal={total}
-              currentUserId={userId}
-              isPlatformAdmin={isPlatformAdmin}
-            />
+            <ErrorBoundary
+              fallbackTitle="Feed failed to load"
+              fallbackMessage="Unable to load the feed. You can try reloading the page."
+            >
+              <FeedList
+                initialItems={items}
+                initialTotal={total}
+                currentUserId={userId}
+                isPlatformAdmin={isPlatformAdmin}
+              />
+            </ErrorBoundary>
           </Suspense>
         </div>
       </main>

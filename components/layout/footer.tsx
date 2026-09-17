@@ -32,7 +32,7 @@ export async function Footer() {
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-400">
               {await serverT("footer.taglineTop")}
               <br />
-              <span className="text-accent-400">{await serverT("footer.taglineBottom")}</span>
+              {await serverT("footer.taglineBottom")}
             </p>
             <p className="mt-4 text-sm leading-relaxed text-ink-400">
               {await serverT("footer.description")}
@@ -40,7 +40,7 @@ export async function Footer() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-ink-200">
+            <p className="text-sm font-semibold uppercase tracking-normal text-ink-200">
               {await serverT("footer.quickLinks")}
             </p>
             <ul className="mt-5 space-y-3">
@@ -64,7 +64,7 @@ export async function Footer() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-ink-200">
+            <p className="text-sm font-semibold uppercase tracking-normal text-ink-200">
               {await serverT("footer.legal")}
             </p>
             <ul className="mt-5 space-y-3">
@@ -87,7 +87,7 @@ export async function Footer() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-ink-200">
+            <p className="text-sm font-semibold uppercase tracking-normal text-ink-200">
               {await serverT("footer.connect")}
             </p>
 
@@ -118,7 +118,7 @@ export async function Footer() {
                     href={channel.href}
                     target={channel.href.startsWith("http") ? "_blank" : undefined}
                     rel={channel.href.startsWith("http") ? "noreferrer noopener" : undefined}
-                    className="group flex items-center gap-3 rounded-xl bg-surface px-4 py-3 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:-translate-y-0.5 hover:border-accent-400/30 hover:bg-surface-hover hover:shadow-glow-sm"
+                    className="group flex items-center gap-3 rounded-xl bg-surface px-4 py-3 shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/30 hover:bg-surface-hover"
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface text-accent-400 transition-all duration-300 group-hover:border-accent-400/30 group-hover:bg-accent/[0.06]">
                       <Icon size={14} />

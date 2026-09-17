@@ -16,6 +16,136 @@ import {
   privateMarkerFor,
   isProjectMediaPrivate,
 } from "@/lib/media";
+import { safeRemoveStorageObjects } from "@/lib/storage-cleanup";
+
+// M13: extension allow-list mirrors ALLOWED_LOGO_TYPES / ALLOWED_POST_IMAGE_TYPES
+// (image/png, image/jpeg, image/webp); contentType is set from this map.
+const PROJECT_IMAGE_EXT_MIME: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+};
+
+function projectImageExt(fileName: string): { ext: string; contentType: string } | null {
+  const ext = (fileName.split(".").pop() ?? "").toLowerCase();
+  const contentType = PROJECT_IMAGE_EXT_MIME[ext];
+  if (!contentType || /[^a-z0-9]/.test(ext)) return null;
+  return { ext, contentType };
+}
+
+// Direct pivot-table writes below bypass the authorizing RPCs
+// (create_project / create_standalone_project), so owner/admin is re-verified
+// here in the action, mirroring the team.actions.ts convention.
+async function canManageProjectCategories(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  opts: { teamId?: string | null; projectId?: string | null },
+): Promise<boolean> {
+  const { teamId, projectId } = opts;
+  if ((!teamId && !projectId) || !userId) return false;
+
+  // Platform admin bypass via the existing is_platform_admin RPC pattern.
+  try {
+    const { data: isAdmin } = await (supabase as any).rpc("is_platform_admin");
+    if (isAdmin === true) return true;
+  } catch {
+    // Fall through to team/project-level checks.
+  }
+
+  // Team-owned project: caller must own or administer the parent team.
+  if (teamId) {
+    try {
+      const { data: membership } = await (supabase as any)
+        .from("team_members")
+        .select("role")
+        .eq("team_id", teamId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      const role = (membership as { role?: string } | null)?.role;
+      if (role === "owner" || role === "admin") return true;
+    } catch {
+      // Fall through to the team-row ownership check.
+    }
+
+    // One combined select covers the common schema; the per-column probe below
+    // only runs if that query fails on an older schema.
+    try {
+      const { data, error } = await supabase
+        .from("teams")
+        .select("id, owner_id, created_by, user_id")
+        .eq("id", teamId)
+        .maybeSingle();
+      if (!error && data) {
+        const record = data as unknown as Record<string, unknown>;
+        return (
+          record.owner_id === userId ||
+          record.created_by === userId ||
+          record.user_id === userId
+        );
+      }
+    } catch {
+      // Fall through to per-column probing.
+    }
+    for (const column of ["owner_id", "created_by", "user_id"]) {
+      try {
+        const { data, error } = await supabase
+          .from("teams")
+          .select(`id, ${column}`)
+          .eq("id", teamId)
+          .maybeSingle();
+        if (error || !data) continue;
+        const record = data as unknown as Record<string, unknown>;
+        if (!(column in record)) continue;
+        return record[column] === userId;
+      } catch {
+        continue;
+      }
+    }
+
+    return false;
+  }
+
+  // Standalone project: caller must own the project row.
+  if (projectId) {
+    // One combined select covers the common schema; the per-column probe below
+    // only runs if that query fails on an older schema.
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id, owner_id, created_by, user_id")
+        .eq("id", projectId)
+        .maybeSingle();
+      if (!error && data) {
+        const record = data as unknown as Record<string, unknown>;
+        return (
+          record.owner_id === userId ||
+          record.created_by === userId ||
+          record.user_id === userId
+        );
+      }
+    } catch {
+      // Fall through to per-column probing.
+    }
+    for (const column of ["owner_id", "created_by", "user_id"]) {
+      try {
+        const { data, error } = await supabase
+          .from("projects")
+          .select(`id, ${column}`)
+          .eq("id", projectId)
+          .maybeSingle();
+        if (error || !data) continue;
+        const record = data as unknown as Record<string, unknown>;
+        if (!(column in record)) continue;
+        return record[column] === userId;
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  return false;
+}
 
 export async function createProject(formData: FormData) {
   const supabase = await createClient();
@@ -69,6 +199,13 @@ export async function createProject(formData: FormData) {
       : [];
 
     if (categoryIds.length > 0 && projectId) {
+      if (
+        !(await canManageProjectCategories(supabase, user.id, {
+          projectId: projectId as string,
+        }))
+      ) {
+        return { error: "Not authorized to update project categories" };
+      }
       const members = categoryIds.map((cid) => ({
         project_id: projectId as string,
         category_id: cid,
@@ -102,6 +239,14 @@ export async function createProject(formData: FormData) {
     : [];
 
   if (categoryIds.length > 0 && projectId) {
+    if (
+      !(await canManageProjectCategories(supabase, user.id, {
+        teamId: parsed.data.team_id,
+        projectId: projectId as string,
+      }))
+    ) {
+      return { error: "Not authorized to update project categories" };
+    }
     const members = categoryIds.map((cid) => ({
       project_id: projectId as string,
       category_id: cid,
@@ -342,7 +487,11 @@ export async function uploadProjectLogo(formData: FormData) {
     return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
+  const logoExt = projectImageExt(file.name);
+  if (!logoExt) {
+    return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
+  }
+  const ext = logoExt.ext;
   const isPrivate = await isProjectMediaPrivate(supabase, projectId);
   const bucket = isPrivate ? PRIVATE_MEDIA_BUCKET : "project-logos";
   const objectPath = isPrivate
@@ -352,7 +501,7 @@ export async function uploadProjectLogo(formData: FormData) {
   const { error: uploadError } = await supabase.storage
     .from(bucket)
     .upload(objectPath, file, {
-      contentType: file.type,
+      contentType: logoExt.contentType,
       upsert: false,
     });
 
@@ -370,6 +519,7 @@ export async function uploadProjectLogo(formData: FormData) {
   });
 
   if (updateError) {
+    await safeRemoveStorageObjects(supabase, bucket, [objectPath]);
     return { error: updateError.message };
   }
 
@@ -494,7 +644,11 @@ export async function uploadUpdateImage(formData: FormData) {
     return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
   }
 
-  const ext = file.name.split(".").pop() ?? "png";
+  const updateImageExt = projectImageExt(file.name);
+  if (!updateImageExt) {
+    return { error: "Invalid file type. Use PNG, JPEG, or WebP" };
+  }
+  const ext = updateImageExt.ext;
   const isPrivate = await isProjectMediaPrivate(supabase, projectId);
   const bucket = isPrivate ? PRIVATE_MEDIA_BUCKET : "project-updates";
   const objectPath = isPrivate
@@ -503,7 +657,7 @@ export async function uploadUpdateImage(formData: FormData) {
 
   const { error: uploadError } = await supabase.storage
     .from(bucket)
-    .upload(objectPath, file, { contentType: file.type, upsert: false });
+    .upload(objectPath, file, { contentType: updateImageExt.contentType, upsert: false });
 
   if (uploadError) {
     return { error: uploadError.message };
@@ -522,7 +676,7 @@ export async function uploadUpdateImage(formData: FormData) {
 
   const images = Array.isArray(existing?.images) ? existing.images : [];
 
-  const { error: updateError } = await supabase
+  const { data: updateResult, error: updateError } = await supabase
     .from("project_updates")
     .update({
       images: [...images, storedValue],
@@ -530,10 +684,14 @@ export async function uploadUpdateImage(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", updateId)
-    .eq("author_id", user.id);
+    .eq("author_id", user.id)
+    .select("id")
+    .maybeSingle();
 
-  if (updateError) {
-    return { error: updateError.message };
+  if (updateError || !updateResult) {
+    await safeRemoveStorageObjects(supabase, bucket, [objectPath]);
+    if (updateError) return { error: updateError.message };
+    return { error: "Update not found or you are not the author" };
   }
 
   revalidatePath(`/projects/${formData.get("slug")}`);
