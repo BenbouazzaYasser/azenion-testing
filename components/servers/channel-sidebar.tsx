@@ -58,7 +58,7 @@ export function ChannelSidebar({
             onClick={() => setShowForm((v) => !v)}
             aria-label={t("servers.createChannelAria")}
             title={t("servers.createChannelAria")}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-100"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-100"
           >
             {showForm ? <X size={15} /> : <Plus size={16} />}
           </button>

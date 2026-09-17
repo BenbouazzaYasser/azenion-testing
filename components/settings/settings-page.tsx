@@ -159,8 +159,12 @@ export function SettingsPage({ account, profile, branch, settings }: SettingsPag
       <div className="grid gap-6 lg:grid-cols-[250px_1fr]">
         <nav
           aria-label={t("settings.navAria")}
-          className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto"
+          className="relative lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto"
         >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-10 rounded-r-lg bg-gradient-to-l from-void-950 via-void-950/60 to-transparent lg:hidden"
+          />
           <ul className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0">
             {SECTIONS.map((section, index) => {
               const isActive = active === section.id;

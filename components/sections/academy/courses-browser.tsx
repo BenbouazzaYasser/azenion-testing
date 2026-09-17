@@ -314,12 +314,12 @@ function CourseCard({
           </div>
         ) : null}
 
-        <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-4">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
           <span className="rounded-full border border-accent/25 bg-accent/[0.06] px-2.5 py-1 text-xs font-medium text-accent-300">
             {course.category}
           </span>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             {canManage ? (
               <button
                 type="button"
@@ -344,7 +344,7 @@ function CourseCard({
                 aria-label={t("academy.deleteCourseAria")}
                 title={confirming ? t("academy.clickAgain") : t("academy.deleteCourseAria")}
                 className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
+                  "flex h-9 w-9 items-center justify-center rounded-full border transition-colors",
                   confirming
                     ? "border-red-500/50 bg-red-500/10 text-red-300"
                     : "border-border-strong text-ink-400 hover:border-red-500/50 hover:text-red-300"
@@ -357,7 +357,7 @@ function CourseCard({
               href={`/api/academy/courses/${course.id}/file`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"
             >
               {t("academy.open")}
               <ArrowUpRight size={13} />

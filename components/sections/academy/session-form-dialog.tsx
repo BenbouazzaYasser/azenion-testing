@@ -297,7 +297,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                   transform: mounted ? "scale(1)" : "scale(0.95)",
                 }}
               >
-                <div className="flex items-start justify-between border-b border-border px-8 py-5">
+                <div className="flex items-start justify-between border-b border-border px-5 py-5 sm:px-8">
                   <div>
                     <h2 className="text-xl font-semibold text-ink-50">
                       {mode === "create" ? t("academy.createSession") : t("academy.editSession")}
@@ -318,7 +318,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-8 py-6">
+                <div className="flex-1 overflow-y-auto px-5 py-6 sm:px-8">
                   {error ? (
                     <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                       {error}

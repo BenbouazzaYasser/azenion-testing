@@ -61,7 +61,7 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
       className={cn(
         "flex items-center gap-3 rounded-2xl px-3 py-2.5",
         isOwn ? "bg-black/10" : "bg-surface/70",
-        "min-w-[220px] max-w-[260px]",
+        "min-w-0 max-w-[260px] w-full",
       )}
     >
       <button
@@ -187,7 +187,7 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
         <img
           src={url}
           alt={meta.title ?? "GIF"}
-          className={cn("max-h-64 max-w-[260px] object-cover", imgLoading ? "hidden" : "block")}
+          className={cn("max-h-64 max-w-full object-cover", imgLoading ? "hidden" : "block")}
           onLoad={() => setImgLoading(false)}
           onError={() => setImgLoading(false)}
           loading="lazy"
@@ -218,7 +218,7 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
           <img
             src={attachment.signedUrl}
             alt={attachment.filename ?? "Image"}
-            className={cn("max-h-64 max-w-[260px] object-cover transition-opacity", imgLoading ? "hidden" : "block", "hover:opacity-90")}
+            className={cn("max-h-64 max-w-full object-cover transition-opacity", imgLoading ? "hidden" : "block", "hover:opacity-90")}
             onLoad={() => setImgLoading(false)}
             onError={() => {
               setImgError(true);
@@ -310,10 +310,10 @@ export function QueuedAttachmentCard({
         <button
           type="button"
           onClick={onRemove}
-          className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500"
+          className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500"
           aria-label="Remove attachment"
         >
-          ×
+          <span aria-hidden className="text-base leading-none">&times;</span>
         </button>
       </div>
       <div className="px-2 py-1.5">

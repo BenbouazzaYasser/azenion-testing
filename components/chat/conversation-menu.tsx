@@ -252,7 +252,7 @@ export function ConversationMenu({
           onOpenChange(!open);
         }}
         className={cn(
-          "absolute right-1.5 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-ink-500 transition-all duration-200 ease-premium",
+          "absolute right-0.5 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-ink-500 transition-all duration-200 ease-premium",
           "hover:bg-surface-hover hover:text-ink-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
           open
             ? "bg-surface-hover text-ink-100"

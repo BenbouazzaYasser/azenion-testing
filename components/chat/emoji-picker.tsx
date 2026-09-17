@@ -379,7 +379,7 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
           filtered.length === 0 ? (
             <p className="py-6 text-center text-sm text-ink-500">No results</p>
           ) : (
-            <div className="grid grid-cols-8 gap-1">
+            <div className="grid grid-cols-6 gap-1 sm:grid-cols-8">
               {filtered.map((e) => (
                 <button
                   key={e.emoji + e.name}
@@ -398,7 +398,7 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
             {recent.length > 0 && (
               <div className="mb-3">
                 <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-widest text-ink-500">Recent</p>
-                <div className="grid grid-cols-8 gap-1">
+                <div className="grid grid-cols-6 gap-1 sm:grid-cols-8">
                   {recent.map((emoji) => (
                     <button
                       key={`recent-${emoji}`}
@@ -415,7 +415,7 @@ export function EmojiPicker({ onSelect, onClose }: EmojiPickerProps) {
             {CATEGORIES.filter((c) => c.id === activeCategory).map((cat) => (
               <div key={cat.id}>
                 <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-widest text-ink-500">{cat.label}</p>
-                <div className="grid grid-cols-8 gap-1">
+                <div className="grid grid-cols-6 gap-1 sm:grid-cols-8">
                   {cat.emojis.map((e) => (
                     <button
                       key={e.emoji}

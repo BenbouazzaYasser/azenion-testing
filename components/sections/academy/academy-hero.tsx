@@ -21,7 +21,7 @@ export async function AcademyHero({ eyebrow, title, accent, subtitle, badge }: A
       </Reveal>
 
       <Reveal delay={80}>
-        <h1 className="mt-6 text-balance text-[2.75rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
+        <h1 className="mt-6 text-balance text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-[3.4rem] lg:text-[4rem]">
           {title} <span className="text-accent-400">{accent}</span>
         </h1>
       </Reveal>

@@ -91,7 +91,7 @@ export function ChangePasswordModal() {
                   transform: mounted ? "scale(1)" : "scale(0.95)",
                 }}
               >
-                <div className="flex items-center justify-between border-b border-border px-8 py-6">
+                <div className="flex items-center justify-between border-b border-border px-5 py-5 sm:px-8 sm:py-6">
                   <h2 className="text-lg font-semibold text-ink-50">{t("settings.changePassword")}</h2>
                   <button
                     type="button"
@@ -103,7 +103,7 @@ export function ChangePasswordModal() {
                   </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="px-8 py-6">
+                <form onSubmit={handleSubmit} className="px-5 py-5 sm:px-8 sm:py-6">
                   <div className="space-y-5">
                     {error ? (
                       <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
@@ -133,7 +133,7 @@ export function ChangePasswordModal() {
                           type="button"
                           onClick={() => setShowPassword((v) => !v)}
                           aria-label={showPassword ? t("settings.hidePassword") : t("settings.showPassword")}
-                          className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-400 transition-colors hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                          className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                         >
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
@@ -155,7 +155,7 @@ export function ChangePasswordModal() {
                           type="button"
                           onClick={() => setShowConfirm((v) => !v)}
                           aria-label={showConfirm ? t("settings.hideConfirmation") : t("settings.showConfirmation")}
-                          className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-ink-400 transition-colors hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+                          className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-400 transition-colors hover:bg-surface-hover hover:text-ink-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
                         >
                           {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>

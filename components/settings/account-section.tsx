@@ -103,7 +103,7 @@ export function AccountSection({
             <label htmlFor="new-email-input" className="block text-xs font-medium text-ink-300">
               {t("settings.newEmail")}
             </label>
-            <div className="mt-1.5 flex gap-2">
+            <div className="mt-1.5 flex flex-col gap-2 sm:flex-row sm:gap-2">
               <input
                 id="new-email-input"
                 name="email"
