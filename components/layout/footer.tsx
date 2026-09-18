@@ -20,6 +20,13 @@ const CHANNEL_ICONS: Record<string, typeof Mail> = {
 };
 
 export async function Footer() {
+  const [taglineTop, taglineBottom, description, rights, founded] = await Promise.all([
+    serverT("footer.taglineTop"),
+    serverT("footer.taglineBottom"),
+    serverT("footer.description"),
+    serverT("footer.rights"),
+    serverT("footer.founded"),
+  ]);
   return (
     <footer className="relative">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
@@ -30,12 +37,12 @@ export async function Footer() {
           <div>
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-400">
-              {await serverT("footer.taglineTop")}
+              {taglineTop}
               <br />
-              {await serverT("footer.taglineBottom")}
+              {taglineBottom}
             </p>
             <p className="mt-4 text-sm leading-relaxed text-ink-400">
-              {await serverT("footer.description")}
+              {description}
             </p>
           </div>
 
@@ -142,10 +149,10 @@ export async function Footer() {
       <div className="relative">
         <div className="mx-auto max-w-[1320px] px-5 py-6 sm:px-8 lg:px-12">
           <p className="text-center text-xs text-ink-600 sm:text-left">
-            &copy; {new Date().getFullYear()} Azenion. {await serverT("footer.rights")}
+            &copy; {new Date().getFullYear()} Azenion. {rights}
           </p>
           <p className="mt-2 text-center text-xs text-ink-600/80 sm:text-left">
-            {await serverT("footer.founded")} Ziyad
+            {founded} Ziyad
           </p>
         </div>
       </div>

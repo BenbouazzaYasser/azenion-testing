@@ -1,14 +1,14 @@
-"use client";
-
+// Type-only module (plus a tiny window-guarded helper): must stay
+// server-importable, so no "use client" directive here.
 export type CallKind = "audio" | "video";
 
 export type CallPhase =
   | "idle"
-  | "ringing" // outgoing — waiting for the peer to pick up
-  | "incoming" // incoming offer awaiting accept/decline
-  | "connecting" // offer/answer exchanged, ICE gathering
-  | "active" // media flowing
-  | "ended"; // terminal
+  | "ringing"
+  | "incoming"
+  | "connecting"
+  | "active"
+  | "ended";
 
 export type CallRole = "caller" | "callee";
 
@@ -36,7 +36,6 @@ export interface CallSession {
   phase: CallPhase;
   role: CallRole;
   peer: CallPeer;
-  // Connecting/active only:
   localStream?: MediaStream;
   remoteStream?: MediaStream;
   screenStream?: MediaStream;
@@ -44,7 +43,7 @@ export interface CallSession {
   connectionState: RTCPeerConnectionState | "new";
   muted: boolean;
   cameraOff: boolean;
-  startedAt: number | null; // epoch ms when the call became active
+  startedAt: number | null;
   endedAt: number | null;
   endReason?: "ended" | "declined" | "canceled" | "busy" | "peer-left" | "error" | "timeout";
   error?: string;
@@ -57,11 +56,9 @@ export interface IncomingCallInfo {
   kind: CallKind;
 }
 
-/** Payload shapes carried inside call_events.payload */
 export interface OfferPayload {
   kind: CallKind;
   sdp: string;
-  /** Present when the caller starts the call already sharing their screen. */
   screen?: boolean;
 }
 

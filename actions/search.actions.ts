@@ -100,18 +100,23 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
 
   const supabase = await createClient();
   const q = query.slice(0, 100);
+
+  const [usersData, teamsData, projectsData, branchesData, postsData, sessionsData, announcementsData] =
+    await Promise.all([
+      supabase.rpc("search_users", { p_query: q, p_limit: 80 }),
+      supabase.from("teams").select("id, slug, name, description, logo_url, visibility, created_at").eq("visibility", "public").ilike("name", `%${escapeIlike(q)}%`).limit(40),
+      supabase.from("projects").select("id, slug, name, description, logo_url, visibility, created_at").eq("visibility", "public").ilike("name", `%${escapeIlike(q)}%`).limit(40),
+      supabase.from("branches").select("id, slug, name, full_name, description, logo_url, city, created_at").or(`name.ilike.%${escapeOrFilter(q)}%,full_name.ilike.%${escapeOrFilter(q)}%`).limit(80),
+      supabase.from("posts").select("id, title, body, author_id, created_at, profiles(full_name, username, avatar_url)").or(`title.ilike.%${escapeOrFilter(q)}%,body.ilike.%${escapeOrFilter(q)}%`).limit(60),
+      supabase.from("live_sessions").select("id, title, instructor, starts_at, format, location, created_at").ilike("title", `%${escapeIlike(q)}%`).limit(60),
+      supabase.from("platform_announcements").select("id, emoji, title, category, description, published_at").ilike("title", `%${escapeIlike(q)}%`).limit(60),
+    ]);
+
   const results: SearchResultItem[] = [];
 
   // ---- Users
   {
-    // RLS locks `profiles` to the caller's own row, so direct reads cannot
-    // surface other members. search_users is a SECURITY DEFINER RPC (see
-    // 00072_global_user_search.sql) that searches all profiles while honoring
-    // each member's `search_visibility` privacy setting and block list.
-    const { data } = await supabase.rpc("search_users", {
-      p_query: q,
-      p_limit: 80,
-    });
+    const { data } = usersData;
     const rows = (data ?? []) as Array<{
       id: string;
       username: string;
@@ -144,11 +149,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
 
   // ---- Teams (public only)
   {
-    const { data } = await supabase
-      .from("teams")
-      .select("id, slug, name, description, logo_url, visibility, created_at")
-      .ilike("name", `%${escapeIlike(q)}%`)
-      .limit(80);
+    const { data } = teamsData;
     const rows = (data ?? []) as Array<{
       id: string;
       slug: string;
@@ -183,11 +184,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
 
   // ---- Projects (public only)
   {
-    const { data } = await supabase
-      .from("projects")
-      .select("id, slug, name, description, logo_url, visibility, created_at")
-      .ilike("name", `%${escapeIlike(q)}%`)
-      .limit(80);
+    const { data } = projectsData;
     const rows = (data ?? []) as Array<{
       id: string;
       slug: string;
@@ -218,11 +215,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
 
   // ---- Branches
   {
-    const { data } = await supabase
-      .from("branches")
-      .select("id, slug, name, full_name, description, logo_url, city, created_at")
-      .or(`name.ilike.%${escapeOrFilter(q)}%,full_name.ilike.%${escapeOrFilter(q)}%`)
-      .limit(80);
+    const { data } = branchesData;
     const rows = (data ?? []) as Array<{
       id: string;
       slug: string;
@@ -257,13 +250,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
 
   // ---- Feed posts
   {
-    const { data } = await supabase
-      .from("posts")
-      .select(
-        "id, title, body, author_id, created_at, profiles(full_name, username, avatar_url)",
-      )
-      .or(`title.ilike.%${escapeOrFilter(q)}%,body.ilike.%${escapeOrFilter(q)}%`)
-      .limit(60);
+    const { data } = postsData;
     const rows = (data ?? []) as unknown as Array<{
       id: string;
       title: string;
@@ -302,11 +289,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
 
   // ---- Academy live sessions
   {
-    const { data } = await supabase
-      .from("live_sessions")
-      .select("id, title, instructor, starts_at, format, location, created_at")
-      .ilike("title", `%${escapeIlike(q)}%`)
-      .limit(60);
+    const { data } = sessionsData;
     const rows = (data ?? []) as Array<{
       id: string;
       title: string;
@@ -339,11 +322,7 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
 
   // ---- Announcements
   {
-    const { data } = await supabase
-      .from("platform_announcements")
-      .select("id, emoji, title, category, description, published_at")
-      .ilike("title", `%${escapeIlike(q)}%`)
-      .limit(60);
+    const { data } = announcementsData;
     const rows = (data ?? []) as Array<{
       id: string;
       emoji: string | null;

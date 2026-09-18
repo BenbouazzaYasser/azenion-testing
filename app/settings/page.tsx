@@ -14,15 +14,14 @@ export default async function SettingsRoute() {
     redirect("/login");
   }
 
-  const profile = await getOrCreateProfile(user);
-  if (!profile) {
-    redirect("/profile");
-  }
-
-  const [branch, settings] = await Promise.all([
+  const [profile, branch, settings] = await Promise.all([
+    getOrCreateProfile(user),
     getUserBranch(user.id),
     getUserSettings(),
   ]);
+  if (!profile) {
+    redirect("/profile");
+  }
 
   return (
     <SettingsPage

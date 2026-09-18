@@ -13,9 +13,10 @@ export default async function PublicProfilePage({
   params: { username: string };
 }) {
   const { username } = params;
-  const user = await getCurrentUser();
-
-  const result = await getPublicProfile(username);
+  const [user, result] = await Promise.all([
+    getCurrentUser(),
+    getPublicProfile(username),
+  ]);
 
   if ("error" in result) {
     if (result.error === "User not found.") {

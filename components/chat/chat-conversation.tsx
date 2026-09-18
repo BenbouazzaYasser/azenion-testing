@@ -180,6 +180,8 @@ export function ChatConversation({
   const [showStickerPicker, setShowStickerPicker] = useState(false);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const stickToBottomRef = useRef(true);
   const conversationRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -248,14 +250,23 @@ export function ChatConversation({
     void markConversationRead(conversationId);
     void markMessagesReceived(conversationId);
     setActiveConversation(conversationId);
+    stickToBottomRef.current = true;
     setOtherLastReadAt(null);
     void getConversationRecipientReadAt(conversationId).then(setOtherLastReadAt);
     return () => setActiveConversation(null);
   }, [conversationId]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!stickToBottomRef.current) return;
+    bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
   }, [messages, queued]);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    stickToBottomRef.current = distanceFromBottom < 160;
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -1238,7 +1249,11 @@ export function ChatConversation({
         </div>
       </header>
 
-      <div className={cn("relative z-10 flex-1 min-h-0 overflow-y-auto p-5 sm:p-6", SCROLLBAR_CLASSES)}>
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className={cn("relative z-10 flex-1 min-h-0 overflow-y-auto p-5 sm:p-6", SCROLLBAR_CLASSES)}
+      >
         {messages.length === 0 && queued.length === 0 && (
           <div className="relative flex h-full min-h-0 flex-col items-center justify-center px-6 text-center">
             <div

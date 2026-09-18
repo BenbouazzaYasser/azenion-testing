@@ -35,12 +35,15 @@ export async function getCurrentUser(): Promise<User | null> {
   return user;
 }
 
+const PROFILE_SELECT =
+  "id, username, full_name, bio, avatar_url, institution, skills, github_url, linkedin_url, created_at, updated_at";
+
 export async function getOrCreateProfile(user: User) {
   const supabase = await createClient();
 
   let { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("*")
+    .select(PROFILE_SELECT)
     .eq("id", user.id)
     .maybeSingle();
 
@@ -59,7 +62,7 @@ export async function getOrCreateProfile(user: User) {
     const { data: created, error: createError } = await supabase
       .from("profiles")
       .insert({ id: user.id, username: fallbackUsername, full_name: fallbackFullName })
-      .select("*")
+      .select(PROFILE_SELECT)
       .single();
 
     if (createError) {
@@ -170,7 +173,7 @@ export async function getUserActivities(userId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("activities")
-    .select("*, creator:user_id ( username, full_name )")
+    .select("id, type, metadata, created_at, creator:user_id ( username, full_name )")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(20);

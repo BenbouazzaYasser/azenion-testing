@@ -83,6 +83,7 @@ const SECTION_DESCRIPTIONS: Record<SectionId, DictKey> = {
 export function SettingsPage({ account, profile, branch, settings }: SettingsPageProps) {
   const { t } = useTranslation();
   const [active, setActive] = useState<SectionId>("account");
+  const [visited, setVisited] = useState<Set<SectionId>>(() => new Set(["account"]));
   const [dirty, setDirty] = useState(false);
   const [pendingTarget, setPendingTarget] = useState<SectionId | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -91,6 +92,12 @@ export function SettingsPage({ account, profile, branch, settings }: SettingsPag
 
   const switchTo = useCallback((section: SectionId) => {
     setActive(section);
+    setVisited((prev) => {
+      if (prev.has(section)) return prev;
+      const next = new Set(prev);
+      next.add(section);
+      return next;
+    });
     requestAnimationFrame(() => headingRef.current?.focus({ preventScroll: true }));
     contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
@@ -213,38 +220,54 @@ export function SettingsPage({ account, profile, branch, settings }: SettingsPag
           </h2>
           <p className="mb-5 text-sm text-ink-500">{t(SECTION_DESCRIPTIONS[active])}</p>
 
-          <div className={cn(active !== "account" && "hidden")}>
-            <AccountSection
-              userId={account.userId}
-              currentEmail={account.email}
-              emailVerified={account.emailVerified}
-              currentUsername={account?.username ?? null}
-              createdAt={account?.createdAt ?? null}
-              lastSignInAt={account?.lastSignInAt ?? null}
-              onDirty={setDirty}
-            />
-          </div>
-          <div className={cn(active !== "profile" && "hidden")}>
-            <ProfileSection profile={profile} branch={branch} />
-          </div>
-          <div className={cn(active !== "notifications" && "hidden")}>
-            <NotificationsSection initial={settings.notifications} />
-          </div>
-          <div className={cn(active !== "privacy" && "hidden")}>
-            <PrivacySection initial={settings.privacy} />
-          </div>
-          <div className={cn(active !== "appearance" && "hidden")}>
-            <AppearanceSection />
-          </div>
-          <div className={cn(active !== "language" && "hidden")}>
-            <LanguageSection />
-          </div>
-          <div className={cn(active !== "instructor" && "hidden")}>
-            <InstructorSection />
-          </div>
-          <div className={cn(active !== "danger" && "hidden")}>
-            <DangerZoneSection />
-          </div>
+          {visited.has("account") ? (
+            <div className={cn(active !== "account" && "hidden")}>
+              <AccountSection
+                userId={account.userId}
+                currentEmail={account.email}
+                emailVerified={account.emailVerified}
+                currentUsername={account?.username ?? null}
+                createdAt={account?.createdAt ?? null}
+                lastSignInAt={account?.lastSignInAt ?? null}
+                onDirty={setDirty}
+              />
+            </div>
+          ) : null}
+          {visited.has("profile") ? (
+            <div className={cn(active !== "profile" && "hidden")}>
+              <ProfileSection profile={profile} branch={branch} />
+            </div>
+          ) : null}
+          {visited.has("notifications") ? (
+            <div className={cn(active !== "notifications" && "hidden")}>
+              <NotificationsSection initial={settings.notifications} />
+            </div>
+          ) : null}
+          {visited.has("privacy") ? (
+            <div className={cn(active !== "privacy" && "hidden")}>
+              <PrivacySection initial={settings.privacy} />
+            </div>
+          ) : null}
+          {visited.has("appearance") ? (
+            <div className={cn(active !== "appearance" && "hidden")}>
+              <AppearanceSection />
+            </div>
+          ) : null}
+          {visited.has("language") ? (
+            <div className={cn(active !== "language" && "hidden")}>
+              <LanguageSection />
+            </div>
+          ) : null}
+          {visited.has("instructor") ? (
+            <div className={cn(active !== "instructor" && "hidden")}>
+              <InstructorSection />
+            </div>
+          ) : null}
+          {visited.has("danger") ? (
+            <div className={cn(active !== "danger" && "hidden")}>
+              <DangerZoneSection />
+            </div>
+          ) : null}
         </div>
       </div>
 

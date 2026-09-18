@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   DEFAULT_LANGUAGE,
@@ -23,7 +23,6 @@ interface TranslationContextValue {
   isTranslating: boolean;
   isTranslated: boolean;
   restore: () => void;
-  /** Look up a hand-written translation for the current language. Falls back to English. */
   t: (key: DictKey, fallback?: string) => string;
 }
 
@@ -58,13 +57,24 @@ function applyDirection(code: string) {
   document.documentElement.dir = getDirection(code);
 }
 
-function persistLanguage(code: string) {
+function hasSessionCookie() {
+  try {
+    return /(?:^|;\s*)sb-[^;]*-auth-token=/.test(document.cookie);
+  } catch {
+    return false;
+  }
+}
+
+function persistLanguageLocal(code: string) {
   try {
     localStorage.setItem(STORAGE_KEY, code);
   } catch {}
   document.cookie = `${COOKIE_KEY}=${encodeURIComponent(code)}; path=/; max-age=31536000; samesite=lax`;
   applyDirection(code);
-  // best-effort server sync (authenticated users)
+}
+
+function syncLanguageToServer(code: string) {
+  if (!hasSessionCookie()) return;
   void import("@/actions/settings.actions").then(({ updateSettings }) =>
     updateSettings({ language: code }).catch(() => {}),
   );
@@ -89,9 +99,6 @@ export function TranslationProvider({
     return DEFAULT_LANGUAGE;
   });
 
-  // Azenion ships hand-written translations — no network / machine translation,
-  // so the provider is never "translating". `isTranslating` is kept for
-  // backwards compatibility and is always false.
   const isTranslating = false;
   const isTranslated = language !== SOURCE_LANG;
 
@@ -110,20 +117,16 @@ export function TranslationProvider({
     [loaded, language],
   );
 
-  // Sync language to DOM + storage (includes rtl dir for Arabic).
-  useEffect(() => {
-    applyDirection(language);
-    persistLanguage(language);
-  }, [language]);
+  const setLanguage = useCallback(
+    (code: string) => {
+      if (!isValidLanguage(code) || code === language) return;
+      setLanguageState(code);
+      persistLanguageLocal(code);
+      syncLanguageToServer(code);
+    },
+    [language],
+  );
 
-  const setLanguage = useCallback((code: string) => {
-    if (!isValidLanguage(code)) return;
-    setLanguageState(code);
-    persistLanguage(code);
-  }, []);
-
-  // If the server returned a fresher language (e.g. after login) and the user
-  // has no local preference yet, adopt it.
   useEffect(() => {
     if (initialLanguage && isValidLanguage(initialLanguage) && initialLanguage !== language) {
       const stored = (() => {
@@ -135,6 +138,7 @@ export function TranslationProvider({
       })();
       if (!stored || stored === DEFAULT_LANGUAGE) {
         setLanguageState(initialLanguage);
+        persistLanguageLocal(initialLanguage);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,14 +161,25 @@ export function TranslationProvider({
   }, [language]);
 
   const restore = useCallback(() => {
-    setLanguageState(SOURCE_LANG);
-    persistLanguage(SOURCE_LANG);
+    setLanguageState((prev) => {
+      if (prev !== SOURCE_LANG) {
+        persistLanguageLocal(SOURCE_LANG);
+        syncLanguageToServer(SOURCE_LANG);
+      }
+      return SOURCE_LANG;
+    });
   }, []);
 
+  const value = useMemo(
+    () => ({ language, setLanguage, isTranslating, isTranslated, restore, t }),
+    // isTranslating/isTranslated are derived from language (already in deps)
+    // and setLanguage/restore are stable after their deps settle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [language, setLanguage, restore, t],
+  );
+
   return (
-    <TranslationContext.Provider
-      value={{ language, setLanguage, isTranslating, isTranslated, restore, t }}
-    >
+    <TranslationContext.Provider value={value}>
       {children}
     </TranslationContext.Provider>
   );

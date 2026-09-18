@@ -36,6 +36,11 @@ export default async function FeedPage() {
   ]);
   const { items, total } = feed;
 
+  const [feedTitle, feedSubtitle] = await Promise.all([
+    serverT("feed.title"),
+    serverT("feed.subtitle"),
+  ]);
+
   return (
     <>
       <Navbar />
@@ -44,10 +49,10 @@ export default async function FeedPage() {
         <div className="relative mx-auto max-w-[720px] px-5 sm:px-8">
           <div className="mb-8">
             <h1 className="text-[2rem] font-semibold tracking-tight text-ink-50 sm:text-[2.5rem]">
-              {await serverT("feed.title")}
+              {feedTitle}
             </h1>
             <p className="mt-2 text-[1.02rem] leading-relaxed text-ink-400">
-              {await serverT("feed.subtitle")}
+              {feedSubtitle}
             </p>
           </div>
 

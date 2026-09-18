@@ -59,6 +59,13 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
   const [isSearching, startSearchTransition] = useTransition();
   const [showSearch, setShowSearch] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current !== null) clearTimeout(searchTimerRef.current);
+    };
+  }, []);
 
   const unreadByConv = useChatUnread(currentUserId);
 
@@ -121,15 +128,18 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
+    if (searchTimerRef.current !== null) clearTimeout(searchTimerRef.current);
     if (value.trim().length < 2) {
       setSearchResults([]);
       return;
     }
-    startSearchTransition(async () => {
-      const results = await searchUsers(value);
-      setSearchResults(results.filter((r) => r.id !== currentUserId));
-      setShowSearch(true);
-    });
+    searchTimerRef.current = setTimeout(() => {
+      startSearchTransition(async () => {
+        const results = await searchUsers(value);
+        setSearchResults(results.filter((r) => r.id !== currentUserId));
+        setShowSearch(true);
+      });
+    }, 250);
   };
 
   return (

@@ -20,16 +20,30 @@ export function OnboardingProvider() {
 
   useEffect(() => {
     let active = true;
-    getOnboardingData()
-      .then((result) => {
-        if (!active) return;
-        if (result && result.visible) setData(result);
-      })
-      .catch(() => {
-        /* best effort — onboarding is non-blocking */
-      });
+    if (typeof document !== "undefined" && !/(?:^|;\s*)sb-[^;]*-auth-token=/.test(document.cookie)) {
+      return;
+    }
+    const load = () => {
+      getOnboardingData()
+        .then((result) => {
+          if (!active) return;
+          if (result && result.visible) setData(result);
+        })
+        .catch(() => { /* best effort — onboarding is non-blocking */ });
+    };
+    let idleId: number | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      idleId = (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(load, { timeout: 4000 });
+    } else {
+      timeoutId = setTimeout(load, 1200);
+    }
     return () => {
       active = false;
+      if (idleId !== null && typeof window !== "undefined" && "cancelIdleCallback" in window) {
+        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) clearTimeout(timeoutId);
     };
   }, []);
 

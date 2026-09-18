@@ -44,10 +44,23 @@ const getPublishedLabs = unstable_cache(fetchPublishedLabs, ["labs-page-data"], 
   revalidate: 120,
 });
 
+async function getLabsHeroCopy() {
+  const [eyebrow, title, accent, subtitle] = await Promise.all([
+    serverT("academy.labsEyebrow"),
+    serverT("academy.labsH1"),
+    serverT("academy.labsH1Accent"),
+    serverT("academy.labsSubtitle"),
+  ]);
+  return { eyebrow, title, accent, subtitle };
+}
+
 export default async function LabsPage() {
   const supabase = await createClient();
 
-  const user = await getSessionUser();
+  const [user, cachedPublished] = await Promise.all([
+    getSessionUser(),
+    getPublishedLabs(),
+  ]);
 
   // Mirrors the backend gates in academy-labs.actions.ts. Unlike Courses
   // (where any manager can edit any course), Labs restrict update/delete
@@ -63,26 +76,21 @@ export default async function LabsPage() {
     user?.id,
   );
 
-  // Published labs for everyone; a manager also sees their own unpublished
-  // labs (matching the existing "creators can read their own labs" /
-  // "platform admins can read all labs" RLS policies).
-  let labRows: unknown[];
-  if (canCreate) {
-    const { data } = await supabase.from("labs").select(LAB_SELECT).order("created_at", { ascending: false });
-    labRows = (data ?? []) as unknown[];
-  } else {
-    labRows = (await getPublishedLabs()) as unknown[];
-  }
+  const [managedLabs, managedCourses] = canCreate
+    ? await Promise.all([
+        supabase.from("labs").select(LAB_SELECT).order("created_at", { ascending: false }),
+        supabase.from("courses").select("id, title").order("title", { ascending: true }),
+      ])
+    : [];
+  const labRows: unknown[] = canCreate
+    ? ((managedLabs?.data ?? []) as unknown[])
+    : (cachedPublished as unknown[]);
 
   const labs = (labRows ?? []) as unknown as LabRow[];
 
-  // Only fetched for managers, who need it for the course-link selector in
-  // LabEditDialog.
-  let availableCourses: { id: string; title: string }[] = [];
-  if (canCreate) {
-    const { data: courseRows } = await supabase.from("courses").select("id, title").order("title", { ascending: true });
-    availableCourses = courseRows ?? [];
-  }
+  const availableCourses: { id: string; title: string }[] = canCreate
+    ? (managedCourses?.data ?? [])
+    : [];
 
   return (
     <>
@@ -90,10 +98,7 @@ export default async function LabsPage() {
       <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyHero
-          eyebrow={await serverT("academy.labsEyebrow")}
-          title={await serverT("academy.labsH1")}
-          accent={await serverT("academy.labsH1Accent")}
-          subtitle={await serverT("academy.labsSubtitle")}
+          {...await getLabsHeroCopy()}
         />
         <LabsBrowser
           labs={labs}

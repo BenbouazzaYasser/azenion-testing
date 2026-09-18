@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -44,8 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLeader, setIsLeader] = useState(false);
 
+  const fetchedForUserRef = useRef<string | null>(null);
+
   const fetchProfileAndRoles = useCallback(async (userId: string) => {
-    const supabase = await createClient();
+    if (fetchedForUserRef.current === userId) return;
+    fetchedForUserRef.current = userId;
+    const supabase = createClient();
     const [{ data: profileData }, { data: adminResult }, { data: leaderRows }] =
       await Promise.all([
         supabase
@@ -86,6 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         void fetchProfileAndRoles(session.user.id);
       } else {
+        fetchedForUserRef.current = null;
         setProfile(null);
         setIsAdmin(false);
         setIsLeader(false);

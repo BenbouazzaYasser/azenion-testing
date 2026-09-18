@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 export type Theme = "system" | "light" | "dark";
 
@@ -62,18 +62,20 @@ export function ThemeProvider({ initialTheme, children }: ThemeProviderProps) {
     document.cookie = `${THEME_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
   }, []);
 
+  const mountedRef = useRef(false);
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme, applyTheme]);
+    if (!mountedRef.current) { mountedRef.current = true; return; }
+    if (/(?:^|;\s*)sb-[^;]*-auth-token=/.test(document.cookie)) {
+      void import("@/actions/settings.actions").then(({ updateSettings }) =>
+        updateSettings({ theme }).catch(() => {}),
+      );
+    }
+  }, [theme]);
 
   const setTheme = useCallback(
     (next: Theme) => {
-      setThemeState(next);
+      setThemeState((prev) => { if (prev === next) return prev; return next; });
       applyTheme(next);
-      // Persist to the user's settings (best-effort, cross-device).
-      void import("@/actions/settings.actions").then(({ updateSettings }) =>
-        updateSettings({ theme: next }),
-      );
     },
     [applyTheme],
   );
@@ -88,10 +90,11 @@ export function ThemeProvider({ initialTheme, children }: ThemeProviderProps) {
     return () => mq.removeEventListener("change", onChange);
   }, [theme]);
 
-  const effective = theme === "system" ? getSystemTheme() : theme;
+  const effective = useMemo(() => (theme === "system" ? getSystemTheme() : theme), [theme]);
+  const value = useMemo(() => ({ theme, setTheme, effective }), [theme, setTheme, effective]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, effective }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

@@ -44,22 +44,30 @@ const getPublishedCourses = unstable_cache(fetchPublishedCourses, ["courses-page
   revalidate: 120,
 });
 
+async function getCoursesHeroCopy() {
+  const [eyebrow, title, accent, subtitle] = await Promise.all([
+    serverT("academy.coursesEyebrow"),
+    serverT("academy.coursesH1"),
+    serverT("academy.coursesH1Accent"),
+    serverT("academy.coursesSubtitle"),
+  ]);
+  return { eyebrow, title, accent, subtitle };
+}
+
 export default async function CoursesPage() {
   const supabase = await createClient();
 
-  const user = await getSessionUser();
+  const [user, cachedPublished] = await Promise.all([
+    getSessionUser(),
+    getPublishedCourses(),
+  ]);
 
-  // Canonical manager gate (core_team_member, creator, platform-admin
-  // override) — same oracle the write actions and file route use.
   let canManage = false;
   if (user) {
     const { data } = await supabase.rpc("is_course_manager");
     canManage = data === true;
   }
 
-  // Regular visitors (and anon) only ever see published courses, so they
-  // never hit a draft card whose file bytes would 404. Managers see the
-  // full catalog with status badges + publish controls.
   let courseRows: unknown[];
   if (canManage) {
     const { data } = await supabase
@@ -68,7 +76,7 @@ export default async function CoursesPage() {
       .order("created_at", { ascending: false });
     courseRows = (data ?? []) as unknown[];
   } else {
-    courseRows = (await getPublishedCourses()) as unknown[];
+    courseRows = cachedPublished as unknown[];
   }
 
   const courses = ((courseRows ?? []) as unknown as CourseRow[]).map((row) => ({
@@ -103,10 +111,7 @@ export default async function CoursesPage() {
       <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyHero
-          eyebrow={await serverT("academy.coursesEyebrow")}
-          title={await serverT("academy.coursesH1")}
-          accent={await serverT("academy.coursesH1Accent")}
-          subtitle={await serverT("academy.coursesSubtitle")}
+          {...await getCoursesHeroCopy()}
         />
         <CoursesBrowser courses={courses} canManage={canManage} />
         <AcademyClosingCta />

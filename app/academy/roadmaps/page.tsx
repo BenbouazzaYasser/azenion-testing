@@ -19,19 +19,22 @@ export const metadata: Metadata = {
 export const dynamic = "force-static";
 
 export default async function RoadmapsPage() {
-  // Coming Soon: the interactive roadmap foundation (lib/roadmaps +
-  // roadmap-* components) stays in the repo but is deliberately not loaded
-  // here until the backend lands.
+  const [eyebrow, title, accent, subtitle] = await Promise.all([
+    serverT("academy.roadmapsEyebrow"),
+    serverT("academy.roadmapsH1"),
+    serverT("academy.roadmapsH1Accent"),
+    serverT("academy.roadmapsSubtitle"),
+  ]);
   return (
     <>
       <Navbar />
       <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
         <AcademyHero
-          eyebrow={await serverT("academy.roadmapsEyebrow")}
-          title={await serverT("academy.roadmapsH1")}
-          accent={await serverT("academy.roadmapsH1Accent")}
-          subtitle={await serverT("academy.roadmapsSubtitle")}
+          eyebrow={eyebrow}
+          title={title}
+          accent={accent}
+          subtitle={subtitle}
         />
         <RoadmapsComingSoon />
         <AcademyClosingCta />
