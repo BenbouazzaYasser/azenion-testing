@@ -47,6 +47,13 @@ export interface RoadmapNodeRef {
   /** Node ids that must be completed before this node unlocks. */
   requiresCompletionOf?: string[];
   status: RoadmapNodeStatus;
+  /**
+   * Referenced course/lab is not currently available (unpublished, archived,
+   * or deleted). Such nodes render inert ("no silent access") and re-check
+   * availability on every read — decision #8: later-unpublished content keeps
+   * the roadmap published but marks the affected node unavailable.
+   */
+  unavailable?: boolean;
 }
 
 /** An ordered section of a roadmap (a "stage" of the journey). */
@@ -119,6 +126,35 @@ export function getRoadmapCompletion(stages: RoadmapStage[]): number {
 /** A node is actionable when it is done or is the current step. */
 export function isNodeActionable(status: RoadmapNodeStatus): boolean {
   return status === "completed" || status === "current";
+}
+
+/**
+ * Whether a node's declared prerequisites are all completed. Nodes without
+ * `requiresCompletionOf` are unconditional (decision #3: optional nodes may
+ * still act as prerequisites for others, and DO gate them here).
+ */
+export function nodePrerequisitesMet(
+  node: Pick<RoadmapNodeRef, "requiresCompletionOf">,
+  completedNodeIds: ReadonlySet<string>,
+): boolean {
+  return (node.requiresCompletionOf ?? []).every((id) => completedNodeIds.has(id));
+}
+
+/**
+ * Status of a single node from raw progress data. Unavailable content always
+ * locks the node (no silent access, #8); completed wins over prerequisites so
+ * already-done work is never relocked; the first node that is neither
+ * completed nor locked is promoted to "current" by the catalog.
+ */
+export function deriveRoadmapNodeStatus(options: {
+  completed: boolean;
+  available: boolean;
+  prerequisitesMet: boolean;
+}): RoadmapNodeStatus {
+  if (!options.available) return "locked";
+  if (options.completed) return "completed";
+  if (!options.prerequisitesMet) return "locked";
+  return "upcoming";
 }
 
 /**

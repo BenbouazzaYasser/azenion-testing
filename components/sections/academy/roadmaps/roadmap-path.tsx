@@ -35,6 +35,10 @@ interface RoadmapPathProps {
   stages: RoadmapStage[];
   /** id of the labelled heading for the path region. */
   labelledBy: string;
+  /** Roadmap permalink; passed to the "Mark complete" control. */
+  roadmapSlug?: string;
+  /** Whether the visitor is signed in (completion requires auth). */
+  signedIn?: boolean;
 }
 
 /**
@@ -42,21 +46,39 @@ interface RoadmapPathProps {
  * Stages render in position order on a vertical rail; completion flows
  * top-to-bottom so "next stage" is always visually the next section.
  */
-export function RoadmapPath({ stages, labelledBy }: RoadmapPathProps) {
+export function RoadmapPath({
+  stages,
+  labelledBy,
+  roadmapSlug,
+  signedIn,
+}: RoadmapPathProps) {
   const ordered = [...stages].sort((a, b) => a.position - b.position);
 
   return (
     <div role="region" aria-labelledby={labelledBy} className="relative">
       <ol className="relative space-y-10">
         {ordered.map((stage) => (
-          <RoadmapStageSection key={stage.id} stage={stage} />
+          <RoadmapStageSection
+            key={stage.id}
+            stage={stage}
+            roadmapSlug={roadmapSlug}
+            signedIn={signedIn}
+          />
         ))}
       </ol>
     </div>
   );
 }
 
-function RoadmapStageSection({ stage }: { stage: RoadmapStage }) {
+function RoadmapStageSection({
+  stage,
+  roadmapSlug,
+  signedIn,
+}: {
+  stage: RoadmapStage;
+  roadmapSlug?: string;
+  signedIn?: boolean;
+}) {
   const state = getStageState(stage);
   const meta = STAGE_STATE_META[state];
   const StateIcon = state === "completed" ? Check : state === "locked" ? Lock : null;
@@ -105,6 +127,10 @@ function RoadmapStageSection({ stage }: { stage: RoadmapStage }) {
                 estimatedMinutes={node.estimatedMinutes}
                 isOptional={node.isOptional}
                 position={index + 1}
+                nodeId={node.id}
+                roadmapSlug={roadmapSlug}
+                signedIn={signedIn}
+                unavailable={node.unavailable}
               />
             </li>
           ))}

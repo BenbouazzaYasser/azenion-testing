@@ -26,6 +26,7 @@ interface RoadmapDetailViewProps {
   backHref?: string;
   progressLabel: string;
   pathHeadingId?: string;
+  signedIn?: boolean;
 }
 
 /**
@@ -40,6 +41,7 @@ export function RoadmapDetailView({
   backHref = "/academy/roadmaps",
   progressLabel,
   pathHeadingId = "roadmap-path-heading",
+  signedIn = false,
 }: RoadmapDetailViewProps) {
   const completion = getRoadmapCompletion(roadmap.stages);
   const progress = roadmap.progress ?? completion;
@@ -120,7 +122,12 @@ export function RoadmapDetailView({
       </p>
 
       <div className="mt-8">
-        <RoadmapPath stages={roadmap.stages} labelledBy={pathHeadingId} />
+        <RoadmapPath
+          stages={roadmap.stages}
+          labelledBy={pathHeadingId}
+          roadmapSlug={roadmap.slug}
+          signedIn={signedIn}
+        />
       </div>
 
       <div

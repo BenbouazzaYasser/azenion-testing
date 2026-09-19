@@ -4,39 +4,42 @@ import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { PageBridge } from "@/components/sections/page-bridge";
 import { AcademyHero } from "@/components/sections/academy/academy-hero";
-import { RoadmapsComingSoon } from "@/components/sections/academy/roadmaps/roadmaps-coming-soon";
+import { RoadmapsBrowser } from "@/components/sections/academy/roadmaps/roadmaps-browser";
 import { AcademyClosingCta } from "@/components/sections/academy/closing-cta";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { serverT } from "@/lib/translation/server";
+import { listRoadmapSummaries } from "@/lib/roadmaps/catalog";
 
 export const metadata: Metadata = {
   title: "Roadmaps | Azenion Academy — The Limitless Network",
   description:
-    "Structured learning paths combining courses, labs, and hands-on challenges to help you build your skills from the ground up. Coming soon to Azenion Academy.",
+    "Structured learning paths combining courses, labs, and hands-on challenges to help you build your skills from the ground up.",
 };
 
-// Fully static: no data fetches on this page (Coming Soon shell).
-export const dynamic = "force-static";
+// Summaries carry per-caller progress (anon vs signed-in), so the page can't
+// be statically shared across users.
+export const dynamic = "force-dynamic";
 
-export default async function RoadmapsPage() {
+async function getRoadmapsHeroCopy() {
   const [eyebrow, title, accent, subtitle] = await Promise.all([
     serverT("academy.roadmapsEyebrow"),
     serverT("academy.roadmapsH1"),
     serverT("academy.roadmapsH1Accent"),
     serverT("academy.roadmapsSubtitle"),
   ]);
+  return { eyebrow, title, accent, subtitle };
+}
+
+export default async function RoadmapsPage() {
+  const roadmaps = await listRoadmapSummaries();
+
   return (
     <>
       <Navbar />
       <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
-        <AcademyHero
-          eyebrow={eyebrow}
-          title={title}
-          accent={accent}
-          subtitle={subtitle}
-        />
-        <RoadmapsComingSoon />
+        <AcademyHero {...(await getRoadmapsHeroCopy())} />
+        <RoadmapsBrowser roadmaps={roadmaps} />
         <AcademyClosingCta />
         <PageBridge />
       </main>
