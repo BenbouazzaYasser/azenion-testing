@@ -77,16 +77,19 @@ export async function GET(request: Request) {
     );
   }
 
-  const [roleRowsRes, adminRowRes, managerRes, leadershipRes, labs] = await Promise.all([
-    supabase.from("user_roles").select("roles(name)").eq("user_id", user.id),
-    supabase.from("platform_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
-    supabase.rpc("is_course_manager"),
-    supabase
-      .from("branch_leaders")
-      .select("branch_id, branches:branch_id (slug, name)")
-      .eq("user_id", user.id),
-    getLabsAuthContext(supabase, user.id),
-  ]);
+  const [roleRowsRes, adminRowRes, managerRes, leadershipRes, labs, createRes, publisherTeamsRes] =
+    await Promise.all([
+      supabase.from("user_roles").select("roles(name)").eq("user_id", user.id),
+      supabase.from("platform_admins").select("user_id").eq("user_id", user.id).maybeSingle(),
+      supabase.rpc("is_course_manager"),
+      supabase
+        .from("branch_leaders")
+        .select("branch_id, branches:branch_id (slug, name)")
+        .eq("user_id", user.id),
+      getLabsAuthContext(supabase, user.id),
+      supabase.rpc("can_create_course"),
+      supabase.rpc("get_manageable_course_publisher_teams" as never),
+    ]);
 
   if (roleRowsRes.error || adminRowRes.error || leadershipRes.error) {
     return NextResponse.json(
@@ -111,6 +114,11 @@ export async function GET(request: Request) {
   // platform_admin role.
   if (adminRowRes.data) roles.add("platform_admin");
 
+  const coursePublisherTeams =
+    createRes.data === true && Array.isArray(publisherTeamsRes.data)
+      ? publisherTeamsRes.data
+      : [];
+
   return NextResponse.json(
     {
       user: {
@@ -120,6 +128,8 @@ export async function GET(request: Request) {
       roles: [...roles].sort(),
       isPlatformAdmin: labs.isPlatformAdmin,
       isCourseManager: managerRes.data === true,
+      isCoursePublisher: createRes.data === true,
+      coursePublisherTeams,
       labs: {
         isPlatformAdmin: labs.isPlatformAdmin,
         canCreateLab: labs.canCreateLab,

@@ -645,6 +645,10 @@ export type Database = {
           file_path: string
           file_url: string
           id: string
+          published_at: string | null
+          published_by: string | null
+          publisher_team_id: string | null
+          publisher_type: string | null
           status: string
           tags: string[] | null
           thumbnail: string | null
@@ -662,6 +666,10 @@ export type Database = {
           file_path: string
           file_url: string
           id?: string
+          published_at?: string | null
+          published_by?: string | null
+          publisher_team_id?: string | null
+          publisher_type?: string | null
           status?: string
           tags?: string[] | null
           thumbnail?: string | null
@@ -679,6 +687,10 @@ export type Database = {
           file_path?: string
           file_url?: string
           id?: string
+          published_at?: string | null
+          published_by?: string | null
+          publisher_team_id?: string | null
+          publisher_type?: string | null
           status?: string
           tags?: string[] | null
           thumbnail?: string | null
@@ -689,6 +701,72 @@ export type Database = {
           {
             foreignKeyName: "courses_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courses_published_by_fkey"
+            columns: ["published_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courses_publisher_team_id_fkey"
+            columns: ["publisher_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_publish_events: {
+        Row: {
+          created_at: string
+          id: string
+          publisher_team_id: string | null
+          publisher_user_id: string
+          course_id: string
+          event_type: string
+          metadata: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          publisher_team_id?: string | null
+          publisher_user_id: string
+          course_id: string
+          event_type: string
+          metadata?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          publisher_team_id?: string | null
+          publisher_user_id?: string
+          course_id?: string
+          event_type?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_publish_events_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_publish_events_publisher_team_id_fkey"
+            columns: ["publisher_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_publish_events_publisher_user_id_fkey"
+            columns: ["publisher_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -2255,6 +2333,45 @@ export type Database = {
           },
         ]
       }
+team_capabilities: {
+        Row: {
+          capability: string
+          enabled_at: string
+          enabled_by: string | null
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          capability: string
+          enabled_at?: string
+          enabled_by?: string | null
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          capability?: string
+          enabled_at?: string
+          enabled_by?: string | null
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_capabilities_enabled_by_fkey"
+            columns: ["enabled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_capabilities_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_roles: {
         Row: {
           color: string | null
@@ -2631,6 +2748,7 @@ export type Database = {
         Args: { p_path: string; p_user_id?: string }
         Returns: boolean
       }
+      can_create_course: { Args: never; Returns: boolean }
       can_manage_announcements: { Args: never; Returns: boolean }
       can_manage_chat_media: { Args: { p_path: string }; Returns: boolean }
       can_manage_live_session: {
@@ -2643,6 +2761,10 @@ export type Database = {
       }
       can_manage_private_media: { Args: { p_path: string }; Returns: boolean }
       can_manage_session_requests: { Args: never; Returns: boolean }
+      can_publish_course_for_team: {
+        Args: { p_team_id: string }
+        Returns: boolean
+      }
       cancel_account_deletion: { Args: never; Returns: undefined }
       cancel_friend_request: { Args: { p_receiver_id: string }; Returns: Json }
       claim_welcome_email: { Args: { p_user_id: string }; Returns: boolean }
@@ -2905,6 +3027,15 @@ export type Database = {
         Args: { p_username: string }
         Returns: string
       }
+      get_manageable_course_publisher_teams: {
+        Args: never
+        Returns: {
+          team_id: string
+          name: string
+          slug: string
+          logo_url: string | null
+        }[]
+      }
       get_manageable_session_hosts: {
         Args: never
         Returns: {
@@ -2991,6 +3122,15 @@ export type Database = {
           role_ids: string[]
           role_names: string[]
           username: string
+        }[]
+      }
+      get_team_capabilities: {
+        Args: { p_team_id: string }
+        Returns: {
+          capability: string
+          enabled_at: string
+          team_id: string
+          updated_at: string
         }[]
       }
       get_team_roles: {
@@ -3150,6 +3290,10 @@ export type Database = {
         Returns: undefined
       }
       refresh_team_status: { Args: { p_team_id: string }; Returns: undefined }
+      publish_course: {
+        Args: { p_course_id: string; p_publisher_team_id?: string | null }
+        Returns: undefined
+      }
       remove_branch_leader: {
         Args: { p_branch_id: string; p_user_id: string }
         Returns: undefined
@@ -3201,6 +3345,10 @@ export type Database = {
         Args: { p_permissions: string[]; p_role_id: string }
         Returns: undefined
       }
+      set_team_capability: {
+        Args: { p_capability: string; p_enabled: boolean; p_team_id: string }
+        Returns: undefined
+      }
       share_post: {
         Args: { p_message?: string; p_post_id: string; p_recipient_id: string }
         Returns: Json
@@ -3229,6 +3377,7 @@ export type Database = {
       trending_weights: { Args: never; Returns: Json }
       unfollow_user: { Args: { p_target_id: string }; Returns: Json }
       unfriend: { Args: { p_target_id: string }; Returns: Json }
+      unpublish_course: { Args: { p_course_id: string }; Returns: undefined }
       update_branch: {
         Args: {
           p_branch_id: string

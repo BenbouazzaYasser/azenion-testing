@@ -34,15 +34,6 @@ const THUMBNAIL_EXT_MIME: Record<string, string> = {
   avif: "image/avif",
 };
 
-const COURSE_STATUSES = new Set(["draft", "published", "archived"]);
-
-function parseStatus(raw: unknown): "draft" | "published" | "archived" | null {
-  if (typeof raw !== "string") return null;
-  const v = raw.trim().toLowerCase();
-  if (v === "draft" || v === "published" || v === "archived") return v;
-  return null;
-}
-
 function fileExtension(fileName: string): string {
   return fileName.split(".").pop()?.toLowerCase() ?? "";
 }
@@ -57,6 +48,19 @@ function fileExtension(fileName: string): string {
  */
 async function isCourseManager(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
   const { data, error } = await supabase.rpc("is_course_manager");
+  if (error) return false;
+  return data === true;
+}
+
+/**
+ * Canonical "may this user create course drafts" check. Course managers may
+ * always create; additionally anyone who can publish courses on behalf of at
+ * least one team (team owner or PUBLISH_COURSES role with the capability
+ * enabled) may create drafts. Creating is deliberately separate from
+ * publishing: drafts carry no publication authority.
+ */
+async function canCreateCourse(supabase: Awaited<ReturnType<typeof createClient>>): Promise<boolean> {
+  const { data, error } = await supabase.rpc("can_create_course");
   if (error) return false;
   return data === true;
 }
@@ -81,8 +85,8 @@ export async function createCourse(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isCourseManager(supabase))) {
-    return { error: "Not authorized - core team only" };
+  if (!(await canCreateCourse(supabase))) {
+    return { error: "Not authorized - core team or team course publisher only" };
   }
 
   const raw = {
@@ -95,9 +99,10 @@ export async function createCourse(formData: FormData) {
     tags: parseTags((formData.get("tags") as string) ?? null),
   };
 
-  // New courses are visible (published) by default so managers don't
-  // accidentally create invisible drafts. Pass status=draft to stage.
-  const status = parseStatus(formData.get("status")) ?? "published";
+  // Courses are always created as drafts. Publishing is a separate, explicit,
+  // server-validated step (publishCourse) so creation never grants
+  // publication authority by itself.
+  const status = "draft";
 
   const parsed = courseSchema.omit({ id: true }).safeParse(raw);
 
@@ -274,10 +279,6 @@ export async function updateCourse(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isCourseManager(supabase))) {
-    return { error: "Not authorized - core team only" };
-  }
-
   const parsed = courseSchema.safeParse({
     id: (formData.get("id") as string) ?? "",
     title: (formData.get("title") as string) ?? "",
@@ -294,7 +295,10 @@ export async function updateCourse(formData: FormData) {
     return { error: firstError ?? "Invalid input" };
   }
 
-  const nextStatus = parseStatus(formData.get("status"));
+  // Status is explicitly NOT editable here: courses move to/from published
+  // only through publishCourse / unpublishCourse so every transition is
+  // server-validated and audited.
+  const nextStatus = null;
 
   const thumbnail = formData.get("thumbnail") as File | null;
   const removeThumbnail = formData.get("remove_thumbnail") === "true";
@@ -302,6 +306,23 @@ export async function updateCourse(formData: FormData) {
 
   if (hasNewThumbnail && thumbnail.size > MAX_THUMBNAIL_SIZE) {
     return { error: "Thumbnail too large. Maximum size is 5MB" };
+  }
+
+  // The course creator may maintain their own course metadata; course
+  // managers retain the same access over every course.
+  const { data: courseOwner } = await supabase
+    .from("courses")
+    .select("created_by")
+    .eq("id", parsed.data.id)
+    .maybeSingle();
+
+  if (!courseOwner) {
+    return { error: "Course not found" };
+  }
+
+  const isCreator = courseOwner.created_by === user.id;
+  if (!isCreator && !(await isCourseManager(supabase))) {
+    return { error: "Not authorized - core team only" };
   }
 
   const admin = createAdminClient();
@@ -342,7 +363,6 @@ export async function updateCourse(formData: FormData) {
     duration: string | null;
     difficulty: string | null;
     tags: string[] | null;
-    status?: "draft" | "published" | "archived";
     thumbnail?: string | null;
   } = {
     title: parsed.data.title,
@@ -352,10 +372,6 @@ export async function updateCourse(formData: FormData) {
     difficulty: parsed.data.difficulty ?? null,
     tags: parsed.data.tags ?? null,
   };
-
-  if (nextStatus) {
-    patch.status = nextStatus;
-  }
 
   if (hasNewThumbnail && thumbnailPath) {
     const {
@@ -389,8 +405,90 @@ export async function updateCourse(formData: FormData) {
 }
 
 /**
- * Quick publish / unpublish / archive toggle for managers. Uses the same
- * canonical `is_course_manager()` gate as create/update/delete.
+ * Explicit publish. The publisher context is resolved server-side through
+ * `publish_course()` — the caller may pass a team they want to publish for,
+ * but the RPC re-validates every condition (team exists, capability enabled,
+ * owner or PUBLISH_COURSES, creator/manager of the course) and never trusts
+ * the client. Passing no team publishes individually under the existing
+ * course-manager authorization.
+ */
+export async function publishCourse(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const id = ((formData.get("id") as string) ?? "").trim();
+  const rawTeamId = ((formData.get("publisher_team_id") as string) ?? "").trim();
+
+  if (!id) {
+    return { error: "Missing course id" };
+  }
+
+  let publisherTeamId: string | null = null;
+  if (rawTeamId) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawTeamId)) {
+      return { error: "Invalid publisher team id" };
+    }
+    publisherTeamId = rawTeamId;
+  }
+
+  const { error } = await supabase.rpc("publish_course", {
+    p_course_id: id,
+    p_publisher_team_id: publisherTeamId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(COURSES_PATH);
+  return { success: true };
+}
+
+/**
+ * Explicit unpublish. Delegates to `unpublish_course()` which restricts the
+ * actor (creator, course manager, or a publisher of the course's current
+ * team) and records the transition in the audit trail. There is no direct
+ * manager-only status flip anymore.
+ */
+export async function unpublishCourse(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const id = ((formData.get("id") as string) ?? "").trim();
+
+  if (!id) {
+    return { error: "Missing course id" };
+  }
+
+  const { error } = await supabase.rpc("unpublish_course", { p_course_id: id });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath(COURSES_PATH);
+  return { success: true };
+}
+
+/**
+ * Non-published status maintenance (draft <-> archived) for course managers.
+ * The published state is deliberately NOT reachable here — courses move
+ * to/from published only through publishCourse/unpublishCourse to keep every
+ * publication transition server-validated and audited.
  */
 export async function updateCourseStatus(formData: FormData) {
   const supabase = await createClient();
@@ -408,21 +506,23 @@ export async function updateCourseStatus(formData: FormData) {
   }
 
   const id = ((formData.get("id") as string) ?? "").trim();
-  const status = parseStatus(formData.get("status"));
+  const raw = ((formData.get("status") as string) ?? "").trim();
 
   if (!id) {
     return { error: "Missing course id" };
   }
 
-  if (!status || !COURSE_STATUSES.has(status)) {
-    return { error: "Invalid status. Use draft, published, or archived." };
+  if (raw !== "draft" && raw !== "archived") {
+    return {
+      error: "Invalid status. Draft and archived only — publish or unpublish explicitly.",
+    };
   }
 
   const admin = createAdminClient();
 
   const { error: updateError } = await admin
     .from("courses")
-    .update({ status })
+    .update({ status: raw })
     .eq("id", id);
 
   if (updateError) {
@@ -430,5 +530,5 @@ export async function updateCourseStatus(formData: FormData) {
   }
 
   revalidatePath(COURSES_PATH);
-  return { success: true, status };
+  return { success: true, status: raw };
 }

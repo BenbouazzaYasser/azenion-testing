@@ -2,12 +2,21 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, LayoutGrid, Users, ShieldCheck, Mail, AlertTriangle } from "lucide-react";
+import {
+  ArrowLeft,
+  LayoutGrid,
+  Users,
+  ShieldCheck,
+  Mail,
+  AlertTriangle,
+  Sparkles,
+} from "lucide-react";
 import { SettingsOverviewTab } from "./settings-overview-tab";
 import { SettingsMembersTab } from "./settings-members-tab";
 import { SettingsRolesTab } from "./settings-roles-tab";
 import { SettingsInvitationsTab } from "./settings-invitations-tab";
 import { SettingsDangerTab } from "./settings-danger-tab";
+import { SettingsCapabilitiesTab } from "./settings-capabilities-tab";
 
 export interface SettingsTeam {
   id: string;
@@ -69,7 +78,7 @@ export interface SettingsCategory {
   slug: string;
 }
 
-type TabId = "overview" | "members" | "roles" | "invitations" | "danger";
+type TabId = "overview" | "members" | "roles" | "capabilities" | "invitations" | "danger";
 
 export interface TeamSettingsClientProps {
   team: SettingsTeam;
@@ -87,6 +96,7 @@ export interface TeamSettingsClientProps {
   invitations: SettingsInvitation[];
   categories: SettingsCategory[];
   teamCategoryIds: string[];
+  capabilities: string[];
   currentUserId: string;
 }
 
@@ -94,6 +104,7 @@ const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
   { id: "members", label: "Members", icon: Users },
   { id: "roles", label: "Roles", icon: ShieldCheck },
+  { id: "capabilities", label: "Capabilities", icon: Sparkles },
   { id: "invitations", label: "Invitations", icon: Mail },
   { id: "danger", label: "Danger Zone", icon: AlertTriangle },
 ];
@@ -101,7 +112,11 @@ const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
 export function TeamSettingsClient(props: TeamSettingsClientProps) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const { team } = props;
-  const visibleTabs = props.isOwner ? TABS : TABS.filter((t) => t.id !== "danger");
+  const visibleTabs = props.isPlatformAdmin
+    ? TABS
+    : props.isOwner
+      ? TABS.filter((t) => t.id !== "danger")
+      : TABS.filter((t) => t.id !== "danger" && t.id !== "capabilities");
 
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="team-settings-heading">
@@ -155,6 +170,7 @@ export function TeamSettingsClient(props: TeamSettingsClientProps) {
           {activeTab === "overview" ? <SettingsOverviewTab {...props} /> : null}
           {activeTab === "members" ? <SettingsMembersTab {...props} /> : null}
           {activeTab === "roles" ? <SettingsRolesTab {...props} /> : null}
+          {activeTab === "capabilities" ? <SettingsCapabilitiesTab {...props} /> : null}
           {activeTab === "invitations" ? <SettingsInvitationsTab {...props} /> : null}
           {activeTab === "danger" ? <SettingsDangerTab {...props} /> : null}
         </div>

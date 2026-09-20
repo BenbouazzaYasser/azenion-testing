@@ -21,6 +21,8 @@ export enum TeamPermission {
   // Live sessions
   CREATE_LIVE_SESSIONS = "CREATE_LIVE_SESSIONS",
   MANAGE_LIVE_SESSIONS = "MANAGE_LIVE_SESSIONS",
+  // Academy courses
+  PUBLISH_COURSES = "PUBLISH_COURSES",
   // Team settings
   EDIT_TEAM_INFORMATION = "EDIT_TEAM_INFORMATION",
   EDIT_TEAM_APPEARANCE = "EDIT_TEAM_APPEARANCE",
@@ -70,6 +72,12 @@ export const TEAM_PERMISSION_GROUPS: PermissionGroup[] = [
     permissions: [
       { permission: TeamPermission.CREATE_LIVE_SESSIONS, label: "Create live sessions", description: "Create live sessions hosted by the team." },
       { permission: TeamPermission.MANAGE_LIVE_SESSIONS, label: "Manage live sessions", description: "Edit or delete the team's live sessions." },
+    ],
+  },
+  {
+    label: "Academy courses",
+    permissions: [
+      { permission: TeamPermission.PUBLISH_COURSES, label: "Publish courses", description: "Publish Academy courses on behalf of the team. The team must also have the Course Publisher capability enabled." },
     ],
   },
   {

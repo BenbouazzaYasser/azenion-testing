@@ -73,6 +73,19 @@ export const courseSchema = z.object({
 
 export type CourseInput = z.infer<typeof courseSchema>;
 
+/** A team the current user may publish courses on behalf of (server-derived). */
+export interface CoursePublisherTeam {
+  team_id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+}
+
+export interface CoursePublisherProfile {
+  username: string;
+  full_name: string | null;
+}
+
 export interface CourseRow {
   id: string;
   title: string;
@@ -87,4 +100,10 @@ export interface CourseRow {
   tags: string[] | null;
   created_by: string | null;
   created_at: string;
+  publisher_type: "user" | "team" | null;
+  publisher_team_id: string | null;
+  published_by: string | null;
+  published_at: string | null;
+  publisher_team: { name: string; slug: string; logo_url: string | null } | null;
+  publisher_profile: CoursePublisherProfile | null;
 }

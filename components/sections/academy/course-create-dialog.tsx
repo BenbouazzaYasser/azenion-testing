@@ -36,7 +36,6 @@ export function CourseCreateDialog() {
   const [duration, setDuration] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [tags, setTags] = useState("");
-  const [status, setStatus] = useState("published");
   const [fileName, setFileName] = useState("");
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -76,7 +75,6 @@ export function CourseCreateDialog() {
     setDuration("");
     setDifficulty("");
     setTags("");
-    setStatus("published");
     setFileName("");
     setThumbnailFile(null);
     setThumbnailPreview(null);
@@ -107,7 +105,6 @@ export function CourseCreateDialog() {
       fd.set("category", category);
       fd.set("content_type", contentType);
       fd.set("duration", duration);
-      fd.set("status", status);
       if (difficulty) fd.set("difficulty", difficulty);
       if (tags.trim()) fd.set("tags", tags);
       fd.set("file", file);
@@ -285,21 +282,10 @@ export function CourseCreateDialog() {
                       />
                     </FormField>
 
-                    <FormField
-                      label="Visibility"
-                      htmlFor="course-status"
-                      helper="Drafts are hidden from regular users; published courses are public."
-                    >
-                      <select
-                        id="course-status"
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        className={cn(inputClass, "cursor-pointer appearance-none pr-10")}
-                      >
-                        <option value="published">Published — visible to everyone</option>
-                        <option value="draft">Draft — managers only</option>
-                      </select>
-                    </FormField>
+                    <div className="rounded-xl border border-accent-400/30 bg-accent/[0.06] px-4 py-3 text-sm text-accent-200">
+                      Courses are created as drafts and are only visible to
+                      managers. Publish them from the catalog once they&apos;re ready.
+                    </div>
 
                     <fieldset>
                       <legend className="mb-1.5 block text-sm font-medium text-ink-200">Content type</legend>

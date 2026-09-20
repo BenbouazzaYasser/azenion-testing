@@ -75,6 +75,16 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
   const isOwner = user.id === team.owner_id;
   const isPlatformAdmin = (await supabase.rpc("is_platform_admin"))?.data === true;
 
+  let capabilities: string[] = [];
+  if (isPlatformAdmin || isOwner) {
+    const { data: rawCapabilities } = await supabase.rpc("get_team_capabilities", {
+      p_team_id: team.id,
+    });
+    capabilities = ((rawCapabilities ?? []) as unknown as { capability: string }[]).map(
+      (c) => c.capability,
+    );
+  }
+
   const permissionMap = await getTeamPermissions(team.id, TEAM_PERMISSIONS);
   const has = (p: TeamPermission) => permissionMap[p];
 
@@ -220,6 +230,7 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
           invitations={invitations}
           categories={categoriesData}
           teamCategoryIds={teamCategoryIds}
+          capabilities={capabilities}
           currentUserId={user.id}
         />
         <PageBridge />

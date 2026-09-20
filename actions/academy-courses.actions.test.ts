@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { deleteCourse } from "@/actions/academy-courses.actions";
+import {
+  createCourse,
+  deleteCourse,
+  publishCourse,
+  unpublishCourse,
+  updateCourseStatus,
+} from "@/actions/academy-courses.actions";
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }));
@@ -9,18 +15,34 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const COURSE_ID = "123e4567-e89b-12d3-a456-426614174000";
+const TEAM_ID = "223e4567-e89b-12d3-a456-426614174000";
 
 function userClientDouble(opts: {
   user?: { id: string } | null;
   oracleData?: unknown;
   oracleError?: { message: string } | null;
+  rpcError?: { message: string } | null;
+  fromSelectData?: unknown;
 }) {
-  const rpc = vi.fn(async (name: string, _args?: unknown) => ({
-    data: opts.oracleData ?? null,
-    error: opts.oracleError ?? null,
+  const rpc = vi.fn(async (name: string, _args?: unknown) => {
+    if (name === "is_course_manager" || name === "can_create_course") {
+      return { data: opts.oracleData ?? null, error: opts.oracleError ?? null };
+    }
+    return { data: null, error: opts.rpcError ?? null };
+  });
+  const from = vi.fn((_table: string) => ({
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        maybeSingle: async () => ({
+          data: opts.fromSelectData ?? null,
+          error: null,
+        }),
+      }),
+    }),
   }));
   return {
     rpc,
+    from,
     auth: {
       getUser: async () => ({
         data: { user: opts.user === undefined ? { id: "user-1" } : opts.user },
@@ -41,6 +63,9 @@ function adminDouble() {
       }),
     }),
     delete: (..._a: unknown[]) => ({
+      eq: (..._b: unknown[]) => ({ error: null }),
+    }),
+    update: (..._a: unknown[]) => ({
       eq: (..._b: unknown[]) => ({ error: null }),
     }),
   });
@@ -128,6 +153,169 @@ describe("course-manager gate delegates to the canonical DB oracle", () => {
 
     expect(res).toEqual({ error: "Not authenticated" });
     expect(userClient.rpc).not.toHaveBeenCalled();
+    expect(admin.from).not.toHaveBeenCalled();
+  });
+});
+
+describe("course creation is gated through can_create_course", () => {
+  it("creators without can_create_course are rejected before any write", async () => {
+    const userClient: any = userClientDouble({ oracleData: false });
+    const admin: any = adminDouble();
+    (createClient as any).mockResolvedValue(userClient);
+    (createAdminClient as any).mockReturnValue(admin);
+
+    const fd = new FormData();
+    fd.set("title", "Intro");
+    fd.set("category", "Programming");
+    fd.set("content_type", "pdf");
+    fd.set("file", new File(["x"], "x.pdf", { type: "application/pdf" }));
+    const res = await createCourse(fd);
+
+    expect(res).toEqual({ error: "Not authorized - core team or team course publisher only" });
+    expect(userClient.rpc).toHaveBeenCalledWith("can_create_course");
+    expect(admin.from).not.toHaveBeenCalled();
+  });
+});
+
+describe("publishCourse", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("unauthenticated callers are rejected before any RPC", async () => {
+    const userClient: any = userClientDouble({ user: null });
+    (createClient as any).mockResolvedValue(userClient);
+
+    const res = await publishCourse(formWithId(COURSE_ID));
+
+    expect(res).toEqual({ error: "Not authenticated" });
+    expect(userClient.rpc).not.toHaveBeenCalled();
+  });
+
+  it("delegates individual publishing to publish_course with a null team id", async () => {
+    const userClient: any = userClientDouble({});
+    (createClient as any).mockResolvedValue(userClient);
+
+    const res = await publishCourse(formWithId(COURSE_ID));
+
+    expect(res).toEqual({ success: true });
+    expect(userClient.rpc).toHaveBeenCalledWith("publish_course", {
+      p_course_id: COURSE_ID,
+      p_publisher_team_id: null,
+    });
+  });
+
+  it("passes the selected team id to publish_course", async () => {
+    const userClient: any = userClientDouble({});
+    (createClient as any).mockResolvedValue(userClient);
+
+    const fd = formWithId(COURSE_ID);
+    fd.set("publisher_team_id", TEAM_ID);
+    const res = await publishCourse(fd);
+
+    expect(res).toEqual({ success: true });
+    expect(userClient.rpc).toHaveBeenCalledWith("publish_course", {
+      p_course_id: COURSE_ID,
+      p_publisher_team_id: TEAM_ID,
+    });
+  });
+
+  it("rejects malformed team ids without calling the oracle", async () => {
+    const userClient: any = userClientDouble({});
+    (createClient as any).mockResolvedValue(userClient);
+
+    const fd = formWithId(COURSE_ID);
+    fd.set("publisher_team_id", "not-a-uuid");
+    const res = await publishCourse(fd);
+
+    expect(res).toEqual({ error: "Invalid publisher team id" });
+    expect(userClient.rpc).not.toHaveBeenCalled();
+  });
+
+  it("surfaces server-side authorization failures from publish_course", async () => {
+    const userClient: any = userClientDouble({
+      rpcError: { message: "Not authorized to publish this course" },
+    });
+    (createClient as any).mockResolvedValue(userClient);
+
+    const res = await publishCourse(formWithId(COURSE_ID));
+
+    expect(res).toEqual({ error: "Not authorized to publish this course" });
+  });
+});
+
+describe("unpublishCourse", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("unauthenticated callers are rejected before any RPC", async () => {
+    const userClient: any = userClientDouble({ user: null });
+    (createClient as any).mockResolvedValue(userClient);
+
+    const res = await unpublishCourse(formWithId(COURSE_ID));
+
+    expect(res).toEqual({ error: "Not authenticated" });
+    expect(userClient.rpc).not.toHaveBeenCalled();
+  });
+
+  it("delegates to unpublish_course with the course id", async () => {
+    const userClient: any = userClientDouble({});
+    (createClient as any).mockResolvedValue(userClient);
+
+    const res = await unpublishCourse(formWithId(COURSE_ID));
+
+    expect(res).toEqual({ success: true });
+    expect(userClient.rpc).toHaveBeenCalledWith("unpublish_course", {
+      p_course_id: COURSE_ID,
+    });
+  });
+});
+
+describe("updateCourseStatus keeps published transitions out of direct status flips", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("rejects 'published' so publish decisions go through publishCourse", async () => {
+    const userClient: any = userClientDouble({ oracleData: true });
+    const admin: any = adminDouble();
+    (createClient as any).mockResolvedValue(userClient);
+    (createAdminClient as any).mockReturnValue(admin);
+
+    const fd = formWithId(COURSE_ID);
+    fd.set("status", "published");
+    const res = await updateCourseStatus(fd);
+
+    expect(res.error).toContain("Invalid status");
+    expect(admin.from).not.toHaveBeenCalled();
+  });
+
+  it("allows draft <-> archived for course managers", async () => {
+    const userClient: any = userClientDouble({ oracleData: true });
+    const admin: any = adminDouble();
+    (createClient as any).mockResolvedValue(userClient);
+    (createAdminClient as any).mockReturnValue(admin);
+
+    const fd = formWithId(COURSE_ID);
+    fd.set("status", "archived");
+    const res = await updateCourseStatus(fd);
+
+    expect(res).toEqual({ success: true, status: "archived" });
+    expect(userClient.rpc).toHaveBeenCalledWith("is_course_manager");
+  });
+
+  it("non-managers may not toggle status", async () => {
+    const userClient: any = userClientDouble({ oracleData: false });
+    const admin: any = adminDouble();
+    (createClient as any).mockResolvedValue(userClient);
+    (createAdminClient as any).mockReturnValue(admin);
+
+    const fd = formWithId(COURSE_ID);
+    fd.set("status", "archived");
+    const res = await updateCourseStatus(fd);
+
+    expect(res).toEqual({ error: "Not authorized - core team only" });
     expect(admin.from).not.toHaveBeenCalled();
   });
 });

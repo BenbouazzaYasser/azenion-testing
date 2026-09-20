@@ -135,7 +135,7 @@ export async function GET(
 
   const { data: course, error } = await scoped
     .from("courses")
-    .select("content_type, file_path, thumbnail, status, created_by")
+    .select("content_type, file_path, thumbnail, status, created_by, publisher_type, publisher_team_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -149,6 +149,8 @@ export async function GET(
     thumbnail: string | null;
     status: string | null;
     created_by: string | null;
+    publisher_type: string | null;
+    publisher_team_id: string | null;
   };
 
   const isOwner = user != null && row.created_by != null && row.created_by === user.id;
@@ -156,11 +158,20 @@ export async function GET(
   if (user && !isOwner) {
     const { data: manages } = await scoped.rpc("is_course_manager");
     isStaff = isCourseManagerResult(manages);
-  } else if (user && isOwner) {
-    isStaff = false;
   }
 
-  const isPrivileged = isOwner || isStaff;
+  // Team Course Publishers need draft/file access to stage and publish their
+  // team's courses. Narrow and server-validated: only when the course is
+  // published (or being managed) on behalf of a team and the caller still
+  // holds publish authority for that team (capability + owner/PUBLISH_COURSES).
+  let isTeamPublisher = false;
+  if (user && row.publisher_team_id) {
+    const { data: canPublish } = await scoped.rpc("can_publish_course_for_team", {
+      p_team_id: row.publisher_team_id,
+    });
+    isTeamPublisher = canPublish === true;
+  }
+  const isPrivileged = isOwner || isStaff || isTeamPublisher;
   if (!isPrivileged && row.status !== "published") {
     return NextResponse.json({ error: "Course not found" }, { status: 404 });
   }

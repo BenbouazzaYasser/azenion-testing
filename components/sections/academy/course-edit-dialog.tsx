@@ -30,7 +30,6 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
   const [duration, setDuration] = useState(course.duration ?? "");
   const [difficulty, setDifficulty] = useState(course.difficulty ?? "");
   const [tags, setTags] = useState(course.tags?.join(", ") ?? "");
-  const [status, setStatus] = useState<string>(course.status ?? "draft");
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [removeThumbnail, setRemoveThumbnail] = useState(false);
@@ -69,7 +68,6 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
     setDuration(course.duration ?? "");
     setDifficulty(course.difficulty ?? "");
     setTags(course.tags?.join(", ") ?? "");
-    setStatus(course.status ?? "draft");
     setThumbnailFile(null);
     setThumbnailPreview(null);
     setRemoveThumbnail(false);
@@ -93,7 +91,6 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
       fd.set("description", description);
       fd.set("category", category);
       fd.set("duration", duration);
-      fd.set("status", status);
       if (difficulty) fd.set("difficulty", difficulty);
       if (tags.trim()) fd.set("tags", tags);
       const thumbnail = fileInputRef.current?.files?.[0];
@@ -274,19 +271,6 @@ export function CourseEditDialog({ course }: { course: CourseRow }) {
                         placeholder="e.g. HTML, CSS, Responsive"
                         className={inputClass}
                       />
-                    </FormField>
-
-                    <FormField label="Visibility" htmlFor="course-status">
-                      <select
-                        id="course-status"
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        className={cn(inputClass, "cursor-pointer appearance-none pr-10")}
-                      >
-                        <option value="published">Published — visible to everyone</option>
-                        <option value="draft">Draft — managers only</option>
-                        <option value="archived">Archived — managers only</option>
-                      </select>
                     </FormField>
 
                     <div>

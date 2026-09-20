@@ -12,7 +12,10 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionUser } from "@/lib/supabase/user";
 import { JsonLd, siteUrl } from "@/components/seo/json-ld";
-import type { CourseRow } from "@/lib/validations/course.schema";
+import type {
+  CoursePublisherTeam,
+  CourseRow,
+} from "@/lib/validations/course.schema";
 import { serverT } from "@/lib/translation/server";
 
 export const metadata: Metadata = {
@@ -24,7 +27,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const COURSE_SELECT =
-  "id, title, description, category, content_type, file_url, thumbnail, duration, difficulty, tags, created_by, created_at, status";
+  "id, title, description, category, content_type, file_url, thumbnail, duration, difficulty, tags, created_by, created_at, status, publisher_type, publisher_team_id, published_by, published_at, publisher_team:publisher_team_id(name, slug, logo_url), publisher_profile:published_by(full_name, username)";
 
 async function fetchPublishedCourses() {
   // Public, non-user-specific content: published courses only, served
@@ -63,13 +66,21 @@ export default async function CoursesPage() {
   ]);
 
   let canManage = false;
+  let canCreate = false;
+  let coursePublisherTeams: CoursePublisherTeam[] = [];
   if (user) {
-    const { data } = await supabase.rpc("is_course_manager");
-    canManage = data === true;
+    const [{ data: manages }, { data: creates }, { data: teams }] = await Promise.all([
+      supabase.rpc("is_course_manager"),
+      supabase.rpc("can_create_course"),
+      supabase.rpc("get_manageable_course_publisher_teams" as never),
+    ]);
+    canManage = manages === true;
+    canCreate = creates === true;
+    coursePublisherTeams = (teams ?? []) as unknown as CoursePublisherTeam[];
   }
 
   let courseRows: unknown[];
-  if (canManage) {
+  if (canCreate) {
     const { data } = await supabase
       .from("courses")
       .select(COURSE_SELECT)
@@ -113,7 +124,12 @@ export default async function CoursesPage() {
         <AcademyHero
           {...await getCoursesHeroCopy()}
         />
-        <CoursesBrowser courses={courses} canManage={canManage} />
+        <CoursesBrowser
+          courses={courses}
+          canManage={canManage}
+          canCreate={canCreate}
+          coursePublisherTeams={coursePublisherTeams}
+        />
         <AcademyClosingCta />
         <PageBridge />
       </main>

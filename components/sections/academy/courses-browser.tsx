@@ -12,14 +12,21 @@ import {
   Trash2,
   ArrowUpRight,
   Clock,
+  Building2,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { useTranslation } from "@/components/translation/translation-provider";
 import { CourseCreateDialog } from "./course-create-dialog";
 import { CourseEditDialog } from "./course-edit-dialog";
-import { deleteCourse, updateCourseStatus } from "@/actions/academy-courses.actions";
-import type { CourseRow } from "@/lib/validations/course.schema";
+import { PublishCourseDialog } from "./publish-course-dialog";
+import {
+  deleteCourse,
+  unpublishCourse,
+  updateCourseStatus,
+} from "@/actions/academy-courses.actions";
+import type { CoursePublisherTeam, CourseRow } from "@/lib/validations/course.schema";
 
 const CATEGORIES = [
   "Programming",
@@ -62,9 +69,16 @@ const inputClass =
 interface CoursesBrowserProps {
   courses: CourseRow[];
   canManage: boolean;
+  canCreate: boolean;
+  coursePublisherTeams: CoursePublisherTeam[];
 }
 
-export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
+export function CoursesBrowser({
+  courses,
+  canManage,
+  canCreate,
+  coursePublisherTeams,
+}: CoursesBrowserProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -101,7 +115,7 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
                 className={cn(inputClass, "pl-12")}
               />
             </div>
-            {canManage ? <CourseCreateDialog /> : null}
+            {canCreate ? <CourseCreateDialog /> : null}
           </div>
         
 
@@ -119,7 +133,12 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
           {filtered.length > 0 ? (
             <div className="mt-14 grid gap-5 sm:grid-cols-2">
               {filtered.map((course) => (
-                <CourseCard key={course.id} course={course} canManage={canManage} />
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  canManage={canManage}
+                  coursePublisherTeams={coursePublisherTeams}
+                />
               ))}
             </div>
           ) : (
@@ -164,12 +183,22 @@ export function CoursesBrowser({ courses, canManage }: CoursesBrowserProps) {
   );
 }
 
+function canPublishCourseTeam(
+  course: CourseRow,
+  coursePublisherTeams: CoursePublisherTeam[],
+): boolean {
+  return course.publisher_team_id != null
+    && coursePublisherTeams.some((team) => team.team_id === course.publisher_team_id);
+}
+
 function CourseCard({
   course,
   canManage,
+  coursePublisherTeams,
 }: {
   course: CourseRow;
   canManage: boolean;
+  coursePublisherTeams: CoursePublisherTeam[];
 }) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -199,17 +228,31 @@ function CourseCard({
     });
   }
 
-  function handleToggleStatus() {
+  function handleArchive() {
     startStatusTransition(async () => {
       const fd = new FormData();
       fd.set("id", course.id);
-      fd.set("status", isPublished ? "draft" : "published");
+      fd.set("status", course.status === "archived" ? "draft" : "archived");
       const result = await updateCourseStatus(fd);
       if (result && "error" in result && result.error) {
         toast.error(result.error);
         return;
       }
-      toast.success(isPublished ? "Course unpublished (draft)." : "Course published.");
+      toast.success(course.status === "archived" ? "Course unarchived." : "Course archived.");
+      router.refresh();
+    });
+  }
+
+  function handleUnpublish() {
+    startStatusTransition(async () => {
+      const fd = new FormData();
+      fd.set("id", course.id);
+      const result = await unpublishCourse(fd);
+      if (result && "error" in result && result.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Course unpublished (draft).");
       router.refresh();
     });
   }
@@ -273,6 +316,21 @@ function CourseCard({
 
         <h3 className="mt-4 text-lg font-semibold text-ink-50">{course.title}</h3>
 
+        {course.publisher_team ? (
+          <p className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-ink-500">
+            <Building2 size={12} className="text-ink-600" />
+            Published by <span className="font-medium text-ink-300">{course.publisher_team.name}</span>
+          </p>
+        ) : course.publisher_profile ? (
+          <p className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-ink-500">
+            <User size={12} className="text-ink-600" />
+            Published by{" "}
+            <span className="font-medium text-ink-300">
+              {course.publisher_profile.full_name || `@${course.publisher_profile.username}`}
+            </span>
+          </p>
+        ) : null}
+
         {(course.duration || course.difficulty) && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {course.duration ? (
@@ -323,20 +381,38 @@ function CourseCard({
           </span>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
-            {canManage ? (
+            {canManage && !isPublished ? (
               <button
                 type="button"
-                onClick={handleToggleStatus}
+                onClick={handleArchive}
                 disabled={statusPending}
-                title={isPublished ? "Unpublish (hide from users)" : "Publish (visible to everyone)"}
-                className={cn(
-                  "inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors",
-                  isPublished
-                    ? "border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
-                    : "border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10"
-                )}
+                title={
+                  course.status === "archived"
+                    ? "Unarchive (restore as draft)"
+                    : "Archive (managers only)"
+                }
+                className="inline-flex h-8 items-center rounded-full border border-ink-500/40 px-3 text-xs font-medium text-ink-400 transition-colors hover:bg-surface-hover"
               >
-                {statusPending ? "..." : isPublished ? "Unpublish" : "Publish"}
+                {course.status === "archived" ? "Unarchive" : "Archive"}
+              </button>
+            ) : null}
+            {!isPublished && (canManage || coursePublisherTeams.length > 0) ? (
+              <PublishCourseDialog
+                courseTitle={course.title}
+                courseId={course.id}
+                canManage={canManage}
+                coursePublisherTeams={coursePublisherTeams}
+              />
+            ) : null}
+            {isPublished && (canManage || canPublishCourseTeam(course, coursePublisherTeams)) ? (
+              <button
+                type="button"
+                onClick={handleUnpublish}
+                disabled={statusPending}
+                title="Unpublish (make draft)"
+                className="inline-flex h-8 items-center rounded-full border border-amber-500/40 px-3 text-xs font-medium text-amber-300 transition-colors hover:bg-amber-500/10"
+              >
+                {statusPending ? "..." : "Unpublish"}
               </button>
             ) : null}
             {canManage ? (
