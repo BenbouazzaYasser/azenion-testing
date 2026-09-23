@@ -3,8 +3,6 @@ import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 import { getSessionUser } from "@/lib/supabase/user";
-import { Navbar } from "@/components/layout/navbar";
-import { ChatLayout } from "@/components/chat/chat-layout";
 import { getConversations } from "@/data/chat";
 
 // Code-split: the interactive sidebar (search, archived view, unread state)
@@ -33,17 +31,16 @@ export default async function ChatPage() {
     redirect(`/login?next=${encodeURIComponent("/chat")}`);
   }
 
+  // getConversations is React-cached: the chat layout already fetched it
+  // this request, so this call reuses that result (feeds the mobile sidebar).
   const conversations = await getConversations(user.id);
 
   return (
     <>
-      <Navbar />
-      <main id="main" className="relative flex h-dvh flex-col overflow-hidden pt-[96px] sm:pt-[104px]">
-        <ChatLayout conversations={conversations} currentUserId={user.id}>
-          <div className="relative min-h-0 flex-1 overflow-hidden md:hidden">
-            <ChatSidebar conversations={conversations} currentUserId={user.id} />
-          </div>
-          <div className="relative hidden min-h-0 flex-1 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_22%_0%,rgba(40,40,255,0.09),transparent_42%),radial-gradient(circle_at_88%_92%,rgba(109,109,255,0.06),transparent_40%)] md:flex">
+      <div className="relative min-h-0 flex-1 overflow-hidden md:hidden">
+        <ChatSidebar conversations={conversations} currentUserId={user.id} />
+      </div>
+      <div className="relative hidden min-h-0 flex-1 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_22%_0%,rgba(40,40,255,0.09),transparent_42%),radial-gradient(circle_at_88%_92%,rgba(109,109,255,0.06),transparent_40%)] md:flex">
             <div aria-hidden className="pointer-events-none absolute inset-0">
               <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-accent/[0.05] blur-[120px]" />
               <div className="absolute -right-20 bottom-20 h-80 w-80 rounded-full bg-accent-glow/[0.04] blur-[130px]" />
@@ -62,8 +59,6 @@ export default async function ChatPage() {
               </p>
             </div>
           </div>
-        </ChatLayout>
-      </main>
     </>
   );
 }

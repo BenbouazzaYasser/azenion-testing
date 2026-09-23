@@ -1,0 +1,37 @@
+services:
+  livekit:
+    image: livekit/livekit-server:v1.8
+    command: --config /etc/livekit/livekit.yaml
+    environment:
+      # Secret lives ONLY in the VPS .env (same dir, gitignored). Never commit it.
+      LIVEKIT_KEYS: "azenion: ${LIVEKIT_SECRET:?LIVEKIT_SECRET missing — copy .env.example to .env and fill it}"
+    volumes:
+      - ./livekit.yaml:/etc/livekit/livekit.yaml:ro
+    ports:
+      - "7881:7881/tcp" # RTC over TCP (fallback when UDP blocked)
+      - "50000-50100:50000-50100/udp" # WebRTC media
+      - "3478:3478/udp" # TURN relay
+      - "3478:3478/tcp" # TURN relay over TCP
+    restart: unless-stopped
+    networks:
+      - livekit
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    networks:
+      - livekit
+
+networks:
+  livekit:
+
+volumes:
+  caddy_data:
+  caddy_config:

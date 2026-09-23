@@ -2,8 +2,6 @@ import { Suspense } from "react";
 import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/supabase/user";
-import { Navbar } from "@/components/layout/navbar";
-import { ChatLayout } from "@/components/chat/chat-layout";
 import { getConversations, getMessages, getConversationBlockState } from "@/data/chat";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 
@@ -19,23 +17,26 @@ const ChatConversation = nextDynamic(
 );
 
 interface Props {
-  params: { conversationId: string };
+  params: Promise<{ conversationId: string }>;
 }
 
 export default async function ConversationPage({ params }: Props) {
+  const { conversationId } = await params;
   const user = await getSessionUser();
 
   if (!user) {
-    redirect(`/login?next=${encodeURIComponent(`/chat/${params.conversationId}`)}`);
+    redirect(`/login?next=${encodeURIComponent(`/chat/${conversationId}`)}`);
   }
 
+  // getConversations is React-cached: the chat layout already fetched it
+  // this request, so this call reuses that result (peer lookup only).
   const [conversations, messages, blockState] = await Promise.all([
     getConversations(user.id),
-    getMessages(params.conversationId),
-    getConversationBlockState(params.conversationId),
+    getMessages(conversationId),
+    getConversationBlockState(conversationId),
   ]);
 
-  const thisConversation = conversations.find((c) => c.id === params.conversationId);
+  const thisConversation = conversations.find((c) => c.id === conversationId);
   const otherUser = thisConversation?.other_user ?? null;
   const peer =
     otherUser && otherUser.id
@@ -48,32 +49,25 @@ export default async function ConversationPage({ params }: Props) {
       : null;
 
   return (
-    <>
-      <Navbar />
-      <main id="main" className="relative flex h-dvh flex-col overflow-hidden pt-[96px] sm:pt-[104px]">
-        <ChatLayout conversations={conversations} currentUserId={user.id}>
-          <Suspense
-            fallback={
-              <div className="flex h-full items-center justify-center text-sm text-ink-500">
-                Loading conversation…
-              </div>
-            }
-          >
-            <ErrorBoundary
-              fallbackTitle="Chat failed to load"
-              fallbackMessage="Unable to load the conversation. You can try reloading or navigate back to your chats."
-            >
-              <ChatConversation
-                conversationId={params.conversationId}
-                initialMessages={messages}
-                currentUserId={user.id}
-                amBlocked={blockState.am_blocked}
-                peer={peer}
-              />
-            </ErrorBoundary>
-          </Suspense>
-        </ChatLayout>
-      </main>
-    </>
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center text-sm text-ink-500">
+          Loading conversation…
+        </div>
+      }
+    >
+      <ErrorBoundary
+        fallbackTitle="Chat failed to load"
+        fallbackMessage="Unable to load the conversation. You can try reloading or navigate back to your chats."
+      >
+        <ChatConversation
+          conversationId={conversationId}
+          initialMessages={messages}
+          currentUserId={user.id}
+          amBlocked={blockState.am_blocked}
+          peer={peer}
+        />
+      </ErrorBoundary>
+    </Suspense>
   );
 }

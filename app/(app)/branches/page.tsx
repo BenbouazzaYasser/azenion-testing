@@ -1,0 +1,116 @@
+import type { Metadata } from "next";
+import { Landmark } from "lucide-react";
+
+import { Footer } from "@/components/layout/footer";
+import { PageBridge } from "@/components/sections/page-bridge";
+import { BranchShowcase } from "@/components/sections/branches/branch-showcase";
+import { ComingSoonTeaser } from "@/components/sections/branches/coming-soon";
+import { BranchesHero } from "@/components/sections/branches/hero";
+import { NetworkStats } from "@/components/sections/branches/network-stats";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
+import { mapBranchRow } from "@/data/branches";
+import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/user";
+import { serverT } from "@/lib/translation/server";
+
+export const metadata: Metadata = {
+  title: "Branches | Azenion — The Limitless Network",
+  description:
+    "Explore Azenion's campus branches and find your local hub within the Limitless Network.",
+};
+
+export default async function BranchesPage() {
+  const supabase = await createClient();
+
+  const user = await getSessionUser();
+
+  const { data: dbBranches } = await supabase
+    .from("branches")
+    .select("id, slug, name, full_name, description, logo_url, cover_url, city, sort_order, created_at")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  const { count: memberCount } = await supabase
+    .from("branch_members")
+    .select("*", { count: "exact", head: true });
+
+  let userBranchSlug: string | null = null;
+  let isBranchMember = false;
+  let canCreate = false;
+  let canManage = false;
+  if (user) {
+    const { data: membership } = await supabase
+      .from("branch_members")
+      .select("branch_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (membership) {
+      isBranchMember = true;
+      const branch = dbBranches?.find((b) => b.id === membership.branch_id);
+      userBranchSlug = branch?.slug ?? null;
+    }
+
+    const [{ data: isSupervisor }, { data: isCoreTeam }] = await Promise.all([
+      supabase.rpc("has_platform_role", { p_role_name: "branch_supervisor" }),
+      supabase.rpc("has_platform_role", { p_role_name: "core_team_member" }),
+    ]);
+    canCreate = isSupervisor === true;
+    canManage = canCreate || isCoreTeam === true;
+  }
+
+  const branches = dbBranches ?? [];
+  const totalMembers = memberCount ?? 0;
+
+  const enrichedBranches = branches.map((b) => ({
+    ...mapBranchRow(b),
+    dbId: b.id,
+    memberCount: totalMembers,
+  }));
+
+  const membershipBySlug: Record<string, boolean> = {};
+  for (const b of branches) {
+    membershipBySlug[b.slug] = b.slug === userBranchSlug;
+  }
+
+  const branchCount = branches.length;
+  const totalUpcomingEvents = enrichedBranches.reduce(
+    (sum, branch) => sum + branch.upcomingEvents.length,
+    0,
+  );
+
+  return (
+    <>
+      <main id="main" className="relative overflow-hidden">
+        <PageAtmosphere />
+        {user && !isBranchMember ? (
+          <EmptyState
+            icon={<Landmark size={32} />}
+            title={await serverT("branches.emptyTitle")}
+            description={await serverT("branches.emptySub")}
+            eyebrow={await serverT("branches.emptyEyebrow")}
+            scrollToId="branches"
+            actionLabel={await serverT("branches.exploreBranches")}
+          />
+        ) : (
+          <BranchesHero branchCount={branchCount} memberCount={totalMembers} />
+        )}
+        <NetworkStats
+          branchCount={branchCount}
+          memberCount={totalMembers}
+          upcomingEvents={totalUpcomingEvents}
+        />
+        <BranchShowcase
+          branches={enrichedBranches}
+          membershipBySlug={membershipBySlug}
+          canManage={canManage}
+          canCreate={canCreate}
+        />
+        <ComingSoonTeaser />
+        <PageBridge />
+      </main>
+      <Footer />
+    </>
+  );
+}

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { FileText, Download, AlertCircle, Loader2, Image as ImageIcon, Play, Pause } from "lucide-react";
+import { FileText, Download, AlertCircle, Loader2, Image as ImageIcon, Play, Pause, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatChatFileSize } from "@/lib/chat-media";
 import type { ChatAttachmentForMessage } from "@/data/chat";
@@ -27,13 +27,6 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    setError(false);
-    setLoading(true);
-    setCurrentTime(0);
-    setIsPlaying(false);
-  }, [attachment.signedUrl]);
 
   const toggle = () => {
     const el = audioRef.current;
@@ -122,9 +115,8 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
 export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
   const [imgError, setImgError] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
-  // Natural aspect once decoded: reserves exact space (no CLS) on re-renders
-  // and lets next/image serve a 260px variant instead of full resolution.
   const [imgRatio, setImgRatio] = useState<string | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   const isSticker = attachment.type === "sticker";
   const isAudio = attachment.type === "audio";
@@ -134,7 +126,6 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
   if (isSticker) {
     const sticker = attachment.external_id ? getStickerById(attachment.external_id) : undefined;
     const meta = (attachment.metadata ?? {}) as { url?: string; packId?: string; name?: string };
-    // Prefer catalog URL (authoritative) over metadata to prevent URL injection
     const url = sticker?.url ?? (meta.url && typeof meta.url === "string" && meta.url.startsWith("/stickers/") ? meta.url : null);
     if (!sticker || !url) {
       return (
@@ -202,42 +193,95 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
   }
 
   if (isAudio) {
-    return <AudioPlayer attachment={attachment} isOwn={isOwn} />;
+    return <AudioPlayer key={attachment.signedUrl} attachment={attachment} isOwn={isOwn} />;
   }
 
   if (isImage && attachment.signedUrl && !imgError) {
-    return (
-      <div className="max-w-[260px] overflow-hidden rounded-xl">
-        {imgLoading && (
-          <div className="flex h-32 w-48 max-w-full items-center justify-center bg-surface/50">
-            <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
-          </div>
-        )}
-        <a
-          href={attachment.signedUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn("relative block w-full", imgLoading && "hidden")}
-          style={imgRatio ? { aspectRatio: imgRatio, maxHeight: 256 } : undefined}
-        >
-          <Image
+    // Supabase private-bucket URLs (signed, blob, data) render with a plain
+    // <img>: they bypass the Next Image optimizer, which cannot fetch them
+    // (short-lived signatures defeat its cache, and its SSRF guard rejects
+    // NAT64-synthesized upstream IPs with a 400). The browser fetches the
+    // signed URL directly; img-src already allows https://*.supabase.co.
+    const directFetch =
+      attachment.signedUrl.startsWith("blob:") ||
+      attachment.signedUrl.startsWith("data:") ||
+      attachment.signedUrl.includes(".supabase.co/");
+    if (directFetch) {
+      const meta = attachment.metadata as { spoiler?: boolean; tags?: string[] } | null;
+      const isSpoiler = meta?.spoiler === true;
+      return (
+        <div className="max-w-[260px] overflow-hidden rounded-xl">
+          {imgLoading && (
+            <div className="flex h-32 w-48 max-w-full items-center justify-center bg-surface/50">
+              <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
+            </div>
+          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={attachment.signedUrl}
             alt={attachment.filename ?? "Image"}
-            fill
-            sizes="260px"
-            className="object-cover transition-opacity hover:opacity-90"
-            onLoadingComplete={(img) => {
-              if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                setImgRatio(`${img.naturalWidth} / ${img.naturalHeight}`);
-              }
-              setImgLoading(false);
-            }}
+            loading="eager"
+            decoding="async"
+            className={cn("max-h-64 w-full object-cover", imgLoading && "hidden")}
+            style={isSpoiler ? { filter: "blur(8px)" } : undefined}
+            onLoad={() => setImgLoading(false)}
             onError={() => {
               setImgError(true);
               setImgLoading(false);
             }}
           />
-        </a>
+          {attachment.filename && (
+            <div className={cn("flex items-center gap-1.5 px-2 py-1 text-[11px]", isOwn ? "bg-black/10 text-white/70" : "bg-surface/60 text-ink-500")}>
+              <ImageIcon className="h-3 w-3 shrink-0" />
+              <span className="truncate">{attachment.filename}</span>
+              {attachment.file_size && (
+                <span className="shrink-0 opacity-60">{formatChatFileSize(attachment.file_size)}</span>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+    return (
+      <div className="max-w-[260px] overflow-hidden rounded-xl">
+        <div className="relative w-full">
+          {/* Always render the image container; never hide it. Use loading="eager"
+              to ensure the image starts loading even if initially off-screen. */}
+          <a
+            href={attachment.signedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative block w-full"
+            style={imgRatio ? { aspectRatio: imgRatio, maxHeight: 256 } : undefined}
+          >
+            <Image
+              ref={imgRef as unknown as React.Ref<HTMLImageElement>}
+              src={attachment.signedUrl}
+              alt={attachment.filename ?? "Image"}
+              fill
+              sizes="260px"
+              loading="eager"
+              className={cn("object-cover transition-opacity", imgLoading ? "opacity-0" : "opacity-100 hover:opacity-90")}
+              onLoad={() => {
+                const el = imgRef.current;
+                if (el && el.naturalWidth > 0 && el.naturalHeight > 0) {
+                  setImgRatio(`${el.naturalWidth} / ${el.naturalHeight}`);
+                }
+                setImgLoading(false);
+              }}
+              onError={() => {
+                setImgError(true);
+                setImgLoading(false);
+              }}
+            />
+            {/* Loading spinner as overlay, not by hiding the container */}
+            {imgLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-surface/50">
+                <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
+              </div>
+            )}
+          </a>
+        </div>
         {attachment.filename && (
           <div className={cn("flex items-center gap-1.5 px-2 py-1 text-[11px]", isOwn ? "bg-black/10 text-white/70" : "bg-surface/60 text-ink-500")}>
             <ImageIcon className="h-3 w-3 shrink-0" />
@@ -261,7 +305,6 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
     );
   }
 
-  // File card
   const ext = attachment.filename?.split(".").pop()?.toUpperCase() ?? "FILE";
   return (
     <a
@@ -292,52 +335,69 @@ export function QueuedAttachmentCard({
   previewUrl,
   onRemove,
   status,
+  progress = 0,
   error,
   onRetry,
 }: {
   file: File;
   previewUrl: string | null;
   onRemove: () => void;
-  status: "queued" | "uploading" | "error";
+  status: "queued" | "uploading" | "success" | "error";
+  progress?: number;
   error?: string;
   onRetry?: () => void;
 }) {
   const isImage = file.type.startsWith("image/");
   return (
-    <div className="relative flex w-28 flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
-      <div className="relative h-20 w-full overflow-hidden bg-void-900/30">
+    <div className="relative flex w-36 flex-shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+      <div className="relative h-24 w-full overflow-hidden bg-void-900/30">
         {isImage && previewUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={previewUrl} alt={file.name} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <FileText className="h-6 w-6 text-ink-400" />
+            <FileText className="h-8 w-8 text-ink-400" />
           </div>
         )}
         {status === "uploading" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-void-900/50">
-            <Loader2 className="h-5 w-5 animate-spin text-white" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-void-900/60 p-2 backdrop-blur-[2px]">
+            <Loader2 className="h-5 w-5 animate-spin text-white mb-1.5" />
+            <div className="h-1.5 w-full max-w-[80px] overflow-hidden rounded-full bg-white/20">
+              <div
+                className="h-full bg-accent transition-all duration-150 rounded-full"
+                style={{ width: `${Math.max(5, progress)}%` }}
+              />
+            </div>
+            <span className="mt-1 text-[10px] font-medium text-white tabular-nums">{progress}%</span>
           </div>
         )}
         <button
           type="button"
           onClick={onRemove}
-          className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500"
+          className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500 transition-colors"
           aria-label="Remove attachment"
         >
-          <span aria-hidden className="text-base leading-none">&times;</span>
+          <span aria-hidden className="text-sm leading-none">&times;</span>
         </button>
       </div>
-      <div className="px-2 py-1.5">
-        <p className="truncate text-[11px] font-medium text-ink-50">{file.name}</p>
+      <div className="p-2">
+        <p className="truncate text-[11px] font-medium text-ink-50" title={file.name}>{file.name}</p>
         <p className="text-[10px] text-ink-500">{formatChatFileSize(file.size)}</p>
         {status === "error" && (
-          <div className="mt-1 flex items-center gap-1 text-[10px] text-red-400">
-            <AlertCircle className="h-3 w-3 shrink-0" />
-            <span className="truncate">{error ?? "Upload failed"}</span>
+          <div className="mt-1.5 flex items-center justify-between gap-1 text-[10px] text-red-400">
+            <div className="flex items-center gap-1 min-w-0">
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              <span className="truncate" title={error ?? "Upload failed"}>{error ?? "Failed"}</span>
+            </div>
             {onRetry && (
-              <button type="button" onClick={onRetry} className="ml-auto font-semibold underline">
-                Retry
+              <button
+                type="button"
+                onClick={onRetry}
+                className="flex items-center gap-0.5 shrink-0 font-semibold text-accent hover:underline ml-1"
+                title="Retry upload"
+              >
+                <RefreshCw className="h-2.5 w-2.5" />
+                <span>Retry</span>
               </button>
             )}
           </div>

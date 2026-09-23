@@ -805,6 +805,12 @@ export const en: TranslationResource = {
   "servers.chatEmptySub": "This is the start of the channel. Say hello to everyone.",
   "servers.messageTo": "Message",
   "servers.sendMessage": "Send message",
+  "servers.members": "Members",
+  "servers.roleOwner": "Owner",
+  "servers.roleAdmin": "Admin",
+  "servers.roleMember": "Member",
+  "servers.textChannels": "Text channels",
+  "servers.searchChannels": "Search channels",
 
   "academy.title": "Academy",
   "academy.courses": "Courses",

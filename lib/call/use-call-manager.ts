@@ -68,22 +68,29 @@ function useCallManager() {
 
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const userIdRef = useRef<string | null>(null);
-  userIdRef.current = myUserId;
+  // Latest-call mirror for realtime handlers (ref, not state, so long-lived
+  // subscriptions never read a stale closure). Declared + synced before the
+  // callbacks that consume it.
+  const activeCallRef = useRef<CallSession | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setMyUserId(data.user?.id ?? null);
+      userIdRef.current = data.user?.id ?? null;
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setMyUserId(session?.user?.id ?? null);
+      userIdRef.current = session?.user?.id ?? null;
     });
     return () => {
       subscription.unsubscribe();
     };
   }, []);
 
-
+  useEffect(() => {
+    activeCallRef.current = activeCall;
+  }, [activeCall]);
 
   const clearTimeouts = useCallback(() => {
     [startTimeoutRef, incomingTimeoutRef, connectTimeoutRef].forEach((r) => {
@@ -92,6 +99,11 @@ function useCallManager() {
         r.current = null;
       }
     });
+  }, []);
+
+  const clearIncoming = useCallback(() => {
+    if (incomingTimeoutRef.current) clearTimeout(incomingTimeoutRef.current);
+    setIncomingCall(null);
   }, []);
 
   const setPhase = useCallback((phase: CallPhase) => {
@@ -359,37 +371,168 @@ function useCallManager() {
       .on("broadcast", { event: "call-event" }, (payload) =>
         void handleEventRow(payload.payload as CallEventRow),
       );
-    channel.subscribe();
+    channel.subscribe((status) => {
+      if (typeof console !== "undefined") {
+        console.info("[call] calls-global channel status:", status);
+      }
+    });
     return () => {
       supabase.removeChannel(channel);
     };
   }, [myUserId, handleEventRow]);
 
-  // External request to start a call (fired by the chat page ?call= param).
-  useEffect(() => {
-    function onRequest(e: Event) {
-      const detail = (e as CustomEvent<CallRequestEvent>).detail;
-      if (detail) {
-        autoScreenRef.current = !!detail.autoScreen;
-        void startCall(detail.conversationId, detail.peer, detail.kind);
-      }
-    }
-    function onError(e: Event) {
-      const detail = (e as CustomEvent<string>).detail;
-      if (detail) {
-        window.dispatchEvent(
-          new CustomEvent("azenion:call-error", { detail }),
+  // Per-call signaling listener (decline/cancel/end/busy/screen + SDP/ICE).
+  // Rows are deduped by id because the missed-event replay below can overlap
+  // with live deliveries.
+  const attachCallSignaling = useCallback(
+    async (conversationId: string, callId: string, role: "caller" | "callee") => {
+      const supabase = await createClient();
+      const onCallRow = (row: CallEventRow) => {
+        if (row.id && seenEventIdsRef.current.has(row.id)) return;
+        if (row.id) seenEventIdsRef.current.add(row.id);
+        void handleEventRow(row, callId);
+      };
+      const channel = supabase
+        .channel(`call-${callId}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "call_events" },
+          (payload) => onCallRow(payload.new as CallEventRow),
         );
+      const bChannel = supabase
+        .channel("calls-global-broadcast")
+        .on("broadcast", { event: "call-event" }, (payload) =>
+          onCallRow(payload.payload as CallEventRow),
+        );
+      channel.subscribe((status) => {
+        if (typeof console !== "undefined") {
+          console.info(`[call] per-call channel (${callId}) status:`, status);
+        }
+      });
+      bChannel.subscribe((status) => {
+        if (typeof console !== "undefined") {
+          console.info("[call] calls-global-broadcast channel status:", status);
+        }
+      });
+      signalChannelRef.current = {
+        unsubscribe: () => {
+          void supabase.removeChannel(channel);
+          void supabase.removeChannel(bChannel);
+        },
+      };
+
+      // Pick up signaling rows sent before we subscribed.
+      void replayMissedEvents(callId, role);
+    },
+    [handleEventRow, replayMissedEvents],
+  );
+
+  // Connection timeout safety net (P2P WebRTC only).
+  const armConnectTimeout = useCallback(() => {
+    if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+    connectTimeoutRef.current = setTimeout(() => {
+      setActiveCall((prev) => {
+        if (!prev || prev.phase === "active") return prev;
+        if (pcRef.current?.connectionState === "connected") return prev;
+        if (activeRef.current) finishCall("error", "Could not connect the call.");
+        return prev;
+      });
+    }, CONNECT_TIMEOUT_MS);
+  }, [finishCall]);
+
+  // Creates + wires the peer connection and attaches local tracks. Sets up the
+  // per-call signaling listener that handles the peer's events. The caller
+  // sends the initial offer; after the handshake either side may renegotiate
+  // (e.g. screen share from a voice call). Inbound offers are answered in
+  // handleEventRow. Declared before startCall/acceptCall (which depend on it).
+  const establishPeer = useCallback(
+    async (
+      conversationId: string,
+      callId: string,
+      role: "caller" | "callee",
+    ): Promise<RTCPeerConnection | null> => {
+      // Fresh signaling state for this call.
+      seenEventIdsRef.current.clear();
+      pendingIceRef.current = [];
+      await attachCallSignaling(conversationId, callId, role);
+
+      const pc = createPeerConnection({
+        onIceCandidate: (candidate) => {
+          const payload: IcePayload = { candidate: candidate.toJSON() };
+          void callSignaling.sendIce(conversationId, callId, payload);
+        },
+        onTrack: (stream) => {
+          if (typeof console !== "undefined") {
+            console.info(
+              "[call] ontrack",
+              stream.getTracks().map((t) => `${t.kind}:${t.readyState}:${t.muted}`),
+            );
+          }
+          // Merge inbound tracks into one persistent remote stream. Replacing
+          // the stream object on every ontrack (e.g. when a screen-share track
+          // arrives mid-call) would detach the tracks the element is already
+          // playing — killing voice audio when screen share starts.
+          let remote = remoteStreamRef.current;
+          if (!remote) {
+            remote = new MediaStream();
+            remoteStreamRef.current = remote;
+          }
+          for (const track of stream.getTracks()) {
+            if (!remote.getTrackById(track.id)) {
+              try {
+                remote.addTrack(track);
+              } catch {
+                /* noop */
+              }
+            }
+          }
+          patchActive({ remoteStream: remote });
+        },
+        onConnectionStateChange: (state) => {
+          patchActive({ connectionState: state });
+          if (typeof console !== "undefined") {
+            console.info(
+              "[call] pc state:",
+              state,
+              "receivers:",
+              pc.getReceivers().map((r) => r.track?.kind ?? "none"),
+            );
+          }
+          if (state === "connected") {
+            patchActive({ phase: "active", startedAt: Date.now() });
+            if (connectTimeoutRef.current) {
+              clearTimeout(connectTimeoutRef.current);
+              connectTimeoutRef.current = null;
+            }
+          } else if (state === "failed") {
+            if (activeRef.current) finishCall("error", "The connection was lost.");
+          } else if (state === "disconnected") {
+            // Tolerate transient disconnects; 'failed' is terminal.
+          }
+        },
+      });
+      pcRef.current = pc;
+
+      // Both sides drive negotiation: the initial offer from the caller plus
+      // any later re-offer when either side adds a track (e.g. screen share
+      // started by the callee in a voice call). Inbound offers are answered
+      // in handleEventRow, which rolls back on glare. The callee gets its
+      // handler in acceptCall after answering (see attachNegotiationHandler).
+      if (role === "caller") attachNegotiationHandler(pc, conversationId, callId);
+
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => {
+          pc.addTrack(track, localStreamRef.current!);
+        });
       }
-    }
-    window.addEventListener("azenion:call-request", onRequest as EventListener);
-    window.addEventListener("azenion:call-signal-error", onError as EventListener);
-    return () => {
-      window.removeEventListener("azenion:call-request", onRequest as EventListener);
-      window.removeEventListener("azenion:call-signal-error", onError as EventListener);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+      // Connection timeout safety net.
+      armConnectTimeout();
+
+      return pc;
+    },
+    [finishCall, patchActive, attachNegotiationHandler, attachCallSignaling, armConnectTimeout],
+  );
 
   // ── Outgoing call (caller) ────────────────────────────────────────────────
   const startCall = useCallback(
@@ -437,13 +580,15 @@ function useCallManager() {
         endedAt: null,
       });
 
-      // 2. Build the peer connection + add local tracks. The caller's
-      //    onnegotiationneeded handler creates and sends the offer (also used
-      //    for later renegotiation, e.g. when adding a screen-share track).
-      const pc = await establishPeer(conversationId, callId, "caller");
-      if (!pc) {
-        finishCall("error", "Could not initialize the call.");
-        return { error: "Could not initialize the call." };
+      // 2. Media transport: raw P2P WebRTC. The caller's onnegotiationneeded
+      // handler creates and sends the offer (also used for later
+      // renegotiation, e.g. screen share).
+      {
+        const pc = await establishPeer(conversationId, callId, "caller");
+        if (!pc) {
+          finishCall("error", "Could not initialize the call.");
+          return { error: "Could not initialize the call." };
+        }
       }
 
       // 3. Ring-timeout safety net.
@@ -560,138 +705,6 @@ function useCallManager() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [incomingCall, finishCall, attachNegotiationHandler]);
 
-  // Creates + wires the peer connection and attaches local tracks. Sets up the
-  // per-call signaling listener that handles the peer's events. The caller
-  // sends the initial offer; after the handshake either side may renegotiate
-  // (e.g. screen share from a voice call). Inbound offers are answered in
-  // handleEventRow.
-  const establishPeer = useCallback(
-    async (
-      conversationId: string,
-      callId: string,
-      role: "caller" | "callee",
-    ): Promise<RTCPeerConnection | null> => {
-      const supabase = await createClient();
-
-      // Fresh signaling state for this call.
-      seenEventIdsRef.current.clear();
-      pendingIceRef.current = [];
-
-      const pc = createPeerConnection({
-        onIceCandidate: (candidate) => {
-          const payload: IcePayload = { candidate: candidate.toJSON() };
-          void callSignaling.sendIce(conversationId, callId, payload);
-        },
-        onTrack: (stream) => {
-          // Merge inbound tracks into one persistent remote stream. Replacing
-          // the stream object on every ontrack (e.g. when a screen-share track
-          // arrives mid-call) would detach the tracks the element is already
-          // playing — killing voice audio when screen share starts.
-          let remote = remoteStreamRef.current;
-          if (!remote) {
-            remote = new MediaStream();
-            remoteStreamRef.current = remote;
-          }
-          for (const track of stream.getTracks()) {
-            if (!remote.getTrackById(track.id)) {
-              try {
-                remote.addTrack(track);
-              } catch {
-                /* noop */
-              }
-            }
-          }
-          patchActive({ remoteStream: remote });
-        },
-        onConnectionStateChange: (state) => {
-          patchActive({ connectionState: state });
-          if (state === "connected") {
-            patchActive({ phase: "active", startedAt: Date.now() });
-            if (connectTimeoutRef.current) {
-              clearTimeout(connectTimeoutRef.current);
-              connectTimeoutRef.current = null;
-            }
-          } else if (state === "failed") {
-            if (activeRef.current) finishCall("error", "The connection was lost.");
-          } else if (state === "disconnected") {
-            // Tolerate transient disconnects; 'failed' is terminal.
-          }
-        },
-      });
-      pcRef.current = pc;
-
-      // Both sides drive negotiation: the initial offer from the caller plus
-      // any later re-offer when either side adds a track (e.g. screen share
-      // started by the callee in a voice call). Inbound offers are answered
-      // in handleEventRow, which rolls back on glare. The callee gets its
-      // handler in acceptCall after answering (see attachNegotiationHandler).
-      if (role === "caller") attachNegotiationHandler(pc, conversationId, callId);
-
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => {
-          pc.addTrack(track, localStreamRef.current!);
-        });
-      }
-
-      // Per-call signaling listener. Rows are deduped by id because the
-      // missed-event replay below can overlap with live deliveries.
-      const onCallRow = (row: CallEventRow) => {
-        if (row.id && seenEventIdsRef.current.has(row.id)) return;
-        if (row.id) seenEventIdsRef.current.add(row.id);
-        void handleEventRow(row, callId);
-      };
-      const channel = supabase
-        .channel(`call-${callId}`)
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "call_events" },
-          (payload) => onCallRow(payload.new as CallEventRow),
-        );
-      const bChannel = supabase
-        .channel("calls-global-broadcast")
-        .on("broadcast", { event: "call-event" }, (payload) =>
-          onCallRow(payload.payload as CallEventRow),
-        );
-      channel.subscribe();
-      bChannel.subscribe();
-      signalChannelRef.current = {
-        unsubscribe: () => {
-          void supabase.removeChannel(channel);
-          void supabase.removeChannel(bChannel);
-        },
-      };
-
-      // Pick up signaling rows sent before we subscribed (the callee joins
-      // seconds after the caller started trickling ICE candidates).
-      void replayMissedEvents(callId, role);
-
-      // Connection timeout safety net.
-      if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
-      connectTimeoutRef.current = setTimeout(() => {
-        setActiveCall((prev) => {
-          if (!prev || prev.phase === "active") return prev;
-          if (pcRef.current?.connectionState === "connected") return prev;
-          if (activeRef.current) finishCall("error", "Could not connect the call.");
-          return prev;
-        });
-      }, CONNECT_TIMEOUT_MS);
-
-      return pc;
-    },
-    [finishCall, patchActive, setPhase, replayMissedEvents, attachNegotiationHandler],
-  );
-
-  // Keep a ref mirror of activeCall for use inside the signaling channel handler.
-  const activeCallRef = useRef<CallSession | null>(null);
-  useEffect(() => {
-    activeCallRef.current = activeCall;
-  }, [activeCall]);
-
-  const clearIncoming = useCallback(() => {
-    if (incomingTimeoutRef.current) clearTimeout(incomingTimeoutRef.current);
-    setIncomingCall(null);
-  }, []);
-
   const declineCall = useCallback(() => {
     const info = incomingCall;
     if (info) {
@@ -729,6 +742,16 @@ function useCallManager() {
       prev.localStream.getVideoTracks().forEach((t) => (t.enabled = !nextOff));
       return { ...prev, cameraOff: nextOff };
     });
+  }, []);
+
+  // Restore the camera track after screen sharing ends (if a camera call).
+  // Declared before toggleScreenShare (which depends on it).
+  const restoreCameraTrack = useCallback(() => {
+    if (!onCameraVideoRef.current || !pcRef.current) return;
+    const camTrack = localStreamRef.current?.getVideoTracks().find((t) => t.readyState === "live");
+    if (!camTrack) return;
+    const sender = pcRef.current.getSenders().find((s) => s.track?.kind === "video");
+    if (sender) void sender.replaceTrack(camTrack);
   }, []);
 
   const toggleScreenShare = useCallback(async (): Promise<{ error?: string }> => {
@@ -794,54 +817,56 @@ function useCallManager() {
     patchActive({ screenActive: true, screenStream: stream });
     void callSignaling.sendScreen(call.conversationId, call.callId, { start: true });
 
-    const pc = pcRef.current;
-    let sender: RTCRtpSender | undefined;
-    const camSender = pc?.getSenders().find((s) => s.track?.kind === "video");
-    if (camSender) {
-      // Video call: swap the camera sender's track with the screen track.
-      try {
-        await camSender.replaceTrack(screenTrack);
-      } catch {
+    {
+      const pc = pcRef.current;
+      let sender: RTCRtpSender | undefined;
+      const camSender = pc?.getSenders().find((s) => s.track?.kind === "video");
+      if (camSender) {
+        // Video call: swap the camera sender's track with the screen track.
+        try {
+          await camSender.replaceTrack(screenTrack);
+        } catch {
+          stopTracks(stream);
+          screenStreamRef.current = null;
+          patchActive({ screenActive: false, screenStream: undefined });
+          void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
+          return { error: "Could not start screen sharing. Please try again." };
+        }
+        sender = camSender;
+        screenReplacedTrackRef.current = true;
+      } else if (pc) {
+        // Voice call: add a fresh video sender for the screen.
+        try {
+          sender = pc.addTrack(screenTrack, stream);
+        } catch {
+          sender = undefined;
+        }
+        screenReplacedTrackRef.current = false;
+      }
+      if (!sender) {
         stopTracks(stream);
         screenStreamRef.current = null;
         patchActive({ screenActive: false, screenStream: undefined });
         void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
         return { error: "Could not start screen sharing. Please try again." };
       }
-      sender = camSender;
-      screenReplacedTrackRef.current = true;
-    } else if (pc) {
-      // Voice call: add a fresh video sender for the screen.
+      // Hint the encoder toward smooth, readable screen content: detail
+      // preserves text sharpness, maintain-framerate avoids choppy motion when
+      // the network/CPU is under pressure.
       try {
-        sender = pc.addTrack(screenTrack, stream);
+        screenTrack.contentHint = "detail";
       } catch {
-        sender = undefined;
+        /* noop */
       }
-      screenReplacedTrackRef.current = false;
+      try {
+        const params = sender.getParameters();
+        params.degradationPreference = "maintain-framerate";
+        await sender.setParameters(params);
+      } catch {
+        /* noop */
+      }
+      screenSenderRef.current = sender ?? null;
     }
-    if (!sender) {
-      stopTracks(stream);
-      screenStreamRef.current = null;
-      patchActive({ screenActive: false, screenStream: undefined });
-      void callSignaling.sendScreen(call.conversationId, call.callId, { start: false });
-      return { error: "Could not start screen sharing. Please try again." };
-    }
-    // Hint the encoder toward smooth, readable screen content: detail
-    // preserves text sharpness, maintain-framerate avoids choppy motion when
-    // the network/CPU is under pressure.
-    try {
-      screenTrack.contentHint = "detail";
-    } catch {
-      /* noop */
-    }
-    try {
-      const params = sender.getParameters();
-      params.degradationPreference = "maintain-framerate";
-      await sender.setParameters(params);
-    } catch {
-      /* noop */
-    }
-    screenSenderRef.current = sender ?? null;
 
     // When the browser reports the user stopped sharing, clean up.
     const onScreenEnded = () => {
@@ -850,9 +875,9 @@ function useCallManager() {
       screenStreamRef.current = null;
       if (screenReplacedTrackRef.current) {
         restoreCameraTrack();
-      } else if (sender && pcRef.current) {
+      } else if (screenSenderRef.current && pcRef.current) {
         try {
-          pcRef.current.removeTrack(sender);
+          pcRef.current.removeTrack(screenSenderRef.current);
         } catch {
           /* noop */
         }
@@ -868,14 +893,37 @@ function useCallManager() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCall, patchActive]);
 
-  // Restore the camera track after screen sharing ends (if a camera call).
-  const restoreCameraTrack = useCallback(() => {
-    if (!onCameraVideoRef.current || !pcRef.current) return;
-    const camTrack = localStreamRef.current?.getVideoTracks().find((t) => t.readyState === "live");
-    if (!camTrack) return;
-    const sender = pcRef.current.getSenders().find((s) => s.track?.kind === "video");
-    if (sender) void sender.replaceTrack(camTrack);
-  }, []);
+  // External request to start a call (fired by the chat page ?call= param).
+  // Declared after startCall (which it dispatches to).
+  useEffect(() => {
+    function onRequest(e: Event) {
+      const detail = (e as CustomEvent<CallRequestEvent>).detail;
+      if (detail) {
+        autoScreenRef.current = !!detail.autoScreen;
+        void startCall(detail.conversationId, detail.peer, detail.kind).then((res) => {
+          if (res?.error) {
+            window.dispatchEvent(
+              new CustomEvent("azenion:call-error", { detail: res.error }),
+            );
+          }
+        });
+      }
+    }
+    function onError(e: Event) {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail) {
+        window.dispatchEvent(
+          new CustomEvent("azenion:call-error", { detail }),
+        );
+      }
+    }
+    window.addEventListener("azenion:call-request", onRequest as EventListener);
+    window.addEventListener("azenion:call-signal-error", onError as EventListener);
+    return () => {
+      window.removeEventListener("azenion:call-request", onRequest as EventListener);
+      window.removeEventListener("azenion:call-signal-error", onError as EventListener);
+    };
+  }, [startCall]);
 
   // Clear the ended-call UI after a short delay.
   useEffect(() => {

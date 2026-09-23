@@ -7,10 +7,10 @@ import { useDialogFocus } from "@/lib/use-dialog-focus";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { getPublicProfile } from "@/actions/social.actions";
 import { cardBase, sectionCardClass } from "@/components/sections/profile/card-classes";
-import { PublicProfileHeader } from "@/app/u/[username]/components/public-profile-header";
-import { RelationshipActions } from "@/app/u/[username]/components/relationship-actions";
-import { PublicProfileTimeline } from "@/app/u/[username]/components/public-profile-timeline";
-import { PublicProfilePosts } from "@/app/u/[username]/components/public-profile-posts";
+import { PublicProfileHeader } from "@/app/(app)/u/[username]/components/public-profile-header";
+import { RelationshipActions } from "@/app/(app)/u/[username]/components/relationship-actions";
+import { PublicProfileTimeline } from "@/app/(app)/u/[username]/components/public-profile-timeline";
+import { PublicProfilePosts } from "@/app/(app)/u/[username]/components/public-profile-posts";
 
 interface ProfilePreviewDialogProps {
   open: boolean;

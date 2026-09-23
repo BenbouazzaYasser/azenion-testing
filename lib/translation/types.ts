@@ -736,6 +736,12 @@ export const dictKeys = [
   "servers.chatEmptySub",
   "servers.messageTo",
   "servers.sendMessage",
+  "servers.members",
+  "servers.roleOwner",
+  "servers.roleAdmin",
+  "servers.roleMember",
+  "servers.textChannels",
+  "servers.searchChannels",
 
   // Academy
   "academy.title",
