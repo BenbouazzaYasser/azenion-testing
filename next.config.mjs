@@ -53,7 +53,7 @@ const nextConfig = {
           {
             key: "Content-Security-Policy-Report-Only",
             value:
-              "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+              "default-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' blob: https://*.supabase.co https://lh3.googleusercontent.com https://media.giphy.com https://media.tenor.com; media-src 'self' https://*.supabase.co https://media.giphy.com https://media.tenor.com; script-src 'self' 'unsafe-eval'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
           },
         ],
       },

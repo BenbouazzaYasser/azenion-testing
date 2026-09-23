@@ -45,6 +45,8 @@ function isEmojiOnly(text: string): boolean {
   return emojiOnlyRegex.test(trimmed);
 }
 
+// Haven-style flat message row: avatar on the first message of a run,
+// name + time header on the first of a group, plain text body — no bubbles.
 export function MessageBubble({
   id,
   content,
@@ -67,7 +69,6 @@ export function MessageBubble({
 }: MessageBubbleProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(content);
-  const [showMenu, setShowMenu] = useState(false);
 
   const handleEdit = async () => {
     if (!editText.trim() || editText === content) {
@@ -84,35 +85,64 @@ export function MessageBubble({
 
   const handleDelete = async () => {
     const result = await deleteMessage(id);
-    setShowMenu(false);
     if (result.error) {
       toast.error(result.error);
     }
   };
 
   return (
-    <div className={cn("group flex items-start gap-3", isOwn ? "flex-row-reverse" : "flex-row")}>
-      {showAvatar ? (
-        sender_avatar ? (
-          <Image
-            src={sender_avatar}
-            alt=""
-            width={32}
-            height={32}
-            className="mt-2.5 h-8 w-8 shrink-0 rounded-full object-cover"
-          />
-        ) : (
-          <span className="mt-2.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-[11px] font-semibold text-white">
-            {sender_name?.[0]?.toUpperCase() ?? "U"}
-          </span>
-        )
-      ) : (
-        <span aria-hidden className="w-8 shrink-0" />
+    <div
+      tabIndex={0}
+      role="group"
+      aria-label={`Message from ${sender_name ?? "unknown sender"}`}
+      onClick={() => onSelect?.(id)}
+      onFocus={() => onSelect?.(id)}
+      onDoubleClick={() => onToggleActions?.(id)}
+      className={cn(
+        "group relative flex items-start gap-3 rounded-lg px-3 py-0.5 transition-colors duration-150",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/40",
+        "hover:bg-surface/40",
+        active && "bg-surface/40",
       )}
+    >
+      <div className="w-10 shrink-0 pt-1.5">
+        {showAvatar ? (
+          sender_avatar ? (
+            <Image
+              src={sender_avatar}
+              alt=""
+              width={40}
+              height={40}
+              className="h-10 w-10 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+              {sender_name?.[0]?.toUpperCase() ?? "U"}
+            </span>
+          )
+        ) : null}
+      </div>
 
-      <div className={cn("relative max-w-[75%]", isOwn ? "items-end" : "items-start")}>
+      <div className="min-w-0 flex-1 pb-0.5">
+        {!isGrouped && (
+          <div className="flex items-baseline gap-2 pt-1">
+            <span
+              className={cn(
+                "truncate text-sm font-semibold leading-tight",
+                isOwn ? "text-accent-300" : "text-ink-100",
+              )}
+            >
+              {sender_name ?? "Unknown"}
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-medium leading-tight text-ink-600">
+              {created_at ? formatTime(created_at) : null}
+              {edited_at ? <span className="italic">(edited)</span> : null}
+            </span>
+          </div>
+        )}
+
         {isEditing ? (
-          <div className="flex flex-col gap-2">
+          <div className="mt-1 flex flex-col gap-2 py-1">
             <input
               type="text"
               value={editText}
@@ -121,7 +151,7 @@ export function MessageBubble({
                 if (e.key === "Enter") handleEdit();
                 if (e.key === "Escape") setIsEditing(false);
               }}
-              className="w-full rounded-xl border border-accent-400/50 bg-surface px-3 py-2.5 text-sm text-ink-50 outline-none ring-1 ring-accent-400/30 focus:ring-2"
+              className="w-full rounded-lg border border-accent-400/50 bg-surface px-3 py-2 text-sm text-ink-50 outline-none ring-1 ring-accent-400/30 focus:ring-2"
               autoFocus
             />
             <div className="flex gap-2">
@@ -150,22 +180,7 @@ export function MessageBubble({
             const graphemeCount = emojiOnly ? Array.from(content.trim().replace(/\s/g, "")).length : 0;
             const emojiSize = graphemeCount <= 3 ? "text-4xl" : graphemeCount <= 6 ? "text-3xl" : "text-2xl";
             return (
-              <div
-                tabIndex={0}
-                role="group"
-                aria-label={`Message from ${sender_name ?? "unknown sender"}`}
-                onClick={() => onSelect?.(id)}
-                onFocus={() => onSelect?.(id)}
-                onDoubleClick={() => onToggleActions?.(id)}
-                className={cn(
-                  "cursor-pointer rounded-2xl px-3.5 py-2 text-sm leading-relaxed backdrop-blur-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2",
-                  emojiOnly
-                    ? "bg-transparent border-0 shadow-none px-1 py-1"
-                    : isOwn
-                      ? "rounded-br-none border border-accent-300/25 bg-gradient-to-br from-accent to-accent-glow text-white shadow-[0_10px_28px_-12px_rgba(40,40,255,0.55)] focus-visible:ring-accent-300/40"
-                      : "rounded-bl-none bg-surface/80 text-ink-50 shadow-[0_8px_20px_-14px_rgba(0,0,0,0.7)] focus-visible:ring-accent-400/40",
-                )}
-              >
+              <div className="mt-0.5 min-w-0">
                 {attachments.length > 0 && (
                   <div className="mb-1 flex flex-col gap-2">
                     {attachments.map((att) => (
@@ -174,83 +189,73 @@ export function MessageBubble({
                   </div>
                 )}
                 {content.trim().length > 0 && (
-                  <p className={cn("whitespace-pre-wrap break-words", emojiOnly && `${emojiSize} leading-none`)}>{content}</p>
+                  <p
+                    className={cn(
+                      "whitespace-pre-wrap break-words text-sm leading-relaxed",
+                      emojiOnly
+                        ? `${emojiSize} leading-none`
+                        : isOwn
+                          ? "text-ink-100"
+                          : "text-ink-200",
+                    )}
+                  >
+                    {content}
+                    {isGrouped && created_at ? (
+                      <span className="ml-2 inline-block align-baseline text-[10px] font-medium text-ink-600 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                        {formatTime(created_at)}
+                      </span>
+                    ) : null}
+                  </p>
                 )}
-            <div
-              aria-hidden={!active}
-              className="grid transition-[grid-template-rows] duration-200 ease-premium"
-              style={{ gridTemplateRows: active ? "1fr" : "0fr" }}
-            >
-              <div className="min-h-0 overflow-hidden">
-                <div
-                  className={cn(
-                    "flex justify-end pt-1.5 transition-opacity duration-200",
-                    active ? "opacity-100" : "opacity-0",
-                  )}
-                >
-                  {created_at && (
-                    <span
-                      className={cn(
-                        "flex items-center gap-1 text-[10px] font-medium leading-none tracking-wide",
-                        isOwn ? (emojiOnly ? "text-ink-500" : "text-white/70") : "text-ink-500",
-                      )}
-                    >
-                      {edited_at && <span className="opacity-80">edited&nbsp;&bull;&nbsp;</span>}
-                      {formatTime(created_at)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+                {isOwn && status ? (
+                  <span className="mt-[3px] flex items-center text-ink-500">
+                    <MessageStatus
+                      status={status}
+                      avatarUrl={statusAvatarUrl}
+                      avatarName={statusAvatarName}
+                      className={cn(status === "seen" ? "" : "h-3.5 w-3.5 text-ink-500")}
+                    />
+                  </span>
+                ) : null}
               </div>
             );
           })()
         )}
-
-        {isOwn && status && !isEditing && (
-          <div className="mt-[5px] flex justify-end pr-1">
-            <MessageStatus
-              status={status}
-              avatarUrl={statusAvatarUrl}
-              avatarName={statusAvatarName}
-              className={cn(status === "seen" ? "" : "text-ink-400")}
-            />
-          </div>
-        )}
-
-        {isOwn && !isEditing && (
-          <div
-            className={cn(
-              "absolute right-0 -top-[52px] z-20 flex items-center gap-2 rounded-full bg-void-900/95 p-1.5 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.8)] backdrop-blur transition-all duration-200 ease-premium",
-              showActions
-                ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
-                : "pointer-events-none -translate-y-1 scale-95 opacity-0",
-            )}
-          >
-            <button
-              type="button"
-              aria-label="Edit message"
-              title="Edit"
-              onClick={() => {
-                setEditText(content);
-                setIsEditing(true);
-              }}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              aria-label="Delete message"
-              title="Delete"
-              onClick={handleDelete}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
       </div>
+
+      {isOwn && !isEditing && (
+        <div
+          className={cn(
+            "absolute right-2 top-1/2 z-20 flex -translate-y-1/2 items-center gap-0.5 rounded-full bg-void-900/95 p-1 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.8)] backdrop-blur transition-all duration-200 ease-premium",
+            "group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100",
+            showActions
+              ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+              : "pointer-events-none -translate-y-1 scale-95 opacity-0",
+          )}
+        >
+          <button
+            type="button"
+            aria-label="Edit message"
+            title="Edit"
+            onClick={() => {
+              setEditText(content);
+              setIsEditing(true);
+            }}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Delete message"
+            title="Delete"
+            onClick={handleDelete}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-red-400/10 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

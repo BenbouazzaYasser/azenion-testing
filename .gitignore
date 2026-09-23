@@ -31,3 +31,6 @@ env.local
 # Supabase CLI cache (contains production metadata)
 supabase/.temp/
 .vercel
+
+# runtime logs
+dev.log

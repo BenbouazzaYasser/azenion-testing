@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Hash, Loader2, Plus, Users, X } from "lucide-react";
+import { Hash, Loader2, Plus, Search, Users, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,16 @@ export function ChannelSidebar({
   const activeChannelSlug = pathname.split("/")[3];
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
+  const [query, setQuery] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  const visibleChannels = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return channels;
+    return channels.filter(
+      (ch) => ch.name.toLowerCase().includes(q) || (ch.topic ?? "").toLowerCase().includes(q),
+    );
+  }, [channels, query]);
 
   const isAdmin = myRole === "owner" || myRole === "admin";
 
@@ -113,11 +122,28 @@ export function ChannelSidebar({
       ) : null}
 
       <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
-        <p className="px-3 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
-          {t("servers.channels")}
+        <div className="px-1 pb-2 pt-2.5">
+          <div className="relative">
+            <Search size={13} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-600" />
+            <input
+              type="search"
+              aria-label={t("servers.searchChannels")}
+              placeholder={t("servers.searchChannels")}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              className="w-full rounded-lg bg-surface/70 py-2 pl-8 pr-3 text-sm text-ink-50 placeholder:text-ink-600 border-0 outline-none transition-[box-shadow] duration-200 focus:ring-2 focus:ring-accent-400/40"
+            />
+          </div>
+        </div>
+
+        <p className="px-3 pb-1.5 pt-1 text-[10px] font-semibold uppercase tracking-normal text-ink-600">
+          {t("servers.textChannels")}
         </p>
         <ul className="flex flex-col gap-0.5">
-          {channels.map((ch) => {
+          {visibleChannels.map((ch) => {
             const active = ch.slug === activeChannelSlug;
             return (
               <li key={ch.id}>
@@ -145,7 +171,7 @@ export function ChannelSidebar({
               </li>
             );
           })}
-          {channels.length === 0 ? (
+          {visibleChannels.length === 0 ? (
             <li className="px-3 py-4 text-xs leading-relaxed text-ink-500">
               {t("servers.noChannelsVisible")}
             </li>

@@ -49,6 +49,7 @@ export function IncomingCallOverlay({ info, onAccept, onDecline }: IncomingCallO
     let cancelled = false;
     let ctx: AudioContext | null = null;
     let interval: ReturnType<typeof setInterval> | null = null;
+    let resumeDone: Promise<void> | null = null;
     try {
       if (typeof window === "undefined") return;
       const AC = window.AudioContext ?? (
@@ -58,7 +59,7 @@ export function IncomingCallOverlay({ info, onAccept, onDecline }: IncomingCallO
       ctx = new AC();
       const playTone = () => {
         if (!ctx || ctx.state === "closed") return;
-        if (ctx.state === "suspended") void ctx.resume();
+        if (ctx.state === "suspended") resumeDone = ctx.resume().catch(() => {});
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "sine";
@@ -78,7 +79,17 @@ export function IncomingCallOverlay({ info, onAccept, onDecline }: IncomingCallO
     return () => {
       cancelled = true;
       if (interval) clearInterval(interval);
-      if (ctx && ctx.state !== "closed") void ctx.close();
+      // close() throws InvalidStateError ("Closed before resume completed")
+      // when a resume() is still in flight — wait for it to settle first,
+      // re-check state, and swallow teardown errors (ringtone is best-effort).
+      if (ctx && ctx.state !== "closed") {
+        const c: AudioContext = ctx;
+        void Promise.resolve(resumeDone)
+          .then(() => {
+            if (c.state !== "closed") return c.close();
+          })
+          .catch(() => {});
+      }
     };
   }, []);
 

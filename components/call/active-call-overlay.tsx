@@ -52,6 +52,106 @@ function useNow(active: boolean) {
   return now;
 }
 
+// Resume audio playback on the first user interaction after a call
+// activates (browser autoplay policy blocks <audio> play() without a
+// gesture). One-time listener — cleans itself up after the first tap.
+function useAudioResume(active: boolean) {
+  useEffect(() => {
+    if (!active) return;
+    const handler = () => {
+      document
+        .querySelectorAll<HTMLAudioElement>("audio")
+        .forEach((el) => {
+          const s = el.srcObject as MediaStream | null;
+          if (s && s.getAudioTracks().length && el.paused) {
+            void el.play().catch(() => {});
+          }
+        });
+    };
+    window.addEventListener("pointerdown", handler, { once: true });
+    window.addEventListener("touchend", handler, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", handler);
+      window.removeEventListener("touchend", handler);
+    };
+  }, [active]);
+}
+
+/**
+ * Plays the remote audio through the Web Audio API instead of relying on
+ * element autoplay, which browsers (Firefox especially) block without a
+ * fresh user gesture. The context is resumed from any pointer gesture and
+ * retried on a 2s safety net. Returns true once the graph is running —
+ * callers then mute their <audio>/<video> fallback element so the stream is
+ * heard exactly once.
+ */
+function useWebAudioRemote(stream: MediaStream | null): boolean {
+  const [running, setRunning] = useState(false);
+
+  useEffect(() => {
+    if (!stream) return;
+    let ctx: AudioContext;
+    try {
+      ctx = new AudioContext();
+    } catch {
+      return; // Web Audio unavailable — element fallback stays active.
+    }
+    let source: MediaStreamAudioSourceNode;
+    try {
+      source = ctx.createMediaStreamSource(stream);
+      source.connect(ctx.destination);
+    } catch {
+      void ctx.close().catch(() => {});
+      return;
+    }
+
+    let cancelled = false;
+    const tryResume = () => {
+      if (cancelled) return;
+      if (ctx.state === "running") {
+        setRunning(true);
+        return;
+      }
+      if (ctx.state === "suspended") {
+        void ctx
+          .resume()
+          .then(() => {
+            if (!cancelled) setRunning(true);
+          })
+          .catch(() => {
+            /* no user gesture yet — retried by interval/gesture listeners */
+          });
+      }
+    };
+    tryResume();
+    const iv = window.setInterval(tryResume, 2000);
+    window.addEventListener("pointerdown", tryResume);
+    window.addEventListener("touchend", tryResume);
+    if (typeof console !== "undefined") {
+      console.info("[call] remote audio graph created", {
+        ctx: ctx.state,
+        tracks: stream.getAudioTracks().map((t) => `${t.kind}:${t.readyState}:${t.muted}`),
+      });
+    }
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(iv);
+      window.removeEventListener("pointerdown", tryResume);
+      window.removeEventListener("touchend", tryResume);
+      try {
+        source.disconnect();
+      } catch {
+        /* noop */
+      }
+      void ctx.close().catch(() => {});
+      setRunning(false);
+    };
+  }, [stream]);
+
+  return running;
+}
+
 function CallButton({
   label,
   active,
@@ -94,6 +194,15 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
   // picker is open). Proves the tap registered and something is happening.
   const [sharingBusy, setSharingBusy] = useState(false);
   const now = useNow(call.phase === "active" && !!call.startedAt);
+  useAudioResume(call.phase === "active");
+  // Web Audio playback of the remote stream (mute-once rule: when this is
+  // running, every fallback element renders muted so audio plays exactly once).
+  const webAudioOk = useWebAudioRemote(call.remoteStream ?? null);
+  // Hidden fallback <audio> for element-based playback (used while the Web
+  // Audio graph is not running yet — e.g. before the first user gesture).
+  const fallbackAudio = call.remoteStream ? (
+    <VideoStream stream={call.remoteStream} muted={!webAudioOk} audioOnly className="sr-only" />
+  ) : null;
   const durationSec =
     call.startedAt && call.phase === "active" ? Math.max(0, Math.floor((now - call.startedAt) / 1000)) : 0;
   const callConnected =
@@ -123,13 +232,14 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
       >
         <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-void-900">
           {isVideo && call.remoteStream ? (
-            <VideoStream stream={call.remoteStream} muted={false} className="h-full w-full object-cover" />
+            <VideoStream stream={call.remoteStream} muted className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-accent/20 text-accent-300">
               {isVideo ? <Video className="h-5 w-5" /> : <PhoneCall className="h-5 w-5" />}
             </div>
           )}
         </div>
+        {fallbackAudio}
         <div className="min-w-0 max-w-[140px]">
           <div className="truncate text-xs font-semibold text-ink-50">
             {call.peer.full_name ?? `@${call.peer.username}`}
@@ -169,6 +279,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
       aria-label="Active call"
       className="fixed inset-0 z-[120] flex flex-col bg-void-950/95 backdrop-blur-xl pt-[env(safe-area-inset-top)]"
     >
+      {fallbackAudio}
       {/* ── Status bar ── */}
       <div className="flex items-center justify-between px-5 py-4 sm:px-8">
         <div className="min-w-0">
@@ -213,13 +324,13 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
             {screenTrackLive && screenDisplayStream ? (
               <VideoStream
                 stream={screenDisplayStream}
-                muted={false}
+                muted
                 className="absolute inset-0 h-full w-full object-contain bg-void-950"
               />
             ) : showRemote ? (
               <VideoStream
                 stream={call.remoteStream}
-                muted={false}
+                muted
                 className="absolute inset-0 h-full w-full object-cover"
               />
             ) : (
@@ -269,14 +380,11 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
         ) : (
           /* Voice call layout */
           <>
-            {call.remoteStream && (
-              <VideoStream stream={call.remoteStream} muted={false} className="hidden" />
-            )}
             {screenTrackLive && screenDisplayStream ? (
               <div className="relative h-full w-full overflow-hidden rounded-3xl border border-border-strong bg-void-900/60">
                 <VideoStream
                   stream={screenDisplayStream}
-                  muted={false}
+                  muted
                   className="absolute inset-0 h-full w-full object-contain bg-void-950"
                 />
                 <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-accent-400/30 bg-void-950/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-normal text-accent-300 backdrop-blur">

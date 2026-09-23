@@ -140,6 +140,8 @@ create trigger cleanup_stale_call_events
 alter table public.call_events replica identity full;
 
 do $$
+declare
+  v_err text;
 begin
   if not exists (
     select 1 from pg_publication_tables
@@ -150,6 +152,8 @@ begin
     alter publication supabase_realtime add table public.call_events;
   end if;
 exception when others then
-  -- publication may not exist in local test env — do not fail migration
-  null;
+  -- Do NOT swallow: surface the failure in the migration log so a missing
+  -- publication entry can never again silently kill incoming-call signaling.
+  v_err := sqlerrm;
+  raise notice 'call_events not added to supabase_realtime: %', v_err;
 end $$;

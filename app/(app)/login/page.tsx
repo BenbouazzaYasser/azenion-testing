@@ -1,0 +1,35 @@
+import type { Metadata } from "next";
+
+import { Footer } from "@/components/layout/footer";
+import { LoginCard } from "@/components/sections/login/login-card";
+import { SecurityNote } from "@/components/sections/login/security-note";
+import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
+
+export const metadata: Metadata = {
+  title: "Sign In | Azenion — The Limitless Network",
+  description:
+    "Sign in to Azenion and continue building, collaborating, and shaping the future with the Limitless Network.",
+};
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ next?: string; error?: string }>;
+}) {
+  const params = await searchParams;
+  const next =
+    typeof params?.next === "string" ? params.next : undefined;
+  const error =
+    typeof params?.error === "string" ? params.error : undefined;
+
+  return (
+    <>
+      <main id="main" className="relative overflow-hidden">
+        <PageAtmosphere />
+        <LoginCard next={next} error={error} />
+        <SecurityNote />
+      </main>
+      <Footer />
+    </>
+  );
+}

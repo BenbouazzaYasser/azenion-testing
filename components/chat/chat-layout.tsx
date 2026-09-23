@@ -45,12 +45,12 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
 
   return (
     <MobileConversationsContext.Provider value={{ open: () => setOpen(true) }}>
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-[1280px] gap-3 p-2 sm:gap-4 sm:p-4">
-        <aside className="hidden w-[360px] shrink-0 overflow-hidden rounded-2xl border-0 shadow-card md:block">
+      <div className="flex h-full min-h-0 w-full">
+        <aside className="hidden w-[360px] shrink-0 overflow-hidden border-r border-border bg-void-950/60 md:block">
           <ChatSidebar conversations={conversations} currentUserId={currentUserId} />
         </aside>
 
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border-0 bg-surface/30 backdrop-blur-xl shadow-card">
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           {children}
         </div>
       </div>

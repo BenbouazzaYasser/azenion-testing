@@ -4,7 +4,11 @@ import { cookies } from "next/headers";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
-const AUTH_TOKEN_RE = /^sb-.+-auth-token$/;
+// Matches the session cookie and its chunked continuations
+// (`sb-<ref>-auth-token.0`, `.1`, …) written by @supabase/ssr for large
+// sessions. Missing the chunks means treating a logged-in user as logged
+// out (page redirects to /login while the client session looks valid).
+const AUTH_TOKEN_RE = /^sb-.+-auth-token(\.\d+)?$/;
 
 /**
  * The authenticated user for the current request, memoized with React.cache()

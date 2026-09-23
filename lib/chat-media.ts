@@ -6,8 +6,9 @@ import type { Database } from "@/types/database.types";
 
 export const CHAT_MEDIA_BUCKET = "chat-media";
 export const CHAT_MEDIA_PREFIX = "chat-media/";
-/** Signed URL TTL for private chat media (seconds). Keep short; never persist URL. */
-export const CHAT_MEDIA_SIGNED_URL_TTL = 60;
+/** Signed URL TTL for private chat media (seconds). Long enough that images
+ *  survive a typical conversation view; URLs are still never persisted. */
+export const CHAT_MEDIA_SIGNED_URL_TTL = 7200;
 
 // ── Attachment types ────────────────────────────────────────────────────────
 

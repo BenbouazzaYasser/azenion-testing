@@ -65,16 +65,16 @@ export function ChannelBubble({
         isGrouped ? "" : "mt-3 first:mt-0",
       )}
     >
-      <div className="w-9 shrink-0">
+      <div className="w-10 shrink-0">
         {showAvatar ? (
           sender_avatar ? (
             <img
               src={sender_avatar}
               alt=""
-              className="h-9 w-9 rounded-full object-cover"
+              className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
               {(sender_name?.[0] ?? "?").toUpperCase()}
             </span>
           )

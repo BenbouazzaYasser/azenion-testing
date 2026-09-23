@@ -4,7 +4,7 @@ import { useState, useTransition, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, MessageSquare, Plus, Archive, ChevronLeft } from "lucide-react";
+import { Search, MessageSquare, Plus, Archive, ChevronLeft, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { formatDistanceToNow } from "@/lib/date";
@@ -53,6 +53,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
   const [archivedConvs, setArchivedConvs] = useState<Conversation[]>([]);
   const [archivedLoading, setArchivedLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [pendingId, setPendingId] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<
     { id: string; full_name: string | null; username: string; avatar_url: string | null }[]
   >([]);
@@ -75,9 +76,14 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
     setConvList(conversations);
   }, [conversations]);
 
-  useEffect(() => {
+  // Render-phase sync (no cascading effect): reset transient UI state
+  // whenever the route changes.
+  const [seenPathname, setSeenPathname] = useState(pathname);
+  if (seenPathname !== pathname) {
+    setSeenPathname(pathname);
     setOpenMenuId(null);
-  }, [pathname]);
+    setPendingId(null);
+  }
 
   const handleConversationRemoved = useCallback(
     (id: string) => {
@@ -149,6 +155,18 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
         className,
       )}
     >
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
+        <Link
+          href="/"
+          aria-label="Home"
+          title="Home"
+          className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-full text-ink-400 transition-colors duration-200 hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+        >
+          <Home size={18} />
+        </Link>
+        <h1 className="truncate text-sm font-semibold text-ink-50">Direct Messages</h1>
+      </div>
+
       <div className="shrink-0 p-4 pb-3">
         <div ref={searchRef} className="relative">
           <div className="relative">
@@ -229,7 +247,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
             ) : (
               <>
                 <h2 className="text-xs font-semibold uppercase tracking-normal text-ink-500">
-                  Messages
+                  Inbox
                 </h2>
                 <div className="flex items-center gap-2">
                   {convList.length > 0 && (
@@ -279,7 +297,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                     key={conv.id}
                     conv={conv}
                     currentUserId={currentUserId}
-                    isActive={pathname === `/chat/${conv.id}`}
+                    isActive={pathname === `/chat/${conv.id}` || pendingId === conv.id}
                     unread={false}
                     mode="archived"
                     menuOpen={openMenuId === conv.id}
@@ -288,6 +306,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                     onRestored={handleArchivedChange}
                     onNavigate={() => {
                       setOpenMenuId(null);
+                      setPendingId(conv.id);
                       onNavigate?.();
                     }}
                   />
@@ -314,7 +333,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   key={conv.id}
                   conv={conv}
                   currentUserId={currentUserId}
-                  isActive={pathname === `/chat/${conv.id}`}
+                  isActive={pathname === `/chat/${conv.id}` || pendingId === conv.id}
                   unread={(unreadByConv[conv.id] ?? 0) > 0}
                   mode="inbox"
                   menuOpen={openMenuId === conv.id}
@@ -322,6 +341,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   onRemoved={handleConversationRemoved}
                   onNavigate={() => {
                     setOpenMenuId(null);
+                    setPendingId(conv.id);
                     onNavigate?.();
                   }}
                 />
@@ -359,6 +379,8 @@ function ConversationRow({
   onRestored,
   onNavigate,
 }: ConversationRowProps) {
+  const router = useRouter();
+  const prefetchHref = `/chat/${conv.id}`;
   const isOwnLast = conv.last_message?.sender_id === currentUserId;
   const lastTs = conv.last_message?.created_at
     ? new Date(conv.last_message.created_at).getTime()
@@ -380,9 +402,11 @@ function ConversationRow({
   return (
     <div className="group relative">
       <Link
-        href={`/chat/${conv.id}`}
+        href={prefetchHref}
         aria-current={isActive ? "page" : undefined}
         onClick={onNavigate}
+        onMouseEnter={() => router.prefetch(prefetchHref)}
+        onFocus={() => router.prefetch(prefetchHref)}
         className={cn(
           "flex items-center gap-3 overflow-hidden rounded-xl py-3 pl-3 pr-11 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
           isActive

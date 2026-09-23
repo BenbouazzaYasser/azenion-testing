@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Plus, Film, Sticker as StickerIcon, Phone, Video } from "lucide-react";import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
-import { QueuedAttachmentCard } from "@/components/chat/chat-attachment";
+import { uploadChatMediaBlob, uploadBatch, type UploadFileInput, type UploadTaskResult, type UploadResult, type UploadError } from "@/components/chat/chat-upload";
+import { AttachmentPreviewBar } from "@/components/chat/attachment-preview-bar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
@@ -91,9 +92,16 @@ type QueuedFile = {
   id: string;
   file: File;
   previewUrl: string | null;
-  status: "queued" | "uploading" | "error";
+  status: "queued" | "uploading" | "success" | "error";
   error?: string;
+  progress?: number;
+  _spoiler?: boolean;
+  _tags?: string[];
 };
+
+/** Separate queues for images and files (like Haven) */
+type ImageQueue = QueuedFile[];
+type FileQueue = QueuedFile[];
 
 /** Dispatch a request to the global CallProvider to start a call. */
 export function requestCall(
@@ -173,7 +181,10 @@ export function ChatConversation({
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [actionsMessageId, setActionsMessageId] = useState<string | null>(null);
   const [otherLastReadAt, setOtherLastReadAt] = useState<string | null>(null);
-  const [queued, setQueued] = useState<QueuedFile[]>([]);
+  // Separate queues for images and files (like Haven)
+  const [imageQueue, setImageQueue] = useState<ImageQueue>([]);
+  const [fileQueue, setFileQueue] = useState<FileQueue>([]);
+  const [activeAttachmentId, setActiveAttachmentId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
@@ -259,7 +270,7 @@ export function ChatConversation({
   useEffect(() => {
     if (!stickToBottomRef.current) return;
     bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-  }, [messages, queued]);
+  }, [messages, imageQueue, fileQueue]);
 
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current;
@@ -284,14 +295,22 @@ export function ChatConversation({
     }
   }
 
-  // Cleanup object URLs
+  // Cleanup object URLs on unmount only — per-change cleanup revokes blobs
+  // still referenced by optimistic messages mid-send.
+  const queueRef = useRef({ imageQueue, fileQueue });
+  useEffect(() => {
+    queueRef.current = { imageQueue, fileQueue };
+  });
   useEffect(() => {
     return () => {
-      queued.forEach((q) => {
+      queueRef.current.imageQueue.forEach((q) => {
+        if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
+      });
+      queueRef.current.fileQueue.forEach((q) => {
         if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
       });
     };
-  }, [queued]);
+  }, []);
 
   useEffect(() => {
     if (!showEmojiPicker && !showGifPicker && !showStickerPicker && !showAttachmentMenu) return;
@@ -338,14 +357,26 @@ export function ChatConversation({
         },
         async (payload) => {
           const newMsg = payload.new as Message;
+          console.log("[chat:realtime] INSERT", {
+            id: newMsg.id,
+            sender: newMsg.sender_id,
+            conversation_id: newMsg.conversation_id,
+            mine: newMsg.sender_id === currentUserId,
+          });
           // Ignore own messages — already handled via optimistic reconciliation
           if (newMsg.sender_id === currentUserId) return;
 
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("id, full_name, avatar_url, username")
-            .eq("id", newMsg.sender_id)
-            .single();
+          let profile: Message["sender"] = null;
+          try {
+            const { data } = await supabase
+              .from("profiles")
+              .select("id, full_name, avatar_url, username")
+              .eq("id", newMsg.sender_id)
+              .single();
+            profile = data ?? null;
+          } catch (err) {
+            console.error("[chat:realtime] profile fetch failed", err);
+          }
 
           void markMessagesReceived(conversationId);
 
@@ -385,6 +416,7 @@ export function ChatConversation({
         },
         (payload) => {
           const row = payload.new as Message;
+          console.log("[chat:realtime] UPDATE", { id: row.id, sender: row.sender_id });
           setMessages((prev) =>
             prev.map((m) =>
               m.id === row.id
@@ -399,7 +431,9 @@ export function ChatConversation({
           );
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[chat:realtime]', status);
+      });
 
     const readChannel = supabase
       .channel(`chat-read:${conversationId}`)
@@ -456,22 +490,57 @@ export function ChatConversation({
   const addFiles = useCallback((files: FileList | File[]) => {
     const list = Array.from(files);
     if (list.length === 0) return;
-    if (queued.length + list.length > 10) {
+    
+    // Calculate total queued across both queues
+    const totalQueued = imageQueue.length + fileQueue.length;
+    const remainingSlots = 10 - totalQueued;
+    
+    if (remainingSlots <= 0) {
       toast.error("Too many files. Max 10 per message.");
       return;
     }
-    const next: QueuedFile[] = [];
-    for (const file of list) {
+    
+    const nextImages: QueuedFile[] = [];
+    const nextFiles: QueuedFile[] = [];
+    
+    for (const file of list.slice(0, remainingSlots)) {
       const cls = classifyFile(file);
       if (!cls.valid) {
         toast.error(cls.error ?? "Unsupported file type");
         continue;
       }
       const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
-      next.push({ id: crypto.randomUUID(), file, previewUrl, status: "queued" });
+      const queuedFile: QueuedFile = { 
+        id: crypto.randomUUID(), 
+        file, 
+        previewUrl, 
+        status: "queued",
+        _spoiler: false,
+        _tags: [],
+      };
+      
+      if (file.type.startsWith("image/")) {
+        nextImages.push(queuedFile);
+      } else {
+        nextFiles.push(queuedFile);
+      }
     }
-    if (next.length > 0) setQueued((prev) => [...prev, ...next]);
-  }, [queued.length]);
+    
+    if (nextImages.length > 0) {
+      setImageQueue((prev) => [...prev, ...nextImages]);
+      // Set first image as active for tagging
+      const first = nextImages[0];
+      if (first) setActiveAttachmentId(first.id);
+    }
+    if (nextFiles.length > 0) {
+      setFileQueue((prev) => [...prev, ...nextFiles]);
+      // Only set active if no images
+      if (nextImages.length === 0) {
+        const first = nextFiles[0];
+        if (first) setActiveAttachmentId(first.id);
+      }
+    }
+  }, [imageQueue.length, fileQueue.length]);
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -505,15 +574,118 @@ export function ChatConversation({
   };
 
   const removeQueued = (id: string) => {
-    setQueued((prev) => {
+    // Remove from whichever queue contains it
+    setImageQueue((prev) => {
       const item = prev.find((q) => q.id === id);
       if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl);
       return prev.filter((q) => q.id !== id);
     });
+    setFileQueue((prev) => {
+      const item = prev.find((q) => q.id === id);
+      if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      return prev.filter((q) => q.id !== id);
+    });
+    // Clear active if removed
+    if (activeAttachmentId === id) {
+      setActiveAttachmentId(null);
+    }
   };
 
+  const clearImageQueue = useCallback(() => {
+    setImageQueue((prev) => {
+      prev.forEach((q) => {
+        if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
+      });
+      return [];
+    });
+  }, []);
+
+  const clearFileQueue = useCallback(() => {
+    setFileQueue((prev) => {
+      prev.forEach((q) => {
+        if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
+      });
+      return [];
+    });
+  }, []);
+
+  const clearAllAttachments = useCallback(() => {
+    clearImageQueue();
+    clearFileQueue();
+    setActiveAttachmentId(null);
+  }, [clearImageQueue, clearFileQueue]);
+
+  const toggleSpoiler = useCallback((id: string) => {
+    setImageQueue((prev) => prev.map((q) => (q.id === id ? { ...q, _spoiler: !q._spoiler } : q)));
+    setFileQueue((prev) => prev.map((q) => (q.id === id ? { ...q, _spoiler: !q._spoiler } : q)));
+  }, []);
+
+  const addTagToAttachment = useCallback((id: string, tag: string) => {
+    const clean = tag.trim().slice(0, 20);
+    if (!clean) return;
+    const apply = (q: QueuedFile) => {
+      if (q.id !== id) return q;
+      const tags = q._tags ?? [];
+      if (tags.some((t) => t.toLowerCase() === clean.toLowerCase())) return q;
+      if (tags.length >= 3) {
+        toast.error("Max 3 tags per attachment");
+        return q;
+      }
+      return { ...q, _tags: [...tags, clean] };
+    };
+    setImageQueue((prev) => prev.map(apply));
+    setFileQueue((prev) => prev.map(apply));
+  }, []);
+
+  const removeTagFromAttachment = useCallback((id: string, tag: string) => {
+    const strip = (q: QueuedFile) =>
+      q.id === id ? { ...q, _tags: (q._tags ?? []).filter((t) => t !== tag) } : q;
+    setImageQueue((prev) => prev.map(strip));
+    setFileQueue((prev) => prev.map(strip));
+  }, []);
+
   const retryQueued = async (id: string) => {
-    setQueued((prev) => prev.map((q) => (q.id === id ? { ...q, status: "queued" as const, error: undefined } : q)));
+    // Find in either queue
+    const q = imageQueue.find((x) => x.id === id) || fileQueue.find((x) => x.id === id);
+    if (!q || q.status !== "error") return;
+    
+    const updateStatus = (status: QueuedFile["status"], error?: string, progress?: number) => {
+      setImageQueue((prev) => prev.map((x) => (x.id === id ? { ...x, status, error, progress } : x)));
+      setFileQueue((prev) => prev.map((x) => (x.id === id ? { ...x, status, error, progress } : x)));
+    };
+    
+    updateStatus("uploading", undefined, 0);
+
+    try {
+      const attachmentId = q.id;
+      const safeName = sanitizeFilename(q.file.name);
+      const path = getChatMediaObjectPath(conversationId, attachmentId, safeName);
+      
+      const results = await uploadBatch(
+        [{
+          id: q.id,
+          path,
+          blob: q.file,
+          mimeType: q.file.type || "application/octet-stream",
+        }],
+        (_, progress) => {
+          const pct = Math.round(progress.percentage);
+          setImageQueue((prev) => prev.map((x) => (x.id === id ? { ...x, progress: pct } : x)));
+          setFileQueue((prev) => prev.map((x) => (x.id === id ? { ...x, progress: pct } : x)));
+        }
+      );
+
+      const result = results[0];
+      if (!result || "error" in result) {
+        updateStatus("error", result?.error ?? "Retry failed", undefined);
+        toast.error(`Retry failed: ${result?.error ?? "Unknown error"}`);
+      } else {
+        updateStatus("success", undefined, 100);
+      }
+    } catch {
+      updateStatus("error", "Retry failed", undefined);
+      toast.error("Retry failed");
+    }
   };
 
   const insertEmoji = useCallback(
@@ -545,7 +717,7 @@ export function ChatConversation({
       setShowStickerPicker(false);
       setShowAttachmentMenu(false);
       if (isSendingRef.current) return;
-      if (queued.length > 0) {
+      if (imageQueue.length > 0 || fileQueue.length > 0) {
         toast.error("Please send or remove attached files before sending a GIF");
         return;
       }
@@ -673,7 +845,7 @@ export function ChatConversation({
         void markConversationRead(conversationId);
       }
     },
-    [input, queued.length, voice, conversationId, currentUserId, refetchMessages],
+    [input, imageQueue.length, fileQueue.length, voice, conversationId, currentUserId, refetchMessages],
   );
 
   const handleStickerSelect = useCallback(
@@ -683,7 +855,7 @@ export function ChatConversation({
       setShowGifPicker(false);
       setShowAttachmentMenu(false);
       if (isSendingRef.current) return;
-      if (queued.length > 0) {
+      if (imageQueue.length > 0 || fileQueue.length > 0) {
         toast.error("Please send or remove attached files before sending a sticker");
         return;
       }
@@ -786,7 +958,7 @@ export function ChatConversation({
         void markConversationRead(conversationId);
       }
     },
-    [input, queued.length, voice, conversationId, currentUserId, refetchMessages],
+    [input, imageQueue.length, fileQueue.length, voice, conversationId, currentUserId, refetchMessages],
   );
 
   // Voice helpers
@@ -804,7 +976,7 @@ export function ChatConversation({
       toast.error("Voice messages are not supported in this browser.");
       return;
     }
-    if (queued.length > 0) {
+    if (imageQueue.length > 0 || fileQueue.length > 0) {
       toast.error("Please send or remove attached files before recording.");
       return;
     }
@@ -898,14 +1070,11 @@ export function ChatConversation({
     setMessages((prev) => [...prev, optimistic]);
 
     try {
-      const { error: upErr } = await supabase.storage.from("chat-media").upload(path, blob, {
-        contentType: mime,
-        upsert: false,
-      });
+      const { error: upErr } = await uploadChatMediaBlob(path, blob, mime);
       if (upErr) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
         URL.revokeObjectURL(optimisticPreviewUrl);
-        toast.error(upErr.message);
+        toast.error(upErr);
         return;
       }
 
@@ -926,13 +1095,23 @@ export function ChatConversation({
         toast.error(result.error);
         await supabase.storage.from("chat-media").remove([path]).catch(() => {});
       } else if (result && "success" in result && result.id) {
+        // Swap the local blob preview for a real signed URL, then free the blob.
+        const { data: signed } = await supabase.storage
+          .from("chat-media")
+          .createSignedUrl(path, 3600);
         setMessages((prev) =>
           prev.map((m) =>
             m.id === optimistic.id
-              ? { ...m, id: result.id as string, created_at: (result.created_at as string) ?? m.created_at, attachments: [{ ...optimisticVoiceAtt, message_id: result.id as string }] }
+              ? {
+                  ...m,
+                  id: result.id as string,
+                  created_at: (result.created_at as string) ?? m.created_at,
+                  attachments: [{ ...optimisticVoiceAtt, message_id: result.id as string, signedUrl: signed?.signedUrl ?? optimisticVoiceAtt.signedUrl }],
+                }
               : m,
           ),
         );
+        if (signed?.signedUrl) URL.revokeObjectURL(optimisticPreviewUrl);
         voice.clear();
         setIsPlayingPreview(false);
       }
@@ -949,7 +1128,7 @@ export function ChatConversation({
 
   const handleSend = async () => {
     const hasText = input.trim().length > 0;
-    const hasFiles = queued.length > 0;
+    const hasFiles = imageQueue.length > 0 || fileQueue.length > 0;
     if ((!hasText && !hasFiles) || isSendingRef.current) return;
 
     // Close pickers on send
@@ -959,7 +1138,8 @@ export function ChatConversation({
     setShowStickerPicker(false);
 
     // Validate queued files still valid (size check again)
-    for (const q of queued) {
+    const allQueued = [...imageQueue, ...fileQueue];
+    for (const q of allQueued) {
       if (q.status === "error") {
         toast.error("Please remove or retry failed files before sending");
         return;
@@ -968,6 +1148,15 @@ export function ChatConversation({
 
     isSendingRef.current = true;
     setIsSending(true);
+    // Safety net: if isSending stays true for 60s, force-reset so the
+    // composer is never permanently locked (e.g. a hung server action).
+    const sendTimeout = setTimeout(() => {
+      if (isSendingRef.current) {
+        isSendingRef.current = false;
+        setIsSending(false);
+        toast.error("Sending took too long — please retry.");
+      }
+    }, 60_000);
     const content = input.trim();
     setInput("");
 
@@ -979,7 +1168,7 @@ export function ChatConversation({
       .single();
 
     // Prepare optimistic attachments with preview URLs
-    const optimisticAttachments: ChatAttachmentForMessage[] = queued.map((q) => {
+    const optimisticAttachments: ChatAttachmentForMessage[] = allQueued.map((q) => {
       const cls = classifyFile(q.file);
       return {
         id: q.id,
@@ -994,7 +1183,13 @@ export function ChatConversation({
         duration_seconds: null,
         provider: null,
         external_id: null,
-        metadata: null,
+        metadata:
+          q._spoiler || (q._tags && q._tags.length > 0)
+            ? {
+                ...(q._spoiler ? { spoiler: true } : {}),
+                ...(q._tags && q._tags.length > 0 ? { tags: q._tags } : {}),
+              }
+            : null,
         created_at: new Date().toISOString(),
         signedUrl: q.previewUrl,
       };
@@ -1016,51 +1211,58 @@ export function ChatConversation({
     setMessages((prev) => [...prev, optimistic]);
 
     // Snapshot queued files for upload
-    const toUpload = [...queued];
+    const toUpload = [...allQueued];
     // Mark uploading
-    setQueued((prev) => prev.map((q) => ({ ...q, status: "uploading" as const })));
+    setImageQueue((prev) => prev.map((q) => ({ ...q, status: "uploading" as const, progress: 0 })));
+    setFileQueue((prev) => prev.map((q) => ({ ...q, status: "uploading" as const, progress: 0 })));
 
     try {
-      let attachmentInputs: { type: "image" | "file"; storage_path: string; filename: string; mime_type: string; file_size: number }[] = [];
+      let attachmentInputs: { type: "image" | "file"; storage_path: string; filename: string; mime_type: string; file_size: number; metadata: Record<string, unknown> | null }[] = [];
 
       if (toUpload.length > 0) {
-        // Upload each file to chat-media
-        const uploadResults = await Promise.all(
-          toUpload.map(async (q) => {
-            const cls = classifyFile(q.file);
-            const attachmentId = q.id; // reuse queued id as attachment id for path determinism
-            const safeName = sanitizeFilename(q.file.name);
-            const path = getChatMediaObjectPath(conversationId, attachmentId, safeName);
-            const { error } = await supabase.storage.from("chat-media").upload(path, q.file, {
-              contentType: q.file.type,
-              upsert: false,
-            });
-            if (error) {
-              return { error: error.message, q };
-            }
-            return {
-              type: cls.type as "image" | "file",
-              storage_path: path,
-              filename: q.file.name,
-              mime_type: q.file.type || "application/octet-stream",
-              file_size: q.file.size,
-            };
-          }),
+        // Prepare upload inputs with deterministic paths
+        const uploadInputs: UploadFileInput[] = toUpload.map((q) => {
+          const attachmentId = q.id;
+          const safeName = sanitizeFilename(q.file.name);
+          const path = getChatMediaObjectPath(conversationId, attachmentId, safeName);
+          return {
+            id: q.id,
+            path,
+            blob: q.file,
+            mimeType: q.file.type || "application/octet-stream",
+          };
+        });
+
+        // Upload batch with concurrent limit (max 3) and progress tracking
+        const uploadResults: UploadTaskResult[] = await uploadBatch(
+          uploadInputs,
+          (id, progress) => {
+            const pct = Math.round(progress.percentage);
+            setImageQueue((prev) => prev.map((q) => (q.id === id ? { ...q, progress: pct } : q)));
+            setFileQueue((prev) => prev.map((q) => (q.id === id ? { ...q, progress: pct } : q)));
+          }
         );
 
-        const failed = uploadResults.filter((r) => "error" in r) as { error: string; q: QueuedFile }[];
+        const failed = uploadResults.filter((r): r is UploadError => "error" in r);
         if (failed.length > 0) {
-          // Mark failed in queue, keep optimistic but remove it after failure? For now remove optimistic and keep queue with error
+          // Remove optimistic message
           setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-          setQueued((prev) =>
+          // Update queue with errors
+          setImageQueue((prev) =>
             prev.map((q) => {
-              const f = failed.find((x) => x.q.id === q.id);
-              return f ? { ...q, status: "error" as const, error: f.error } : q;
+              const f = failed.find((x) => x.id === q.id);
+              return f ? { ...q, status: "error" as const, error: f.error, progress: undefined } : q;
+            }),
+          );
+          setFileQueue((prev) =>
+            prev.map((q) => {
+              const f = failed.find((x) => x.id === q.id);
+              return f ? { ...q, status: "error" as const, error: f.error, progress: undefined } : q;
             }),
           );
           toast.error(`Upload failed for ${failed.length} file(s)`);
-          // Attempt cleanup of successful uploads to avoid orphans
-          const succeeded = uploadResults.filter((r) => !("error" in r)) as typeof attachmentInputs;
+          // Cleanup successful uploads to avoid orphans
+          const succeeded = uploadResults.filter((r): r is UploadResult => !("error" in r));
           if (succeeded.length > 0) {
             const paths = succeeded.map((s) => s.storage_path);
             await supabase.storage.from("chat-media").remove(paths).catch(() => {});
@@ -1068,11 +1270,37 @@ export function ChatConversation({
           return;
         }
 
-        attachmentInputs = uploadResults as typeof attachmentInputs;
+        // All succeeded
+        const succeeded = uploadResults as UploadResult[];
+        attachmentInputs = succeeded.map((s, i) => {
+          const q = toUpload.find((x) => x.id === s.id)!;
+          const cls = classifyFile(q.file);
+          const metadata: Record<string, unknown> | null =
+            q._spoiler || (q._tags && q._tags.length > 0)
+              ? {
+                  ...(q._spoiler ? { spoiler: true } : {}),
+                  ...(q._tags && q._tags.length > 0 ? { tags: q._tags } : {}),
+                }
+              : null;
+          return {
+            type: cls.type as "image" | "file",
+            storage_path: s.storage_path,
+            filename: s.filename,
+            mime_type: s.mime_type,
+            file_size: s.file_size,
+            metadata,
+          };
+        });
+
+        // Mark all as success in queue
+        setImageQueue((prev) => prev.map((q) => ({ ...q, status: "success" as const, progress: 100 })));
+        setFileQueue((prev) => prev.map((q) => ({ ...q, status: "success" as const, progress: 100 })));
       }
 
       // Clear queue optimistically (will be cleared on success)
-      setQueued([]);
+      setImageQueue([]);
+      setFileQueue([]);
+      setActiveAttachmentId(null);
 
       let result;
       if (attachmentInputs.length > 0) {
@@ -1085,7 +1313,8 @@ export function ChatConversation({
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
         // Restore queue for retry if it was attachments
         if (toUpload.length > 0) {
-          setQueued(toUpload.map((q) => ({ ...q, status: "queued" as const })));
+          setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
+          setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
         }
         toast.error(result.error);
         // Cleanup uploaded storage if DB insert failed (sendMessageWithAttachments already tries, but for safety)
@@ -1094,10 +1323,16 @@ export function ChatConversation({
           await supabase.storage.from("chat-media").remove(paths).catch(() => {});
         }
       } else if (result && "success" in result && result.id) {
-        // Reconcile optimistic id -> real id, and update attachments with real message_id and signedUrls
-        // We already cleared queue, but we need to update optimistic message's id and attachments
-        // Fetch the created attachments' signedUrls via a quick refetch? Instead, keep optimistic attachments but update id.
-        // The server's getMessages will have proper signedUrls on next refresh; for now keep local preview.
+        // Reconcile optimistic id -> real id and swap blob previews for real
+        // signed URLs so attachments don't point at revoked object URLs.
+        const signedUrls = await Promise.all(
+          attachmentInputs.map((a) =>
+            supabase.storage
+              .from("chat-media")
+              .createSignedUrl(a.storage_path, 3600)
+              .then(({ data }) => data?.signedUrl ?? null),
+          ),
+        );
         setMessages((prev) =>
           prev.map((m) =>
             m.id === optimistic.id
@@ -1105,26 +1340,31 @@ export function ChatConversation({
                   ...m,
                   id: result.id as string,
                   created_at: (result.created_at as string) ?? m.created_at,
-                  attachments: optimisticAttachments.map((att) => ({
+                  attachments: optimisticAttachments.map((att, i) => ({
                     ...att,
                     message_id: result.id as string,
+                    signedUrl: signedUrls[i] ?? att.signedUrl,
                   })),
                 }
               : m,
           ),
         );
-        // Revoke object URLs after a delay? Keep for optimistic display
-        toUpload.forEach((q) => {
-          if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
-        });
+        // Free preview blobs only after real URLs are in place.
+        if (signedUrls.every((u) => u !== null)) {
+          toUpload.forEach((q) => {
+            if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
+          });
+        }
       }
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-      setQueued(toUpload.map((q) => ({ ...q, status: "queued" as const })));
+      setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
+      setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
       toast.error("Message could not be sent. Please try again.");
     } finally {
+      clearTimeout(sendTimeout);
       isSendingRef.current = false;
-    setIsSending(false);
+      setIsSending(false);
       void markConversationRead(conversationId);
     }
   };
@@ -1133,7 +1373,7 @@ export function ChatConversation({
   const participantInitial = (participant?.full_name?.[0] ?? participant?.username?.[0] ?? "?").toUpperCase();
   const mobileConversations = useMobileConversations();
 
-  const canSend = input.trim().length > 0 || queued.length > 0;
+  const canSend = input.trim().length > 0 || imageQueue.length > 0 || fileQueue.length > 0;
 
   // Handle an inbound ?call=audio|video query param (from the conversation menu
   // or any deep link) by starting a call once the peer is known.
@@ -1252,9 +1492,9 @@ export function ChatConversation({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className={cn("relative z-10 flex-1 min-h-0 overflow-y-auto p-5 sm:p-6", SCROLLBAR_CLASSES)}
+        className={cn("relative z-10 flex-1 min-h-0 overflow-y-auto px-2 pb-4 pt-2 sm:px-3", SCROLLBAR_CLASSES)}
       >
-        {messages.length === 0 && queued.length === 0 && (
+        {messages.length === 0 && imageQueue.length === 0 && fileQueue.length === 0 && (
           <div className="relative flex h-full min-h-0 flex-col items-center justify-center px-6 text-center">
             <div
               aria-hidden
@@ -1399,19 +1639,24 @@ export function ChatConversation({
           </div>
         ) : (
           <div ref={emojiContainerRef} className="relative">
-            {queued.length > 0 && (
-              <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
-                {queued.map((q) => (
-                  <QueuedAttachmentCard
-                    key={q.id}
-                    file={q.file}
-                    previewUrl={q.previewUrl}
-                    status={q.status}
-                    error={q.error}
-                    onRemove={() => removeQueued(q.id)}
-                    onRetry={() => retryQueued(q.id)}
-                  />
-                ))}
+            {(imageQueue.length > 0 || fileQueue.length > 0) && (
+              <div className="mb-3">
+                <AttachmentPreviewBar
+                  imageQueue={imageQueue}
+                  fileQueue={fileQueue}
+                  activeAttachmentId={activeAttachmentId}
+                  maxAttachments={10}
+                  onQueueImage={(file) => addFiles([file])}
+                  onQueueFile={(file) => addFiles([file])}
+                  onRemoveImage={removeQueued}
+                  onRemoveFile={removeQueued}
+                  onClearAll={clearAllAttachments}
+                  onSetActive={setActiveAttachmentId}
+                  onToggleSpoiler={toggleSpoiler}
+                  onAddTag={addTagToAttachment}
+                  onRemoveTag={removeTagFromAttachment}
+                  onRetry={retryQueued}
+                />
               </div>
             )}
             {voice.error && <p className="mb-2 text-xs text-red-400">{voice.error}</p>}
@@ -1473,14 +1718,6 @@ export function ChatConversation({
                   <AttachmentMenu
                     onSelectImages={() => imageInputRef.current?.click()}
                     onSelectFiles={() => fileInputRef.current?.click()}
-                    onSelectGif={() => {
-                      setShowGifPicker(true);
-                      setShowAttachmentMenu(false);
-                    }}
-                    onSelectSticker={() => {
-                      setShowStickerPicker(true);
-                      setShowAttachmentMenu(false);
-                    }}
                     onClose={() => setShowAttachmentMenu(false)}
                   />
                 </div>

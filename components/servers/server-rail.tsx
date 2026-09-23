@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Home, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ServerSummary } from "@/data/servers";
 import type { DictKey } from "@/lib/translation/types";
@@ -20,11 +21,34 @@ const KIND_LABEL: Record<ServerSummary["kind"], DictKey> = {
 
 export function ServerRail({ servers, activeSlug }: ServerRailProps) {
   const { t } = useTranslation();
+  const pathname = usePathname();
+  const isHome = pathname === "/";
   return (
     <nav
       aria-label={t("servers.railAria")}
-      className="flex h-full w-[68px] shrink-0 flex-col items-center gap-2 overflow-y-auto bg-void-950/60 py-3 backdrop-blur-xl"
+      className="flex h-full w-[72px] shrink-0 flex-col items-center gap-2 overflow-y-auto bg-void-950/60 py-3 backdrop-blur-xl"
     >
+      <Link
+        href="/"
+        title={t("nav.home")}
+        className={cn(
+          "group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 ease-premium",
+          isHome
+            ? "bg-gradient-to-br from-accent to-accent-glow text-white shadow-glow"
+            : "bg-surface text-ink-300 hover:scale-105 hover:text-ink-50",
+        )}
+      >
+        {isHome && (
+          <span
+            aria-hidden
+            className="absolute -left-3 h-6 w-[3px] rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+          />
+        )}
+        <Home size={20} />
+      </Link>
+
+      <span aria-hidden className="h-px w-8 shrink-0 bg-border-strong" />
+
       {servers.map((server) => (
         <Link
           key={server.id}

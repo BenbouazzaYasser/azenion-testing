@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -67,10 +68,14 @@ export interface ConversationWithMeta {
   i_blocked: boolean;
 }
 
-export async function getConversations(
-  userId: string,
-  options: { archived?: boolean } = {},
-): Promise<ConversationWithMeta[]> {
+/** Stable default so React.cache() dedupes same-request calls (fresh `{}` literals would miss). */
+const DEFAULT_CONVERSATION_OPTIONS: { archived?: boolean } = {};
+
+export const getConversations = cache(
+  async (
+    userId: string,
+    options: { archived?: boolean } = DEFAULT_CONVERSATION_OPTIONS,
+  ): Promise<ConversationWithMeta[]> => {
   const supabase = await createClient();
 
   const membershipQuery = supabase
@@ -96,21 +101,21 @@ export async function getConversations(
 
   if (!conversations) return [];
 
-  const membersPromises = conversationIds.map(async (cid) => {
-    const { data: members } = await supabase
-      .from("conversation_members")
-      .select("user_id, last_read_at")
-      .eq("conversation_id", cid);
-    return { conversation_id: cid, members: members ?? [] };
-  });
+  // Batched: one members query for all conversations (was N per-conversation queries).
+  const { data: allMembers } = await supabase
+    .from("conversation_members")
+    .select("conversation_id, user_id, last_read_at")
+    .in("conversation_id", conversationIds);
 
-  const membersResults = await Promise.all(membersPromises);
-  const membersByConv = Object.fromEntries(
-    membersResults.map((r) => [r.conversation_id, r.members]),
-  ) as Record<string, { user_id: string; last_read_at: string | null }[]>;
+  const membersByConv = {} as Record<string, { user_id: string; last_read_at: string | null }[]>;
+  for (const m of allMembers ?? []) {
+    (membersByConv[m.conversation_id] ??= []).push(m);
+  }
 
   const allUserIds = [
-    ...new Set(membersResults.flatMap((r) => r.members.map((m) => m.user_id))),
+    ...new Set(
+      Object.values(membersByConv).flatMap((members) => members.map((m) => m.user_id)),
+    ),
   ];
 
   const { data: profiles } = await createAdminClient()
@@ -194,7 +199,7 @@ export async function getConversations(
       i_blocked: otherMember ? iBlockedIds.has(otherMember.user_id) : false,
     };
   });
-}
+});
 
 export async function getMessages(conversationId: string): Promise<MessageWithSender[]> {
   const supabase = await createClient();

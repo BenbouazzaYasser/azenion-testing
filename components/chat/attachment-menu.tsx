@@ -1,16 +1,14 @@
 "use client";
 
-import { Image as ImageIcon, FileText, Film, Sticker as StickerIcon } from "lucide-react";
+import { Image as ImageIcon, FileText } from "lucide-react";
 
 interface AttachmentMenuProps {
   onSelectImages: () => void;
   onSelectFiles: () => void;
-  onSelectGif: () => void;
-  onSelectSticker: () => void;
   onClose: () => void;
 }
 
-export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onSelectSticker, onClose }: AttachmentMenuProps) {
+export function AttachmentMenu({ onSelectImages, onSelectFiles, onClose }: AttachmentMenuProps) {
   return (
     <div
       role="menu"
@@ -43,32 +41,6 @@ export function AttachmentMenu({ onSelectImages, onSelectFiles, onSelectGif, onS
         className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
       >
         <FileText size={16} />
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        aria-label="GIF"
-        title="GIF"
-        onClick={() => {
-          onSelectGif();
-          setTimeout(onClose, 0);
-        }}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
-      >
-        <Film size={16} />
-      </button>
-      <button
-        type="button"
-        role="menuitem"
-        aria-label="Stickers"
-        title="Stickers"
-        onClick={() => {
-          onSelectSticker();
-          setTimeout(onClose, 0);
-        }}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink-600 shadow-sm ring-1 ring-border hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
-      >
-        <StickerIcon size={16} />
       </button>
     </div>
   );
