@@ -122,7 +122,7 @@ describe("POST /api/chat/media/sign", () => {
     expect(res.headers.get("cache-control")).toBe("private, no-store");
     const body = await res.json();
     expect(body.signedUrl).toBe("https://signed.example/x?token=abc");
-    expect(body.expiresIn).toBe(60);
+    expect(body.expiresIn).toBe(7200);
     expect(JSON.stringify(body)).not.toContain("service_role");
   });
 });

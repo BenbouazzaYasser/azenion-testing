@@ -114,7 +114,7 @@ export async function GET(request: Request) {
       if (!bearer.ok) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: secureHeaders() });
       }
-      const { items, total } = await getSavedFeedItems();
+      const { items, total } = await getSavedFeedItems(undefined, pageSize);
       return NextResponse.json({ items, total, page: 1, pageSize }, { status: 200, headers: secureHeaders() });
     }
 

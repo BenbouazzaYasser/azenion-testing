@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { createLiveSession, updateLiveSession } from "@/actions/live-session.actions";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 import { useTranslation } from "@/components/translation/translation-provider";
 import {
   LIVE_SESSION_FORMATS,
@@ -75,7 +75,6 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [mounted, setMounted] = useState(false);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -125,22 +124,7 @@ export function SessionFormDialog({ mode, session, hostOptions }: SessionFormDia
     setTopics(session?.topics?.join("\n") ?? "");
   }, [session]);
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  }, [open]);
+  const { mounted } = useDialogOpen(open, () => setOpen(false));
 
   const filteredHosts = useMemo(() => {
     const matching = hostOptions.filter((host) => host.host_type === hostType);

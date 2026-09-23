@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { X, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { createAnnouncement, updateAnnouncement } from "@/actions/announcements.actions";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 import type { Announcement } from "@/data/announcements";
 
 interface AnnouncementFormDialogProps {
@@ -31,7 +31,6 @@ function DialogContent({
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(true);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [mounted, setMounted] = useState(false);
 
   const [emoji, setEmoji] = useState(announcement?.emoji ?? "📢");
   const [title, setTitle] = useState(announcement?.title ?? "");
@@ -40,21 +39,7 @@ function DialogContent({
   const [description, setDescription] = useState(announcement?.description ?? "");
   const [details, setDetails] = useState(announcement?.details?.join("\n") ?? "");
 
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  }, [onClose]);
+  const { mounted } = useDialogOpen(true, onClose);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

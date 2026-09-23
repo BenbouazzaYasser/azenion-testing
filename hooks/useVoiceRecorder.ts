@@ -40,7 +40,10 @@ function pickSupportedMime(): string | null {
 export interface UseVoiceRecorderReturn {
   isSupported: boolean;
   isRecording: boolean;
+  /** Frozen seconds: 0 while recording, final length after stop. Live ticking display belongs to <RecordingTimer startedAt>. */
   duration: number;
+  /** When the current recording started (ms epoch), null when not recording. */
+  startedAt: number | null;
   blob: Blob | null;
   previewUrl: string | null;
   mimeType: string | null;
@@ -54,6 +57,7 @@ export interface UseVoiceRecorderReturn {
 export function useVoiceRecorder(): UseVoiceRecorderReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -98,13 +102,22 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     mediaRecorderRef.current = null;
   }, []);
 
+  // Stop tracks/timer on REAL unmount only. This used to list previewUrl in
+  // its deps: any preview change re-ran the cleanup, permanently setting
+  // mountedRef.current = false, which silently killed the onstop guard (and
+  // the start() mounted check) on every recording after the first.
   useEffect(() => {
     return () => {
       mountedRef.current = false;
       cleanup();
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
-  }, [cleanup, previewUrl]);
+  }, [cleanup]);
+
+  // Revoke the previous blob URL whenever the preview is replaced or unmounted.
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   const start = useCallback(async (): Promise<string | null> => {
     cancelledRef.current = false;
@@ -137,6 +150,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       chunksRef.current = [];
       setDuration(0);
       startTimeRef.current = Date.now();
+      setStartedAt(startTimeRef.current);
 
       recorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
@@ -152,12 +166,18 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
         const url = URL.createObjectURL(b);
         setPreviewUrl(url);
         setMimeType(mime);
+        // Freeze the final length once; no per-tick state (that re-rendered
+        // the whole consumer tree every 500ms — the live display now ticks
+        // inside <RecordingTimer>).
+        setDuration(Math.floor((Date.now() - startTimeRef.current) / 1000));
+        setStartedAt(null);
         cleanup();
         setIsRecording(false);
       };
       recorder.onerror = () => {
         if (!mountedRef.current) return;
         setError("Recording failed. Please try again.");
+        setStartedAt(null);
         cleanup();
         setIsRecording(false);
       };
@@ -165,10 +185,11 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       recorder.start(100);
       setIsRecording(true);
 
+      // Auto-stop only — no setState here, so the interval never re-renders
+      // the consumer tree (ponytail: live display lives in <RecordingTimer>).
       timerRef.current = window.setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
         if (!mountedRef.current) return;
-        setDuration(elapsed);
         if (elapsed >= CHAT_MAX_AUDIO_DURATION_SECONDS) {
           if (recorder.state === "recording") {
             recorder.stop();
@@ -220,6 +241,7 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     cleanup();
     setIsRecording(false);
     setDuration(0);
+    setStartedAt(null);
     setBlob(null);
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
@@ -238,5 +260,5 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
     setError(null);
   }, [previewUrl]);
 
-  return { isSupported, isRecording, duration, blob, previewUrl, mimeType, error, start, stop, cancel, clear };
+  return { isSupported, isRecording, duration, startedAt, blob, previewUrl, mimeType, error, start, stop, cancel, clear };
 }

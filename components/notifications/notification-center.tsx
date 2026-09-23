@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -95,7 +95,7 @@ function NotificationAvatar({
   );
 }
 
-function NotificationItem({
+function NotificationItemImpl({
   notification,
   onOpen,
 }: {
@@ -181,6 +181,10 @@ function NotificationItem({
   );
 }
 
+// Memoized so realtime unread ticks (setUnreadCount) re-render the header
+// badge without re-rendering every row.
+const NotificationItem = memo(NotificationItemImpl);
+
 export function NotificationCenter() {
   const { user } = useUser();
   const router = useRouter();
@@ -248,22 +252,25 @@ export function NotificationCenter() {
     }
   };
 
-  const handleOpenNotification = async (n: AppNotification) => {
-    setOpen(false);
+  const handleOpenNotification = useCallback(
+    async (n: AppNotification) => {
+      setOpen(false);
 
-    if (!n.read) {
-      setNotifications((prev) =>
-        prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)),
-      );
-      setUnreadCount((c) => Math.max(0, c - 1));
-      markNotificationRead(n.id).catch(() => loadUnread());
-    }
+      if (!n.read) {
+        setNotifications((prev) =>
+          prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)),
+        );
+        setUnreadCount((c) => Math.max(0, c - 1));
+        markNotificationRead(n.id).catch(() => loadUnread());
+      }
 
-    const path = await resolveNotificationTarget(n.type, n.target_type, n.target_id);
-    if (path) {
-      router.push(path);
-    }
-  };
+      const path = await resolveNotificationTarget(n.type, n.target_type, n.target_id);
+      if (path) {
+        router.push(path);
+      }
+    },
+    [loadUnread, router],
+  );
 
   const handleMarkAllRead = async () => {
     setUnreadCount(0);

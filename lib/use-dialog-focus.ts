@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -75,4 +75,40 @@ export function useDialogFocus<T extends HTMLElement = HTMLDivElement>(
   }, [open]);
 
   return ref;
+}
+
+/**
+ * Modal open lifecycle effects, the boilerplate every dialog used to copy:
+ * - body scroll-lock while open
+ * - Escape calls onClose
+ * - `mounted`: true one animation frame after open (for createPortal hydration)
+ * Pair with useDialogFocus for focus trap + restore.
+ */
+export function useDialogOpen(open: boolean, onClose: () => void) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => {
+      cancelAnimationFrame(frame);
+      setMounted(false);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onClose]);
+
+  return { mounted };
 }

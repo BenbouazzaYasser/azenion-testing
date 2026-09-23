@@ -197,6 +197,9 @@ export async function sendChannelMessage(channelId: string, content: string) {
   if (!content.trim()) {
     return { error: "Message cannot be empty" };
   }
+  if (content.trim().length > 4000) {
+    return { error: "Message is too long (max 4000 characters)." };
+  }
 
   // RLS enforces channel access; this gives a clean error message instead.
   const { data, error } = await supabase

@@ -38,8 +38,10 @@ describe("roadmap migration progress contract", () => {
 
   it("keeps required-node progress unchanged in get_roadmap_detail", async () => {
     const sql = await readMigration("00140_academy_roadmaps_read_rpcs.sql");
-    expect(sql).toContain(
-      "else\n      v_progress := round(v_required_done::numeric / v_required_count::numeric, 2);",
+    // Whitespace-tolerant like the sibling assertions: the contract is the
+    // required-only formula, not the migration's indentation.
+    expect(sql).toMatch(
+      /else\s+v_progress := round\(v_required_done::numeric \/ v_required_count::numeric, 2\);/,
     );
   });
 });

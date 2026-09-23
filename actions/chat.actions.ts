@@ -44,6 +44,9 @@ export async function sendMessage(conversationId: string, content: string) {
   if (!content.trim()) {
     return { error: "Message cannot be empty" };
   }
+  if (content.trim().length > 4000) {
+    return { error: "Message is too long (max 4000 characters)." };
+  }
 
   // Block guard: if a peer in this conversation has blocked the sender, the
   // message must not be sent. This mirrors the RLS INSERT policy (which is
@@ -117,6 +120,9 @@ export async function sendMessageWithAttachments(
 
   if (!hasText && !hasAttachments) {
     return { error: "Message cannot be empty" };
+  }
+  if (content.trim().length > 4000) {
+    return { error: "Message is too long (max 4000 characters)." };
   }
 
   if (attachments.length > 10) {
@@ -244,6 +250,9 @@ export async function editMessage(messageId: string, content: string) {
 
   if (!content.trim()) {
     return { error: "Message cannot be empty" };
+  }
+  if (content.trim().length > 4000) {
+    return { error: "Message is too long (max 4000 characters)." };
   }
 
   const { error } = await supabase

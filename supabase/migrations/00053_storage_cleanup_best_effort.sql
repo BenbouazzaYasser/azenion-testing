@@ -44,6 +44,12 @@ declare
   v_project_name text;
   v_project_slug text;
 begin
+  -- `v_owner_id <> auth.uid()` is NULL when auth.uid() is null, which silently
+  -- SKIPS the owner guard for unauthenticated callers — refuse them first.
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
   select owner_id, name, slug into v_owner_id, v_project_name, v_project_slug
   from public.projects
   where id = p_project_id;
@@ -77,7 +83,7 @@ begin
 end;
 $$;
 
-grant execute on function public.delete_project(uuid) to anon, authenticated, service_role;
+grant execute on function public.delete_project(uuid) to authenticated, service_role;
 
 -- ── delete_team: best-effort storage cleanup ─────────────────────────────────
 
@@ -93,6 +99,12 @@ declare
   v_project record;
   v_cooldown_days int;
 begin
+  -- `v_owner_id <> auth.uid()` is NULL when auth.uid() is null, which silently
+  -- SKIPS the owner guard for unauthenticated callers — refuse them first.
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
   select owner_id, name, slug into v_owner_id, v_team_name, v_team_slug
   from public.teams
   where id = p_team_id;
@@ -161,4 +173,4 @@ begin
 end;
 $$;
 
-grant execute on function public.delete_team(uuid) to anon, authenticated, service_role;
+grant execute on function public.delete_team(uuid) to authenticated, service_role;

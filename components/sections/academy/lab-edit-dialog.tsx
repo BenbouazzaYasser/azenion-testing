@@ -15,7 +15,7 @@ import {
   linkLabToCourse,
   unlinkLabFromCourse,
 } from "@/actions/academy-labs.actions";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 import { LAB_CATEGORIES, LAB_DIFFICULTIES, LAB_TYPES, type LabRow } from "@/lib/validations/lab.schema";
 import { LabContentEditor, serializeDraftBlocks, hydrateDraftBlocks, type DraftBlock } from "./lab-content-editor";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,6 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [mounted, setMounted] = useState(false);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState(lab.title);
@@ -57,22 +56,7 @@ export function LabEditDialog({ lab, availableCourses = [] }: { lab: LabRow; ava
   const [linksLoaded, setLinksLoaded] = useState(false);
   const [linkPendingId, setLinkPendingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  }, [open]);
+  const { mounted } = useDialogOpen(open, () => setOpen(false));
 
   // Load the current version's content (learner-safe; answer_key is never
   // part of this response) and the lab's current course links once, the

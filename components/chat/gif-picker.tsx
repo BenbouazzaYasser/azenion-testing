@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Loader2, Search as SearchIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { GifResult } from "@/lib/gif/provider";
@@ -17,7 +17,12 @@ export function GifPicker({ onSelect, onClose }: GifPickerProps) {
   const [error, setError] = useState<string | null>(null);
   const [attribution, setAttribution] = useState<string | null>(null);
 
+  // Monotonic id: only the latest request may touch state, so a slow earlier
+  // response can't overwrite newer results.
+  const requestIdRef = useRef(0);
+
   const fetchGifs = useCallback(async (q: string) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -26,15 +31,17 @@ export function GifPicker({ onSelect, onClose }: GifPickerProps) {
       url.searchParams.set("limit", "12");
       const res = await fetch(url.toString());
       const json = await res.json();
+      if (requestId !== requestIdRef.current) return;
       if (!res.ok) throw new Error(json.error || "Failed to load GIFs");
       setResults(json.results ?? []);
       setAttribution(json.attribution ?? null);
     } catch (e: unknown) {
+      if (requestId !== requestIdRef.current) return;
       const msg = e instanceof Error ? e.message : "Failed to load GIFs";
       setError(msg);
       setResults([]);
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, []);
 

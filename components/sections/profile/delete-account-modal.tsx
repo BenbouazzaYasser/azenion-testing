@@ -1,33 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { X, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 import { useTranslation } from "@/components/translation/translation-provider";
 
 export function DeleteAccountModal() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  }, [open]);
+  const { mounted } = useDialogOpen(open, () => setOpen(false));
 
   return (
     <>

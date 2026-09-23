@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Loader2, X } from "lucide-react";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { getPublicProfile } from "@/actions/social.actions";
 import { cardBase, sectionCardClass } from "@/components/sections/profile/card-classes";
@@ -34,19 +34,7 @@ export function ProfilePreviewDialog({ open, username, onClose }: ProfilePreview
     };
   }, [open, username]);
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open, onClose]);
+  useDialogOpen(open, onClose);
 
   if (!open) return null;
 

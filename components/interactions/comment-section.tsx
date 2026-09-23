@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { memo, useCallback, useState, useTransition } from "react";
 import { MessageSquare, Pencil, Reply, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "@/lib/date";
 import { cn } from "@/lib/utils";
@@ -40,6 +40,12 @@ export function CommentSection({
   const [loadedCount, setLoadedCount] = useState(0);
   const { t } = useTranslation();
 
+  // Two totals, deliberately separate: loadedCount is the pagination cursor
+  // (top-level rows the server has served — NOT comments.length, which runs
+  // ahead of server positions via optimistic inserts) and totalComments is the
+  // server's top-level total from getCommentsAction. commentCount (badge)
+  // counts ALL comments incl. replies — a different unit, so it can't drive
+  // hasMore.
   const hasMore = loadedCount < totalComments;
 
   const findComment = (id: string) => {
@@ -83,11 +89,14 @@ export function CommentSection({
   const toggleOpen = async () => {
     if (!isOpen && comments.length === 0) {
       setIsLoading(true);
-      const result = await getCommentsAction(targetType, targetId, currentUserId);
-      setComments(result.comments);
-      setTotalComments(result.total);
-      setLoadedCount(result.comments.length);
-      setIsLoading(false);
+      try {
+        const result = await getCommentsAction(targetType, targetId, currentUserId);
+        setComments(result.comments);
+        setTotalComments(result.total);
+        setLoadedCount(result.comments.length);
+      } finally {
+        setIsLoading(false);
+      }
     }
     setIsOpen((v) => !v);
   };
@@ -96,19 +105,25 @@ export function CommentSection({
     if (isLoadingMore || !hasMore) return;
 
     setIsLoadingMore(true);
-    const result = await getCommentsAction(targetType, targetId, currentUserId, {
-      offset: loadedCount,
-    });
-    setTotalComments(result.total);
+    try {
+      const result = await getCommentsAction(targetType, targetId, currentUserId, {
+        offset: loadedCount,
+      });
+      setTotalComments(result.total);
 
-    setComments((prev) => {
-      const existingIds = new Set(prev.map((c) => c.id));
-      const fresh = result.comments.filter((c) => !existingIds.has(c.id));
-      return [...prev, ...fresh];
-    });
+      setComments((prev) => {
+        const existingIds = new Set(prev.map((c) => c.id));
+        const fresh = result.comments.filter((c) => !existingIds.has(c.id));
+        return [...prev, ...fresh];
+      });
 
-    setLoadedCount((c) => c + result.comments.length);
-    setIsLoadingMore(false);
+      // Advance the cursor by rows the SERVER returned, not by rows appended:
+      // the cursor tracks server positions (deduped rows — the caller's own
+      // optimistic posts coming back around — were still consumed there).
+      setLoadedCount((c) => c + result.comments.length);
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
 
   const handlePost = () => {
@@ -129,28 +144,31 @@ export function CommentSection({
     });
   };
 
-  const handleReply = (parentId: string, body: string) => {
-    if (!currentUserId || !body.trim() || isPending) return;
+  const handleReply = useCallback(
+    (parentId: string, body: string) => {
+      if (!currentUserId || !body.trim() || isPending) return;
 
-    startTransition(async () => {
-      const result = await createComment(targetType, targetId, body, parentId);
-      if (result?.success && result.comment) {
-        const reply = result.comment as CommentWithAuthor;
-        const topLevelId = reply.parent_comment_id ?? parentId;
-        setComments((prev) =>
-          prev.map((c) =>
-            c.id === topLevelId
-              ? { ...c, replies: [...c.replies, reply], reply_count: c.reply_count + 1 }
-              : c,
-          ),
-        );
-        setCommentCount((c) => c + 1);
-        setExpandedReplies((prev) => new Set(prev).add(topLevelId));
-      }
-    });
-  };
+      startTransition(async () => {
+        const result = await createComment(targetType, targetId, body, parentId);
+        if (result?.success && result.comment) {
+          const reply = result.comment as CommentWithAuthor;
+          const topLevelId = reply.parent_comment_id ?? parentId;
+          setComments((prev) =>
+            prev.map((c) =>
+              c.id === topLevelId
+                ? { ...c, replies: [...c.replies, reply], reply_count: c.reply_count + 1 }
+                : c,
+            ),
+          );
+          setCommentCount((c) => c + 1);
+          setExpandedReplies((prev) => new Set(prev).add(topLevelId));
+        }
+      });
+    },
+    [currentUserId, isPending, targetType, targetId],
+  );
 
-  const handleEdit = async (id: string, body: string): Promise<boolean> => {
+  const handleEdit = useCallback(async (id: string, body: string): Promise<boolean> => {
     const result = await updateComment(id, body);
     if (result?.success) {
       setComments((prev) =>
@@ -167,49 +185,52 @@ export function CommentSection({
       return true;
     }
     return false;
-  };
+  }, []);
 
-  const handleDelete = (id: string) => {
-    const removed = findComment(id);
-    if (!removed) return;
+  const handleDelete = useCallback(
+    (id: string) => {
+      const removed = findComment(id);
+      if (!removed) return;
 
-    const isTopLevel = !removed.parent_comment_id;
-    const idx = isTopLevel ? comments.findIndex((c) => c.id === id) : -1;
-    const wasInLoadedRange = idx >= 0 && idx < loadedCount;
+      const isTopLevel = !removed.parent_comment_id;
+      const idx = isTopLevel ? comments.findIndex((c) => c.id === id) : -1;
+      const wasInLoadedRange = idx >= 0 && idx < loadedCount;
 
-    if (isTopLevel) {
-      if (wasInLoadedRange) {
-        setLoadedCount((c) => c - 1);
+      if (isTopLevel) {
+        if (wasInLoadedRange) {
+          setLoadedCount((c) => c - 1);
+        }
+        setTotalComments((t) => Math.max(0, t - 1));
       }
-      setTotalComments((t) => Math.max(0, t - 1));
-    }
 
-    setComments((prev) => removeCommentById(prev, id));
-    setCommentCount((c) => Math.max(0, c - 1));
+      setComments((prev) => removeCommentById(prev, id));
+      setCommentCount((c) => Math.max(0, c - 1));
 
-    startTransition(async () => {
-      const result = await deleteComment(id);
-      if (result?.error) {
-        setComments((prev) => reinsertComment(prev, removed));
-        setCommentCount((c) => c + 1);
-        if (isTopLevel) {
-          setTotalComments((t) => t + 1);
-          if (wasInLoadedRange) {
-            setLoadedCount((c) => c + 1);
+      startTransition(async () => {
+        const result = await deleteComment(id);
+        if (result?.error) {
+          setComments((prev) => reinsertComment(prev, removed));
+          setCommentCount((c) => c + 1);
+          if (isTopLevel) {
+            setTotalComments((t) => t + 1);
+            if (wasInLoadedRange) {
+              setLoadedCount((c) => c + 1);
+            }
           }
         }
-      }
-    });
-  };
+      });
+    },
+    [comments, loadedCount],
+  );
 
-  const handleToggleReplies = (id: string) => {
+  const handleToggleReplies = useCallback((id: string) => {
     setExpandedReplies((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  };
+  }, []);
 
   return (
     <div>
@@ -243,7 +264,7 @@ export function CommentSection({
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                   repliesExpanded={expandedReplies.has(comment.id)}
-                  onToggleReplies={() => handleToggleReplies(comment.id)}
+                  onToggleReplies={handleToggleReplies}
                 />
               ))}
             </div>
@@ -312,10 +333,10 @@ interface CommentItemProps {
   onEdit: (id: string, body: string) => Promise<boolean>;
   onDelete: (id: string) => void;
   repliesExpanded?: boolean;
-  onToggleReplies?: () => void;
+  onToggleReplies?: (commentId: string) => void;
 }
 
-function CommentItem({
+function CommentItemImpl({
   comment,
   currentUserId,
   isPending,
@@ -550,7 +571,7 @@ function CommentItem({
         {onReply && comment.reply_count > 0 && (
           <button
             type="button"
-            onClick={onToggleReplies}
+            onClick={() => onToggleReplies?.(comment.id)}
             aria-expanded={repliesExpanded}
             className="mt-1.5 flex min-h-[32px] items-center gap-1 px-1 py-1 text-xs font-medium text-accent-400 transition-colors hover:text-accent-300"
           >
@@ -578,3 +599,6 @@ function CommentItem({
     </div>
   );
 }
+
+// Memoized so typing in the comment input doesn't re-render every comment.
+const CommentItem = memo(CommentItemImpl);

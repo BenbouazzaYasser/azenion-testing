@@ -140,11 +140,9 @@ export interface ChannelView {
   serverKind: "team" | "branch" | "user" | null;
 }
 
-/**
- * Resolve a channel by id for the current user.
- * Returns null when it doesn't exist or RLS hides it (no access).
- */
-export async function getChannelView(channelId: string): Promise<ChannelView | null> {
+// Internal: resolves a channel by id for the current user (used by
+// getProjectChannel below). Returns null when it doesn't exist or RLS hides it.
+async function getChannelView(channelId: string): Promise<ChannelView | null> {
   const supabase = await createClient();
 
   const { data } = await supabase

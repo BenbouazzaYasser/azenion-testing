@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { Fragment, useRef, useState, useTransition } from "react";
 import {
   ImagePlus,
   MessageSquare,
@@ -426,12 +426,12 @@ export function BranchFeed({
 
         {items.length > 0 ? (
           <div className="mt-10 space-y-6">
-            {items.map((item, i) => {
+            {items.map((item) => {
               const manageable = isManageable(item);
               const pinable = canManage && PINNABLE_TYPES.has(item.source_type);
               const showMenu = manageable || pinable;
               return (
-                <>
+                <Fragment key={item.source_id}>
                   {editingId === item.source_id ? (
                     <div className="rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
                       <h3 className="text-base font-medium text-ink-200">
@@ -548,7 +548,7 @@ export function BranchFeed({
                       />
                     </div>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </div>

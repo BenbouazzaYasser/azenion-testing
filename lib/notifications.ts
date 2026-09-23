@@ -235,17 +235,49 @@ export async function notifyMentions(
     .select("id, username")
     .in("username", usernames);
 
-  const snippet = (preview ?? text).slice(0, 100);
+  const candidates = (profiles ?? []).filter((p) => p.id !== actorId);
+  if (candidates.length === 0) return;
+  const candidateIds = candidates.map((p) => p.id);
 
-  for (const profile of profiles ?? []) {
-    if (profile.id === actorId) continue;
-    await insertNotification({
-      userId: profile.id,
+  // P2: two parallel fan-out queries + one bulk insert instead of two serial
+  // queries per mention. Applies the exact same gates as insertNotification:
+  // the recipient preference for this type, and the unread de-dup on
+  // (type, actor, target).
+  const prefKey = notificationPreferenceKey("mentioned_you");
+  const [{ data: settings }, { data: existing }] = await Promise.all([
+    supabase.from("user_settings").select("user_id, notifications").in("user_id", candidateIds),
+    supabase
+      .from("notifications")
+      .select("user_id")
+      .eq("type", "mentioned_you")
+      .eq("actor_id", actorId)
+      .eq("target_type", targetType)
+      .eq("target_id", targetId)
+      .eq("read", false)
+      .in("user_id", candidateIds),
+  ]);
+
+  const disabled = new Set<string>();
+  for (const row of settings ?? []) {
+    const bag = (row.notifications ?? {}) as Record<string, unknown>;
+    if (typeof bag[prefKey] === "boolean" && bag[prefKey] === false) disabled.add(row.user_id);
+  }
+  const alreadyNotified = new Set((existing ?? []).map((r) => r.user_id));
+
+  const snippet = (preview ?? text).slice(0, 100);
+  const rows = candidates
+    .filter((p) => !disabled.has(p.id) && !alreadyNotified.has(p.id))
+    .map((p) => ({
+      user_id: p.id,
       type: "mentioned_you",
-      actorId,
-      targetType,
-      targetId,
-      metadata: { username: profile.username, preview: snippet },
-    });
+      actor_id: actorId,
+      target_type: targetType,
+      target_id: targetId,
+      metadata: { username: p.username, preview: snippet },
+    }));
+
+  if (rows.length > 0) {
+    // Best-effort, matching insertNotification's swallow-and-continue contract.
+    await supabase.from("notifications").insert(rows);
   }
 }

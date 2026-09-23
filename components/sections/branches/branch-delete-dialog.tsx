@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteBranch } from "@/actions/branch.actions";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 
 interface BranchDeleteTarget {
   dbId: string;
@@ -29,24 +29,9 @@ export function BranchDeleteDialog({ branch, onClose }: BranchDeleteDialogProps)
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState("");
   const [isPending, startTransition] = useTransition();
-  const [mounted, setMounted] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(true);
 
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  }, [onClose]);
+  const { mounted } = useDialogOpen(true, onClose);
 
   function handleDelete() {
     setError(null);

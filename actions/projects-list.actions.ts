@@ -115,6 +115,9 @@ async function fetchPublicProjectsPage(
       owner:owner_id ( username, full_name, avatar_url ),
       team:team_id ( name, slug )
     `)
+    // Public catalog mirrors RLS (00012): only open projects are listed —
+    // the admin client bypasses RLS, so the filter must be explicit here.
+    .eq("visibility", "open")
     // ARCHIVED (= inactive >60d) excluded in-DB so pages stay full. Mirrors
     // getProjectLifecycleStatus: null last_activity_at counts as ACTIVE.
     .or(`last_activity_at.is.null,last_activity_at.gt.${archiveCutoffIso}`)
@@ -226,7 +229,7 @@ async function fetchPublicProjectsPage(
 async function fetchProjectsFilterMeta(): Promise<ProjectsFilterMeta> {
   const adminClient = createAdminClient();
   const [{ data: techRows }, { data: allCategories }] = await Promise.all([
-    adminClient.from("projects").select("technologies").limit(1000),
+    adminClient.from("projects").select("technologies").eq("visibility", "open").limit(1000),
     adminClient.from("project_categories").select("id, name, slug").order("name"),
   ]);
 

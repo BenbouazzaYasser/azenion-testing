@@ -90,50 +90,56 @@ export default async function BranchPage({ params }: BranchPageProps) {
   // Platform admins and branch leaders manage the hub.
   const canManage = isPlatformAdmin || isBranchLeader;
 
-  const { data: members } = await adminClient
-    .from("branch_members")
-    .select(`
-      user_id,
-      role,
-      joined_at,
-      user:user_id ( id, username, full_name, avatar_url )
-    `)
-    .eq("branch_id", branch.id)
-    .order("joined_at", { ascending: true });
-
-  const { data: leaderRows } = await adminClient
-    .from("branch_leaders")
-    .select(`
-      assigned_by,
-      created_at,
-      user:user_id ( id, username, full_name, avatar_url )
-    `)
-    .eq("branch_id", branch.id);
-
-  const { data: rawEvents } = await adminClient
-    .from("branch_events")
-    .select("*")
-    .eq("branch_id", branch.id)
-    .order("starts_at", { ascending: true });
-
-  // ── Teams whose branch is this branch ─────────────────────────────────
-  const { data: branchTeams } = await adminClient
-    .from("teams")
-    .select(`
-      id,
-      slug,
-      name,
-      description,
-      logo_url,
-      visibility,
-      created_at,
-      updated_at,
-      technologies,
-      owner:owner_id ( username, full_name, avatar_url )
-    `)
-    .eq("branch_id", branch.id)
-    .order("created_at", { ascending: false })
-    .limit(30);
+  const [
+    { data: members },
+    { data: leaderRows },
+    { data: rawEvents },
+    { data: branchTeams },
+    feedResult,
+  ] = await Promise.all([
+    adminClient
+      .from("branch_members")
+      .select(`
+        user_id,
+        role,
+        joined_at,
+        user:user_id ( id, username, full_name, avatar_url )
+      `)
+      .eq("branch_id", branch.id)
+      .order("joined_at", { ascending: true }),
+    adminClient
+      .from("branch_leaders")
+      .select(`
+        assigned_by,
+        created_at,
+        user:user_id ( id, username, full_name, avatar_url )
+      `)
+      .eq("branch_id", branch.id),
+    adminClient
+      .from("branch_events")
+      .select("*")
+      .eq("branch_id", branch.id)
+      .order("starts_at", { ascending: true }),
+    adminClient
+      .from("teams")
+      .select(`
+        id,
+        slug,
+        name,
+        description,
+        logo_url,
+        visibility,
+        created_at,
+        updated_at,
+        technologies,
+        owner:owner_id ( username, full_name, avatar_url )
+      `)
+      .eq("branch_id", branch.id)
+      .order("created_at", { ascending: false })
+      .limit(30),
+    // Branch feed only needs branch.id + viewer; no dependency on the above.
+    getBranchFeedItems(branch.id, 1, 20, currentUserId),
+  ]);
 
   const branchTeamIds = (branchTeams ?? []).map((t) => t.id);
 
@@ -281,9 +287,7 @@ export default async function BranchPage({ params }: BranchPageProps) {
     member_count: projectMemberCountMap.get(p.id) ?? 0,
   }));
 
-  // ── Branch-scoped feed ────────────────────────────────────────────────
-  const feedResult = await getBranchFeedItems(branch.id, 1, 20, currentUserId);
-
+  // ── Branch-scoped feed (fetched above — only branch.id + viewer needed) ─
   const membersWithProfiles = (members ?? []).map((m) => ({
     id: m.user_id,
     username: (m.user as unknown as { username: string } | null)?.username ?? "unknown",

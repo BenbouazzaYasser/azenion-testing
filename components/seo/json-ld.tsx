@@ -7,12 +7,14 @@ interface JsonLdProps {
  * a plain script tag with no client JS attached.
  */
 export function JsonLd({ data }: JsonLdProps) {
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-    />
-  );
+  // JSON.stringify does not escape "<": without this, a "</script>" inside user
+  // content (post titles/bodies) would terminate the tag and execute — stored
+  // XSS on public pages. \u2028/\u2029 are valid JSON but invalid JS literals.
+  const json = JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />;
 }
 
 export function siteUrl() {

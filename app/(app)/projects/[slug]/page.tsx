@@ -79,60 +79,82 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   if (!project) notFound();
 
-  const { data: teamBranchRow } = await adminClient
-    .from("teams")
-    .select("branch:branch_id ( id, name, slug )")
-    .eq("id", project.team_id)
-    .maybeSingle();
+  const [{ data: teamBranchRow }, user] = await Promise.all([
+    adminClient
+      .from("teams")
+      .select("branch:branch_id ( id, name, slug )")
+      .eq("id", project.team_id)
+      .maybeSingle(),
+    getSessionUser(),
+  ]);
 
   const branchData =
     ((teamBranchRow as unknown as { branch: { id: string; name: string; slug: string } | null } | null)
       ?.branch ?? null);
 
-  const user = await getSessionUser();
+  const [
+    { data: membership },
+    { data: members },
+    { data: activities },
+    { data: rawUpdates },
+    { data: projectCategoryMembers },
+    { data: allCategories },
+  ] = await Promise.all([
+    project.visibility === "private" && user
+      ? supabase
+          .from("project_members")
+          .select("role")
+          .eq("project_id", project.id)
+          .eq("user_id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    adminClient
+      .from("project_members")
+      .select(`
+        role,
+        joined_at,
+        user:user_id ( id, username, full_name, avatar_url )
+      `)
+      .eq("project_id", project.id)
+      .order("joined_at", { ascending: true }),
+    adminClient
+      .from("activities")
+      .select("*, creator:user_id ( username, full_name )")
+      .filter("metadata->>project_id", "eq", project.id)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    adminClient
+      .from("project_updates")
+      .select("*, author:author_id ( id, username, full_name, avatar_url )")
+      .eq("project_id", project.id)
+      .order("created_at", { ascending: false }),
+    adminClient
+      .from("project_category_members")
+      .select("category_id")
+      .eq("project_id", project.id),
+    adminClient
+      .from("project_categories")
+      .select("id, name, slug")
+      .order("name"),
+  ]);
 
+  // Private-project gate: results above are discarded unless this passes.
   if (project.visibility === "private") {
     if (!user) notFound();
-    const { data: membership } = await supabase
-      .from("project_members")
-      .select("role")
-      .eq("project_id", project.id)
-      .eq("user_id", user.id)
-      .maybeSingle();
     if (!membership) notFound();
   }
 
-  const { data: members } = await adminClient
-    .from("project_members")
-    .select(`
-      role,
-      joined_at,
-      user:user_id ( id, username, full_name, avatar_url )
-    `)
-    .eq("project_id", project.id)
-    .order("joined_at", { ascending: true });
-
-  const { data: activities } = await adminClient
-    .from("activities")
-    .select("*, creator:user_id ( username, full_name )")
-    .filter("metadata->>project_id", "eq", project.id)
-    .order("created_at", { ascending: false })
-    .limit(20);
-
-  const { data: rawUpdates } = await adminClient
-    .from("project_updates")
-    .select("*, author:author_id ( id, username, full_name, avatar_url )")
-    .eq("project_id", project.id)
-    .order("created_at", { ascending: false });
-
   const updateIds = (rawUpdates ?? []).map((u) => u.id);
-  const [{ data: updateLikes }, { data: updateComments }] = await Promise.all([
+  const [{ data: updateLikes }, { data: updateComments }, userLikesRes] = await Promise.all([
     updateIds.length > 0
       ? adminClient.from("update_likes").select("target_id").eq("target_type", "project_update").in("target_id", updateIds)
       : Promise.resolve({ data: [] }),
     updateIds.length > 0
       ? adminClient.from("update_comments").select("target_id").eq("target_type", "project_update").in("target_id", updateIds)
       : Promise.resolve({ data: [] }),
+    user && updateIds.length > 0
+      ? supabase.from("update_likes").select("target_id").eq("user_id", user.id).eq("target_type", "project_update").in("target_id", updateIds)
+      : Promise.resolve({ data: null }),
   ]);
 
   const likeCounts: Record<string, number> = {};
@@ -142,12 +164,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   for (const c of updateComments ?? []) { commentCounts[c.target_id] = (commentCounts[c.target_id] ?? 0) + 1; }
 
   const userLikeTargets = new Set<string>();
-  if (user) {
-    const { data: userLikes } = updateIds.length > 0
-      ? await supabase.from("update_likes").select("target_id").eq("user_id", user.id).eq("target_type", "project_update").in("target_id", updateIds)
-      : { data: [] };
-    for (const l of userLikes ?? []) userLikeTargets.add(l.target_id);
-  }
+  for (const l of userLikesRes.data ?? []) userLikeTargets.add(l.target_id);
 
   let userRole: string | null = null;
   let currentMember: { role: string } | null = null;
@@ -234,17 +251,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     }
   })();
 
-  const { data: projectCategoryMembers } = await adminClient
-    .from("project_category_members")
-    .select("category_id")
-    .eq("project_id", project.id);
-
   const projectCategoryIds = (projectCategoryMembers ?? []).map((m) => m.category_id);
-
-  const { data: allCategories } = await adminClient
-    .from("project_categories")
-    .select("id, name, slug")
-    .order("name");
 
   const projectCategories = (allCategories ?? [])
     .filter((c) => projectCategoryIds.includes(c.id))

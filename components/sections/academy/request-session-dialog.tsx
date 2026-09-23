@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { createSessionRequest } from "@/actions/session-request.actions";
 import { SESSION_REQUEST_FORMATS } from "@/lib/validations/session-request.schema";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 import { useTranslation } from "@/components/translation/translation-provider";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +58,6 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [mounted, setMounted] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
 
   const [title, setTitle] = useState("");
@@ -66,22 +65,7 @@ export function RequestSessionDialog({ branches }: { branches: BranchOption[] })
   const [format, setFormat] = useState<(typeof SESSION_REQUEST_FORMATS)[number]>("EITHER");
   const [branchId, setBranchId] = useState("");
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  }, [open]);
+  const { mounted } = useDialogOpen(open, () => setOpen(false));
 
   function resetForm() {
     setTitle("");

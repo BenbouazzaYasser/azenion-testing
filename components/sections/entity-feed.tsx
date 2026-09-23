@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import {
   ImagePlus,
   Loader2,
@@ -540,8 +540,8 @@ export function EntityUpdatesFeed({
 
         {updates.length > 0 ? (
           <div className="mt-10 space-y-6">
-            {updates.map((update, i) => (
-              <>
+            {updates.map((update) => (
+              <Fragment key={update.id}>
                 {editingId === update.id ? (
                   <div className="rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl sm:p-6">
                     <h3 className="text-base font-medium text-ink-200">{t("entityFeed.editHeading")}</h3>
@@ -645,7 +645,7 @@ export function EntityUpdatesFeed({
                     }
                   />
                 )}
-              </>
+              </Fragment>
             ))}
           </div>
         ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X, Settings, ImagePlus, AlertTriangle, Users, ShieldAlert, User, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { updateTeam, deleteTeam } from "@/actions/team.actions";
 import { TransferOwnershipConfirmModal } from "@/components/shared/transfer-ownership-confirm-modal";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 
 interface TeamData {
   id: string;
@@ -55,7 +55,6 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
   const [activeTab, setActiveTab] = useState<"general" | "delete">("general");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [mounted, setMounted] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
 
   const [name, setName] = useState(team.name);
@@ -72,22 +71,7 @@ export function TeamSettingsDialog({ team, categories, canDelete, open: controll
     ? members.filter((m) => m.id !== currentUserId && m.role !== "owner")
     : [];
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  }, [open, setOpen]);
+  const { mounted } = useDialogOpen(open, () => setOpen(false));
 
   function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

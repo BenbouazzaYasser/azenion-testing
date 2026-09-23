@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatSidebar, type Conversation } from "@/components/chat/chat-sidebar";
 import { MobileConversationsContext } from "@/components/chat/mobile-conversations-context";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 
 interface ChatLayoutProps {
   conversations: Conversation[];
@@ -17,31 +17,15 @@ interface ChatLayoutProps {
 export function ChatLayout({ conversations, currentUserId, children }: ChatLayoutProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
 
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  }, [open]);
-
   const close = useCallback(() => setOpen(false), []);
+
+  const { mounted } = useDialogOpen(open, close);
 
   return (
     <MobileConversationsContext.Provider value={{ open: () => setOpen(true) }}>

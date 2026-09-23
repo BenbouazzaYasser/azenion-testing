@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect, useCallback } from "react";
+import { useState, useTransition, useRef, useEffect, useCallback, memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -120,6 +120,21 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
     setView("inbox");
     setOpenMenuId(null);
   }, []);
+
+  // Stable per-row handlers so memoized ConversationRows aren't defeated by
+  // fresh closures on every sidebar render (search keystrokes, unread ticks).
+  const handleRowMenuOpenChange = useCallback((id: string, open: boolean) => {
+    setOpenMenuId(open ? id : null);
+  }, []);
+
+  const handleRowNavigate = useCallback(
+    (id: string) => {
+      setOpenMenuId(null);
+      setPendingId(id);
+      onNavigate?.();
+    },
+    [onNavigate],
+  );
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -302,14 +317,10 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                     unread={false}
                     mode="archived"
                     menuOpen={openMenuId === conv.id}
-                    onMenuOpenChange={(o) => setOpenMenuId(o ? conv.id : null)}
+                    onMenuOpenChange={handleRowMenuOpenChange}
                     onRemoved={handleArchivedChange}
                     onRestored={handleArchivedChange}
-                    onNavigate={() => {
-                      setOpenMenuId(null);
-                      setPendingId(conv.id);
-                      onNavigate?.();
-                    }}
+                    onNavigate={handleRowNavigate}
                   />
                 ))}
               </div>
@@ -338,13 +349,9 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   unread={(unreadByConv[conv.id] ?? 0) > 0}
                   mode="inbox"
                   menuOpen={openMenuId === conv.id}
-                  onMenuOpenChange={(o) => setOpenMenuId(o ? conv.id : null)}
+                  onMenuOpenChange={handleRowMenuOpenChange}
                   onRemoved={handleConversationRemoved}
-                  onNavigate={() => {
-                    setOpenMenuId(null);
-                    setPendingId(conv.id);
-                    onNavigate?.();
-                  }}
+                  onNavigate={handleRowNavigate}
                 />
               ))}
             </div>
@@ -362,10 +369,11 @@ interface ConversationRowProps {
   unread: boolean;
   mode: "inbox" | "archived";
   menuOpen: boolean;
-  onMenuOpenChange: (open: boolean) => void;
+  /** (conversationId, open) — hoisted in the parent so rows stay memoizable. */
+  onMenuOpenChange: (id: string, open: boolean) => void;
   onRemoved: (id: string) => void;
   onRestored?: (id: string) => void;
-  onNavigate: () => void;
+  onNavigate: (id: string) => void;
 }
 
 /** Sidebar preview: attachment-only messages have empty content. */
@@ -377,7 +385,7 @@ function previewText(conv: Conversation): string {
   return "No messages yet";
 }
 
-function ConversationRow({
+function ConversationRowImpl({
   conv,
   currentUserId,
   isActive,
@@ -414,7 +422,7 @@ function ConversationRow({
       <Link
         href={prefetchHref}
         aria-current={isActive ? "page" : undefined}
-        onClick={onNavigate}
+        onClick={() => onNavigate(conv.id)}
         onMouseEnter={() => router.prefetch(prefetchHref)}
         onFocus={() => router.prefetch(prefetchHref)}
         className={cn(
@@ -504,7 +512,7 @@ function ConversationRow({
         hasUnread={unread}
         mode={mode}
         open={menuOpen}
-        onOpenChange={onMenuOpenChange}
+        onOpenChange={(o) => onMenuOpenChange(conv.id, o)}
         onRemoved={onRemoved}
         onRestored={onRestored}
         otherUserId={conv.other_user?.id ?? undefined}
@@ -513,3 +521,5 @@ function ConversationRow({
     </div>
   );
 }
+
+const ConversationRow = memo(ConversationRowImpl);

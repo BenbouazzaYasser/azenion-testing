@@ -40,8 +40,9 @@ create table if not exists public.user_roles (
 alter table public.user_roles enable row level security;
 
 drop policy if exists "user roles are publicly readable" on public.user_roles;
-create policy "user roles are publicly readable"
-  on public.user_roles for select using (true);
+create policy "user roles readable by self and platform admins"
+  on public.user_roles for select
+  using (user_id = auth.uid() or public.is_platform_admin());
 
 create index if not exists idx_user_roles_user_id on public.user_roles(user_id);
 create index if not exists idx_user_roles_role_id on public.user_roles(role_id);
@@ -245,4 +246,4 @@ on conflict (name) do update set
 
 grant select on public.roles to anon, authenticated, service_role;
 grant select, insert, update, delete on public.user_roles to service_role;
-grant select on public.user_roles to anon, authenticated;
+grant select on public.user_roles to authenticated;

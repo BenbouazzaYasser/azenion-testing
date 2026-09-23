@@ -52,31 +52,44 @@ export default async function ManageBranchesPage() {
 
   const admin = createAdminClient();
 
-  const { data: branches } = await admin
-    .from("branches")
-    .select("*")
-    .order("name", { ascending: true });
-
-  const { data: memberRows } = await admin
-    .from("branch_members")
-    .select("branch_id");
+  const [{ data: branches }, { data: memberRows }, { data: leaderRows }] = await Promise.all([
+    admin
+      .from("branches")
+      .select("*")
+      .order("name", { ascending: true }),
+    admin
+      .from("branch_members")
+      .select("branch_id, user_id"),
+    admin
+      .from("branch_leaders")
+      .select(`
+        branch_id,
+        user_id,
+        user:user_id ( id, username, full_name, avatar_url )
+      `),
+  ]);
 
   const memberCountMap = new Map<string, number>();
   for (const row of memberRows ?? []) {
     memberCountMap.set(row.branch_id, (memberCountMap.get(row.branch_id) ?? 0) + 1);
   }
 
-  const { data: leaderRows } = await admin
-    .from("branch_leaders")
-    .select(`
-      branch_id,
-      user:user_id ( id, username, full_name, avatar_url )
-    `);
+  // P3: only ship the profiles this page can act on (branch members + leaders)
+  // instead of every profile row in the database.
+  const memberIds = [
+    ...new Set([
+      ...(memberRows ?? []).map((r) => r.user_id),
+      ...(leaderRows ?? []).map((r) => r.user_id),
+    ]),
+  ];
 
-  const { data: profiles } = await admin
-    .from("profiles")
-    .select("id, username, full_name, avatar_url")
-    .order("username", { ascending: true });
+  const { data: profiles } = memberIds.length > 0
+    ? await admin
+        .from("profiles")
+        .select("id, username, full_name, avatar_url")
+        .in("id", memberIds)
+        .order("username", { ascending: true })
+    : { data: null };
 
   const branchesWithMembers: BranchWithMembers[] = (branches ?? []).map((b) => ({
     id: b.id,

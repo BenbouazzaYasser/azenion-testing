@@ -736,6 +736,7 @@ export async function getFeedItemById(
  */
 export async function getSavedFeedItems(
   _userId?: string | null,
+  pageSize: number = 100,
 ): Promise<{ items: FeedItem[]; total: number }> {
   const supabase = createAdminClient();
   // H4: explicit null = anonymous (prerender-safe); otherwise session-derived.
@@ -746,7 +747,8 @@ export async function getSavedFeedItems(
     .from("saved_posts")
     .select("post_id")
     .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(pageSize);
 
   const postIds = (saved ?? []).map((r) => r.post_id);
   if (postIds.length === 0) return { items: [], total: 0 };
@@ -761,19 +763,20 @@ export async function getSavedFeedItems(
     .map((id) => postById.get(id))
     .filter((p): p is PostRow => Boolean(p));
 
-  const items = await enrichPosts(supabase, ordered, userId, new Set<string>());
+  // P1: one batched visibility check instead of one RPC round trip per saved
+  // post. Runs before enrichment so hidden posts are never enriched. Fails
+  // closed: a null/error response filters everything out, same as the old
+  // per-item loop.
+  const { data: flags } = await supabase.rpc("is_feed_post_visible_batch", {
+    p_source_types: ordered.map((p) => p.source_type),
+    p_source_ids: ordered.map((p) => p.source_id),
+    p_user_id: userId,
+  });
+  const visible = ordered.filter((_, i) => (flags as boolean[] | null)?.[i] === true);
 
-  const visibleItems: FeedItem[] = [];
-  for (const item of items) {
-    const { data: visible } = await supabase.rpc("is_feed_post_visible", {
-      p_source_type: item.source_type,
-      p_source_id: item.source_id,
-      p_user_id: userId,
-    });
-    if (visible === true) visibleItems.push(item);
-  }
+  const items = await enrichPosts(supabase, visible, userId, new Set<string>());
 
-  return { items: visibleItems, total: visibleItems.length };
+  return { items, total: items.length };
 }
 
 /**
@@ -826,17 +829,9 @@ export async function getBranchFeedItems(
     ...(projectUpdates ?? []).map((p) => p.id),
   ];
 
-  let total = 0;
   const allIds = [...new Set(sourceIds)];
-  if (allIds.length > 0) {
-    const { count } = await supabase
-      .from("posts")
-      .select("id", { count: "exact", head: true })
-      .in("source_id", allIds);
-    total = count ?? 0;
-  }
 
-  const [{ data: pinRows }, { data: posts }] = await Promise.all([
+  const [{ data: pinRows }, { data: posts }, { data: totalRaw }] = await Promise.all([
     supabase.from("feed_pins").select("post_id").eq("scope", "branch").eq("branch_id", branchId),
     allIds.length > 0
       ? supabase.rpc("get_branch_feed_posts", {
@@ -847,7 +842,16 @@ export async function getBranchFeedItems(
           p_viewer: userId,
         })
       : Promise.resolve({ data: [] as PostRow[] }),
+    // Count through the same is_feed_post_visible predicate as the page RPC —
+    // the old raw posts count leaked how many private updates a branch has.
+    allIds.length > 0
+      ? supabase.rpc("count_branch_feed_posts", {
+          p_source_ids: allIds,
+          p_viewer: userId,
+        })
+      : Promise.resolve({ data: 0 }),
   ]);
+  const total = Number(totalRaw ?? 0);
 
   const pinnedIds = new Set((pinRows ?? []).map((r) => r.post_id));
   const items = await enrichPosts(supabase, (posts ?? []) as PostRow[], userId, pinnedIds);
@@ -915,6 +919,12 @@ export async function createFeedPost(formData: FormData) {
 
   if (!title.trim() && !body.trim()) {
     return { error: "Write something before posting." };
+  }
+  if (title.trim().length > 200) {
+    return { error: "Title must be 200 characters or less." };
+  }
+  if (body.trim().length > 5000) {
+    return { error: "Post must be 5000 characters or less." };
   }
 
   const { data: post, error } = await supabase

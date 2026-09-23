@@ -40,31 +40,36 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
   const adminClient = createAdminClient();
   const supabase = await createClient();
 
-  const { data: team } = await adminClient
-    .from("teams")
-    .select("id, name, slug, description, logo_url, banner_url, visibility, created_at, owner_id")
-    .eq("slug", slug)
-    .maybeSingle();
+  const [{ data: team }, user] = await Promise.all([
+    adminClient
+      .from("teams")
+      .select("id, name, slug, description, logo_url, banner_url, visibility, created_at, owner_id")
+      .eq("slug", slug)
+      .maybeSingle(),
+    getSessionUser(),
+  ]);
 
   if (!team) notFound();
 
-  const user = await getSessionUser();
-
   if (!user) redirect(`/teams/${slug}`);
 
-  const { data: membership } = await supabase
-    .from("team_members")
-    .select("role")
-    .eq("team_id", team.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [{ data: membership }, resolvedMedia, { data: isAdminResult }] = await Promise.all([
+    supabase
+      .from("team_members")
+      .select("role")
+      .eq("team_id", team.id)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    Promise.all([
+      resolveMediaValue(team.logo_url, undefined, adminClient),
+      resolveMediaValue(team.banner_url, undefined, adminClient),
+    ]),
+    supabase.rpc("is_platform_admin"),
+  ]);
 
   if (!membership) redirect(`/teams/${slug}`);
 
-  const [resolvedLogo, resolvedBanner] = await Promise.all([
-    resolveMediaValue(team.logo_url, undefined, adminClient),
-    resolveMediaValue(team.banner_url, undefined, adminClient),
-  ]);
+  const [resolvedLogo, resolvedBanner] = resolvedMedia;
   const teamData = {
     ...team,
     logo_url: (resolvedLogo as string | null) ?? null,
@@ -72,19 +77,18 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
   };
 
   const isOwner = user.id === team.owner_id;
-  const isPlatformAdmin = (await supabase.rpc("is_platform_admin"))?.data === true;
+  const isPlatformAdmin = isAdminResult === true;
 
-  let capabilities: string[] = [];
-  if (isPlatformAdmin || isOwner) {
-    const { data: rawCapabilities } = await supabase.rpc("get_team_capabilities", {
-      p_team_id: team.id,
-    });
-    capabilities = ((rawCapabilities ?? []) as unknown as { capability: string }[]).map(
-      (c) => c.capability,
-    );
-  }
+  const [{ data: rawCapabilities }, permissionMap] = await Promise.all([
+    isPlatformAdmin || isOwner
+      ? supabase.rpc("get_team_capabilities", { p_team_id: team.id })
+      : Promise.resolve({ data: null }),
+    getTeamPermissions(team.id, TEAM_PERMISSIONS),
+  ]);
+  const capabilities = ((rawCapabilities ?? []) as unknown as { capability: string }[]).map(
+    (c) => c.capability,
+  );
 
-  const permissionMap = await getTeamPermissions(team.id, TEAM_PERMISSIONS);
   const has = (p: TeamPermission) => permissionMap[p];
 
   const canManageRoles = isOwner || isPlatformAdmin;
@@ -94,9 +98,22 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
   const canEditInfo = has(TeamPermission.EDIT_TEAM_INFORMATION);
   const canEditAppearance = has(TeamPermission.EDIT_TEAM_APPEARANCE);
 
-  const [{ data: rawRoles }, { data: rawMemberRoles }] = await Promise.all([
+  const [{ data: rawRoles }, { data: rawMemberRoles }, { data: members }, { data: categories }, { data: teamCategoryEdges }] = await Promise.all([
     supabase.rpc("get_team_roles", { p_team_id: team.id }),
     supabase.rpc("get_team_member_roles", { p_team_id: team.id }),
+    adminClient
+      .from("team_members")
+      .select("role, joined_at, user:user_id ( id, username, full_name, avatar_url )")
+      .eq("team_id", team.id)
+      .order("joined_at", { ascending: true }),
+    adminClient
+      .from("team_categories")
+      .select("*")
+      .order("name", { ascending: true }),
+    adminClient
+      .from("team_category_members")
+      .select("category_id")
+      .eq("team_id", team.id),
   ]);
 
   const roles = ((rawRoles ?? []) as Record<string, unknown>[]).map((r) => ({
@@ -114,12 +131,6 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
   for (const row of (rawMemberRoles ?? []) as Record<string, unknown>[]) {
     memberRolesByUser.set(row.member_id as string, (row.role_ids as string[]) ?? []);
   }
-
-  const { data: members } = await adminClient
-    .from("team_members")
-    .select("role, joined_at, user:user_id ( id, username, full_name, avatar_url )")
-    .eq("team_id", team.id)
-    .order("joined_at", { ascending: true });
 
   const membersData = (members ?? []).map((m) => {
     const profile = m.user as unknown as {
@@ -139,6 +150,15 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
     };
   });
 
+  const [{ data: rawJoinRequests }, { data: rawInvitations }] = await Promise.all([
+    canReviewRequests
+      ? supabase.rpc("get_team_join_requests", { p_team_id: team.id })
+      : Promise.resolve({ data: null }),
+    canInvite
+      ? supabase.rpc("get_team_invitations", { p_team_id: team.id })
+      : Promise.resolve({ data: null }),
+  ]);
+
   let joinRequests: {
     id: string;
     user_id: string;
@@ -150,9 +170,6 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
     created_at: string;
   }[] = [];
   if (canReviewRequests) {
-    const { data: rawJoinRequests } = await supabase.rpc("get_team_join_requests", {
-      p_team_id: team.id,
-    });
     joinRequests = ((rawJoinRequests ?? []) as Record<string, unknown>[]).map((r) => ({
       id: r.id as string,
       user_id: r.user_id as string,
@@ -176,9 +193,6 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
     created_at: string;
   }[] = [];
   if (canInvite) {
-    const { data: rawInvitations } = await supabase.rpc("get_team_invitations", {
-      p_team_id: team.id,
-    });
     invitations = ((rawInvitations ?? []) as Record<string, unknown>[]).map((r) => ({
       id: r.id as string,
       invited_user_id: r.invited_user_id as string,
@@ -190,16 +204,6 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
       created_at: r.created_at as string,
     }));
   }
-
-  const { data: categories } = await adminClient
-    .from("team_categories")
-    .select("*")
-    .order("name", { ascending: true });
-
-  const { data: teamCategoryEdges } = await adminClient
-    .from("team_category_members")
-    .select("category_id")
-    .eq("team_id", team.id);
 
   const categoriesData = (categories ?? []).map((c) => ({
     id: c.id,

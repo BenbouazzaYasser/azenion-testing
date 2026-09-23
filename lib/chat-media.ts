@@ -1,7 +1,3 @@
-import { createAdminClient } from "@/lib/supabase/admin";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/database.types";
-
 // ── Bucket / marker ─────────────────────────────────────────────────────────
 
 export const CHAT_MEDIA_BUCKET = "chat-media";
@@ -155,10 +151,6 @@ export function isChatMediaMarker(value: string | null | undefined): boolean {
 /** "chat-media/chat/abc/file.png" -> "chat/abc/file.png" */
 export function objectPathFromChatMarker(marker: string): string {
   return marker.startsWith(CHAT_MEDIA_PREFIX) ? marker.slice(CHAT_MEDIA_PREFIX.length) : marker;
-}
-
-export function chatMediaMarkerFor(objectPath: string): string {
-  return `${CHAT_MEDIA_PREFIX}${objectPath}`;
 }
 
 // ── validation ──────────────────────────────────────────────────────────────
@@ -327,44 +319,4 @@ export function validateAttachmentMetadata(metadata: unknown): { valid: boolean;
 }
 
 // ── signed URL resolution (private marker -> signed URL) ────────────────────
-
-/**
- * Resolve a stored chat-media marker to a signed URL.
- * Returns null if not a marker or not authorized.
- * Mirrors lib/media.ts:resolveMediaValue but for chat-media.
- */
-export async function resolveChatMediaValue(
-  value: string | null | undefined,
-  ttlSeconds: number = CHAT_MEDIA_SIGNED_URL_TTL,
-  supabase?: SupabaseClient<Database>,
-): Promise<string | null> {
-  if (!value) return null;
-  if (!isChatMediaMarker(value)) return value;
-  const client = supabase ?? createAdminClient();
-  const objectPath = objectPathFromChatMarker(value);
-  // Fail closed on paths outside the `chat/<conversation>/<attachment>/<file>`
-  // layout (traversal or cross-prefix values must never be signed).
-  if (
-    objectPath.length === 0 ||
-    objectPath.length > 500 ||
-    !objectPath.startsWith("chat/") ||
-    objectPath.includes("..") ||
-    !/^[A-Za-z0-9._/-]+$/.test(objectPath)
-  ) {
-    return null;
-  }
-  const { data, error } = await client.storage.from(CHAT_MEDIA_BUCKET).createSignedUrl(objectPath, ttlSeconds);
-  if (error || !data) return null;
-  return data.signedUrl;
-}
-
-/**
- * Batch resolve.
- */
-export async function resolveChatMediaValues(
-  values: (string | null | undefined)[],
-  ttlSeconds: number = CHAT_MEDIA_SIGNED_URL_TTL,
-  supabase?: SupabaseClient<Database>,
-): Promise<(string | null)[]> {
-  return Promise.all(values.map((v) => resolveChatMediaValue(v, ttlSeconds, supabase)));
-}
+// (resolveChatMediaValue[s] removed with C2 dead-code pass: zero importers.)

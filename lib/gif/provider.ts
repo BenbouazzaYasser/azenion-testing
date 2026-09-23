@@ -158,9 +158,6 @@ export const gifProvider = {
   getKey: getGiphyKey,
 };
 
-// For future Tenor support: same interface, switch via env
-// export const tenorProvider = { ... }
-
 export function getRequiredGifEnvVar(): string {
   return "GIPHY_API_KEY";
 }

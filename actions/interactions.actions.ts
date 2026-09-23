@@ -253,6 +253,7 @@ export async function createComment(
 
   if (!user) return { error: "Not authenticated" };
   if (!body.trim()) return { error: "Comment cannot be empty" };
+  if (body.trim().length > 5000) return { error: "Comment is too long (max 5000 characters)." };
 
   if (!(await isTargetVisible(targetType, targetId, user.id))) {
     return { error: "Not authorized" };
@@ -338,6 +339,7 @@ export async function updateComment(commentId: string, body: string) {
 
   if (!user) return { error: "Not authenticated" };
   if (!body.trim()) return { error: "Comment cannot be empty" };
+  if (body.trim().length > 5000) return { error: "Comment is too long (max 5000 characters)." };
 
   const { error } = await supabase
     .from("update_comments")
@@ -394,6 +396,10 @@ export async function getCommentsAction(
     .eq("target_id", targetId)
     .is("parent_comment_id", null)
     .order("created_at", { ascending: true })
+    // Deterministic tiebreak: without it, equal timestamps can reorder
+    // between pages and offset paging skips/repeats rows — the root cause of
+    // the comment-count drift in comment-section.
+    .order("id", { ascending: true })
     .range(offset, offset + limit - 1);
 
   if (!topLevelRows || topLevelRows.length === 0) {

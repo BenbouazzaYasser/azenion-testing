@@ -36,6 +36,7 @@ import {
   sanitizeFilename,
 } from "@/lib/chat-media";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import { RecordingTimer } from "@/components/chat/recording-timer";
 import Image from "next/image";
 import nextDynamic from "next/dynamic";
 import type { GifResult } from "@/lib/gif/provider";
@@ -610,14 +611,17 @@ export function ChatConversation({
     return anchor;
   }, [messages, otherReadTs, currentUserId]);
 
-  function getMessageStatus(msg: Message, index: number): MessageStatusKind | null {
-    if (msg.sender_id !== currentUserId) return null;
-    const ts = msg.created_at ? new Date(msg.created_at).getTime() : null;
-    const isSeen = ts !== null && otherReadTs !== null && ts <= otherReadTs;
-    if (isSeen) return index === lastSeenOwnIndex ? "seen" : null;
-    if (msg.received_at) return "received";
-    return "sent";
-  }
+  const getMessageStatus = useCallback(
+    (msg: Message, index: number): MessageStatusKind | null => {
+      if (msg.sender_id !== currentUserId) return null;
+      const ts = msg.created_at ? new Date(msg.created_at).getTime() : null;
+      const isSeen = ts !== null && otherReadTs !== null && ts <= otherReadTs;
+      if (isSeen) return index === lastSeenOwnIndex ? "seen" : null;
+      if (msg.received_at) return "received";
+      return "sent";
+    },
+    [currentUserId, otherReadTs, lastSeenOwnIndex],
+  );
 
   const addFiles = useCallback((files: FileList | File[]) => {
     const list = Array.from(files);
@@ -1549,19 +1553,30 @@ export function ChatConversation({
 
   const isVirtualized = messages.length > VIRTUALIZE_THRESHOLD;
 
+  // Precomputed row structure (day divider / avatar grouping / status) for
+  // both the plain list and the virtualized list. Memoized so per-keystroke
+  // renders don't redo date math per row (same pattern as channel-chat.tsx).
+  const grouped = useMemo(
+    () =>
+      messages.map((msg, i) => {
+        const prevMsg = messages[i - 1];
+        const nextMsg = messages[i + 1];
+        const label = getDayLabel(msg.created_at);
+        const showDivider = label !== null && label !== getDayLabel(prevMsg?.created_at ?? null);
+        const isGrouped = !!prevMsg && prevMsg.sender_id === msg.sender_id && !showDivider;
+        const showAvatar =
+          !nextMsg || nextMsg.sender_id !== msg.sender_id || getDayLabel(nextMsg.created_at) !== label;
+        return { showDivider, label, isGrouped, showAvatar, status: getMessageStatus(msg, i) };
+      }),
+    [messages, getMessageStatus],
+  );
+
   // Shared row body for both the plain list and the virtualized list:
   // day divider + spacing + message (index-based grouping logic).
   const renderRowContent = (msg: Message, i: number) => {
-    const prevMsg = messages[i - 1];
-    const nextMsg = messages[i + 1];
-    const label = getDayLabel(msg.created_at);
-    const showDivider = label !== null && label !== getDayLabel(prevMsg?.created_at ?? null);
-    const isGrouped =
-      !!prevMsg && prevMsg.sender_id === msg.sender_id && !showDivider;
-    const showAvatar =
-      !nextMsg ||
-      nextMsg.sender_id !== msg.sender_id ||
-      getDayLabel(nextMsg.created_at) !== label;
+    const row = grouped[i];
+    if (!row) return null;
+    const { showDivider, label, isGrouped, showAvatar, status } = row;
 
     return (
       <>
@@ -1587,7 +1602,7 @@ export function ChatConversation({
             isOwn={msg.sender_id === currentUserId}
             isGrouped={isGrouped}
             showAvatar={showAvatar}
-            status={getMessageStatus(msg, i)}
+            status={status}
             statusAvatarUrl={participant?.avatar_url ?? null}
             statusAvatarName={participantName}
             active={msg.id === activeMessageId}
@@ -1783,9 +1798,7 @@ export function ChatConversation({
         ) : voice.isRecording ? (
           <div className="flex items-center gap-3">
             <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" aria-hidden />
-            <span className="min-w-0 flex-1 text-sm font-medium tabular-nums text-ink-50">
-              {Math.floor(voice.duration / 60)}:{String(voice.duration % 60).padStart(2, "0")} / {Math.floor(CHAT_MAX_AUDIO_DURATION_SECONDS / 60)}:{String(CHAT_MAX_AUDIO_DURATION_SECONDS % 60).padStart(2, "0")}
-            </span>
+            <RecordingTimer startedAt={voice.startedAt} />
             <span className="text-xs text-ink-500">Recording…</span>
             <Button type="button" variant="secondary" aria-label="Cancel recording" onClick={handleCancelVoice} className="h-10 w-10 shrink-0 rounded-full p-0">
               <Trash2 size={16} />

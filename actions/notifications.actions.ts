@@ -137,6 +137,12 @@ export async function resolveNotificationTarget(
   targetType: string | null,
   targetId: string | null,
 ): Promise<string | null> {
+  // Exported "use server" action: require a session before the service-role
+  // slug lookups below, so anonymous callers can't use this as an
+  // existence/slug oracle for arbitrary target ids.
+  const userId = await getSessionUserId();
+  if (!userId) return null;
+
   if (!targetType || !targetId) return null;
 
   // Feed interactions deep-link to the specific post.

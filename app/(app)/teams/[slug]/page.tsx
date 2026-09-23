@@ -58,19 +58,22 @@ export default async function TeamPage({ params }: TeamPageProps) {
 
   if (!team) notFound();
 
-  const { data: teamBranch } = team.branch_id
-    ? await adminClient
+  const branchPromise = team.branch_id
+    ? adminClient
         .from("branches")
         .select("id, name, slug")
         .eq("id", team.branch_id)
         .maybeSingle()
-    : { data: null };
+    : Promise.resolve({ data: null });
+
+  const [{ data: teamBranch }, user] = await Promise.all([
+    branchPromise,
+    getSessionUser(),
+  ]);
 
   const branchData = teamBranch
     ? { id: teamBranch.id, name: teamBranch.name, slug: teamBranch.slug }
     : null;
-
-  const user = await getSessionUser();
 
   if (team.visibility === "private") {
     if (!user) notFound();
@@ -83,46 +86,88 @@ export default async function TeamPage({ params }: TeamPageProps) {
     if (!membership) notFound();
   }
 
-  let requestStatus: "PENDING" | "ACCEPTED" | "DECLINED" | null = null;
-  if (user) {
-    const { data: status } = await supabase.rpc("get_my_team_request_status", {
-      p_team_id: team.id,
-    });
-    requestStatus = (status as "PENDING" | "ACCEPTED" | "DECLINED" | null) ?? null;
-  }
+  const [
+    { data: status },
+    { data: members },
+    { data: openRoles },
+    { data: rawTeamUpdates },
+    { data: teamPins },
+    { data: categories },
+    { data: teamCategoryEdges },
+    { data: teamProjects },
+    { data: projectCategories },
+  ] = await Promise.all([
+    user
+      ? supabase.rpc("get_my_team_request_status", { p_team_id: team.id })
+      : Promise.resolve({ data: null }),
+    adminClient
+      .from("team_members")
+      .select(`
+        role,
+        joined_at,
+        user:user_id ( id, username, full_name, avatar_url )
+      `)
+      .eq("team_id", team.id)
+      .order("joined_at", { ascending: true }),
+    adminClient
+      .from("team_open_roles")
+      .select("*")
+      .eq("team_id", team.id)
+      .order("created_at", { ascending: true }),
+    adminClient
+      .from("team_updates")
+      .select("*, author:author_id ( id, username, full_name, avatar_url )")
+      .eq("team_id", team.id)
+      .order("created_at", { ascending: false }),
+    adminClient
+      .from("feed_pins")
+      .select("post_id")
+      .eq("scope", "team")
+      .eq("team_id", team.id),
+    adminClient
+      .from("team_categories")
+      .select("*")
+      .order("name", { ascending: true }),
+    // Pivot fetched separately (PostgREST FK cache issues with embedded selects).
+    adminClient
+      .from("team_category_members")
+      .select("category_id")
+      .eq("team_id", team.id),
+    adminClient
+      .from("projects")
+      .select(`
+        id,
+        slug,
+        name,
+        description,
+        logo_url,
+        visibility,
+        lifecycle_status,
+        last_activity_at,
+        created_at,
+        updated_at,
+        technologies,
+        recruitment,
+        owner:owner_id ( username, full_name, avatar_url )
+      `)
+      .eq("team_id", team.id)
+      .order("created_at", { ascending: false }),
+    adminClient
+      .from("project_categories")
+      .select("id, name, slug")
+      .order("name"),
+  ]);
 
-  const { data: members } = await adminClient
-    .from("team_members")
-    .select(`
-      role,
-      joined_at,
-      user:user_id ( id, username, full_name, avatar_url )
-    `)
-    .eq("team_id", team.id)
-    .order("joined_at", { ascending: true });
-
-  const { data: openRoles } = await adminClient
-    .from("team_open_roles")
-    .select("*")
-    .eq("team_id", team.id)
-    .order("created_at", { ascending: true });
-
-  const { data: rawTeamUpdates } = await adminClient
-    .from("team_updates")
-    .select("*, author:author_id ( id, username, full_name, avatar_url )")
-    .eq("team_id", team.id)
-    .order("created_at", { ascending: false });
+  const requestStatus = ((status as "PENDING" | "ACCEPTED" | "DECLINED" | null) ?? null) as
+    | "PENDING"
+    | "ACCEPTED"
+    | "DECLINED"
+    | null;
 
   const teamUpdateIds = (rawTeamUpdates ?? []).map((u) => u.id);
   const teamUpdateLikeCounts: Record<string, number> = {};
   const teamUpdateCommentCounts: Record<string, number> = {};
   const teamUpdateUserLikes = new Set<string>();
-
-  const { data: teamPins } = await adminClient
-    .from("feed_pins")
-    .select("post_id")
-    .eq("scope", "team")
-    .eq("team_id", team.id);
 
   const pinnedUpdateIds = new Set<string>();
   const pinnedPostIds = (teamPins ?? []).map((p) => p.post_id);
@@ -138,65 +183,28 @@ export default async function TeamPage({ params }: TeamPageProps) {
   }
 
   if (teamUpdateIds.length > 0) {
-    const [{ data: tuLikes }, { data: tuComments }] = await Promise.all([
+    const [{ data: tuLikes }, { data: tuComments }, userLikesRes] = await Promise.all([
       adminClient.from("update_likes").select("target_id").eq("target_type", "team_update").in("target_id", teamUpdateIds),
       adminClient.from("update_comments").select("target_id").eq("target_type", "team_update").in("target_id", teamUpdateIds),
+      user
+        ? supabase
+            .from("update_likes")
+            .select("target_id")
+            .eq("user_id", user.id)
+            .eq("target_type", "team_update")
+            .in("target_id", teamUpdateIds)
+        : Promise.resolve({ data: null }),
     ]);
     for (const id of teamUpdateIds) { teamUpdateLikeCounts[id as string] = 0; teamUpdateCommentCounts[id as string] = 0; }
     for (const l of tuLikes ?? []) { teamUpdateLikeCounts[l.target_id] = (teamUpdateLikeCounts[l.target_id] ?? 0) + 1; }
     for (const c of tuComments ?? []) { teamUpdateCommentCounts[c.target_id] = (teamUpdateCommentCounts[c.target_id] ?? 0) + 1; }
-
-    if (user) {
-      const { data: userTULikes } = await supabase
-        .from("update_likes")
-        .select("target_id")
-        .eq("user_id", user.id)
-        .eq("target_type", "team_update")
-        .in("target_id", teamUpdateIds);
-      for (const l of userTULikes ?? []) teamUpdateUserLikes.add(l.target_id);
-    }
+    for (const l of userLikesRes.data ?? []) teamUpdateUserLikes.add(l.target_id);
   }
-
-  const { data: categories } = await adminClient
-    .from("team_categories")
-    .select("*")
-    .order("name", { ascending: true });
-
-  // Fetch team categories via pivot table (separate query avoids PostgREST FK cache issues)
-  const { data: teamCategoryEdges } = await adminClient
-    .from("team_category_members")
-    .select("category_id")
-    .eq("team_id", team.id);
 
   const selectedCategoryIds = new Set((teamCategoryEdges ?? []).map((e) => e.category_id));
   const teamCategories = (categories ?? [])
     .filter((c) => selectedCategoryIds.has(c.id))
     .map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
-
-  const { data: teamProjects } = await adminClient
-    .from("projects")
-    .select(`
-      id,
-      slug,
-      name,
-      description,
-      logo_url,
-      visibility,
-      lifecycle_status,
-      last_activity_at,
-      created_at,
-      updated_at,
-      technologies,
-      recruitment,
-      owner:owner_id ( username, full_name, avatar_url )
-    `)
-    .eq("team_id", team.id)
-    .order("created_at", { ascending: false });
-
-  const { data: projectCategories } = await adminClient
-    .from("project_categories")
-    .select("id, name, slug")
-    .order("name");
 
   const allCategoriesMap = new Map<string, { id: string; name: string; slug: string }>();
   if (projectCategories) {
@@ -209,19 +217,15 @@ export default async function TeamPage({ params }: TeamPageProps) {
   let projectCategoryMap = new Map<string, { id: string; name: string; slug: string }[]>();
   if (teamProjects && teamProjects.length > 0) {
     const projectIds = teamProjects.map((p) => p.id);
-    const { data: projectMembers } = await adminClient
-      .from("project_members")
-      .select("project_id")
-      .in("project_id", projectIds);
+    const [{ data: projectMembers }, { data: catEdges }] = await Promise.all([
+      adminClient.from("project_members").select("project_id").in("project_id", projectIds),
+      adminClient.from("project_category_members").select("project_id, category_id").in("project_id", projectIds),
+    ]);
     if (projectMembers) {
       for (const pm of projectMembers) {
         projectMemberCounts[pm.project_id] = (projectMemberCounts[pm.project_id] ?? 0) + 1;
       }
     }
-    const { data: catEdges } = await adminClient
-      .from("project_category_members")
-      .select("project_id, category_id")
-      .in("project_id", projectIds);
     for (const edge of catEdges ?? []) {
       const entries = projectCategoryMap.get(edge.project_id) ?? [];
       const cat = allCategoriesMap.get(edge.category_id);

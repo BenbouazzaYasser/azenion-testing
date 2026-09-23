@@ -16,6 +16,22 @@ export interface CertificationEntry {
   url: string | null;
 }
 
+const educationEntrySchema = z.object({
+  institution: z.string().trim().max(200),
+  degree: z.string().trim().max(200).nullable().default(null),
+  field: z.string().trim().max(200).nullable().default(null),
+  start_year: z.string().trim().max(10).nullable().default(null),
+  end_year: z.string().trim().max(10).nullable().default(null),
+  self_taught: z.boolean().default(false),
+});
+
+const certificationEntrySchema = z.object({
+  name: z.string().trim().max(200),
+  issuer: z.string().trim().max(200).nullable().default(null),
+  year: z.string().trim().max(10).nullable().default(null),
+  url: z.string().trim().max(500).nullable().default(null),
+});
+
 export const instructorVerificationSchema = z.object({
   full_name: z
     .string()
@@ -37,8 +53,8 @@ export const instructorVerificationSchema = z.object({
     .max(2000, "Teaching experience must be 2000 characters or less")
     .optional()
     .nullable(),
-  education: z.any().optional().default([]),
-  certifications: z.any().optional().default([]),
+  education: z.array(educationEntrySchema).optional().default([]),
+  certifications: z.array(certificationEntrySchema).optional().default([]),
   portfolio_url: z
     .string()
     .trim()

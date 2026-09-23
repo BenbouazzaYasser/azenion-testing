@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   X,
@@ -25,7 +25,7 @@ import { TechTagInput } from "./tech-tag-input";
 import { RecruitmentEditor, type RecruitmentRole } from "./recruitment-editor";
 import { deleteProject, updateProjectSettings, uploadProjectLogo } from "@/actions/project.actions";
 import { TransferOwnershipConfirmModal } from "@/components/shared/transfer-ownership-confirm-modal";
-import { useDialogFocus } from "@/lib/use-dialog-focus";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 
 interface ProjectSettingsData {
   id: string;
@@ -102,7 +102,6 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
-  const [mounted, setMounted] = useState(false);
   const dialogFocusRef = useDialogFocus<HTMLDivElement>(open);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -128,22 +127,7 @@ export function ProjectSettingsDialog({ project, allCategories, open: controlled
     : [];
   const [logoUploading, setLogoUploading] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const frame = requestAnimationFrame(() => setMounted(true));
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-      setMounted(false);
-    };
-  }, [open, setOpen]);
+  const { mounted } = useDialogOpen(open, () => setOpen(false));
 
   function resetState() {
     setName(project.name);
