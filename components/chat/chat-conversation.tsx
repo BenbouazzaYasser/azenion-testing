@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useMemo, useRef, useState, useEffect, useCallback } from "react";
+import { useMemo, useRef, useState, useEffect, useLayoutEffect, useCallback, useSyncExternalStore } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useSearchParams } from "next/navigation";
 import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Plus, Film, Sticker as StickerIcon, Phone, Video } from "lucide-react";import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +17,7 @@ import {
   markConversationRead,
   markMessagesReceived,
   getConversationRecipientReadAt,
+  loadOlderMessages,
 } from "@/actions/chat.actions";
 import { setActiveConversation } from "@/lib/chat-unread";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
@@ -29,6 +31,7 @@ import {
   CHAT_MAX_FILE_SIZE,
   CHAT_MAX_AUDIO_SIZE,
   CHAT_MAX_AUDIO_DURATION_SECONDS,
+  CHAT_MEDIA_SIGNED_URL_TTL,
   getChatMediaObjectPath,
   sanitizeFilename,
 } from "@/lib/chat-media";
@@ -37,6 +40,15 @@ import Image from "next/image";
 import nextDynamic from "next/dynamic";
 import type { GifResult } from "@/lib/gif/provider";
 import type { Sticker as StickerType } from "@/lib/stickers/catalog";
+
+// Above this many loaded messages the list switches to virtualization.
+// Below it, plain DOM rows scroll natively — mixed-height chat rows make
+// height estimates jitter, and the resulting scrollTop compensation writes
+// are what make scrolling up feel like the page is being pulled down.
+const VIRTUALIZE_THRESHOLD = 250;
+
+// No external store: hydration flag via useSyncExternalStore.
+const emptySubscribe = () => () => {};
 
 // Picker menus only render when opened — keep them out of the
 // conversation bundle until first use.
@@ -78,6 +90,8 @@ interface Message {
 interface ChatConversationProps {
   conversationId: string;
   initialMessages: Message[];
+  /** Whether older messages exist above the initial page. */
+  initialHasMore?: boolean;
   currentUserId: string;
   amBlocked?: boolean;
   peer?: {
@@ -170,11 +184,17 @@ function classifyFile(file: File): { type: "image" | "file"; valid: boolean; err
 export function ChatConversation({
   conversationId,
   initialMessages,
+  initialHasMore = false,
   currentUserId,
   amBlocked = false,
   peer = null,
 }: ChatConversationProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [hasMoreOlder, setHasMoreOlder] = useState(initialHasMore);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const loadingOlderRef = useRef(false);
+  /** Scroll metrics captured before a prepend (for pre-paint scroll anchoring). */
+  const prependAnchorRef = useRef<{ scrollHeight: number; scrollTop: number } | null>(null);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const isSendingRef = useRef(false);
@@ -198,13 +218,88 @@ export function ChatConversation({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const emojiContainerRef = useRef<HTMLDivElement>(null);
+
+  // Virtualize the message list (only enabled past VIRTUALIZE_THRESHOLD):
+  // render visible messages + dividers, plain DOM below the threshold.
+  const virtualizer = useVirtualizer({
+    enabled: messages.length > VIRTUALIZE_THRESHOLD,
+    count: messages.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => 72, // avg message height in px (measured dynamically)
+    overscan: 12, // render 12 extra messages above/below viewport
+    // Key measurements by message id — the default index keys misattribute
+    // every cached height after a prepend, causing corrective jumps at the
+    // top of the list.
+    getItemKey: (index) => messages[index]?.id ?? index,
+  });
+
+  // Compensate any row entirely above the viewport regardless of scroll
+  // direction. The library default skips re-measures during upward scroll,
+  // which visibly jumps the list while scrolling up. (Public instance field —
+  // the options object doesn't accept it.)
+  useLayoutEffect(() => {
+    virtualizer.shouldAdjustScrollPositionOnItemSizeChange = (item, _delta, instance) =>
+      item.start + item.size <= (instance.scrollOffset ?? 0);
+  }, [virtualizer]);
+
   const voice = useVoiceRecorder();
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     setMessages(initialMessages);
-  }, [initialMessages]);
+    setHasMoreOlder(initialHasMore);
+  }, [initialMessages, initialHasMore]);
+
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  });
+
+  // Infinite scroll: fetch one older page (keyset on the oldest loaded
+  // message) and anchor the viewport back to the previously-first message.
+  const loadOlder = useCallback(async () => {
+    if (loadingOlderRef.current) return;
+    const oldest = messagesRef.current[0];
+    if (!oldest?.created_at) return;
+    loadingOlderRef.current = true;
+    setLoadingOlder(true);
+    try {
+      const page = await loadOlderMessages(conversationId, oldest.created_at);
+      setHasMoreOlder(page.hasMore);
+      if (page.messages.length > 0) {
+        const el = scrollContainerRef.current;
+        prependAnchorRef.current = el
+          ? { scrollHeight: el.scrollHeight, scrollTop: el.scrollTop }
+          : null;
+        setMessages((prev) => [...page.messages, ...prev]);
+      }
+    } catch {
+      // Silent — scrolling to the top again retries.
+    } finally {
+      loadingOlderRef.current = false;
+      setLoadingOlder(false);
+    }
+  }, [conversationId]);
+
+  // Pre-paint scroll anchoring across a prepend: content above grew, so
+  // shift scrollTop by exactly that delta — the viewport never visibly
+  // moves, and there is no post-paint frame to see. Estimate-based for
+  // rows not yet rendered; the virtualizer's first-measure adjustments
+  // correct the residual as they measure.
+  useLayoutEffect(() => {
+    const anchor = prependAnchorRef.current;
+    if (!anchor) return;
+    prependAnchorRef.current = null;
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    el.scrollTop = anchor.scrollTop + (el.scrollHeight - anchor.scrollHeight);
+  }, [messages]);
+
+  // Stable identity so MessageBubble's memo isn't defeated.
+  const removeMessageById = useCallback((id: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== id));
+  }, []);
 
   const refetchMessages = useCallback(async () => {
     try {
@@ -232,7 +327,7 @@ export function ChatConversation({
             (attachments as ChatAttachmentForMessage[]).map(async (att) => {
               let signedUrl: string | null = null;
               if (att.storage_path) {
-                const { data } = await admin.storage.from("chat-media").createSignedUrl(att.storage_path, 60);
+                const { data } = await admin.storage.from("chat-media").createSignedUrl(att.storage_path, CHAT_MEDIA_SIGNED_URL_TTL);
                 signedUrl = data?.signedUrl ?? null;
               }
               return { ...att, signedUrl };
@@ -267,17 +362,46 @@ export function ChatConversation({
     return () => setActiveConversation(null);
   }, [conversationId]);
 
+  // Row structure (day dividers/avatar grouping) comes from getDayLabel,
+  // which uses local timezone, locale, and `new Date()` — the server renders
+  // in UTC and cannot reproduce the client's answer, and the divergence is
+  // structural (element present/absent), which suppressHydrationWarning
+  // cannot fix. Server snapshot false / client snapshot true: SSR HTML and
+  // the hydration render both show no rows, then they fill in.
+  const hydrated = useSyncExternalStore(emptySubscribe, () => true, () => false);
+
   useEffect(() => {
     if (!stickToBottomRef.current) return;
     bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-  }, [messages, imageQueue, fileQueue]);
+  }, [messages, imageQueue, fileQueue, hydrated]);
 
+  const rafRef = useRef<number | null>(null);
+  const lastScrollTopRef = useRef(0);
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current;
-    if (!el) return;
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    stickToBottomRef.current = distanceFromBottom < 160;
-  }, []);
+    // Synchronously: any upward scroll drops bottom-sticking before the rAF
+    // runs, so an incoming message can never yank the viewport down
+    // mid-gesture.
+    if (el) {
+      if (el.scrollTop < lastScrollTopRef.current) {
+        stickToBottomRef.current = false;
+      }
+      lastScrollTopRef.current = el.scrollTop;
+    }
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+    rafRef.current = requestAnimationFrame(() => {
+      const el = scrollContainerRef.current;
+      if (!el) return;
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      stickToBottomRef.current = distanceFromBottom < 160;
+      // Near the top with older pages remaining → fetch them.
+      if (hasMoreOlder && el.scrollTop < 200 && !loadingOlderRef.current) {
+        void loadOlder();
+      }
+    });
+  }, [hasMoreOlder, loadOlder]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -357,12 +481,6 @@ export function ChatConversation({
         },
         async (payload) => {
           const newMsg = payload.new as Message;
-          console.log("[chat:realtime] INSERT", {
-            id: newMsg.id,
-            sender: newMsg.sender_id,
-            conversation_id: newMsg.conversation_id,
-            mine: newMsg.sender_id === currentUserId,
-          });
           // Ignore own messages — already handled via optimistic reconciliation
           if (newMsg.sender_id === currentUserId) return;
 
@@ -391,7 +509,7 @@ export function ChatConversation({
               attachments = await Promise.all(
                 (rows as ChatAttachmentForMessage[]).map(async (att) => {
                   if (!att.storage_path) return { ...att, signedUrl: null };
-                  const { data } = await supabase.storage.from("chat-media").createSignedUrl(att.storage_path, 60);
+                  const { data } = await supabase.storage.from("chat-media").createSignedUrl(att.storage_path, CHAT_MEDIA_SIGNED_URL_TTL);
                   return { ...att, signedUrl: data?.signedUrl ?? null };
                 }),
               );
@@ -416,7 +534,6 @@ export function ChatConversation({
         },
         (payload) => {
           const row = payload.new as Message;
-          console.log("[chat:realtime] UPDATE", { id: row.id, sender: row.sender_id });
           setMessages((prev) =>
             prev.map((m) =>
               m.id === row.id
@@ -431,9 +548,24 @@ export function ChatConversation({
           );
         },
       )
-      .subscribe((status) => {
-        console.log('[chat:realtime]', status);
-      });
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          // Peer deleted a message — remove it locally (replica identity full
+          // on messages means payload.old carries the row).
+          const oldRow = payload.old as { id?: string };
+          if (oldRow.id) {
+            setMessages((prev) => prev.filter((m) => m.id !== oldRow.id));
+          }
+        },
+      )
+      .subscribe();
 
     const readChannel = supabase
       .channel(`chat-read:${conversationId}`)
@@ -1069,6 +1201,7 @@ export function ChatConversation({
     };
     setMessages((prev) => [...prev, optimistic]);
 
+    let committed = false;
     try {
       const { error: upErr } = await uploadChatMediaBlob(path, blob, mime);
       if (upErr) {
@@ -1095,10 +1228,11 @@ export function ChatConversation({
         toast.error(result.error);
         await supabase.storage.from("chat-media").remove([path]).catch(() => {});
       } else if (result && "success" in result && result.id) {
+        committed = true;
         // Swap the local blob preview for a real signed URL, then free the blob.
         const { data: signed } = await supabase.storage
           .from("chat-media")
-          .createSignedUrl(path, 3600);
+          .createSignedUrl(path, CHAT_MEDIA_SIGNED_URL_TTL);
         setMessages((prev) =>
           prev.map((m) =>
             m.id === optimistic.id
@@ -1118,6 +1252,10 @@ export function ChatConversation({
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
       URL.revokeObjectURL(optimisticPreviewUrl);
+      // Don't orphan an uploaded object when the DB insert throws.
+      if (!committed) {
+        await supabase.storage.from("chat-media").remove([path]).catch(() => {});
+      }
       toast.error("Voice message could not be sent.");
     } finally {
       isSendingRef.current = false;
@@ -1216,9 +1354,9 @@ export function ChatConversation({
     setImageQueue((prev) => prev.map((q) => ({ ...q, status: "uploading" as const, progress: 0 })));
     setFileQueue((prev) => prev.map((q) => ({ ...q, status: "uploading" as const, progress: 0 })));
 
+    let attachmentInputs: { type: "image" | "file"; storage_path: string; filename: string; mime_type: string; file_size: number; metadata: Record<string, unknown> | null }[] = [];
+    let committed = false;
     try {
-      let attachmentInputs: { type: "image" | "file"; storage_path: string; filename: string; mime_type: string; file_size: number; metadata: Record<string, unknown> | null }[] = [];
-
       if (toUpload.length > 0) {
         // Prepare upload inputs with deterministic paths
         const uploadInputs: UploadFileInput[] = toUpload.map((q) => {
@@ -1311,6 +1449,8 @@ export function ChatConversation({
 
       if (result && "error" in result && result.error) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        // Restore the text the user typed so a failed send never eats it.
+        setInput(content);
         // Restore queue for retry if it was attachments
         if (toUpload.length > 0) {
           setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
@@ -1323,13 +1463,14 @@ export function ChatConversation({
           await supabase.storage.from("chat-media").remove(paths).catch(() => {});
         }
       } else if (result && "success" in result && result.id) {
+        committed = true;
         // Reconcile optimistic id -> real id and swap blob previews for real
         // signed URLs so attachments don't point at revoked object URLs.
         const signedUrls = await Promise.all(
           attachmentInputs.map((a) =>
             supabase.storage
               .from("chat-media")
-              .createSignedUrl(a.storage_path, 3600)
+              .createSignedUrl(a.storage_path, CHAT_MEDIA_SIGNED_URL_TTL)
               .then(({ data }) => data?.signedUrl ?? null),
           ),
         );
@@ -1358,8 +1499,17 @@ export function ChatConversation({
       }
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+      // Restore the text the user typed so a thrown send never eats it.
+      setInput(content);
       setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
       setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
+      // Don't orphan uploaded objects when the send throws after upload.
+      if (!committed && attachmentInputs.length > 0) {
+        await supabase.storage
+          .from("chat-media")
+          .remove(attachmentInputs.map((a) => a.storage_path))
+          .catch(() => {});
+      }
       toast.error("Message could not be sent. Please try again.");
     } finally {
       clearTimeout(sendTimeout);
@@ -1396,6 +1546,67 @@ export function ChatConversation({
     }
     // Only fire once.
   }, [callParam, peer, conversationId, amBlocked]);
+
+  const isVirtualized = messages.length > VIRTUALIZE_THRESHOLD;
+
+  // Shared row body for both the plain list and the virtualized list:
+  // day divider + spacing + message (index-based grouping logic).
+  const renderRowContent = (msg: Message, i: number) => {
+    const prevMsg = messages[i - 1];
+    const nextMsg = messages[i + 1];
+    const label = getDayLabel(msg.created_at);
+    const showDivider = label !== null && label !== getDayLabel(prevMsg?.created_at ?? null);
+    const isGrouped =
+      !!prevMsg && prevMsg.sender_id === msg.sender_id && !showDivider;
+    const showAvatar =
+      !nextMsg ||
+      nextMsg.sender_id !== msg.sender_id ||
+      getDayLabel(nextMsg.created_at) !== label;
+
+    return (
+      <>
+        {showDivider && (
+          <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
+            <span aria-hidden className="h-px flex-1 bg-border" />
+            <span suppressHydrationWarning className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-normal text-ink-500 backdrop-blur-sm">
+              {label}
+            </span>
+            <span aria-hidden className="h-px flex-1 bg-border" />
+          </div>
+        )}
+
+        <div className={getMessageSpacing(i, isGrouped)}>
+          <MessageBubble
+            id={msg.id}
+            content={msg.content}
+            created_at={msg.created_at}
+            edited_at={msg.edited_at}
+            sender_id={msg.sender_id}
+            sender_name={msg.sender?.full_name ?? msg.sender?.username ?? null}
+            sender_avatar={msg.sender?.avatar_url ?? null}
+            isOwn={msg.sender_id === currentUserId}
+            isGrouped={isGrouped}
+            showAvatar={showAvatar}
+            status={getMessageStatus(msg, i)}
+            statusAvatarUrl={participant?.avatar_url ?? null}
+            statusAvatarName={participantName}
+            active={msg.id === activeMessageId}
+            showActions={actionsMessageId === msg.id}
+            attachments={msg.attachments}
+            onSelect={(id) => {
+              setActiveMessageId(id);
+              setActionsMessageId(null);
+            }}
+            onToggleActions={(id) => {
+              setActionsMessageId((prev) => (prev === id ? null : id));
+              setActiveMessageId(id);
+            }}
+            onDeleted={removeMessageById}
+          />
+        </div>
+      </>
+    );
+  };
 
   return (
     <div
@@ -1509,64 +1720,46 @@ export function ChatConversation({
         )}
 
         <div className="flex flex-col">
-          {messages.map((msg, i) => {
-            const prevMsg = messages[i - 1];
-            const nextMsg = messages[i + 1];
-            const label = getDayLabel(msg.created_at);
-            const showDivider = label !== null && label !== getDayLabel(prevMsg?.created_at ?? null);
-            const isGrouped =
-              !!prevMsg && prevMsg.sender_id === msg.sender_id && !showDivider;
-            const showAvatar =
-              !nextMsg ||
-              nextMsg.sender_id !== msg.sender_id ||
-              getDayLabel(nextMsg.created_at) !== label;
-
-            return (
-              <Fragment key={msg.id}>
-                {showDivider && (
-                  <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
-                    <span aria-hidden className="h-px flex-1 bg-border" />
-                    <span className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-normal text-ink-500 backdrop-blur-sm">
-                      {label}
-                    </span>
-                    <span aria-hidden className="h-px flex-1 bg-border" />
+          {!hydrated ? null : isVirtualized ? (
+            <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+              {virtualizer.getVirtualItems().map((virtualRow) => {
+                const msg = messages[virtualRow.index];
+                if (!msg) return null;
+                return (
+                  <div
+                    key={msg.id}
+                    ref={virtualizer.measureElement}
+                    data-index={virtualRow.index}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                  >
+                    {renderRowContent(msg, virtualRow.index)}
                   </div>
-                )}
-
-                <div className={getMessageSpacing(i, isGrouped)}>
-                  <MessageBubble
-                    id={msg.id}
-                    content={msg.content}
-                    created_at={msg.created_at}
-                    edited_at={msg.edited_at}
-                    sender_id={msg.sender_id}
-                    sender_name={msg.sender?.full_name ?? msg.sender?.username ?? null}
-                    sender_avatar={msg.sender?.avatar_url ?? null}
-                    isOwn={msg.sender_id === currentUserId}
-                    isGrouped={isGrouped}
-                    showAvatar={showAvatar}
-                    status={getMessageStatus(msg, i)}
-                    statusAvatarUrl={participant?.avatar_url ?? null}
-                    statusAvatarName={participantName}
-                    active={msg.id === activeMessageId}
-                    showActions={actionsMessageId === msg.id}
-                    attachments={msg.attachments}
-                    onSelect={(id) => {
-                      setActiveMessageId(id);
-                      setActionsMessageId(null);
-                    }}
-                    onToggleActions={(id) => {
-                      setActionsMessageId((prev) => (prev === id ? null : id));
-                      setActiveMessageId(id);
-                    }}
-                  />
-                </div>
-              </Fragment>
-            );
-          })}
+                );
+              })}
+            </div>
+          ) : (
+            messages.map((msg, i) => (
+              <div key={msg.id}>{renderRowContent(msg, i)}</div>
+            ))
+          )}
           <div ref={bottomRef} />
         </div>
       </div>
+
+      {loadingOlder && (
+        <div
+          role="status"
+          className="absolute left-1/2 top-[76px] z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-border-strong bg-surface/95 px-3 py-1 text-xs text-ink-400 shadow-md"
+        >
+          Loading earlier messages…
+        </div>
+      )}
 
       {isDragging && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-accent/10 backdrop-blur-sm">

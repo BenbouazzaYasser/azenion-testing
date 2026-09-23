@@ -27,6 +27,7 @@ interface Conversation {
     created_at: string | null;
     sender_id: string;
     received_at: string | null;
+    has_attachments?: boolean;
   } | null;
   other_last_read_at: string | null;
   updated_at: string | null;
@@ -367,6 +368,15 @@ interface ConversationRowProps {
   onNavigate: () => void;
 }
 
+/** Sidebar preview: attachment-only messages have empty content. */
+function previewText(conv: Conversation): string {
+  const last = conv.last_message;
+  if (!last) return "No messages yet";
+  if (last.content.trim()) return last.content;
+  if (last.has_attachments) return "Attachment";
+  return "No messages yet";
+}
+
 function ConversationRow({
   conv,
   currentUserId,
@@ -482,7 +492,7 @@ function ConversationRow({
             <span className="min-w-0 truncate">
               {conv.blocked_me
                 ? "You're blocked — you can't reply."
-                : (conv.last_message?.content ?? "No messages yet")}
+                : previewText(conv)}
             </span>
           </p>
         </div>

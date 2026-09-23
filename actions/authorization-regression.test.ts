@@ -4,6 +4,9 @@ import { updateProjectSettings } from "@/actions/project.actions";
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }));
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ allowed: true, remaining: 59 }),
+}));
 
 import { createClient } from "@/lib/supabase/server";
 

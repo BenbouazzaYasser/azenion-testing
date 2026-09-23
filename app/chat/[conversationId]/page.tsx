@@ -30,7 +30,7 @@ export default async function ConversationPage({ params }: Props) {
 
   // getConversations is React-cached: the chat layout already fetched it
   // this request, so this call reuses that result (peer lookup only).
-  const [conversations, messages, blockState] = await Promise.all([
+  const [conversations, messagePage, blockState] = await Promise.all([
     getConversations(user.id),
     getMessages(conversationId),
     getConversationBlockState(conversationId),
@@ -62,7 +62,8 @@ export default async function ConversationPage({ params }: Props) {
       >
         <ChatConversation
           conversationId={conversationId}
-          initialMessages={messages}
+          initialMessages={messagePage.messages}
+          initialHasMore={messagePage.hasMore}
           currentUserId={user.id}
           amBlocked={blockState.am_blocked}
           peer={peer}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import Image from "next/image";
 import { Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,8 @@ interface MessageBubbleProps {
   showActions?: boolean;
   onSelect?: (id: string) => void;
   onToggleActions?: (id: string) => void;
+  /** Called after a successful local delete so the parent can drop the message. */
+  onDeleted?: (id: string) => void;
   attachments?: ChatAttachmentForMessage[];
 }
 
@@ -47,7 +49,7 @@ function isEmojiOnly(text: string): boolean {
 
 // Haven-style flat message row: avatar on the first message of a run,
 // name + time header on the first of a group, plain text body — no bubbles.
-export function MessageBubble({
+export const MessageBubble = memo(function MessageBubble({
   id,
   content,
   created_at,
@@ -65,6 +67,7 @@ export function MessageBubble({
   showActions = false,
   onSelect,
   onToggleActions,
+  onDeleted,
   attachments = [],
 }: MessageBubbleProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -87,6 +90,8 @@ export function MessageBubble({
     const result = await deleteMessage(id);
     if (result.error) {
       toast.error(result.error);
+    } else {
+      onDeleted?.(id);
     }
   };
 
@@ -134,7 +139,8 @@ export function MessageBubble({
             >
               {sender_name ?? "Unknown"}
             </span>
-            <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-medium leading-tight text-ink-600">
+            {/* suppressHydrationWarning: formatTime is locale-TZ dependent; server renders UTC. */}
+            <span suppressHydrationWarning className="flex shrink-0 items-center gap-1.5 text-[10px] font-medium leading-tight text-ink-600">
               {created_at ? formatTime(created_at) : null}
               {edited_at ? <span className="italic">(edited)</span> : null}
             </span>
@@ -201,7 +207,7 @@ export function MessageBubble({
                   >
                     {content}
                     {isGrouped && created_at ? (
-                      <span className="ml-2 inline-block align-baseline text-[10px] font-medium text-ink-600 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                      <span suppressHydrationWarning className="ml-2 inline-block align-baseline text-[10px] font-medium text-ink-600 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
                         {formatTime(created_at)}
                       </span>
                     ) : null}
@@ -258,4 +264,4 @@ export function MessageBubble({
       )}
     </div>
   );
-}
+})

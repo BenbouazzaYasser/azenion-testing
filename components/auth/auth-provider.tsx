@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -70,19 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient();
     let cancelled = false;
 
-    // Fast-path for anonymous: if no auth cookie in document.cookie, skip
-    // the network getUser() entirely (mirrors server proxy optimization).
-    const hasAuthCookie = typeof document !== "undefined" && /(?:^|;\s*)sb-[^;]*-auth-token=/.test(document.cookie);
-    if (!hasAuthCookie) {
+    // getSession() reads the auth cookie locally — no network round trip
+    // (unless the token needs a refresh), so the UI resolves immediately.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (cancelled) return;
+      setUser(session?.user ?? null);
+      if (session?.user) void fetchProfileAndRoles(session.user.id);
       setLoading(false);
-    } else {
-      supabase.auth.getUser().then(({ data }) => {
-        if (cancelled) return;
-        setUser(data.user);
-        if (data.user) void fetchProfileAndRoles(data.user.id);
-        setLoading(false);
-      });
-    }
+    });
 
     const {
       data: { subscription },
@@ -103,6 +99,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, [fetchProfileAndRoles]);
+
+  // Server actions (e.g. signIn) set the auth cookie server-side during a
+  // soft navigation; this provider stays mounted and hears no auth event, so
+  // re-check the cookie on every route change until a session shows up.
+  const pathname = usePathname();
+  useEffect(() => {
+    if (user) return;
+    let cancelled = false;
+    createClient().auth.getSession().then(({ data: { session } }) => {
+      if (cancelled || !session?.user) return;
+      setUser(session.user);
+      void fetchProfileAndRoles(session.user.id);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, user, fetchProfileAndRoles]);
 
   const value = useMemo(
     () => ({ user, profile, loading, isAdmin, isLeader }),

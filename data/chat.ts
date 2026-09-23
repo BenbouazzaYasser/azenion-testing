@@ -58,6 +58,8 @@ export interface ConversationWithMeta {
     created_at: string | null;
     sender_id: string;
     received_at: string | null;
+    /** True when the last message has attachments (content may be empty). */
+    has_attachments: boolean;
   } | null;
   other_last_read_at: string | null;
   updated_at: string | null;
@@ -128,23 +130,34 @@ export const getConversations = cache(
     (profiles ?? []).map((p) => [p.id, p]),
   );
 
-  const messagesPromises = conversationIds.map(async (cid) => {
-    const { data: messages } = await supabase
-      .from("messages")
-      .select("content, created_at, sender_id, received_at")
-      .eq("conversation_id", cid)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    return { conversation_id: cid, lastMessage: messages?.[0] ?? null };
+  // One RPC for all conversations' last message (was one query per conversation).
+  // SECURITY INVOKER: RLS limits rows to conversations the caller belongs to.
+  const { data: lastRows } = await supabase.rpc("get_last_messages", {
+    p_conversation_ids: conversationIds,
   });
+  const lastMessageRows = (lastRows ?? []) as {
+    conversation_id: string;
+    message_id: string;
+    content: string;
+    created_at: string | null;
+    sender_id: string;
+    received_at: string | null;
+  }[];
 
-  const messagesResults = await Promise.all(messagesPromises);
+  // One batch query to know which last messages carry attachments (empty content
+  // in the sidebar would otherwise render a blank preview).
+  const { data: lastAttRows } =
+    lastMessageRows.length > 0
+      ? await supabase
+          .from("chat_message_attachments")
+          .select("message_id")
+          .in("message_id", lastMessageRows.map((r) => r.message_id))
+      : { data: [] as { message_id: string }[] };
+  const messagesWithAttachments = new Set((lastAttRows ?? []).map((r) => r.message_id));
+
   const lastMessageByConv = Object.fromEntries(
-    messagesResults.map((r) => [r.conversation_id, r.lastMessage]),
-  ) as Record<
-    string,
-    { content: string; created_at: string | null; sender_id: string; received_at: string | null } | null
-  >;
+    lastMessageRows.map((r) => [r.conversation_id, r]),
+  ) as Record<string, (typeof lastMessageRows)[number] | undefined>;
 
   const { data: unreadRows } = await supabase.rpc("get_unread_counts", {
     p_user_id: userId,
@@ -190,6 +203,7 @@ export const getConversations = cache(
             created_at: lastMsg.created_at,
             sender_id: lastMsg.sender_id,
             received_at: lastMsg.received_at,
+            has_attachments: messagesWithAttachments.has(lastMsg.message_id),
           }
         : null,
       updated_at: conv.updated_at,
@@ -201,16 +215,38 @@ export const getConversations = cache(
   });
 });
 
-export async function getMessages(conversationId: string): Promise<MessageWithSender[]> {
+/** Messages per page for keyset pagination of a conversation. */
+export const MESSAGES_PAGE_SIZE = 50;
+
+export interface MessagesPage {
+  messages: MessageWithSender[];
+  /** True when older messages exist before the oldest message in this page. */
+  hasMore: boolean;
+}
+
+export async function getMessages(
+  conversationId: string,
+  opts: { before?: string | null } = {},
+): Promise<MessagesPage> {
   const supabase = await createClient();
 
-  const { data: messages } = await supabase
+  // Keyset pagination: fetch newest-first with limit+1 to probe for older
+  // pages, then reverse for the UI's ascending order. `before` is the
+  // created_at of the oldest already-loaded message (timestamptz has
+  // microsecond precision — boundary ties are not a practical concern).
+  let query = supabase
     .from("messages")
     .select("id, conversation_id, sender_id, content, image_url, created_at, edited_at, received_at")
     .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false })
+    .limit(MESSAGES_PAGE_SIZE + 1);
+  if (opts.before) query = query.lt("created_at", opts.before);
+  const { data } = await query;
 
-  if (!messages || messages.length === 0) return [];
+  if (!data || data.length === 0) return { messages: [], hasMore: false };
+
+  const hasMore = data.length > MESSAGES_PAGE_SIZE;
+  const messages = (hasMore ? data.slice(0, MESSAGES_PAGE_SIZE) : data).reverse();
 
   const senderIds = [...new Set(messages.map((m) => m.sender_id))];
 
@@ -223,7 +259,7 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
     supabase
       .from("chat_message_attachments")
       .select("id, message_id, conversation_id, uploader_id, type, storage_path, filename, mime_type, file_size, duration_seconds, provider, external_id, metadata, created_at")
-      .eq("conversation_id", conversationId)
+      .in("message_id", messages.map((m) => m.id))
       .order("created_at", { ascending: true }),
   ]);
 
@@ -235,35 +271,47 @@ export async function getMessages(conversationId: string): Promise<MessageWithSe
   const attachmentsByMessage = new Map<string, ChatAttachmentForMessage[]>();
   if (attachments && attachments.length > 0) {
     // SECURITY: conversation membership verified via RLS read above; admin used only for signed-URL minting.
+    // Additionally bind paths to this conversation so a crafted
+    // cross-conversation storage_path value can never be signed here.
     const admin = createAdminClient();
-    const withUrls = await Promise.all(
-      (attachments as ChatAttachmentForMessage[]).map(async (att) => {
-        let signedUrl: string | null = null;
-        if (att.storage_path) {
-          const marker = `${CHAT_MEDIA_PREFIX}${att.storage_path}`;
-          // Use admin to generate signed URL; attachment RLS already ensured membership.
-          // Additionally bind the path to this conversation so a crafted
-          // cross-conversation storage_path value can never be signed here.
-          if (isChatMediaMarker(marker) && att.storage_path.startsWith(`chat/${conversationId}/`)) {
-            const { data } = await admin.storage.from(CHAT_MEDIA_BUCKET).createSignedUrl(att.storage_path, CHAT_MEDIA_SIGNED_URL_TTL);
-            signedUrl = data?.signedUrl ?? null;
-          }
-        }
-        return { ...att, signedUrl };
-      }),
+    const signable = (attachments as ChatAttachmentForMessage[]).filter(
+      (att) =>
+        att.storage_path !== null &&
+        isChatMediaMarker(`${CHAT_MEDIA_PREFIX}${att.storage_path}`) &&
+        att.storage_path.startsWith(`chat/${conversationId}/`),
     );
-    for (const att of withUrls) {
+    const paths = [...new Set(signable.map((att) => att.storage_path!))];
+    // Batch: one storage call for all attachments (was one call per attachment).
+    const { data: signed } =
+      paths.length > 0
+        ? await admin.storage
+            .from(CHAT_MEDIA_BUCKET)
+            .createSignedUrls(paths, CHAT_MEDIA_SIGNED_URL_TTL)
+        : { data: [] };
+    const signedByPath = new Map(
+      ((signed ?? []) as { path: string; signedUrl: string; error: string | null }[])
+        .filter((s) => !s.error && s.signedUrl)
+        .map((s) => [s.path, s.signedUrl]),
+    );
+    for (const att of attachments as ChatAttachmentForMessage[]) {
+      const signedUrl =
+        att.storage_path && signedByPath.has(att.storage_path)
+          ? signedByPath.get(att.storage_path)!
+          : null;
       const arr = attachmentsByMessage.get(att.message_id) ?? [];
-      arr.push(att);
+      arr.push({ ...att, signedUrl });
       attachmentsByMessage.set(att.message_id, arr);
     }
   }
 
-  return messages.map((msg) => ({
-    ...msg,
-    sender: profileMap.get(msg.sender_id) ?? null,
-    attachments: attachmentsByMessage.get(msg.id) ?? [],
-  }));
+  return {
+    hasMore,
+    messages: messages.map((msg) => ({
+      ...msg,
+      sender: profileMap.get(msg.sender_id) ?? null,
+      attachments: attachmentsByMessage.get(msg.id) ?? [],
+    })),
+  };
 }
 
 export async function getConversationBlockState(conversationId: string): Promise<{

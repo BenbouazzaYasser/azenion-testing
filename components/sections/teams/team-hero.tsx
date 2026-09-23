@@ -185,7 +185,7 @@ export function TeamHero({ team, isMember, currentUserId, requestStatus, categor
             {team.created_at ? (
               <>
                 <span className="hidden text-ink-700 dark:text-white/30 sm:inline">·</span>
-                <span className="inline-flex items-center gap-1.5">
+                <span suppressHydrationWarning className="inline-flex items-center gap-1.5">
                   <Calendar size={14} className="text-accent-400" />
                   {t("common.created")} {formatDate(team.created_at)}
                 </span>

@@ -198,13 +198,13 @@ export function AccountSection({
               <div className="flex items-center gap-2.5 text-sm">
                 <Calendar size={14} className="shrink-0 text-ink-600" />
                 <span className="text-ink-400">{t("settings.memberSince")}</span>
-                <span className="text-ink-200">{createdAt ? formatDate(createdAt) : "—"}</span>
+                <span suppressHydrationWarning className="text-ink-200">{createdAt ? formatDate(createdAt) : "—"}</span>
               </div>
               {lastSignInAt ? (
                 <div className="flex items-center gap-2.5 text-sm">
                   <LogIn size={14} className="shrink-0 text-ink-600" />
                   <span className="text-ink-400">{t("settings.lastSignIn")}</span>
-                  <span className="text-ink-200">{formatDate(lastSignInAt)}</span>
+                  <span suppressHydrationWarning className="text-ink-200">{formatDate(lastSignInAt)}</span>
                 </div>
               ) : null}
             </div>

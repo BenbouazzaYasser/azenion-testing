@@ -264,7 +264,7 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
 
         {isEvent && schedule ? (
           <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-400">
-            <span className="inline-flex items-center gap-1.5">
+            <span suppressHydrationWarning className="inline-flex items-center gap-1.5">
               <Calendar size={13} className="text-accent-400" />
               {schedule}
             </span>

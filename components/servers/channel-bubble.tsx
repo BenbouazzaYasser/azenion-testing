@@ -87,7 +87,7 @@ export function ChannelBubble({
             <span className={cn("text-sm font-semibold", isOwn ? "text-accent-300" : "text-ink-100")}>
               {sender_name ?? t("servers.memberFallback")}
             </span>
-            <span className="text-[10px] font-medium text-ink-600">
+            <span suppressHydrationWarning className="text-[10px] font-medium text-ink-600">
               {created_at ? formatTime(created_at) : ""}
             </span>
           </p>

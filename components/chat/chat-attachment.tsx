@@ -156,8 +156,8 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
     const url = rawUrl && (() => {
       try {
         const host = new URL(rawUrl).hostname.toLowerCase();
-        const allowed = ["giphy.com", "media.giphy.com", "i.giphy.com", "tenor.com", "media.tenor.com"];
-        const ok = allowed.some((h) => host === h || host.endsWith(`.${h}`) || host.endsWith(h));
+        const allowed = ["giphy.com", "tenor.com"];
+        const ok = allowed.some((h) => host === h || host.endsWith(`.${h}`));
         return ok ? rawUrl : null;
       } catch {
         return null;

@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getConversations, type ConversationWithMeta } from "@/data/chat";
+import { getConversations, getMessages, type ConversationWithMeta } from "@/data/chat";
 import {
   validateChatAttachmentInput,
+  validateAttachmentMetadata,
   CHAT_MEDIA_BUCKET,
 } from "@/lib/chat-media";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { cleanupOrphanedStorageObjects } from "@/lib/storage-cleanup";
 import { isValidStickerId, getStickerById } from "@/lib/stickers/catalog";
 
@@ -20,6 +22,12 @@ export async function sendMessage(conversationId: string, content: string) {
 
   if (!user) {
     return { error: "Not authenticated" };
+  }
+
+  // Blunt message spam: 60 sends/minute per user (see lib/rate-limit.ts).
+  const rl = await checkRateLimit("chat_send", `user:${user.id}`, 60, 60);
+  if (!rl.allowed) {
+    return { error: "You're sending messages too fast — please wait a moment." };
   }
 
   const { data: members } = await supabase
@@ -98,6 +106,12 @@ export async function sendMessageWithAttachments(
     return { error: "Not authenticated" };
   }
 
+  // Blunt message spam: 60 sends/minute per user (see lib/rate-limit.ts).
+  const rl = await checkRateLimit("chat_send", `user:${user.id}`, 60, 60);
+  if (!rl.allowed) {
+    return { error: "You're sending messages too fast — please wait a moment." };
+  }
+
   const hasText = content.trim().length > 0;
   const hasAttachments = attachments.length > 0;
 
@@ -148,6 +162,10 @@ export async function sendMessageWithAttachments(
     if (!result.valid) {
       return { error: result.error ?? "Invalid attachment." };
     }
+    const meta = validateAttachmentMetadata(att.metadata ?? null);
+    if (!meta.valid) {
+      return { error: meta.error ?? "Invalid attachment metadata." };
+    }
     // Ensure storage-backed paths are conversation-scoped
     if (att.type === "image" || att.type === "file" || att.type === "audio") {
       if (!att.storage_path || !att.storage_path.startsWith(`chat/${conversationId}/`)) {
@@ -179,57 +197,38 @@ export async function sendMessageWithAttachments(
     }
   }
 
-  // Create message (allow empty content when attachments present)
+  // Atomic: message + attachments insert in one transaction via the
+  // send_chat_message RPC (00142). Attachment triggers validate every row in
+  // the same transaction — a rejected attachment rolls the message back with
+  // it, replacing the previous two-round-trip insert + manual delete.
   const messageContent = hasText ? content.trim() : "";
-  const { data: msg, error: msgError } = await supabase
-    .from("messages")
-    .insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      content: messageContent,
-    })
-    .select("id, created_at")
-    .single();
+  const { data, error: rpcError } = await supabase.rpc("send_chat_message", {
+    p_conversation_id: conversationId,
+    p_content: messageContent,
+    p_attachments: attachments.map((att) => ({
+      type: att.type,
+      storage_path: att.storage_path ?? null,
+      filename: att.filename ?? null,
+      mime_type: att.mime_type ?? null,
+      file_size: att.file_size ?? null,
+      duration_seconds: att.type === "audio" ? (att.duration_seconds ?? null) : null,
+      provider: att.provider ?? null,
+      external_id: att.external_id ?? null,
+      metadata: att.metadata ?? {},
+    })),
+  });
 
-  if (msgError || !msg) {
-    return { error: msgError?.message ?? "Failed to create message." };
-  }
-
-  if (attachments.length === 0) {
-    revalidatePath(`/chat/${conversationId}`);
-    return { success: true, id: msg.id, created_at: msg.created_at };
-  }
-
-  // Insert attachment rows
-  const rows = attachments.map((att) => ({
-    message_id: msg.id,
-    conversation_id: conversationId,
-    uploader_id: user.id,
-    type: att.type,
-    storage_path: att.storage_path ?? null,
-    filename: att.filename ?? null,
-    mime_type: att.mime_type ?? null,
-    file_size: att.file_size ?? null,
-    duration_seconds: att.type === "audio" ? (att.duration_seconds ?? null) : null,
-    provider: att.provider ?? null,
-    external_id: att.external_id ?? null,
-    metadata: att.metadata ?? {},
-  }));
-
-  const { error: attError } = await supabase.from("chat_message_attachments").insert(rows);
-
-  if (attError) {
-    // Roll back message to avoid orphan; robustly clean storage objects via centralized helper
-    await supabase.from("messages").delete().eq("id", msg.id).eq("sender_id", user.id);
+  if (rpcError || !data || data.length === 0) {
+    // Nothing was inserted; remove any uploaded objects so they don't orphan.
     const paths = attachments.map((a) => a.storage_path).filter((p): p is string => !!p);
     if (paths.length > 0) {
       await cleanupOrphanedStorageObjects(CHAT_MEDIA_BUCKET, paths);
     }
-    return { error: attError.message };
+    return { error: rpcError?.message ?? "Failed to send message." };
   }
 
   revalidatePath(`/chat/${conversationId}`);
-  return { success: true, id: msg.id, created_at: msg.created_at };
+  return { success: true, id: data[0].id, created_at: data[0].created_at };
 }
 
 export async function editMessage(messageId: string, content: string) {
@@ -273,7 +272,7 @@ export async function deleteMessage(messageId: string) {
 
   const { data: message, error: fetchError } = await supabase
     .from("messages")
-    .select("id, sender_id")
+    .select("id, sender_id, conversation_id")
     .eq("id", messageId)
     .maybeSingle();
 
@@ -309,6 +308,7 @@ export async function deleteMessage(messageId: string) {
     await cleanupOrphanedStorageObjects(CHAT_MEDIA_BUCKET, paths);
   }
 
+  revalidatePath(`/chat/${message.conversation_id}`);
   return { success: true };
 }
 
@@ -385,6 +385,13 @@ export async function markConversationRead(conversationId: string) {
 
   revalidatePath(`/chat/${conversationId}`);
   return { success: true };
+}
+
+/** One older page of messages for infinite scroll (keyset on created_at). */
+export async function loadOlderMessages(conversationId: string, before: string) {
+  // RLS on `messages` scopes the page to conversations the caller belongs to;
+  // profiles/signed URLs are only derived from rows that survive that scope.
+  return getMessages(conversationId, { before });
 }
 
 export async function getConversationRecipientReadAt(

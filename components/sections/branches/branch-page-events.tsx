@@ -178,7 +178,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
       const end = event.ends_at ? ` – ${formatTime(event.ends_at)}` : "";
       return (
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-400">
-          <span className="inline-flex items-center gap-1.5">
+          <span suppressHydrationWarning className="inline-flex items-center gap-1.5">
             <Calendar size={13} className="text-accent-400" />
             {formatShortDate(event.starts_at)} • {formatTime(event.starts_at)}
             {end}

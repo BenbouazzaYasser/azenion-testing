@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Hash, Send } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -24,6 +24,9 @@ interface ChannelChatProps {
 function startOfDay(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
+
+// No external store: hydration flag via useSyncExternalStore.
+const emptySubscribe = () => () => {};
 
 type TranslateFn = (key: DictKey, fallback?: string) => string;
 
@@ -55,9 +58,15 @@ export function ChannelChat({
     setMessages(initialMessages);
   }, [initialMessages]);
 
+  // Day dividers/grouping use local TZ + new Date(), which the server (UTC)
+  // can't reproduce — structural mismatch, not suppressible. Server snapshot
+  // false / client snapshot true: SSR HTML and the hydration render agree
+  // (no rows), then React re-renders with rows after hydration.
+  const hydrated = useSyncExternalStore(emptySubscribe, () => true, () => false);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, hydrated]);
 
   // Realtime: new messages from other members appear live.
   useEffect(() => {
@@ -181,12 +190,12 @@ export function ChannelChat({
           </div>
         ) : (
           <div className="flex flex-col">
-            {grouped.map(({ msg, showDivider, label, isGrouped, showAvatar }) => (
+            {hydrated ? grouped.map(({ msg, showDivider, label, isGrouped, showAvatar }) => (
               <Fragment key={msg.id}>
                 {showDivider && (
                   <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
                     <span aria-hidden className="h-px flex-1 bg-border" />
-                    <span className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-normal text-ink-500 backdrop-blur-sm">
+                    <span suppressHydrationWarning className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-normal text-ink-500 backdrop-blur-sm">
                       {label}
                     </span>
                     <span aria-hidden className="h-px flex-1 bg-border" />
@@ -205,7 +214,7 @@ export function ChannelChat({
                   showAvatar={showAvatar}
                 />
               </Fragment>
-            ))}
+            )) : null}
             <div ref={bottomRef} />
           </div>
         )}
