@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 import { X, Eye, EyeOff, FileText, Image as ImageIcon, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatChatFileSize } from "@/lib/chat-media";
+import { useUploadProgress } from "@/components/chat/chat-upload";
 
 interface QueuedFile {
   id: string;
@@ -11,7 +12,6 @@ interface QueuedFile {
   previewUrl: string | null;
   status: "queued" | "uploading" | "success" | "error";
   error?: string;
-  progress?: number;
   _spoiler?: boolean;
   _tags?: string[];
 }
@@ -21,8 +21,6 @@ interface AttachmentPreviewBarProps {
   fileQueue: QueuedFile[];
   activeAttachmentId: string | null;
   maxAttachments: number;
-  onQueueImage: (file: File) => void;
-  onQueueFile: (file: File) => void;
   onRemoveImage: (id: string) => void;
   onRemoveFile: (id: string) => void;
   onClearAll: () => void;
@@ -64,35 +62,30 @@ function SpoilerToggle({
   );
 }
 
-function ImageThumbnail({ 
-  file, 
-  previewUrl, 
-  isActive, 
-  isSpoiler, 
-  tags,
-  status,
-  progress = 0,
-  error,
-  onClick, 
-  onRemove, 
+// Memoized leaf: progress is read from the fine-grained store, so a progress
+// tick re-renders only this thumbnail. Handlers are id-based and stable, so
+// the memo survives parent renders (e.g. typing while uploading).
+const ImageThumbnail = memo(function ImageThumbnail({
+  file,
+  isActive,
+  onActivate,
+  onRemove,
   onToggleSpoiler,
   onRetry,
-  disabled
-}: { 
-  file: File; 
-  previewUrl: string | null; 
-  isActive: boolean; 
-  isSpoiler: boolean;
-  tags: string[];
-  status: QueuedFile["status"];
-  progress?: number;
-  error?: string;
-  onClick: () => void;
-  onRemove: (e: React.MouseEvent) => void;
-  onToggleSpoiler: () => void;
-  onRetry: () => void;
+  disabled,
+}: {
+  file: QueuedFile;
+  isActive: boolean;
+  onActivate: (id: string) => void;
+  onRemove: (e: React.MouseEvent, id: string) => void;
+  onToggleSpoiler: (id: string) => void;
+  onRetry: (id: string) => void;
   disabled?: boolean;
 }) {
+  const progress = useUploadProgress(file.id);
+  const error = file.error;
+  const tags = file._tags ?? [];
+  const isSpoiler = file._spoiler ?? false;
   return (
     <div
       className={cn(
@@ -102,14 +95,14 @@ function ImageThumbnail({
           : "border-border hover:border-accent-400/30",
         isSpoiler ? "opacity-60" : ""
       )}
-      onClick={onClick}
-      title={file.name}
+      onClick={() => onActivate(file.id)}
+      title={file.file.name}
     >
       <div className="relative h-20 w-28 overflow-hidden bg-void-900/30">
-        {previewUrl ? (
+        {file.previewUrl ? (
           <img 
-            src={previewUrl} 
-            alt={file.name} 
+            src={file.previewUrl} 
+            alt={file.file.name} 
             className="h-full w-full object-cover transition-opacity"
             style={isSpoiler ? { filter: "blur(8px)" } : undefined}
           />
@@ -123,7 +116,7 @@ function ImageThumbnail({
             <EyeOff className="h-5 w-5 text-white/70" />
           </div>
         )}
-        {status === "uploading" && (
+        {file.status === "uploading" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-void-900/60 p-2">
             <div className="h-1.5 w-full max-w-[80px] overflow-hidden rounded-full bg-white/20">
               <div
@@ -134,7 +127,7 @@ function ImageThumbnail({
             <span className="text-[10px] font-medium tabular-nums text-white">{progress}%</span>
           </div>
         )}
-        {status === "error" && (
+        {file.status === "error" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-void-900/70 p-1">
             <span className="max-w-full truncate px-1 text-[10px] text-red-400" title={error ?? "Upload failed"}>
               {error ?? "Failed"}
@@ -143,7 +136,7 @@ function ImageThumbnail({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onRetry();
+                onRetry(file.id);
               }}
               className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-accent-glow"
             >
@@ -163,13 +156,13 @@ function ImageThumbnail({
         )}
         <SpoilerToggle 
           isSpoiler={isSpoiler} 
-          onToggle={onToggleSpoiler}
+          onToggle={() => onToggleSpoiler(file.id)}
           disabled={disabled}
         />
       </div>
       <button
         type="button"
-        onClick={onRemove}
+        onClick={(e) => onRemove(e, file.id)}
         className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500 transition-colors"
         aria-label="Remove attachment"
       >
@@ -177,29 +170,25 @@ function ImageThumbnail({
       </button>
     </div>
   );
-}
+});
 
-function FileChip({ 
-  file, 
-  isActive, 
-  tags,
-  status,
-  error,
-  onClick, 
+const FileChip = memo(function FileChip({
+  file,
+  isActive,
+  onActivate,
   onRemove,
   onRetry,
-  disabled
-}: { 
-  file: File; 
-  isActive: boolean; 
-  tags: string[];
-  status: QueuedFile["status"];
-  error?: string;
-  onClick: () => void;
-  onRemove: (e: React.MouseEvent) => void;
-  onRetry: () => void;
+  disabled,
+}: {
+  file: QueuedFile;
+  isActive: boolean;
+  onActivate: (id: string) => void;
+  onRemove: (e: React.MouseEvent, id: string) => void;
+  onRetry: (id: string) => void;
   disabled?: boolean;
 }) {
+  const error = file.error;
+  const tags = file._tags ?? [];
   return (
     <div
       className={cn(
@@ -208,13 +197,13 @@ function FileChip({
           ? "border-accent-400 bg-accent/5 shadow-[0_0_0_2px_rgba(109,109,255,0.2)]" 
           : "border-border bg-surface hover:border-accent-400/30"
       )}
-      onClick={onClick}
-      title={`${file.name} — ${formatChatFileSize(file.size)}`}
+      onClick={() => onActivate(file.id)}
+      title={`${file.file.name} — ${formatChatFileSize(file.file.size)}`}
     >
       <FileText className={cn("h-4 w-4 shrink-0", isActive ? "text-accent" : "text-ink-400")} />
       <div className="min-w-0 flex-1">
-        <p className={cn("truncate text-sm font-medium", isActive ? "text-ink-50" : "text-ink-400")}>{file.name}</p>
-        <p className={cn("truncate text-[11px]", isActive ? "text-white/60" : "text-ink-500")}>{formatChatFileSize(file.size)}</p>
+        <p className={cn("truncate text-sm font-medium", isActive ? "text-ink-50" : "text-ink-400")}>{file.file.name}</p>
+        <p className={cn("truncate text-[11px]", isActive ? "text-white/60" : "text-ink-500")}>{formatChatFileSize(file.file.size)}</p>
       </div>
       {tags.length > 0 && (
         <span className="flex items-center gap-1 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-accent">
@@ -222,12 +211,12 @@ function FileChip({
           {tags.length === 1 ? tags[0] : `${tags.length} tags`}
         </span>
       )}
-      {status === "error" && (
+      {file.status === "error" && (
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            onRetry();
+            onRetry(file.id);
           }}
           title={error ?? "Upload failed"}
           className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-accent-glow"
@@ -237,7 +226,7 @@ function FileChip({
       )}
       <button
         type="button"
-        onClick={onRemove}
+        onClick={(e) => onRemove(e, file.id)}
         className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors", isActive ? "text-white hover:bg-red-500" : "text-ink-400 hover:text-red-500 hover:bg-red-500/10")}
         aria-label="Remove attachment"
       >
@@ -245,7 +234,7 @@ function FileChip({
       </button>
     </div>
   );
-}
+});
 
 function TagComposer({ 
   activeFile, 
@@ -366,13 +355,14 @@ function TagComposer({
   );
 }
 
-export function AttachmentPreviewBar({
+// Memoized so draft-text keystrokes / unrelated parent renders skip the whole
+// bar (its props are stable refs + stable handlers); thumbnails/chips are
+// memoized leaves on top of that.
+export const AttachmentPreviewBar = memo(function AttachmentPreviewBar({
   imageQueue,
   fileQueue,
   activeAttachmentId,
   maxAttachments,
-  onQueueImage,
-  onQueueFile,
   onRemoveImage,
   onRemoveFile,
   onClearAll,
@@ -385,6 +375,18 @@ export function AttachmentPreviewBar({
 }: AttachmentPreviewBarProps) {
   const totalQueued = imageQueue.length + fileQueue.length;
   const allAttachments = [...imageQueue, ...fileQueue];
+
+  const handleActivate = useCallback((id: string) => onSetActive(id), [onSetActive]);
+  const handleRemoveImage = useCallback(
+    (_e: React.MouseEvent, id: string) => onRemoveImage(id),
+    [onRemoveImage],
+  );
+  const handleRemoveFile = useCallback(
+    (_e: React.MouseEvent, id: string) => onRemoveFile(id),
+    [onRemoveFile],
+  );
+  const handleToggleSpoiler = useCallback((id: string) => onToggleSpoiler(id), [onToggleSpoiler]);
+  const handleRetry = useCallback((id: string) => onRetry(id), [onRetry]);
 
   if (totalQueued === 0) {
     return null;
@@ -399,38 +401,23 @@ export function AttachmentPreviewBar({
         {imageQueue.map((file) => (
           <ImageThumbnail
             key={file.id}
-            file={file.file}
-            previewUrl={file.previewUrl}
+            file={file}
             isActive={activeAttachmentId === file.id}
-            isSpoiler={file._spoiler || false}
-            tags={file._tags || []}
-            status={file.status}
-            progress={file.progress}
-            error={file.error}
-            onClick={() => onSetActive(file.id)}
-            onRemove={(e) => {
-              e.stopPropagation();
-              onRemoveImage(file.id);
-            }}
-            onToggleSpoiler={() => onToggleSpoiler(file.id)}
-            onRetry={() => onRetry(file.id)}
+            onActivate={handleActivate}
+            onRemove={handleRemoveImage}
+            onToggleSpoiler={handleToggleSpoiler}
+            onRetry={handleRetry}
             disabled={disabled}
           />
         ))}
         {fileQueue.map((file) => (
           <FileChip
             key={file.id}
-            file={file.file}
+            file={file}
             isActive={activeAttachmentId === file.id}
-            tags={file._tags || []}
-            status={file.status}
-            error={file.error}
-            onClick={() => onSetActive(file.id)}
-            onRemove={(e) => {
-              e.stopPropagation();
-              onRemoveFile(file.id);
-            }}
-            onRetry={() => onRetry(file.id)}
+            onActivate={handleActivate}
+            onRemove={handleRemoveFile}
+            onRetry={handleRetry}
             disabled={disabled}
           />
         ))}
@@ -470,4 +457,4 @@ export function AttachmentPreviewBar({
       </div>
     </div>
   );
-}
+});

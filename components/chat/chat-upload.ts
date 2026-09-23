@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CHAT_MEDIA_BUCKET } from "@/lib/chat-media";
 
@@ -190,4 +191,32 @@ export function cancelAllUploads() {
   for (const task of inFlight) {
     task.controller.abort();
   }
+}
+
+// ---------------------------------------------------------------------------
+// Fine-grained per-file progress store. XHR progress events are high-frequency
+// (many per second); this keeps them OUT of React state so a tick re-renders
+// only the subscribed thumbnail leaf, never the message thread. Selector
+// pattern equivalent to a zustand slice, via native useSyncExternalStore.
+// ---------------------------------------------------------------------------
+const progressById = new Map<string, number>();
+const progressListeners = new Set<() => void>();
+
+function subscribeProgress(listener: () => void): () => void {
+  progressListeners.add(listener);
+  return () => progressListeners.delete(listener);
+}
+
+export function setUploadProgress(id: string, pct: number): void {
+  progressById.set(id, pct);
+  for (const l of progressListeners) l();
+}
+
+export function clearUploadProgress(id: string): void {
+  if (progressById.delete(id)) for (const l of progressListeners) l();
+}
+
+/** Live percentage for one queued file (0-100). Primitive snapshot → stable. */
+export function useUploadProgress(id: string): number {
+  return useSyncExternalStore(subscribeProgress, () => progressById.get(id) ?? 0);
 }

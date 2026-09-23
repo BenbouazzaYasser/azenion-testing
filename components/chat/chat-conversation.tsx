@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Plus, Film, Sticker as StickerIcon, Phone, Video } from "lucide-react";import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
-import { uploadChatMediaBlob, uploadBatch, type UploadFileInput, type UploadTaskResult, type UploadResult, type UploadError } from "@/components/chat/chat-upload";
+import { uploadChatMediaBlob, uploadBatch, setUploadProgress, clearUploadProgress, type UploadFileInput, type UploadTaskResult, type UploadResult, type UploadError } from "@/components/chat/chat-upload";
 import { AttachmentPreviewBar } from "@/components/chat/attachment-preview-bar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -110,7 +110,6 @@ type QueuedFile = {
   previewUrl: string | null;
   status: "queued" | "uploading" | "success" | "error";
   error?: string;
-  progress?: number;
   _spoiler?: boolean;
   _tags?: string[];
 };
@@ -724,41 +723,47 @@ export function ChatConversation({
     }
   };
 
-  const removeQueued = (id: string) => {
-    // Remove from whichever queue contains it
-    setImageQueue((prev) => {
-      const item = prev.find((q) => q.id === id);
-      if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl);
-      return prev.filter((q) => q.id !== id);
-    });
-    setFileQueue((prev) => {
-      const item = prev.find((q) => q.id === id);
-      if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl);
-      return prev.filter((q) => q.id !== id);
-    });
-    // Clear active if removed
-    if (activeAttachmentId === id) {
-      setActiveAttachmentId(null);
-    }
-  };
+  const removeQueued = useCallback(
+    (id: string) => {
+      clearUploadProgress(id);
+      // Remove from whichever queue contains it
+      setImageQueue((prev) => {
+        const item = prev.find((q) => q.id === id);
+        if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl);
+        return prev.filter((q) => q.id !== id);
+      });
+      setFileQueue((prev) => {
+        const item = prev.find((q) => q.id === id);
+        if (item?.previewUrl) URL.revokeObjectURL(item.previewUrl);
+        return prev.filter((q) => q.id !== id);
+      });
+      // Clear active if removed
+      if (activeAttachmentId === id) {
+        setActiveAttachmentId(null);
+      }
+    },
+    [activeAttachmentId],
+  );
 
   const clearImageQueue = useCallback(() => {
+    imageQueue.forEach((q) => clearUploadProgress(q.id));
     setImageQueue((prev) => {
       prev.forEach((q) => {
         if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
       });
       return [];
     });
-  }, []);
+  }, [imageQueue]);
 
   const clearFileQueue = useCallback(() => {
+    fileQueue.forEach((q) => clearUploadProgress(q.id));
     setFileQueue((prev) => {
       prev.forEach((q) => {
         if (q.previewUrl) URL.revokeObjectURL(q.previewUrl);
       });
       return [];
     });
-  }, []);
+  }, [fileQueue]);
 
   const clearAllAttachments = useCallback(() => {
     clearImageQueue();
@@ -795,49 +800,51 @@ export function ChatConversation({
     setFileQueue((prev) => prev.map(strip));
   }, []);
 
-  const retryQueued = async (id: string) => {
-    // Find in either queue
-    const q = imageQueue.find((x) => x.id === id) || fileQueue.find((x) => x.id === id);
-    if (!q || q.status !== "error") return;
-    
-    const updateStatus = (status: QueuedFile["status"], error?: string, progress?: number) => {
-      setImageQueue((prev) => prev.map((x) => (x.id === id ? { ...x, status, error, progress } : x)));
-      setFileQueue((prev) => prev.map((x) => (x.id === id ? { ...x, status, error, progress } : x)));
-    };
-    
-    updateStatus("uploading", undefined, 0);
+  const retryQueued = useCallback(
+    async (id: string) => {
+      // Find in either queue
+      const q = imageQueue.find((x) => x.id === id) || fileQueue.find((x) => x.id === id);
+      if (!q || q.status !== "error") return;
 
-    try {
-      const attachmentId = q.id;
-      const safeName = sanitizeFilename(q.file.name);
-      const path = getChatMediaObjectPath(conversationId, attachmentId, safeName);
-      
-      const results = await uploadBatch(
-        [{
-          id: q.id,
-          path,
-          blob: q.file,
-          mimeType: q.file.type || "application/octet-stream",
-        }],
-        (_, progress) => {
-          const pct = Math.round(progress.percentage);
-          setImageQueue((prev) => prev.map((x) => (x.id === id ? { ...x, progress: pct } : x)));
-          setFileQueue((prev) => prev.map((x) => (x.id === id ? { ...x, progress: pct } : x)));
+      const updateStatus = (status: QueuedFile["status"], error?: string) => {
+        setImageQueue((prev) => prev.map((x) => (x.id === id ? { ...x, status, error } : x)));
+        setFileQueue((prev) => prev.map((x) => (x.id === id ? { ...x, status, error } : x)));
+      };
+
+      updateStatus("uploading");
+      setUploadProgress(id, 0);
+
+      try {
+        const attachmentId = q.id;
+        const safeName = sanitizeFilename(q.file.name);
+        const path = getChatMediaObjectPath(conversationId, attachmentId, safeName);
+
+        const results = await uploadBatch(
+          [{
+            id: q.id,
+            path,
+            blob: q.file,
+            mimeType: q.file.type || "application/octet-stream",
+          }],
+          (_, progress) => setUploadProgress(id, Math.round(progress.percentage)),
+        );
+
+        const result = results[0];
+        if (!result || "error" in result) {
+          updateStatus("error", result?.error ?? "Retry failed");
+          toast.error(`Retry failed: ${result?.error ?? "Unknown error"}`);
+        } else {
+          updateStatus("success");
+          setUploadProgress(id, 100);
+          clearUploadProgress(id);
         }
-      );
-
-      const result = results[0];
-      if (!result || "error" in result) {
-        updateStatus("error", result?.error ?? "Retry failed", undefined);
-        toast.error(`Retry failed: ${result?.error ?? "Unknown error"}`);
-      } else {
-        updateStatus("success", undefined, 100);
+      } catch {
+        updateStatus("error", "Retry failed");
+        toast.error("Retry failed");
       }
-    } catch {
-      updateStatus("error", "Retry failed", undefined);
-      toast.error("Retry failed");
-    }
-  };
+    },
+    [imageQueue, fileQueue, conversationId],
+  );
 
   const insertEmoji = useCallback(
     (emoji: string) => {
@@ -1374,8 +1381,9 @@ export function ChatConversation({
     // Snapshot queued files for upload
     const toUpload = [...allQueued];
     // Mark uploading
-    setImageQueue((prev) => prev.map((q) => ({ ...q, status: "uploading" as const, progress: 0 })));
-    setFileQueue((prev) => prev.map((q) => ({ ...q, status: "uploading" as const, progress: 0 })));
+    setImageQueue((prev) => prev.map((q) => ({ ...q, status: "uploading" as const })));
+    setFileQueue((prev) => prev.map((q) => ({ ...q, status: "uploading" as const })));
+    toUpload.forEach((q) => setUploadProgress(q.id, 0));
 
     let attachmentInputs: { type: "image" | "file"; storage_path: string; filename: string; mime_type: string; file_size: number; metadata: Record<string, unknown> | null }[] = [];
     let committed = false;
@@ -1397,11 +1405,7 @@ export function ChatConversation({
         // Upload batch with concurrent limit (max 3) and progress tracking
         const uploadResults: UploadTaskResult[] = await uploadBatch(
           uploadInputs,
-          (id, progress) => {
-            const pct = Math.round(progress.percentage);
-            setImageQueue((prev) => prev.map((q) => (q.id === id ? { ...q, progress: pct } : q)));
-            setFileQueue((prev) => prev.map((q) => (q.id === id ? { ...q, progress: pct } : q)));
-          }
+          (id, progress) => setUploadProgress(id, Math.round(progress.percentage)),
         );
 
         const failed = uploadResults.filter((r): r is UploadError => "error" in r);
@@ -1412,13 +1416,13 @@ export function ChatConversation({
           setImageQueue((prev) =>
             prev.map((q) => {
               const f = failed.find((x) => x.id === q.id);
-              return f ? { ...q, status: "error" as const, error: f.error, progress: undefined } : q;
+              return f ? { ...q, status: "error" as const, error: f.error } : q;
             }),
           );
           setFileQueue((prev) =>
             prev.map((q) => {
               const f = failed.find((x) => x.id === q.id);
-              return f ? { ...q, status: "error" as const, error: f.error, progress: undefined } : q;
+              return f ? { ...q, status: "error" as const, error: f.error } : q;
             }),
           );
           toast.error(`Upload failed for ${failed.length} file(s)`);
@@ -1454,11 +1458,12 @@ export function ChatConversation({
         });
 
         // Mark all as success in queue
-        setImageQueue((prev) => prev.map((q) => ({ ...q, status: "success" as const, progress: 100 })));
-        setFileQueue((prev) => prev.map((q) => ({ ...q, status: "success" as const, progress: 100 })));
+        setImageQueue((prev) => prev.map((q) => ({ ...q, status: "success" as const })));
+        setFileQueue((prev) => prev.map((q) => ({ ...q, status: "success" as const })));
       }
 
       // Clear queue optimistically (will be cleared on success)
+      toUpload.forEach((q) => clearUploadProgress(q.id));
       setImageQueue([]);
       setFileQueue([]);
       setActiveAttachmentId(null);
@@ -1476,8 +1481,8 @@ export function ChatConversation({
         setInput(content);
         // Restore queue for retry if it was attachments
         if (toUpload.length > 0) {
-          setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
-          setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
+          setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
+          setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
         }
         toast.error(result.error);
         // Cleanup uploaded storage if DB insert failed (sendMessageWithAttachments already tries, but for safety)
@@ -1524,8 +1529,8 @@ export function ChatConversation({
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
       // Restore the text the user typed so a thrown send never eats it.
       setInput(content);
-      setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
-      setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const, progress: undefined })));
+      setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
+      setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
       // Don't orphan uploaded objects when the send throws after upload.
       if (!committed && attachmentInputs.length > 0) {
         await supabase.storage
@@ -1871,8 +1876,6 @@ export function ChatConversation({
                   fileQueue={fileQueue}
                   activeAttachmentId={activeAttachmentId}
                   maxAttachments={10}
-                  onQueueImage={(file) => addFiles([file])}
-                  onQueueFile={(file) => addFiles([file])}
                   onRemoveImage={removeQueued}
                   onRemoveFile={removeQueued}
                   onClearAll={clearAllAttachments}
