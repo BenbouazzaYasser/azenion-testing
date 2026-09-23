@@ -59,6 +59,9 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
     { id: string; full_name: string | null; username: string; avatar_url: string | null }[]
   >([]);
   const [isSearching, startSearchTransition] = useTransition();
+  // Navigation itself is a transition: the tap applies instantly (pendingId
+  // drives the active highlight) and the thread render never freezes input.
+  const [isNavPending, startTransition] = useTransition();
   const [showSearch, setShowSearch] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -132,8 +135,12 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
       setOpenMenuId(null);
       setPendingId(id);
       onNavigate?.();
+      // Transition-scoped push: keeps the UI interactive while the new thread
+      // renders/hydrates (App Router navigation is async; this marks the route
+      // state update as low-priority).
+      startTransition(() => router.push(`/chat/${id}`));
     },
-    [onNavigate],
+    [onNavigate, router],
   );
 
   useEffect(() => {
@@ -242,7 +249,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
         </div>
       </div>
 
-      <div className={cn("flex-1 min-h-0 overflow-y-auto", SCROLLBAR_CLASSES)}>
+      <div className={cn("flex-1 min-h-0 overflow-y-auto", SCROLLBAR_CLASSES)} aria-busy={isNavPending}>
         <div className="p-3">
           <div className="mb-2 flex items-center justify-between px-3 pt-1">
             {view === "archived" ? (
@@ -422,7 +429,14 @@ function ConversationRowImpl({
       <Link
         href={prefetchHref}
         aria-current={isActive ? "page" : undefined}
-        onClick={() => onNavigate(conv.id)}
+        onClick={(e) => {
+          // Let modifier/middle-clicks behave natively; plain clicks navigate
+          // through onNavigate (transition-scoped router.push) so the sidebar
+          // highlight and the push happen in one gesture.
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+          e.preventDefault();
+          onNavigate(conv.id);
+        }}
         onMouseEnter={() => router.prefetch(prefetchHref)}
         onFocus={() => router.prefetch(prefetchHref)}
         className={cn(

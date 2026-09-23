@@ -183,6 +183,27 @@ function classifyFile(file: File): { type: "image" | "file"; valid: boolean; err
   return { type: "file", valid: false, error: `File type ${mime} not supported` };
 }
 
+// Client-side per-conversation message cache, kept at module scope so it
+// survives component remounts across SPA navigations. Switching back to a
+// conversation in the same session renders its cached messages instantly and
+// merges the fresh server page into the SAME render — no blank, no stale
+// flash, no server-latency gate on revisits.
+interface ConversationCacheEntry {
+  messages: Message[];
+  hasMore: boolean;
+}
+const conversationCache = new Map<string, ConversationCacheEntry>();
+
+/** Union of two message lists by id, asc by created_at — server rows win. */
+function mergeMessages(a: Message[], b: Message[]): Message[] {
+  const byId = new Map<string, Message>();
+  for (const m of a) byId.set(m.id, m);
+  for (const m of b) byId.set(m.id, m);
+  return [...byId.values()].sort((x, y) =>
+    (x.created_at ?? "").localeCompare(y.created_at ?? ""),
+  );
+}
+
 export function ChatConversation({
   conversationId,
   initialMessages,
@@ -248,15 +269,38 @@ export function ChatConversation({
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    setMessages(initialMessages);
-    setHasMoreOlder(initialHasMore);
-  }, [initialMessages, initialHasMore]);
-
   const messagesRef = useRef(messages);
   useEffect(() => {
     messagesRef.current = messages;
   });
+
+  // Render-phase sync (same pattern as chat-sidebar): on conversationId change
+  // the new thread's messages adopt in the same render cycle the new props
+  // arrive — the old thread's content never paints, and draft/attachments/
+  // read-state/scroll reset in one batched pass instead of a cascade of
+  // per-switch effects. Cached conversations merge instantly (0ms).
+  const [seenConvId, setSeenConvId] = useState(conversationId);
+  if (seenConvId !== conversationId) {
+    const leaving = seenConvId;
+    if (leaving) {
+      // messagesRef still holds the last committed list of the thread we're
+      // leaving — snapshot it before adopting the next one.
+      conversationCache.set(leaving, {
+        messages: messagesRef.current,
+        hasMore: hasMoreOlder,
+      });
+    }
+    setSeenConvId(conversationId);
+    const cached = conversationCache.get(conversationId);
+    setMessages(cached ? mergeMessages(cached.messages, initialMessages) : initialMessages);
+    setHasMoreOlder(initialHasMore);
+    setImageQueue([]);
+    setFileQueue([]);
+    setActiveAttachmentId(null);
+    setInput("");
+    setOtherLastReadAt(null);
+    stickToBottomRef.current = true;
+  }
 
   // Own profile for optimistic sends. Seeded synchronously from any own
   // message already in history (sender is embedded), then warmed from the
