@@ -140,11 +140,14 @@ export function useVoiceRecorder(): UseVoiceRecorderReturn {
       }
       streamRef.current = stream;
       const chosenMime = mimeType ?? pickSupportedMime() ?? undefined;
+      // 32kbps mono Opus: optimal for speech, ~1/8 the size of default VBR.
+      const recorderOptions: MediaRecorderOptions = { audioBitsPerSecond: 32_000 };
+      if (chosenMime) recorderOptions.mimeType = chosenMime;
       let recorder: MediaRecorder;
       try {
-        recorder = new MediaRecorder(stream, chosenMime ? { mimeType: chosenMime } : undefined);
+        recorder = new MediaRecorder(stream, recorderOptions);
       } catch {
-        recorder = new MediaRecorder(stream);
+        recorder = new MediaRecorder(stream, { audioBitsPerSecond: 32_000 });
       }
       mediaRecorderRef.current = recorder;
       chunksRef.current = [];

@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, useEffect, useLayoutEffect, useCallback, useSyncExternalStore } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { compressImageFile } from "@/lib/compress-image";
 import { useSearchParams } from "next/navigation";
 import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Plus, Film, Sticker as StickerIcon, Phone, Video } from "lucide-react";import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -660,17 +661,26 @@ export function ChatConversation({
         continue;
       }
       const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
-      const queuedFile: QueuedFile = { 
-        id: crypto.randomUUID(), 
-        file, 
-        previewUrl, 
+      const queuedFile: QueuedFile = {
+        id: crypto.randomUUID(),
+        file,
+        previewUrl,
         status: "queued",
         _spoiler: false,
         _tags: [],
       };
-      
+
       if (file.type.startsWith("image/")) {
         nextImages.push(queuedFile);
+        // Background compression: preview already shows the original blob URL;
+        // swap the queued file for the downscaled WebP when it's ready. If it
+        // never lands, the upload falls back to the original — never blocks.
+        void compressImageFile(file).then((compressed) => {
+          if (compressed === file) return;
+          setImageQueue((prev) =>
+            prev.map((q) => (q.id === queuedFile.id ? { ...q, file: compressed } : q)),
+          );
+        });
       } else {
         nextFiles.push(queuedFile);
       }

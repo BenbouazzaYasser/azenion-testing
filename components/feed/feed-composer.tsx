@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Film, ImagePlus, Loader2, Send, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { compressImageFile } from "@/lib/compress-image";
 import { Button } from "@/components/ui/button";
 import {
   ALLOWED_IMAGE_TYPES,
@@ -130,12 +131,25 @@ export function FeedComposer({
         message = `"${file.name}" exceeds the 2MB image limit.`;
         continue;
       }
-      valid.push({
+      const item: MediaItem = {
         id: mediaId(),
         file,
         kind: isVideo ? "video" : "image",
         url: URL.createObjectURL(file),
-      });
+      };
+      valid.push(item);
+      if (!isVideo) {
+        // Background compression: preview already shows the original blob URL;
+        // swap the queued file for the downscaled WebP when ready. Uploads fall
+        // back to the original on failure/timeout — never blocked.
+        void compressImageFile(file).then((compressed) => {
+          if (compressed === file) return;
+          mediaRef.current = mediaRef.current.map((m) =>
+            m.id === item.id ? { ...m, file: compressed } : m,
+          );
+          setMedia((prev) => prev.map((m) => (m.id === item.id ? { ...m, file: compressed } : m)));
+        });
+      }
     }
 
     const remaining = maxMedia - media.length;
