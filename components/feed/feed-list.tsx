@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { Pin, Newspaper } from "lucide-react";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { FeedCard } from "@/components/feed/feed-card";
+import { PendingFeedCard } from "@/components/feed/pending-feed-card";
 import { getFeedItems, toggleFeedPin, type FeedItemWithAuthor } from "@/actions/feed.actions";
+import { useFeedPending } from "@/components/feed/optimistic-posts";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/components/translation/translation-provider";
 
@@ -29,6 +31,10 @@ export function FeedList({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pinPendingId, setPinPendingId] = useState<string | null>(null);
+  // Feed filter/pin swaps replace the whole card stream — keep the tab UI
+  // responsive by marking the reload a transition.
+  const [, startTransition] = useTransition();
+  const { pending, uploadStatus, retryPost, dismissPost } = useFeedPending();
 
   const { t } = useTranslation();
 
@@ -124,14 +130,20 @@ export function FeedList({
     const newFilter = id === "" || id === "all" ? "all" : id;
     if (newFilter === filterRef.current) return;
     setFilter(newFilter);
-    void loadFirstPage(newFilter);
+    startTransition(() => {
+      void loadFirstPage(newFilter);
+    });
   };
 
   const handleRetry = () => {
     if (itemsRef.current.length === 0) {
-      void loadFirstPage(filterRef.current);
+      startTransition(() => {
+        void loadFirstPage(filterRef.current);
+      });
     } else {
-      void loadNextPage();
+      startTransition(() => {
+        void loadNextPage();
+      });
     }
   };
 
@@ -148,7 +160,9 @@ export function FeedList({
       setError(result.error);
       return;
     }
-    void loadFirstPage(filterRef.current);
+    startTransition(() => {
+      void loadFirstPage(filterRef.current);
+    });
   };
 
   return (
@@ -160,6 +174,25 @@ export function FeedList({
       />
 
       <div className="flex flex-col gap-4">
+        {pending.map((post) =>
+          post.status === "resolved" ? (
+            <div
+              key={post.tmpId}
+              style={{ contentVisibility: "auto", containIntrinsicSize: "auto 320px" }}
+            >
+              <FeedCard item={post.item} currentUserId={currentUserId} />
+            </div>
+          ) : (
+            <PendingFeedCard
+              key={post.tmpId}
+              post={post}
+              uploadStatus={uploadStatus}
+              onRetry={retryPost}
+              onDismiss={dismissPost}
+            />
+          ),
+        )}
+
         {items.length === 0 && !isLoadingMore && !error && (
           <div className="flex flex-col items-center justify-center gap-4 px-6 py-20 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300">
@@ -199,30 +232,34 @@ export function FeedList({
         )}
 
         {items.map((item) => (
-          <FeedCard
+          <div
             key={`${item.source_type}-${item.source_id}`}
-            item={item}
-            currentUserId={currentUserId}
-            headerAction={
-              isPlatformAdmin ? (
-                <button
-                  type="button"
-                  onClick={() => void handleToggleGlobalPin(item)}
-                  disabled={pinPendingId === item.id}
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
-                    item.is_pinned
-                      ? "bg-accent/[0.12] text-accent-300 hover:bg-accent/[0.16]"
-                      : "bg-surface text-ink-500 hover:bg-surface-hover hover:text-ink-200",
-                  )}
-                  aria-label={item.is_pinned ? t("feed.unpinFromGlobal") : t("feed.pinToGlobal")}
-                >
-                  <Pin size={13} className={item.is_pinned ? "fill-accent-400 text-accent-400" : ""} />
-                  {item.is_pinned ? t("feed.unpin") : t("feed.pin")}
-                </button>
-              ) : undefined
-            }
-          />
+            style={{ contentVisibility: "auto", containIntrinsicSize: "auto 320px" }}
+          >
+            <FeedCard
+              item={item}
+              currentUserId={currentUserId}
+              headerAction={
+                isPlatformAdmin ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleToggleGlobalPin(item)}
+                    disabled={pinPendingId === item.id}
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors disabled:opacity-50",
+                      item.is_pinned
+                        ? "bg-accent/[0.12] text-accent-300 hover:bg-accent/[0.16]"
+                        : "bg-surface text-ink-500 hover:bg-surface-hover hover:text-ink-200",
+                    )}
+                    aria-label={item.is_pinned ? t("feed.unpinFromGlobal") : t("feed.pinToGlobal")}
+                  >
+                    <Pin size={13} className={item.is_pinned ? "fill-accent-400 text-accent-400" : ""} />
+                    {item.is_pinned ? t("feed.unpin") : t("feed.pin")}
+                  </button>
+                ) : undefined
+              }
+            />
+          </div>
         ))}
 
         {error && items.length > 0 && (

@@ -16,7 +16,15 @@ function GalleryTile({
   sizes?: string;
 }) {
   return (
-    <div className={cn("relative overflow-hidden group/tile", className)}>
+    <div
+      className={cn(
+        // bg-ink-500/10 is the zero-JS loading placeholder: the tile keeps
+        // its fixed aspect while the image decodes, so no CLS and no blank
+        // surface flash.
+        "group/tile relative overflow-hidden bg-ink-500/10",
+        className,
+      )}
+    >
       <Image
         src={src}
         alt=""

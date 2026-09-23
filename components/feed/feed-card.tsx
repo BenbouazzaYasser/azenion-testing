@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 import Image from "next/image";
 import {
   Calendar,
@@ -116,7 +116,7 @@ interface FeedCardProps {
   headerAction?: ReactNode;
 }
 
-export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
+function FeedCardUnmemoized({ item, currentUserId, headerAction }: FeedCardProps) {
   const { t } = useTranslation();
   const entityType = entityTypeFor(item);
   const config = ENTITY_CONFIG[entityType];
@@ -353,3 +353,8 @@ export function FeedCard({ item, currentUserId, headerAction }: FeedCardProps) {
     </div>
   );
 }
+
+// Memoized: FeedList re-renders on pending-post progress ticks and pin
+// toggles; identical cards (stable item, undefined headerAction for
+// non-admins) skip diffing entirely.
+export const FeedCard = memo(FeedCardUnmemoized);

@@ -37,6 +37,7 @@ import {
 } from "@/lib/chat-media";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { RecordingTimer } from "@/components/chat/recording-timer";
+import { getCurrentUserProfile } from "@/lib/current-user-profile";
 import Image from "next/image";
 import nextDynamic from "next/dynamic";
 import type { GifResult } from "@/lib/gif/provider";
@@ -256,6 +257,20 @@ export function ChatConversation({
   useEffect(() => {
     messagesRef.current = messages;
   });
+
+  // Own profile for optimistic sends. Seeded synchronously from any own
+  // message already in history (sender is embedded), then warmed from the
+  // shared one-flight fetch — so inserting an optimistic message never
+  // awaits a profiles round trip. `ownProfileRef` is a ref, not state: the
+  // send handlers don't need to re-render when it fills in.
+  const ownProfileRef = useRef<Message["sender"]>(null);
+  useEffect(() => {
+    const seeded = initialMessages.find((m) => m.sender_id === currentUserId)?.sender ?? null;
+    if (seeded) ownProfileRef.current = seeded;
+    void getCurrentUserProfile().then((profile) => {
+      if (profile && profile.id === currentUserId) ownProfileRef.current = profile;
+    });
+  }, [initialMessages, currentUserId]);
 
   // Infinite scroll: fetch one older page (keyset on the oldest loaded
   // message) and anchor the viewport back to the previously-first message.
@@ -890,12 +905,13 @@ export function ChatConversation({
       setInput("");
       isSendingRef.current = true;
     setIsSending(true);
-      const supabase = await createClient();
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, full_name, avatar_url, username")
-        .eq("id", currentUserId)
-        .single();
+
+      const profile: Message["sender"] = ownProfileRef.current ?? {
+        id: currentUserId,
+        full_name: null,
+        avatar_url: null,
+        username: "",
+      };
 
       const gifAtt: ChatAttachmentForMessage = {
         id: crypto.randomUUID(),
@@ -1003,12 +1019,13 @@ export function ChatConversation({
       setInput("");
       isSendingRef.current = true;
     setIsSending(true);
-      const supabase = await createClient();
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, full_name, avatar_url, username")
-        .eq("id", currentUserId)
-        .single();
+
+      const profile: Message["sender"] = ownProfileRef.current ?? {
+        id: currentUserId,
+        full_name: null,
+        avatar_url: null,
+        username: "",
+      };
 
       const stickerAtt: ChatAttachmentForMessage = {
         id: crypto.randomUUID(),
@@ -1158,12 +1175,13 @@ export function ChatConversation({
     }
     isSendingRef.current = true;
     setIsSending(true);
-    const supabase = await createClient();
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url, username")
-      .eq("id", currentUserId)
-      .single();
+    const profile: Message["sender"] = ownProfileRef.current ?? {
+      id: currentUserId,
+      full_name: null,
+      avatar_url: null,
+      username: "",
+    };
+    const supabase = createClient();
 
     const attachmentId = crypto.randomUUID();
     const mime = voice.mimeType ?? blob.type ?? "audio/webm";
@@ -1302,12 +1320,13 @@ export function ChatConversation({
     const content = input.trim();
     setInput("");
 
-    const supabase = await createClient();
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url, username")
-      .eq("id", currentUserId)
-      .single();
+    const supabase = createClient();
+    const profile: Message["sender"] = ownProfileRef.current ?? {
+      id: currentUserId,
+      full_name: null,
+      avatar_url: null,
+      username: "",
+    };
 
     // Prepare optimistic attachments with preview URLs
     const optimisticAttachments: ChatAttachmentForMessage[] = allQueued.map((q) => {

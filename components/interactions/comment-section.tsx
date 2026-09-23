@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useState, useTransition } from "react";
+import { memo, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { MessageSquare, Pencil, Reply, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "@/lib/date";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,8 @@ import {
 } from "@/actions/interactions.actions";
 import { LikeButton } from "@/components/interactions/like-button";
 import { useTranslation } from "@/components/translation/translation-provider";
-import type { CommentWithAuthor } from "@/data/interactions";
+import { getCurrentUserProfile } from "@/lib/current-user-profile";
+import type { CommentAuthor, CommentWithAuthor } from "@/data/interactions";
 
 interface CommentSectionProps {
   targetType: string;
@@ -39,6 +40,22 @@ export function CommentSection({
   const [totalComments, setTotalComments] = useState(0);
   const [loadedCount, setLoadedCount] = useState(0);
   const { t } = useTranslation();
+
+  // Own profile for optimistic inserts — ref, not state, so sending doesn't
+  // re-render every CommentItem. Seeded by the shared one-flight fetch.
+  const ownAuthorRef = useRef<CommentAuthor | null>(null);
+  useEffect(() => {
+    void getCurrentUserProfile().then((profile) => {
+      if (profile) {
+        ownAuthorRef.current = {
+          id: profile.id,
+          full_name: profile.full_name,
+          username: profile.username,
+          avatar_url: profile.avatar_url,
+        };
+      }
+    });
+  }, []);
 
   // Two totals, deliberately separate: loadedCount is the pagination cursor
   // (top-level rows the server has served — NOT comments.length, which runs
@@ -132,14 +149,47 @@ export function CommentSection({
     const body = input.trim();
     setInput("");
 
+    // Optimistic insert: render immediately with a temp ID; the server
+    // action runs in the background and the temp row is swapped for the
+    // canonical one (or removed + input restored) when it resolves.
+    const tmpId = crypto.randomUUID();
+    const author: CommentAuthor = ownAuthorRef.current ?? {
+      id: currentUserId,
+      full_name: null,
+      username: "me",
+      avatar_url: null,
+    };
+    const optimistic: CommentWithAuthor = {
+      id: tmpId,
+      user_id: currentUserId,
+      target_type: targetType,
+      target_id: targetId,
+      parent_comment_id: null,
+      body,
+      created_at: new Date().toISOString(),
+      updated_at: null,
+      author,
+      like_count: 0,
+      user_has_liked: false,
+      reply_count: 0,
+      replies: [],
+    };
+    setComments((prev) => [...prev, optimistic]);
+    setCommentCount((c) => c + 1);
+    setTotalComments((t) => t + 1);
+
     startTransition(async () => {
       const result = await createComment(targetType, targetId, body);
       if (result?.success && result.comment) {
-        setComments((prev) => [...prev, result.comment as CommentWithAuthor]);
-        setCommentCount((c) => c + 1);
-        if (!result.comment.parent_comment_id) {
-          setTotalComments((t) => t + 1);
-        }
+        setComments((prev) =>
+          prev.map((c) => (c.id === tmpId ? (result.comment as CommentWithAuthor) : c)),
+        );
+      } else {
+        // Roll the optimistic row back and let the user retry.
+        setComments((prev) => prev.filter((c) => c.id !== tmpId));
+        setCommentCount((c) => Math.max(0, c - 1));
+        setTotalComments((t) => Math.max(0, t - 1));
+        setInput(body);
       }
     });
   };
@@ -148,20 +198,61 @@ export function CommentSection({
     (parentId: string, body: string) => {
       if (!currentUserId || !body.trim() || isPending) return;
 
+      const tmpId = crypto.randomUUID();
+      const author: CommentAuthor = ownAuthorRef.current ?? {
+        id: currentUserId,
+        full_name: null,
+        username: "me",
+        avatar_url: null,
+      };
+      const optimistic: CommentWithAuthor = {
+        id: tmpId,
+        user_id: currentUserId,
+        target_type: targetType,
+        target_id: targetId,
+        parent_comment_id: parentId,
+        body,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+        author,
+        like_count: 0,
+        user_has_liked: false,
+        reply_count: 0,
+        replies: [],
+      };
+      const topLevelId = optimistic.parent_comment_id;
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === topLevelId
+            ? {
+                ...c,
+                replies: [...c.replies, optimistic],
+                reply_count: c.reply_count + 1,
+              }
+            : c,
+        ),
+      );
+      setCommentCount((c) => c + 1);
+      setExpandedReplies((prev) => new Set(prev).add(topLevelId as string));
+
       startTransition(async () => {
         const result = await createComment(targetType, targetId, body, parentId);
         if (result?.success && result.comment) {
           const reply = result.comment as CommentWithAuthor;
-          const topLevelId = reply.parent_comment_id ?? parentId;
+          const resolvedParent = reply.parent_comment_id ?? parentId;
           setComments((prev) =>
             prev.map((c) =>
-              c.id === topLevelId
-                ? { ...c, replies: [...c.replies, reply], reply_count: c.reply_count + 1 }
+              c.id === resolvedParent
+                ? {
+                    ...c,
+                    replies: c.replies.map((r) => (r.id === tmpId ? reply : r)),
+                  }
                 : c,
             ),
           );
-          setCommentCount((c) => c + 1);
-          setExpandedReplies((prev) => new Set(prev).add(topLevelId));
+        } else {
+          setComments((prev) => removeCommentById(prev, tmpId));
+          setCommentCount((c) => Math.max(0, c - 1));
         }
       });
     },

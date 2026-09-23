@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Film, ImagePlus, Loader2, Send, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,14 +13,10 @@ import {
   MAX_VIDEO_SIZE,
   type FeedMediaKind,
 } from "@/lib/validations/media.schema";
-import {
-  createFeedPost,
-  uploadFeedPostMedia,
-} from "@/actions/feed.actions";
+import { useFeedPending } from "@/components/feed/optimistic-posts";
 import { useTranslation } from "@/components/translation/translation-provider";
 
 interface FeedComposerProps {
-  onPosted?: (postId: string) => void;
   maxMedia?: number;
   placeholder?: string;
   disabled?: boolean;
@@ -65,14 +60,13 @@ function formatVideoDuration(seconds: number): string {
 }
 
 export function FeedComposer({
-  onPosted,
   maxMedia = 6,
   placeholder,
   disabled = false,
   className,
 }: FeedComposerProps) {
-  const router = useRouter();
   const { t } = useTranslation();
+  const { submitPost, pending, uploadStatus } = useFeedPending();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
@@ -80,24 +74,18 @@ export function FeedComposer({
   const [body, setBody] = useState("");
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [uploadStep, setUploadStep] = useState<{
-    index: number;
-    total: number;
-  } | null>(null);
 
   const mediaRef = useRef<MediaItem[]>([]);
+  // True while any optimistic post is still being created/uploaded.
+  const isPosting = pending.some((p) => p.status === "posting");
 
   useEffect(() => {
     return () => {
+      // Only revoke URLs never handed to the provider (submitted blob URLs
+      // are owned by FeedPendingProvider until the post resolves/dismisses).
       for (const item of mediaRef.current) URL.revokeObjectURL(item.url);
     };
   }, []);
-
-  const uploadProgress =
-    uploadStep && uploadStep.total > 1
-      ? Math.max(0, (uploadStep.index - 1) / uploadStep.total)
-      : 0;
 
   function addAccepted(accepted: MediaItem[]) {
     mediaRef.current = [...mediaRef.current, ...accepted];
@@ -111,8 +99,10 @@ export function FeedComposer({
     setMedia((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function reset() {
-    for (const item of mediaRef.current) URL.revokeObjectURL(item.url);
+  function clearComposer() {
+    // Blob URLs deliberately NOT revoked here — after a submit they belong
+    // to the provider, which revokes them when the post resolves or is
+    // dismissed.
     mediaRef.current = [];
     if (bodyRef.current) bodyRef.current.style.height = "";
     setTitle("");
@@ -121,7 +111,7 @@ export function FeedComposer({
   }
 
   function handleFiles(selected: FileList | null) {
-    if (!selected || submitting || disabled) return;
+    if (!selected || isPosting || disabled) return;
 
     let message: string | null = null;
     const valid: MediaItem[] = [];
@@ -165,58 +155,18 @@ export function FeedComposer({
 
   async function handleSubmit() {
     const hasText = Boolean(title.trim() || body.trim());
-    if (!hasText || submitting || disabled) return;
+    if (!hasText || isPosting || disabled) return;
     setError(null);
-    setSubmitting(true);
 
-    try {
-      const fd = new FormData();
-      fd.set("title", title.trim());
-      fd.set("body", body.trim());
-
-      const created = await createFeedPost(fd);
-      if (created && "error" in created && created.error) {
-        setError(created.error);
-        return;
-      }
-      const postId = "id" in created ? created.id : null;
-      if (!postId) {
-        setError("Something went wrong while posting. Please try again.");
-        return;
-      }
-
-      let mediaError: string | null = null;
-      for (let i = 0; i < media.length; i++) {
-        const item = media[i]!;
-        setUploadStep({ index: i + 1, total: media.length });
-        const mediaFd = new FormData();
-        mediaFd.set("post_id", postId);
-        mediaFd.set("file", item.file);
-        mediaFd.set("kind", item.kind);
-        const uploaded = await uploadFeedPostMedia(mediaFd);
-        if (uploaded && "error" in uploaded && uploaded.error) {
-          mediaError = uploaded.error;
-          setError(uploaded.error);
-          break;
-        }
-      }
-
-      if (mediaError) {
-        // Do not treat as success: keep composer state so user can retry, don't call onPosted/refresh which would show orphan post
-        setUploadStep(null);
-        setSubmitting(false);
-        return;
-      }
-
-      reset();
-      onPosted?.(postId);
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
-    } finally {
-      setSubmitting(false);
-      setUploadStep(null);
-    }
+    // Hand the post to FeedPendingProvider: it renders an optimistic card
+    // immediately (blob preview URLs) and runs createFeedPost + media
+    // uploads in the background. The composer clears without blocking.
+    submitPost({
+      title: title.trim(),
+      body: body.trim(),
+      media: media.map((m) => ({ file: m.file, kind: m.kind, url: m.url })),
+    });
+    clearComposer();
   }
 
   const canPost = Boolean(title.trim() || body.trim()) && !disabled;
@@ -239,7 +189,7 @@ export function FeedComposer({
       {error ? (
         <div className="mt-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/[0.08] px-4 py-3 text-sm text-rose-400">
           <span className="flex-1">{error}</span>
-          {!submitting ? (
+          {!isPosting ? (
             <button
               type="button"
               onClick={() => setError(null)}
@@ -254,14 +204,14 @@ export function FeedComposer({
 
       <div className="mt-4 space-y-3">
         <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder={t("feed.composerHeadlinePlaceholder")}
-          maxLength={MAX_TITLE_LENGTH}
-          disabled={submitting || disabled}
-          className={inputClass}
-        />
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={t("feed.composerHeadlinePlaceholder")}
+                  maxLength={MAX_TITLE_LENGTH}
+                  disabled={isPosting || disabled}
+                  className={inputClass}
+                />
 
         <div className="relative">
           <textarea
@@ -274,7 +224,7 @@ export function FeedComposer({
             placeholder={placeholder ?? t("feed.composePlaceholder")}
             rows={3}
             maxLength={MAX_BODY_LENGTH}
-            disabled={submitting || disabled}
+            disabled={isPosting || disabled}
             className={cn(inputClass, "resize-none leading-relaxed")}
           />
           {body.length > 0 ? (
@@ -334,7 +284,7 @@ export function FeedComposer({
                 <button
                   type="button"
                   onClick={() => removeMedia(i)}
-                  disabled={submitting || disabled}
+                  disabled={isPosting || disabled}
                   aria-label={`Remove ${kindLabel(item.kind)} ${i + 1}`}
                   className="absolute right-2 top-2 rounded-full bg-black/60 p-3 text-white backdrop-blur transition-colors hover:bg-black/80 disabled:pointer-events-none disabled:opacity-50"
                 >
@@ -345,15 +295,6 @@ export function FeedComposer({
           </div>
         ) : null}
       </div>
-
-      {uploadStep && uploadStep.total > 1 && submitting ? (
-        <div className="mt-4 h-0.5 overflow-hidden rounded-full bg-surface">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-accent-400 to-accent transition-[width] duration-300 ease-premium"
-            style={{ width: `${uploadProgress * 100}%` }}
-          />
-        </div>
-      ) : null}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-4">
         <input
@@ -367,7 +308,7 @@ export function FeedComposer({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={submitting || disabled || media.length >= maxMedia}
+          disabled={isPosting || disabled || media.length >= maxMedia}
           className="inline-flex min-h-[44px] items-center gap-1.5 py-2 text-sm text-ink-400 transition-colors hover:text-accent-400 disabled:pointer-events-none disabled:opacity-40"
           title={t("feed.composerMediaTitle")}
         >
@@ -385,15 +326,13 @@ export function FeedComposer({
           variant="primary"
           size="sm"
           onClick={handleSubmit}
-          disabled={!canPost || submitting}
+          disabled={!canPost || isPosting}
         >
-          {submitting ? (
+          {isPosting ? (
             <>
               <Loader2 size={14} className="animate-spin" />
-              {uploadStep
-                ? uploadStep.total > 1
-                  ? `Uploading ${uploadStep.index}/${uploadStep.total}`
-                  : t("feed.composerUploadingMedia")
+              {uploadStatus && uploadStatus.total > 1
+                ? `Uploading ${uploadStatus.index}/${uploadStatus.total}`
                 : t("feed.composerSubmitting")}
             </>
           ) : (

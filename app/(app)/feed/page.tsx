@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/supabase/user";
 import { Footer } from "@/components/layout/footer";
 import { FeedComposer } from "@/components/feed/feed-composer";
 import { FeedList } from "@/components/feed/feed-list";
+import { FeedPendingProvider } from "@/components/feed/optimistic-posts";
 import { getFeedItems } from "@/actions/feed.actions";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { serverT } from "@/lib/translation/server";
@@ -54,6 +55,7 @@ export default async function FeedPage() {
             </p>
           </div>
 
+          <FeedPendingProvider currentUserId={userId}>
           {user ? (
             <ErrorBoundary
               fallbackTitle="Composer failed to load"
@@ -82,6 +84,7 @@ export default async function FeedPage() {
               />
             </ErrorBoundary>
           </Suspense>
+        </FeedPendingProvider>
         </div>
       </main>
       <Footer />
