@@ -774,6 +774,8 @@ export const en: TranslationResource = {
   "servers.title": "Servers",
   "servers.welcomeSub":
     "Every team and branch gets its own server automatically — you're added to the channels when you join. You can also create your own independent server.",
+  "servers.allServers": "All servers",
+  "servers.openServer": "Open server",
   "servers.createServer": "Create server",
   "servers.noneYet": "No servers yet",
   "servers.noneYetSub":

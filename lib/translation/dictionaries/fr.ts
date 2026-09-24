@@ -774,6 +774,8 @@ export const fr: TranslationResource = {
   "servers.title": "Serveurs",
   "servers.welcomeSub":
     "Chaque équipe et chaque filiale obtient son propre serveur automatiquement — vous êtes ajouté aux canaux dès que vous rejoignez. Vous pouvez aussi créer votre propre serveur indépendant.",
+  "servers.allServers": "Tous les serveurs",
+  "servers.openServer": "Ouvrir le serveur",
   "servers.createServer": "Créer un serveur",
   "servers.noneYet": "Aucun serveur pour l'instant",
   "servers.noneYetSub":

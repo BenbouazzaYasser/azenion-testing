@@ -770,6 +770,8 @@ export const ar: TranslationResource = {
   "servers.title": "الخوادم",
   "servers.welcomeSub":
     "يحصل كل فريق وكل فرع على خادمه تلقائيًا — تتم إضافتك إلى القنوات عند انضمامك. يمكنك أيضًا إنشاء خادمك المستقل الخاص بك.",
+  "servers.allServers": "كل الخوادم",
+  "servers.openServer": "فتح الخادم",
   "servers.createServer": "إنشاء خادم",
   "servers.noneYet": "لا توجد خوادم بعد",
   "servers.noneYetSub":

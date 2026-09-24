@@ -707,6 +707,8 @@ export const dictKeys = [
   // Servers
   "servers.title",
   "servers.welcomeSub",
+  "servers.allServers",
+  "servers.openServer",
   "servers.createServer",
   "servers.noneYet",
   "servers.noneYetSub",
