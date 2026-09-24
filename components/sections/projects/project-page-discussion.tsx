@@ -2,6 +2,7 @@ import { MessageSquare } from "lucide-react";
 import { ChannelChat } from "@/components/servers/channel-chat";
 import { serverT } from "@/lib/translation/server";
 import type { ChannelMessageWithSender } from "@/data/servers";
+import type { ChannelCursor } from "@/lib/server-gateway";
 
 interface ProjectPageDiscussionProps {
   channelId: string;
@@ -9,6 +10,8 @@ interface ProjectPageDiscussionProps {
   topic: string | null;
   currentUserId: string;
   initialMessages: ChannelMessageWithSender[];
+  initialHasMore: boolean;
+  initialCursor: ChannelCursor | null;
 }
 
 export async function ProjectPageDiscussion({
@@ -17,6 +20,8 @@ export async function ProjectPageDiscussion({
   topic,
   currentUserId,
   initialMessages,
+  initialHasMore,
+  initialCursor,
 }: ProjectPageDiscussionProps) {
   return (
     <section className="relative py-16 sm:py-20 lg:py-24" aria-labelledby="project-discussion-heading">
@@ -48,6 +53,8 @@ export async function ProjectPageDiscussion({
               topic={topic}
               currentUserId={currentUserId}
               initialMessages={initialMessages}
+              initialHasMore={initialHasMore}
+              initialCursor={initialCursor}
             />
           </div>
         

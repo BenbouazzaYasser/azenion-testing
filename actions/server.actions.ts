@@ -146,16 +146,24 @@ export async function editChannelMessage(messageId: string, content: string) {
     return { error: "Message cannot be empty" };
   }
 
+  try {
+    const { error: rpcError } = await supabase.rpc("edit_channel_message", {
+      p_message_id: messageId,
+      p_content: content.trim(),
+    });
+    if (!rpcError) return { success: true };
+    if (rpcError.code !== "PGRST202") return { error: rpcError.message };
+  } catch {
+    // Pre-migration fallback below.
+  }
+
   const { error } = await supabase
     .from("channel_messages")
     .update({ content: content.trim(), edited_at: new Date().toISOString() })
     .eq("id", messageId)
     .eq("sender_id", user.id);
 
-  if (error) {
-    return { error: error.message };
-  }
-
+  if (error) return { error: error.message };
   return { success: true };
 }
 
@@ -170,16 +178,23 @@ export async function deleteChannelMessage(messageId: string) {
     return { error: "Not authenticated" };
   }
 
+  try {
+    const { error: rpcError } = await supabase.rpc("delete_channel_message", {
+      p_message_id: messageId,
+    });
+    if (!rpcError) return { success: true };
+    if (rpcError.code !== "PGRST202") return { error: rpcError.message };
+  } catch {
+    // Pre-migration fallback below.
+  }
+
   const { error } = await supabase
     .from("channel_messages")
     .delete()
     .eq("id", messageId)
     .eq("sender_id", user.id);
 
-  if (error) {
-    return { error: error.message };
-  }
-
+  if (error) return { error: error.message };
   return { success: true };
 }
 
@@ -201,20 +216,31 @@ export async function sendChannelMessage(channelId: string, content: string) {
     return { error: "Message is too long (max 4000 characters)." };
   }
 
-  // RLS enforces channel access; this gives a clean error message instead.
-  const { data, error } = await supabase
+  // The RPC performs the access check and returns the durable identity used
+  // to reconcile the optimistic row. Fall back to the RLS insert while the
+  // migration is being deployed.
+  const trimmed = content.trim();
+  const { data, error: rpcError } = await supabase.rpc("send_channel_message", {
+    p_channel_id: channelId,
+    p_content: trimmed,
+  });
+  if (!rpcError && data?.[0]) {
+    return { success: true, id: data[0].id, created_at: data[0].created_at };
+  }
+
+  const { data: inserted, error: insertError } = await supabase
     .from("channel_messages")
     .insert({
       channel_id: channelId,
       sender_id: user.id,
-      content: content.trim(),
+      content: trimmed,
     })
     .select("id, created_at")
     .single();
 
-  if (error) {
+  if (insertError || !inserted) {
     return { error: "You can't post in this channel." };
   }
 
-  return { success: true, id: data.id, created_at: data.created_at };
+  return { success: true, id: inserted.id, created_at: inserted.created_at };
 }

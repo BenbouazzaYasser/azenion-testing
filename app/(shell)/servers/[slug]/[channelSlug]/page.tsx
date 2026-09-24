@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getSessionUser } from "@/lib/supabase/user";
 import { ChannelChat } from "@/components/servers/channel-chat";
-import { getChannelMessages, getServerView } from "@/data/servers";
+import { getChannelMessagePage, getServerView } from "@/data/servers";
 
 interface ChannelPageProps {
   params: Promise<{ slug: string; channelSlug: string }>;
@@ -19,7 +19,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
 
   if (!view || !channel) notFound();
 
-  const messages = await getChannelMessages(channel.id);
+  const messagePage = await getChannelMessagePage(channel.id);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -28,7 +28,9 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
         channelName={channel.name}
         topic={channel.topic}
         currentUserId={user.id}
-        initialMessages={messages}
+        initialMessages={messagePage.messages}
+        initialHasMore={messagePage.hasMore}
+        initialCursor={messagePage.cursor}
       />
     </div>
   );

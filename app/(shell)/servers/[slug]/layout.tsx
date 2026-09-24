@@ -5,6 +5,7 @@ import { ServerRail } from "@/components/servers/server-rail";
 import { ChannelSidebar } from "@/components/servers/channel-sidebar";
 import { MemberPanel } from "@/components/servers/member-panel";
 import { MobileChannelStrip } from "@/components/servers/mobile-channel-strip";
+import { ServerGatewayMount } from "@/components/servers/server-gateway-mount";
 import { getServerView, getServerMembers, getUserServers } from "@/data/servers";
 
 interface ServerLayoutProps {
@@ -33,6 +34,7 @@ export default async function ServerLayout({ params, children }: ServerLayoutPro
 
   return (
     <main id="main" className="flex h-dvh overflow-hidden">
+      <ServerGatewayMount userId={user.id} serverId={view.server.id} />
       <ServerRail servers={servers} activeSlug={view.server.slug} />
 
       <div className="hidden w-[260px] shrink-0 border-r border-border bg-void-950/60 md:block">

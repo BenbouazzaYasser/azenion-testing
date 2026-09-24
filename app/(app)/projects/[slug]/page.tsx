@@ -15,7 +15,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionUser } from "@/lib/supabase/user";
 import { PageAtmosphere } from "@/components/graphics/page-atmosphere";
 import { resolveMediaValue } from "@/lib/media";
-import { getProjectChannel, getChannelMessages } from "@/data/servers";
+import { getProjectChannel, getChannelMessagePage } from "@/data/servers";
 
 interface ProjectPageProps {
   params: Promise<{ slug: string }>;
@@ -225,18 +225,23 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     channelId: string;
     channelName: string;
     topic: string | null;
-    initialMessages: Awaited<ReturnType<typeof getChannelMessages>>;
+    initialMessages: Awaited<ReturnType<typeof getChannelMessagePage>>["messages"];
+    initialHasMore: boolean;
+    initialCursor: Awaited<ReturnType<typeof getChannelMessagePage>>["cursor"];
   } | null = null;
 
   if (isMember && user) {
     const channel = await getProjectChannel(project.id);
 
     if (channel) {
+      const page = await getChannelMessagePage(channel.id);
       discussion = {
         channelId: channel.id,
         channelName: channel.name,
         topic: channel.topic,
-        initialMessages: await getChannelMessages(channel.id),
+        initialMessages: page.messages,
+        initialHasMore: page.hasMore,
+        initialCursor: page.cursor,
       };
     }
   }
@@ -324,6 +329,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             topic={discussion.topic}
             currentUserId={user!.id}
             initialMessages={discussion.initialMessages}
+            initialHasMore={discussion.initialHasMore}
+            initialCursor={discussion.initialCursor}
           />
         ) : null}
         {activities && activities.length > 0 ? (

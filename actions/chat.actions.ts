@@ -45,12 +45,45 @@ export async function sendMessage(conversationId: string, content: string) {
     p_attachments: [],
   });
 
-  if (rpcError || !data || data.length === 0) {
+  if (!rpcError && data?.[0]) {
+    return { success: true, id: data[0].id, created_at: data[0].created_at };
+  }
+
+  // Compatibility fallback for deployments where the RPC is not present yet;
+  // also preserves the explicit block error expected by older clients.
+  if (!rpcError && (!data || data.length === 0)) {
+    const { data: members } = await supabase
+      .from("conversation_members")
+      .select("user_id")
+      .eq("conversation_id", conversationId);
+    const isMember = (members ?? []).some((member) => member.user_id === user.id);
+    if (!isMember) return { error: "You are not a member of this conversation." };
+    const otherMember = (members ?? []).find((member) => member.user_id !== user.id);
+    if (otherMember) {
+      const { data: blocked } = await supabase.rpc("is_user_blocked", {
+        p_blocker_id: otherMember.user_id,
+        p_blocked_id: user.id,
+      });
+      if (blocked) return { error: "You can't send messages to this user because they blocked you." };
+    }
+  }
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("messages")
+    .insert({
+      conversation_id: conversationId,
+      sender_id: user.id,
+      content: content.trim(),
+    })
+    .select("id, created_at")
+    .single();
+
+  if (insertError || !inserted) {
     return { error: rpcError?.message ?? "Failed to send message." };
   }
 
   revalidatePath(`/chat/${conversationId}`);
-  return { success: true, id: data[0].id, created_at: data[0].created_at };
+  return { success: true, id: inserted.id, created_at: inserted.created_at };
 }
 
 export interface SendMessageAttachmentInput {

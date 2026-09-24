@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, RefreshCw, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatTime } from "@/lib/date";
@@ -19,6 +19,11 @@ interface ChannelBubbleProps {
   isOwn: boolean;
   isGrouped?: boolean;
   showAvatar?: boolean;
+  delivery?: "sent" | "pending" | "failed";
+  error?: string | null;
+  onRetry?: () => void;
+  onUpdated?: (content: string, editedAt: string) => void;
+  onDeleted?: () => void;
 }
 
 export function ChannelBubble({
@@ -32,6 +37,11 @@ export function ChannelBubble({
   isOwn,
   isGrouped = false,
   showAvatar = true,
+  delivery = "sent",
+  error = null,
+  onRetry,
+  onUpdated,
+  onDeleted,
 }: ChannelBubbleProps) {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
@@ -44,6 +54,7 @@ export function ChannelBubble({
     }
     const result = await editChannelMessage(id, editText);
     if (!result.error) {
+      onUpdated?.(editText.trim(), new Date().toISOString());
       setIsEditing(false);
     } else {
       toast.error(result.error);
@@ -54,15 +65,19 @@ export function ChannelBubble({
     const result = await deleteChannelMessage(id);
     if (result.error) {
       toast.error(result.error);
+    } else {
+      onDeleted?.();
     }
   };
 
   return (
     <div
       className={cn(
-        "group relative flex gap-3 rounded-xl px-3 py-1.5 transition-colors duration-200",
+        "group relative flex gap-3 rounded-lg px-3 py-1.5 transition-colors duration-200",
         "hover:bg-surface/50",
         isGrouped ? "" : "mt-3 first:mt-0",
+        delivery === "pending" && "opacity-70",
+        delivery === "failed" && "opacity-80",
       )}
     >
       <div className="w-10 shrink-0">
@@ -109,11 +124,27 @@ export function ChannelBubble({
           <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-ink-200">
             {content}
             {edited_at && <span className="ml-1.5 text-[10px] text-ink-600">{t("servers.edited")}</span>}
+            {delivery === "pending" ? <span className="ml-2 text-[10px] text-ink-500">Sending…</span> : null}
+            {delivery === "failed" ? (
+              <span className="ml-2 inline-flex items-center gap-1 text-[10px] text-red-300">
+                {error ?? "Failed to send"}
+                {onRetry ? (
+                  <button
+                    type="button"
+                    onClick={onRetry}
+                    className="inline-flex items-center gap-1 rounded px-1 py-0.5 font-medium underline underline-offset-2 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60"
+                  >
+                    <RefreshCw size={10} aria-hidden />
+                    Retry
+                  </button>
+                ) : null}
+              </span>
+            ) : null}
           </p>
         )}
       </div>
 
-      {isOwn && !isEditing && (
+      {isOwn && !isEditing && delivery === "sent" && (
         <div
           className={cn(
             "absolute right-2 top-0 flex items-center gap-2 rounded-lg bg-glass p-1.5 opacity-0 shadow-dropdown backdrop-blur-xl transition-opacity",

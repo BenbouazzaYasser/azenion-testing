@@ -1,14 +1,24 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { Hash, Send } from "lucide-react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { Hash, Send, Users } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
 import { ChannelBubble } from "@/components/servers/channel-bubble";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
-import { sendChannelMessage } from "@/actions/server.actions";
+import { useServerChannel } from "@/hooks/use-server-channel";
+import { serverGateway, type ChannelCursor, type GatewayMessage } from "@/lib/server-gateway";
 import type { ChannelMessageWithSender } from "@/data/servers";
 import type { DictKey } from "@/lib/translation/types";
 import { useTranslation } from "@/components/translation/translation-provider";
@@ -19,15 +29,15 @@ interface ChannelChatProps {
   topic?: string | null;
   currentUserId: string;
   initialMessages: ChannelMessageWithSender[];
+  initialHasMore?: boolean;
+  initialCursor?: ChannelCursor | null;
 }
 
 function startOfDay(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
-// No external store: hydration flag via useSyncExternalStore.
 const emptySubscribe = () => () => {};
-
 type TranslateFn = (key: DictKey, fallback?: string) => string;
 
 function getDayLabel(dateStr: string | null, t: TranslateFn): string | null {
@@ -47,129 +57,141 @@ export function ChannelChat({
   topic,
   currentUserId,
   initialMessages,
+  initialHasMore = false,
+  initialCursor = null,
 }: ChannelChatProps) {
   const { t } = useTranslation();
-  const [messages, setMessages] = useState<ChannelMessageWithSender[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMessages(initialMessages);
-  }, [initialMessages]);
-
-  // Day dividers/grouping use local TZ + new Date(), which the server (UTC)
-  // can't reproduce — structural mismatch, not suppressible. Server snapshot
-  // false / client snapshot true: SSR HTML and the hydration render agree
-  // (no rows), then React re-renders with rows after hydration.
+  const parentRef = useRef<HTMLDivElement>(null);
+  const lastTypingSentAt = useRef(0);
+  const stickToBottom = useRef(true);
+  const prependAnchor = useRef<{ height: number; top: number } | null>(null);
   const hydrated = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const {
+    messages,
+    hasMore,
+    isLoadingOlder,
+    loadOlder,
+    send,
+    setTyping,
+    typingUsers,
+  } = useServerChannel({
+    channelId,
+    currentUserId,
+    initialMessages,
+    initialHasMore,
+    initialCursor,
+  });
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, hydrated]);
-
-  // Realtime: new messages from other members appear live.
-  useEffect(() => {
-    const supabase = createClient();
-
-    const channel = supabase
-      .channel(`channel-messages:${channelId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "channel_messages",
-          filter: `channel_id=eq.${channelId}`,
-        },
-        async (payload) => {
-          const row = payload.new as Omit<ChannelMessageWithSender, "sender">;
-
-          if (row.sender_id !== currentUserId) {
-            setMessages((prev) =>
-              prev.some((m) => m.id === row.id)
-                ? prev
-                : [...prev, { ...(row as ChannelMessageWithSender), sender: null }],
-            );
-
-            // Fetch the sender profile for display.
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("id, full_name, avatar_url, username")
-              .eq("id", row.sender_id)
-              .single();
-
-            setMessages((prev) =>
-              prev.map((m) => (m.id === row.id ? { ...m, sender: profile ?? null } : m)),
-            );
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [channelId, currentUserId]);
+  const virtualizer = useVirtualizer({
+    enabled: hydrated,
+    count: hydrated ? messages.length : 0,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72,
+    overscan: 10,
+    getItemKey: (index) => messages[index]?.id ?? index,
+  });
 
   const grouped = useMemo(() => {
     const FIVE_MIN = 5 * 60 * 1000;
-    return messages.map((msg, i) => {
-      const prevMsg = messages[i - 1];
-      const nextMsg = messages[i + 1];
+    return messages.map((msg, index) => {
+      const previous = messages[index - 1];
+      const next = messages[index + 1];
       const label = getDayLabel(msg.created_at, t);
-      const showDivider = label !== null && label !== getDayLabel(prevMsg?.created_at ?? null, t);
-      const ts = new Date(msg.created_at ?? 0).getTime();
-      const groupsWithPrev =
-        !!prevMsg &&
-        prevMsg.sender_id === msg.sender_id &&
+      const showDivider = label !== null && label !== getDayLabel(previous?.created_at ?? null, t);
+      const timestamp = new Date(msg.created_at ?? 0).getTime();
+      const groupedWithPrevious =
+        !!previous &&
+        previous.sender_id === msg.sender_id &&
         !showDivider &&
-        ts - new Date(prevMsg.created_at ?? 0).getTime() < FIVE_MIN;
-      // Avatar shows on the last message of a consecutive run.
-      const nextContinues =
-        !!nextMsg &&
-        nextMsg.sender_id === msg.sender_id &&
-        new Date(nextMsg.created_at ?? 0).getTime() - ts < FIVE_MIN;
-      return { msg, showDivider, label, isGrouped: groupsWithPrev, showAvatar: !nextContinues };
+        timestamp - new Date(previous.created_at ?? 0).getTime() < FIVE_MIN;
+      const continuesNext =
+        !!next &&
+        next.sender_id === msg.sender_id &&
+        new Date(next.created_at ?? 0).getTime() - timestamp < FIVE_MIN;
+      return { msg, showDivider, label, isGrouped: groupedWithPrevious, showAvatar: !continuesNext };
     });
   }, [messages, t]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isSending) return;
+  const scrollToBottom = useCallback(() => {
+    if (!hydrated || messages.length === 0) return;
+    virtualizer.scrollToIndex(messages.length - 1, { align: "end", behavior: "auto" });
+  }, [hydrated, messages.length, virtualizer]);
 
-    setIsSending(true);
-    const content = input.trim();
-    setInput("");
-
-    const optimistic: ChannelMessageWithSender = {
-      id: crypto.randomUUID(),
-      channel_id: channelId,
-      sender_id: currentUserId,
-      content,
-      created_at: new Date().toISOString(),
-      edited_at: null,
-      sender: null,
-    };
-
-    setMessages((prev) => [...prev, optimistic]);
-
-    const result = await sendChannelMessage(channelId, content);
-
-    if (result.error) {
-      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-      toast.error(result.error);
-      setInput(content);
+  useLayoutEffect(() => {
+    if (!hydrated) return;
+    const anchor = prependAnchor.current;
+    if (anchor && parentRef.current) {
+      parentRef.current.scrollTop = parentRef.current.scrollHeight - anchor.height + anchor.top;
+      prependAnchor.current = null;
+      return;
     }
+    if (stickToBottom.current) scrollToBottom();
+  }, [grouped.length, hydrated, scrollToBottom]);
 
+  const handleScroll = useCallback(() => {
+    const element = parentRef.current;
+    if (!element) return;
+    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+    stickToBottom.current = distanceFromBottom < 180;
+    if (element.scrollTop < 240 && hasMore && !isLoadingOlder) {
+      prependAnchor.current = { height: element.scrollHeight, top: element.scrollTop };
+      void loadOlder();
+    }
+  }, [hasMore, isLoadingOlder, loadOlder]);
+
+  useEffect(() => {
+    if (hydrated) scrollToBottom();
+  }, [channelId, hydrated, scrollToBottom]);
+
+  const handleSend = async () => {
+    const content = input.trim();
+    if (!content || isSending) return;
+    setInput("");
+    setIsSending(true);
+    const result = await send(content);
     setIsSending(false);
+    if (result.error) {
+      setInput(content);
+      toast.error(result.error);
+    } else {
+      stickToBottom.current = true;
+      scrollToBottom();
+    }
+  };
+
+  const handleRetry = async (message: GatewayMessage) => {
+    serverGateway.removeMessage(message.id);
+    const result = await send(message.content);
+    if (result.error) toast.error(result.error);
+  };
+
+  const handleInputChange = (value: string) => {
+    setInput(value);
+    if (!value.trim()) {
+      lastTypingSentAt.current = 0;
+      setTyping(false);
+      return;
+    }
+    const now = Date.now();
+    if (now - lastTypingSentAt.current > 1500) {
+      lastTypingSentAt.current = now;
+      setTyping(true);
+    }
   };
 
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-      <header className="relative z-10 flex shrink-0 items-center gap-2.5 bg-void-900/90 px-4 py-3 sm:bg-void-900/50 sm:px-5 md:backdrop-blur-xl">
+      <header className="relative z-10 flex shrink-0 items-center gap-2.5 border-b border-border bg-void-950 px-4 py-3 sm:px-5">
         <Hash size={16} className="shrink-0 text-accent-300" />
         <h1 className="truncate text-sm font-semibold text-ink-50">{channelName}</h1>
-        {topic ? (
+        {typingUsers.length > 0 ? (
+          <span className="hidden items-center gap-1.5 text-xs text-accent-300 sm:flex">
+            <Users size={13} />
+            {typingUsers.length} typing…
+          </span>
+        ) : topic ? (
           <>
             <span aria-hidden className="h-4 w-px shrink-0 bg-border-strong" />
             <p className="hidden truncate text-xs text-ink-500 sm:block">{topic}</p>
@@ -177,55 +199,89 @@ export function ChannelChat({
         ) : null}
       </header>
 
-      <div className={cn("relative z-10 min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4", SCROLLBAR_CLASSES)}>
+      <div
+        ref={parentRef}
+        onScroll={handleScroll}
+        className={cn("relative z-10 min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4", SCROLLBAR_CLASSES)}
+      >
         {messages.length === 0 ? (
           <div className="flex h-full min-h-0 flex-col items-center justify-center px-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-input">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-surface text-accent-300">
               <Hash size={26} />
             </div>
-            <h2 className="mt-5 text-lg font-semibold text-ink-50">{t("servers.welcomeTo")} #{channelName}</h2>
-            <p className="mt-1.5 max-w-xs text-sm text-ink-400">
-              {t("servers.chatEmptySub")}
-            </p>
+            <h2 className="mt-5 text-lg font-semibold text-ink-50">
+              {t("servers.welcomeTo")} #{channelName}
+            </h2>
+            <p className="mt-1.5 max-w-xs text-sm text-ink-400">{t("servers.chatEmptySub")}</p>
           </div>
         ) : (
-          <div className="flex flex-col">
-            {hydrated ? grouped.map(({ msg, showDivider, label, isGrouped, showAvatar }) => (
-              <Fragment key={msg.id}>
-                {showDivider && (
-                  <div className="flex items-center gap-3 py-2" role="separator" aria-label={label ?? undefined}>
-                    <span aria-hidden className="h-px flex-1 bg-border" />
-                    <span suppressHydrationWarning className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-normal text-ink-500 backdrop-blur-sm">
-                      {label}
-                    </span>
-                    <span aria-hidden className="h-px flex-1 bg-border" />
-                  </div>
-                )}
-                <ChannelBubble
-                  id={msg.id}
-                  content={msg.content}
-                  created_at={msg.created_at}
-                  edited_at={msg.edited_at}
-                  sender_id={msg.sender_id}
-                  sender_name={msg.sender?.full_name ?? msg.sender?.username ?? null}
-                  sender_avatar={msg.sender?.avatar_url ?? null}
-                  isOwn={msg.sender_id === currentUserId}
-                  isGrouped={isGrouped}
-                  showAvatar={showAvatar}
-                />
-              </Fragment>
-            )) : null}
-            <div ref={bottomRef} />
+          <div
+            className="relative w-full"
+            style={{ height: hydrated ? virtualizer.getTotalSize() : undefined }}
+          >
+            {hydrated
+              ? virtualizer.getVirtualItems().map((virtualItem) => {
+                  const row = grouped[virtualItem.index];
+                  if (!row) return null;
+                  return (
+                    <div
+                      key={row.msg.id}
+                      ref={virtualizer.measureElement}
+                      data-index={virtualItem.index}
+                      className="absolute left-0 top-0 w-full"
+                      style={{ transform: `translateY(${virtualItem.start}px)` }}
+                    >
+                      <Fragment>
+                        {row.showDivider ? (
+                          <div
+                            className="flex items-center gap-3 py-2"
+                            role="separator"
+                            aria-label={row.label ?? undefined}
+                          >
+                            <span aria-hidden className="h-px flex-1 bg-border" />
+                            <span
+                              suppressHydrationWarning
+                              className="rounded-full bg-void-900/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-normal text-ink-500"
+                            >
+                              {row.label}
+                            </span>
+                            <span aria-hidden className="h-px flex-1 bg-border" />
+                          </div>
+                        ) : null}
+                        <ChannelBubble
+                          id={row.msg.id}
+                          content={row.msg.content}
+                          created_at={row.msg.created_at}
+                          edited_at={row.msg.edited_at}
+                          sender_id={row.msg.sender_id}
+                          sender_name={row.msg.sender?.full_name ?? row.msg.sender?.username ?? null}
+                          sender_avatar={row.msg.sender?.avatar_url ?? null}
+                          isOwn={row.msg.sender_id === currentUserId}
+                          isGrouped={row.isGrouped}
+                          showAvatar={row.showAvatar}
+                          delivery={row.msg.delivery}
+                          error={row.msg.error}
+                          onRetry={() => void handleRetry(row.msg)}
+                          onUpdated={(content, editedAt) =>
+                            serverGateway.updateMessage(row.msg.id, { content, edited_at: editedAt })
+                          }
+                          onDeleted={() => serverGateway.removeMessage(row.msg.id)}
+                        />
+                      </Fragment>
+                    </div>
+                  );
+                })
+              : null}
           </div>
         )}
       </div>
 
-      <div className="relative z-10 shrink-0 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2.5 sm:px-4 sm:pb-4 md:backdrop-blur-xl">
+      <div className="relative z-10 shrink-0 border-t border-border bg-void-950 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2.5 sm:px-4 sm:pb-4">
         <form
           className="flex items-center gap-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
+          onSubmit={(event) => {
+            event.preventDefault();
+            void handleSend();
           }}
         >
           <input
@@ -233,14 +289,15 @@ export function ChannelChat({
             aria-label={`${t("servers.messageTo")} #${channelName}`}
             placeholder={`${t("servers.messageTo")} #${channelName}`}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="min-w-0 flex-1 rounded-2xl bg-surface px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 border-0 focus:border-accent-400/60 focus:bg-surface focus:outline-none"
+            onChange={(event) => handleInputChange(event.target.value)}
+            onBlur={() => setTyping(false)}
+            className="min-w-0 flex-1 rounded-lg border border-border-strong bg-surface px-4 py-3 text-sm text-ink-50 outline-none transition-colors placeholder:text-ink-600 focus:border-accent-400/60"
           />
           <Button
             type="submit"
             aria-label={t("servers.sendMessage")}
             disabled={!input.trim() || isSending}
-            className="h-12 w-12 shrink-0 rounded-2xl p-0"
+            className="h-12 w-12 shrink-0 rounded-lg p-0"
           >
             <Send size={18} />
           </Button>

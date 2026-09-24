@@ -38,14 +38,20 @@ export function ChannelSidebar({
   const [name, setName] = useState("");
   const [query, setQuery] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [optimisticChannels, setOptimisticChannels] = useState<ChannelSummary[]>([]);
 
   const visibleChannels = useMemo(() => {
+    const merged = new Map<string, ChannelSummary>();
+    for (const channel of [...optimisticChannels, ...channels]) {
+      if (!merged.has(channel.slug)) merged.set(channel.slug, channel);
+    }
+    const allChannels = [...merged.values()];
     const q = query.trim().toLowerCase();
-    if (!q) return channels;
-    return channels.filter(
+    if (!q) return allChannels;
+    return allChannels.filter(
       (ch) => ch.name.toLowerCase().includes(q) || (ch.topic ?? "").toLowerCase().includes(q),
     );
-  }, [channels, query]);
+  }, [channels, optimisticChannels, query]);
 
   const isAdmin = myRole === "owner" || myRole === "admin";
 
@@ -80,15 +86,34 @@ export function ChannelSidebar({
           onSubmit={(e) => {
             e.preventDefault();
             if (!name.trim() || isPending) return;
+            const channelName = name.trim();
+            const temporaryId = `local:${crypto.randomUUID()}`;
+            const temporarySlug = channelName
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-+|-+$/g, "")
+              .slice(0, 60);
+            setOptimisticChannels((current) => [
+              ...current,
+              { id: temporaryId, name: channelName, slug: temporarySlug, topic: null, project_id: null },
+            ]);
             const fd = new FormData();
             fd.set("server_id", serverId);
             fd.set("server_slug", serverSlug);
-            fd.set("name", name.trim());
+            fd.set("name", channelName);
             startTransition(async () => {
               const result = await createServerChannel(fd);
               if (result.error) {
+                setOptimisticChannels((current) => current.filter((channel) => channel.id !== temporaryId));
                 toast.error(result.error);
               } else {
+                setOptimisticChannels((current) =>
+                  current.map((channel) =>
+                    channel.id === temporaryId ? { ...channel, id: result.channelId ?? channel.id } : channel,
+                  ),
+                );
                 setName("");
                 setShowForm(false);
                 router.refresh();

@@ -12,6 +12,7 @@ import {
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { serverGateway } from "@/lib/server-gateway";
 
 export interface ProfileData {
   avatar_url: string | null;
@@ -77,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (cancelled) return;
       setUser(session?.user ?? null);
       if (session?.user) void fetchProfileAndRoles(session.user.id);
+      else serverGateway.disconnect();
       setLoading(false);
     });
 
@@ -87,6 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         void fetchProfileAndRoles(session.user.id);
       } else {
+        serverGateway.disconnect();
         fetchedForUserRef.current = null;
         setProfile(null);
         setIsAdmin(false);

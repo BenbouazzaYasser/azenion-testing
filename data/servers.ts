@@ -24,6 +24,7 @@ export interface ChannelMessageWithSender {
   channel_id: string;
   sender_id: string;
   content: string;
+  image_url: string | null;
   created_at: string | null;
   edited_at: string | null;
   sender: {
@@ -190,34 +191,88 @@ export async function getProjectChannel(projectId: string): Promise<ChannelView 
   return getChannelView(channel.id);
 }
 
-export async function getChannelMessages(
-  channelId: string,
+export interface ChannelMessagePage {
+  messages: ChannelMessageWithSender[];
+  hasMore: boolean;
+  cursor: { createdAt: string; id: string } | null;
+}
+
+const CHANNEL_PAGE_SIZE = 50;
+
+async function attachChannelProfiles(
+  messages: Array<Omit<ChannelMessageWithSender, "sender">>,
 ): Promise<ChannelMessageWithSender[]> {
-  const supabase = await createClient();
-
-  // RLS enforces access; an empty result for non-members is fine.
-  const { data: messages } = await supabase
-    .from("channel_messages")
-    .select("id, channel_id, sender_id, content, image_url, created_at, edited_at")
-    .eq("channel_id", channelId)
-    .order("created_at", { ascending: true });
-
-  if (!messages) return [];
-
-  const senderIds = [...new Set(messages.map((m) => m.sender_id))];
-
+  if (messages.length === 0) return [];
+  const senderIds = [...new Set(messages.map((message) => message.sender_id))];
   const { data: profiles } = await createAdminClient()
-    // SECURITY: channel messages read via RLS-scoped client above (non-members get empty); admin used only for public profile lookup.
+    // SECURITY: channel messages read through the RLS-scoped client above; admin is only used for public profile fields.
     .from("profiles")
     .select("id, full_name, avatar_url, username")
     .in("id", senderIds);
-
-  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
-
-  return messages.map((msg) => ({
-    ...msg,
-    sender: profileMap.get(msg.sender_id) ?? null,
+  const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+  return messages.map((message) => ({
+    ...message,
+    sender: profileMap.get(message.sender_id) ?? null,
   }));
+}
+
+export async function getChannelMessagePage(
+  channelId: string,
+  options: {
+    before?: { createdAt: string; id: string } | null;
+    limit?: number;
+  } = {},
+): Promise<ChannelMessagePage> {
+  const supabase = await createClient();
+  const limit = Math.min(Math.max(options.limit ?? CHANNEL_PAGE_SIZE, 1), 100);
+  const before = options.before;
+
+  // Prefer the keyset RPC. The direct query fallback keeps pre-migration local
+  // environments usable while the same cursor semantics are rolled out.
+  const { data: rpcRows, error: rpcError } = await supabase.rpc("get_channel_messages", {
+    p_channel_id: channelId,
+    p_before_created_at: before?.createdAt ?? null,
+    p_before_id: before?.id ?? null,
+    p_limit: limit + 1,
+  });
+
+  let rows: Array<Omit<ChannelMessageWithSender, "sender">> = [];
+  if (!rpcError && rpcRows) {
+    rows = rpcRows as Array<Omit<ChannelMessageWithSender, "sender">>;
+  } else {
+    let query = supabase
+      .from("channel_messages")
+      .select("id, channel_id, sender_id, content, image_url, created_at, edited_at")
+      .eq("channel_id", channelId)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(limit + 1);
+    if (before) {
+      query = query.or(
+        `created_at.lt.${before.createdAt},and(created_at.eq.${before.createdAt},id.lt.${before.id})`,
+      );
+    }
+    const { data } = await query;
+    rows = (data ?? []) as Array<Omit<ChannelMessageWithSender, "sender">>;
+  }
+
+  const hasMore = rows.length > limit;
+  const pageRows = rows.slice(0, limit).reverse();
+  const messages = await attachChannelProfiles(pageRows);
+  const oldest = messages[0];
+
+  return {
+    messages,
+    hasMore,
+    cursor: oldest?.created_at ? { createdAt: oldest.created_at, id: oldest.id } : null,
+  };
+}
+
+/** Backwards-compatible array helper for project discussion surfaces. */
+export async function getChannelMessages(
+  channelId: string,
+): Promise<ChannelMessageWithSender[]> {
+  return (await getChannelMessagePage(channelId)).messages;
 }
 
 export interface ServerMemberRow {
