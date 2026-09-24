@@ -2,7 +2,7 @@
 
 import { memo, useState } from "react";
 import Image from "next/image";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, AlertCircle, RefreshCw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatTime } from "@/lib/date";
@@ -31,6 +31,15 @@ interface MessageBubbleProps {
   onToggleActions?: (id: string) => void;
   /** Called after a successful local delete so the parent can drop the message. */
   onDeleted?: (id: string) => void;
+  /** Called to re-insert a message whose optimistic delete failed on the server. */
+  onRestore?: (id: string) => void;
+  /** Optimistic edit: (id, newContent, restoreEditedAt). Pass null for a fresh edit. */
+  onEdited?: (id: string, content: string, restoreEditedAt: string | null) => void;
+  /** Retry queue: sent-message failure state + in-place retry/dismiss. */
+  sendState?: "pending" | "failed";
+  sendError?: string;
+  onRetryFailed?: (id: string) => void;
+  onDismissFailed?: (id: string) => void;
   attachments?: ChatAttachmentForMessage[];
 }
 
@@ -68,6 +77,12 @@ export const MessageBubble = memo(function MessageBubble({
   onSelect,
   onToggleActions,
   onDeleted,
+  onRestore,
+  onEdited,
+  sendState,
+  sendError,
+  onRetryFailed,
+  onDismissFailed,
   attachments = [],
 }: MessageBubbleProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -78,20 +93,27 @@ export const MessageBubble = memo(function MessageBubble({
       setIsEditing(false);
       return;
     }
-    const result = await editMessage(id, editText);
-    if (!result.error) {
-      setIsEditing(false);
-    } else {
+    const next = editText;
+    const originalContent = content;
+    const originalEditedAt = edited_at;
+    // Apply optimistically — the bubble updates the instant the user saves.
+    onEdited?.(id, next, null);
+    const result = await editMessage(id, next);
+    if (result.error) {
+      onEdited?.(id, originalContent, originalEditedAt);
       toast.error(result.error);
+    } else {
+      setIsEditing(false);
     }
   };
 
   const handleDelete = async () => {
+    // Optimistic: drop locally now; re-insert if the server call fails.
+    onDeleted?.(id);
     const result = await deleteMessage(id);
     if (result.error) {
+      onRestore?.(id);
       toast.error(result.error);
-    } else {
-      onDeleted?.(id);
     }
   };
 
@@ -223,13 +245,39 @@ export const MessageBubble = memo(function MessageBubble({
                     />
                   </span>
                 ) : null}
+                {isOwn && sendState === "pending" ? (
+                  <span className="mt-[3px] flex items-center gap-1.5 text-xs text-ink-500">
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Sending…
+                  </span>
+                ) : null}
+                {isOwn && sendState === "failed" ? (
+                  <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-red-400/25 bg-red-500/10 px-2.5 py-1.5 text-xs text-red-300">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    <span className="min-w-0 flex-1 truncate">{sendError ?? "Message failed to send"}</span>
+                    <button
+                      type="button"
+                      onClick={() => onRetryFailed?.(id)}
+                      className="flex shrink-0 items-center gap-1 font-semibold text-accent transition-colors hover:text-accent-glow focus-visible:outline-none"
+                    >
+                      <RefreshCw className="h-3 w-3" /> Retry
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Dismiss failed message"
+                      onClick={() => onDismissFailed?.(id)}
+                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-ink-400 transition-colors hover:bg-surface hover:text-ink-50 focus-visible:outline-none"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : null}
               </div>
             );
           })()
         )}
       </div>
 
-      {isOwn && !isEditing && (
+      {isOwn && !isEditing && sendState !== "failed" && (
         <div
           className={cn(
             "absolute right-2 top-1/2 z-20 flex -translate-y-1/2 items-center gap-0.5 rounded-full bg-void-900/95 p-1 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.8)] backdrop-blur transition-all duration-200 ease-premium",

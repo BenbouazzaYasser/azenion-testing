@@ -151,7 +151,7 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
   }
 
   if (isGif) {
-    const meta = (attachment.metadata ?? {}) as { url?: string; previewUrl?: string; title?: string };
+    const meta = (attachment.metadata ?? {}) as { url?: string; previewUrl?: string; title?: string; width?: number; height?: number };
     const rawUrl = meta.url ?? meta.previewUrl;
     const url = rawUrl && (() => {
       try {
@@ -171,23 +171,28 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
         </div>
       );
     }
+    // The picker embeds width/height in metadata — reserve the exact box from
+    // first paint (no CLS); fall back to 4:3 when unknown.
+    const ratio = meta.width && meta.height ? `${meta.width} / ${meta.height}` : "4 / 3";
     return (
-      <div className="overflow-hidden rounded-xl">
-        {imgLoading && (
-          <div className="flex h-32 w-48 items-center justify-center bg-surface/50">
-            <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
-          </div>
-        )}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={url}
-          alt={meta.title ?? "GIF"}
-          className={cn("max-h-64 max-w-full object-cover", imgLoading ? "hidden" : "block")}
-          onLoad={() => setImgLoading(false)}
-          onError={() => setImgLoading(false)}
-          loading="lazy"
-          decoding="async"
-        />
+      <div className="max-w-[260px] overflow-hidden rounded-xl">
+        <div className="relative w-full" style={{ aspectRatio: ratio, maxHeight: 256 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={url}
+            alt={meta.title ?? "GIF"}
+            className={cn("absolute inset-0 h-full w-full object-cover transition-opacity", imgLoading ? "opacity-0" : "opacity-100")}
+            onLoad={() => setImgLoading(false)}
+            onError={() => setImgLoading(false)}
+            loading="lazy"
+            decoding="async"
+          />
+          {imgLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-surface/50">
+              <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -211,25 +216,33 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
       const isSpoiler = meta?.spoiler === true;
       return (
         <div className="max-w-[260px] overflow-hidden rounded-xl">
-          {imgLoading && (
-            <div className="flex h-32 w-48 max-w-full items-center justify-center bg-surface/50">
-              <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
-            </div>
-          )}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={attachment.signedUrl}
-            alt={attachment.filename ?? "Image"}
-            loading="eager"
-            decoding="async"
-            className={cn("max-h-64 w-full object-cover", imgLoading && "hidden")}
-            style={isSpoiler ? { filter: "blur(8px)" } : undefined}
-            onLoad={() => setImgLoading(false)}
-            onError={() => {
-              setImgError(true);
-              setImgLoading(false);
-            }}
-          />
+          <div className="relative block w-full" style={{ aspectRatio: imgRatio ?? "4 / 3", maxHeight: 256 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={attachment.signedUrl}
+              alt={attachment.filename ?? "Image"}
+              loading="eager"
+              decoding="async"
+              className={cn("absolute inset-0 h-full w-full object-cover transition-opacity", imgLoading ? "opacity-0" : "opacity-100")}
+              style={isSpoiler ? { filter: "blur(8px)" } : undefined}
+              onLoad={(e) => {
+                const el = e.currentTarget;
+                if (el.naturalWidth > 0 && el.naturalHeight > 0) {
+                  setImgRatio(`${el.naturalWidth} / ${el.naturalHeight}`);
+                }
+                setImgLoading(false);
+              }}
+              onError={() => {
+                setImgError(true);
+                setImgLoading(false);
+              }}
+            />
+            {imgLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-surface/50">
+                <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
+              </div>
+            )}
+          </div>
           {attachment.filename && (
             <div className={cn("flex items-center gap-1.5 px-2 py-1 text-[11px]", isOwn ? "bg-black/10 text-white/70" : "bg-surface/60 text-ink-500")}>
               <ImageIcon className="h-3 w-3 shrink-0" />
@@ -252,7 +265,7 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="relative block w-full"
-            style={imgRatio ? { aspectRatio: imgRatio, maxHeight: 256 } : undefined}
+            style={{ aspectRatio: imgRatio ?? "4 / 3", maxHeight: 256 }}
           >
             <Image
               ref={imgRef as unknown as React.Ref<HTMLImageElement>}

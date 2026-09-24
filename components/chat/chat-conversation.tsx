@@ -4,12 +4,12 @@ import { useMemo, useRef, useState, useEffect, useLayoutEffect, useCallback, use
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { compressImageFile } from "@/lib/compress-image";
 import { useSearchParams } from "next/navigation";
-import { Send, MessageSquare, Users, Menu, Ban, Paperclip, Mic, Square, Trash2, Play, Pause, Smile, Plus, Film, Sticker as StickerIcon, Phone, Video } from "lucide-react";import { toast } from "sonner";
+import { MessageSquare, Users, Menu, Phone, Video } from "lucide-react";import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
+import { ChatComposer, type ChatComposerHandle } from "@/components/chat/chat-composer";
+import { createMemoryCache, mergeMessages, getCachedProfile, setCachedProfile, type ConversationSnapshot } from "@/lib/chat-cache";
 import { uploadChatMediaBlob, uploadBatch, setUploadProgress, clearUploadProgress, type UploadFileInput, type UploadTaskResult, type UploadResult, type UploadError } from "@/components/chat/chat-upload";
-import { AttachmentPreviewBar } from "@/components/chat/attachment-preview-bar";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import {
@@ -37,10 +37,8 @@ import {
   sanitizeFilename,
 } from "@/lib/chat-media";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
-import { RecordingTimer } from "@/components/chat/recording-timer";
 import { getCurrentUserProfile } from "@/lib/current-user-profile";
 import Image from "next/image";
-import nextDynamic from "next/dynamic";
 import type { GifResult } from "@/lib/gif/provider";
 import type { Sticker as StickerType } from "@/lib/stickers/catalog";
 
@@ -52,25 +50,6 @@ const VIRTUALIZE_THRESHOLD = 250;
 
 // No external store: hydration flag via useSyncExternalStore.
 const emptySubscribe = () => () => {};
-
-// Picker menus only render when opened — keep them out of the
-// conversation bundle until first use.
-const EmojiPicker = nextDynamic(
-  () => import("@/components/chat/emoji-picker").then((m) => m.EmojiPicker),
-  { ssr: false },
-);
-const GifPicker = nextDynamic(
-  () => import("@/components/chat/gif-picker").then((m) => m.GifPicker),
-  { ssr: false },
-);
-const StickerPicker = nextDynamic(
-  () => import("@/components/chat/sticker-picker").then((m) => m.StickerPicker),
-  { ssr: false },
-);
-const AttachmentMenu = nextDynamic(
-  () => import("@/components/chat/attachment-menu").then((m) => m.AttachmentMenu),
-  { ssr: false },
-);
 
 interface Message {
   id: string;
@@ -88,6 +67,9 @@ interface Message {
     username: string;
   } | null;
   attachments: ChatAttachmentForMessage[];
+  /** Client-only send pipeline state (retry queue — never persisted). */
+  sendState?: "pending" | "failed";
+  sendError?: string;
 }
 
 interface ChatConversationProps {
@@ -183,26 +165,12 @@ function classifyFile(file: File): { type: "image" | "file"; valid: boolean; err
   return { type: "file", valid: false, error: `File type ${mime} not supported` };
 }
 
-// Client-side per-conversation message cache, kept at module scope so it
-// survives component remounts across SPA navigations. Switching back to a
-// conversation in the same session renders its cached messages instantly and
+// Client-side per-conversation message cache (pillar 1), kept at module scope
+// so it survives component remounts across SPA navigations. Switching back to
+// a conversation in the same session renders its cached messages instantly and
 // merges the fresh server page into the SAME render — no blank, no stale
-// flash, no server-latency gate on revisits.
-interface ConversationCacheEntry {
-  messages: Message[];
-  hasMore: boolean;
-}
-const conversationCache = new Map<string, ConversationCacheEntry>();
-
-/** Union of two message lists by id, asc by created_at — server rows win. */
-function mergeMessages(a: Message[], b: Message[]): Message[] {
-  const byId = new Map<string, Message>();
-  for (const m of a) byId.set(m.id, m);
-  for (const m of b) byId.set(m.id, m);
-  return [...byId.values()].sort((x, y) =>
-    (x.created_at ?? "").localeCompare(y.created_at ?? ""),
-  );
-}
+// flash, no server-latency gate on revisits. (Store lives in lib/chat-cache.)
+const conversationCache = createMemoryCache<string, ConversationSnapshot<Message>>();
 
 export function ChatConversation({
   conversationId,
@@ -218,7 +186,6 @@ export function ChatConversation({
   const loadingOlderRef = useRef(false);
   /** Scroll metrics captured before a prepend (for pre-paint scroll anchoring). */
   const prependAnchorRef = useRef<{ scrollHeight: number; scrollTop: number } | null>(null);
-  const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const isSendingRef = useRef(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
@@ -229,18 +196,18 @@ export function ChatConversation({
   const [fileQueue, setFileQueue] = useState<FileQueue>([]);
   const [activeAttachmentId, setActiveAttachmentId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showGifPicker, setShowGifPicker] = useState(false);
-  const [showStickerPicker, setShowStickerPicker] = useState(false);
-  const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
   const conversationRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const emojiContainerRef = useRef<HTMLDivElement>(null);
+  // Imperative handle into the isolated composer leaf (draft lives there).
+  const composerRef = useRef<ChatComposerHandle>(null);
+  // Realtime batching: incoming INSERTs coalesce into one setMessages per frame.
+  const realtimeBatchRef = useRef<Message[]>([]);
+  const realtimeRafRef = useRef<number | null>(null);
+  const lastMarkReceivedRef = useRef(0);
+  // Snapshot of optimistically-deleted messages for revert-on-failure.
+  const recentlyDeletedRef = useRef(new Map<string, Message>());
 
   // Virtualize the message list (only enabled past VIRTUALIZE_THRESHOLD):
   // render visible messages + dividers, plain DOM below the threshold.
@@ -266,8 +233,6 @@ export function ChatConversation({
   }, [virtualizer]);
 
   const voice = useVoiceRecorder();
-  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const messagesRef = useRef(messages);
   useEffect(() => {
@@ -297,10 +262,13 @@ export function ChatConversation({
     setImageQueue([]);
     setFileQueue([]);
     setActiveAttachmentId(null);
-    setInput("");
     setOtherLastReadAt(null);
     stickToBottomRef.current = true;
   }
+
+  // The composer leaf is keyed by conversationId so switching threads remounts
+  // it — draft, picker visibility and voice preview reset in one go. (The
+  // imperative handle is used only for send-accept/restore, never in render.)
 
   // Own profile for optimistic sends. Seeded synchronously from any own
   // message already in history (sender is embedded), then warmed from the
@@ -357,8 +325,35 @@ export function ChatConversation({
   }, [messages]);
 
   // Stable identity so MessageBubble's memo isn't defeated.
-  const removeMessageById = useCallback((id: string) => {
-    setMessages((prev) => prev.filter((m) => m.id !== id));
+  const removeMessageById = useCallback(
+    (id: string) => {
+      setMessages((prev) => {
+        const removed = prev.find((m) => m.id === id);
+        if (removed) {
+          // Keep a snapshot so an optimistic delete can be reverted if the
+          // server call fails (bounded — 30 deleted messages max per session).
+          if (recentlyDeletedRef.current.size >= 30) {
+            const oldest = recentlyDeletedRef.current.keys().next().value;
+            if (oldest) recentlyDeletedRef.current.delete(oldest);
+          }
+          recentlyDeletedRef.current.set(id, removed);
+        }
+        return prev.filter((m) => m.id !== id);
+      });
+    },
+    [],
+  );
+
+  // Re-insert a message whose optimistic delete failed on the server.
+  const restoreMessage = useCallback((id: string) => {
+    const msg = recentlyDeletedRef.current.get(id);
+    if (!msg) return;
+    recentlyDeletedRef.current.delete(id);
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === id)) return prev;
+      const next = [...prev, msg];
+      return next.sort((x, y) => (x.created_at ?? "").localeCompare(y.created_at ?? ""));
+    });
   }, []);
 
   const refetchMessages = useCallback(async () => {
@@ -497,36 +492,6 @@ export function ChatConversation({
   }, []);
 
   useEffect(() => {
-    if (!showEmojiPicker && !showGifPicker && !showStickerPicker && !showAttachmentMenu) return;
-    function handleOutside(e: MouseEvent) {
-      if (
-        (showEmojiPicker || showGifPicker || showStickerPicker || showAttachmentMenu) &&
-        emojiContainerRef.current &&
-        !emojiContainerRef.current.contains(e.target as Node)
-      ) {
-        setShowEmojiPicker(false);
-        setShowGifPicker(false);
-        setShowStickerPicker(false);
-        setShowAttachmentMenu(false);
-      }
-    }
-    function handleEsc(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setShowEmojiPicker(false);
-        setShowGifPicker(false);
-        setShowStickerPicker(false);
-        setShowAttachmentMenu(false);
-      }
-    }
-    document.addEventListener("mousedown", handleOutside);
-    document.addEventListener("keydown", handleEsc);
-    return () => {
-      document.removeEventListener("mousedown", handleOutside);
-      document.removeEventListener("keydown", handleEsc);
-    };
-  }, [showEmojiPicker, showGifPicker, showStickerPicker, showAttachmentMenu]);
-
-  useEffect(() => {
     const supabase = createClient();
 
     const channel = supabase
@@ -541,47 +506,76 @@ export function ChatConversation({
         },
         async (payload) => {
           const newMsg = payload.new as Message;
-          // Ignore own messages — already handled via optimistic reconciliation
+          // Ignore own messages — already handled via optimistic reconciliation.
           if (newMsg.sender_id === currentUserId) return;
 
-          let profile: Message["sender"] = null;
-          try {
-            const { data } = await supabase
-              .from("profiles")
-              .select("id, full_name, avatar_url, username")
-              .eq("id", newMsg.sender_id)
-              .single();
-            profile = data ?? null;
-          } catch (err) {
-            console.error("[chat:realtime] profile fetch failed", err);
+          // Pillar 5: render the inbound message instantly with zero
+          // round-trips. In a 1:1 DM the sender is always `peer` (in props);
+          // the one-flight profile cache covers any other sender.
+          let sender: Message["sender"] = null;
+          if (peer?.id && newMsg.sender_id === peer.id) {
+            sender = peer;
+          } else {
+            sender = getCachedProfile(newMsg.sender_id) ?? null;
+            if (!sender) {
+              try {
+                const { data } = await supabase
+                  .from("profiles")
+                  .select("id, full_name, avatar_url, username")
+                  .eq("id", newMsg.sender_id)
+                  .single();
+                if (data) setCachedProfile(data);
+                sender = data ?? null;
+              } catch {
+                sender = null;
+              }
+            }
           }
 
-          void markMessagesReceived(conversationId);
+          // Batch: rapid incoming messages coalesce into ONE setMessages per
+          // animation frame (dedupe by id guards re-subscribe replays).
+          realtimeBatchRef.current.push({ ...newMsg, sender, attachments: [] });
+          if (realtimeRafRef.current == null) {
+            realtimeRafRef.current = requestAnimationFrame(() => {
+              realtimeRafRef.current = null;
+              const batch = realtimeBatchRef.current;
+              realtimeBatchRef.current = [];
+              if (batch.length === 0) return;
+              setMessages((prev) => {
+                const existing = new Set(prev.map((m) => m.id));
+                const fresh = batch.filter((m) => !existing.has(m.id));
+                return fresh.length > 0 ? [...prev, ...fresh] : prev;
+              });
+            });
+          }
 
-          // Fetch attachments for this message (if any) — enrich via signed URLs client-side
-          let attachments: ChatAttachmentForMessage[] = [];
+          // Read-receipt RPC is throttled, not fired per message.
+          const now = Date.now();
+          if (now - lastMarkReceivedRef.current > 1500) {
+            lastMarkReceivedRef.current = now;
+            void markMessagesReceived(conversationId);
+          }
+
+          // Attachments enrich asynchronously AFTER the message renders, so
+          // an inbound message never waits on a storage round-trip to appear.
           try {
             const { data: rows } = await supabase
               .from("chat_message_attachments")
               .select("id, message_id, conversation_id, uploader_id, type, storage_path, filename, mime_type, file_size, duration_seconds, provider, external_id, metadata, created_at")
               .eq("message_id", newMsg.id);
             if (rows && rows.length > 0) {
-              attachments = await Promise.all(
+              const attachments = await Promise.all(
                 (rows as ChatAttachmentForMessage[]).map(async (att) => {
                   if (!att.storage_path) return { ...att, signedUrl: null };
                   const { data } = await supabase.storage.from("chat-media").createSignedUrl(att.storage_path, CHAT_MEDIA_SIGNED_URL_TTL);
                   return { ...att, signedUrl: data?.signedUrl ?? null };
                 }),
               );
+              setMessages((prev) => prev.map((m) => (m.id === newMsg.id ? { ...m, attachments } : m)));
             }
           } catch {
-            // ignore
+            // ignore — attachments fail silently; the message text already rendered
           }
-
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === newMsg.id)) return prev;
-            return [...prev, { ...newMsg, sender: profile, attachments }];
-          });
         },
       )
       .on(
@@ -649,8 +643,15 @@ export function ChatConversation({
     return () => {
       supabase.removeChannel(channel);
       supabase.removeChannel(readChannel);
+      // Drop any in-flight batched inserts — they belonged to the thread
+      // we're leaving and will be re-fetched on its next open.
+      if (realtimeRafRef.current != null) {
+        cancelAnimationFrame(realtimeRafRef.current);
+        realtimeRafRef.current = null;
+      }
+      realtimeBatchRef.current = [];
     };
-  }, [conversationId, currentUserId]);
+  }, [conversationId, currentUserId, peer]);
 
   const participant = useMemo(() => {
     const other = initialMessages.find((m) => m.sender_id !== currentUserId);
@@ -745,13 +746,6 @@ export function ChatConversation({
       }
     }
   }, [imageQueue.length, fileQueue.length]);
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      addFiles(e.target.files);
-      e.target.value = "";
-    }
-  };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -900,34 +894,8 @@ export function ChatConversation({
     [imageQueue, fileQueue, conversationId],
   );
 
-  const insertEmoji = useCallback(
-    (emoji: string) => {
-      const el = inputRef.current;
-      if (!el) {
-        setInput((prev) => prev + emoji);
-        return;
-      }
-      const start = el.selectionStart ?? input.length;
-      const end = el.selectionEnd ?? input.length;
-      const next = input.slice(0, start) + emoji + input.slice(end);
-      setInput(next);
-      requestAnimationFrame(() => {
-        el.focus();
-        const pos = start + emoji.length;
-        try {
-          el.setSelectionRange(pos, pos);
-        } catch {}
-      });
-    },
-    [input],
-  );
-
   const handleGifSelect = useCallback(
-    async (gif: GifResult) => {
-      setShowGifPicker(false);
-      setShowEmojiPicker(false);
-      setShowStickerPicker(false);
-      setShowAttachmentMenu(false);
+    async (gif: GifResult, content: string) => {
       if (isSendingRef.current) return;
       if (imageQueue.length > 0 || fileQueue.length > 0) {
         toast.error("Please send or remove attached files before sending a GIF");
@@ -962,10 +930,8 @@ export function ChatConversation({
         return;
       }
 
-      const content = input.trim();
-      setInput("");
       isSendingRef.current = true;
-    setIsSending(true);
+      setIsSending(true);
 
       const profile: Message["sender"] = ownProfileRef.current ?? {
         id: currentUserId,
@@ -1029,10 +995,18 @@ export function ChatConversation({
         ]);
 
         if (result && "error" in result && result.error) {
-          // On error, trigger a refetch to sync with server (handles network failure after successful insert)
+          // Retry queue: keep the optimistic message marked failed so the
+          // user can retry in place instead of re-picking the GIF.
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === optimistic.id
+                ? { ...m, sendState: "failed" as const, sendError: result.error as string }
+                : m,
+            ),
+          );
+          // Reconcile with the server in case the insert actually landed.
           setTimeout(() => void refetchMessages(), 500);
           toast.error(result.error);
-          setInput(content);
         } else if (result && "success" in result && result.id) {
           setMessages((prev) =>
             prev.map((m) =>
@@ -1048,25 +1022,26 @@ export function ChatConversation({
           );
         }
       } catch {
-        // On network error, trigger a refetch to sync with server
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === optimistic.id
+              ? { ...m, sendState: "failed" as const, sendError: "GIF could not be sent." }
+              : m,
+          ),
+        );
         setTimeout(() => void refetchMessages(), 500);
         toast.error("GIF could not be sent.");
-        setInput(content);
       } finally {
         isSendingRef.current = false;
-    setIsSending(false);
+        setIsSending(false);
         void markConversationRead(conversationId);
       }
     },
-    [input, imageQueue.length, fileQueue.length, voice, conversationId, currentUserId, refetchMessages],
+    [imageQueue.length, fileQueue.length, voice, conversationId, currentUserId, refetchMessages],
   );
 
   const handleStickerSelect = useCallback(
-    async (sticker: StickerType) => {
-      setShowStickerPicker(false);
-      setShowEmojiPicker(false);
-      setShowGifPicker(false);
-      setShowAttachmentMenu(false);
+    async (sticker: StickerType, content: string) => {
       if (isSendingRef.current) return;
       if (imageQueue.length > 0 || fileQueue.length > 0) {
         toast.error("Please send or remove attached files before sending a sticker");
@@ -1076,10 +1051,8 @@ export function ChatConversation({
         toast.error("Finish or cancel voice recording before sending sticker");
         return;
       }
-      const content = input.trim();
-      setInput("");
       isSendingRef.current = true;
-    setIsSending(true);
+      setIsSending(true);
 
       const profile: Message["sender"] = ownProfileRef.current ?? {
         id: currentUserId,
@@ -1143,10 +1116,18 @@ export function ChatConversation({
         ]);
 
         if (result && "error" in result && result.error) {
-          // On error, trigger a refetch to sync with server (handles network failure after successful insert)
+          // Retry queue: keep the optimistic message marked failed so the
+          // user can retry in place instead of re-picking the sticker.
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === optimistic.id
+                ? { ...m, sendState: "failed" as const, sendError: result.error as string }
+                : m,
+            ),
+          );
+          // Reconcile with the server in case the insert actually landed.
           setTimeout(() => void refetchMessages(), 500);
           toast.error(result.error);
-          setInput(content);
         } else if (result && "success" in result && result.id) {
           setMessages((prev) =>
             prev.map((m) =>
@@ -1162,25 +1143,26 @@ export function ChatConversation({
           );
         }
       } catch {
-        // On network error, trigger a refetch to sync with server
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === optimistic.id
+              ? { ...m, sendState: "failed" as const, sendError: "Sticker could not be sent." }
+              : m,
+          ),
+        );
         setTimeout(() => void refetchMessages(), 500);
         toast.error("Sticker could not be sent.");
-        setInput(content);
       } finally {
         isSendingRef.current = false;
-    setIsSending(false);
+        setIsSending(false);
         void markConversationRead(conversationId);
       }
     },
-    [input, imageQueue.length, fileQueue.length, voice, conversationId, currentUserId, refetchMessages],
+    [imageQueue.length, fileQueue.length, voice, conversationId, currentUserId, refetchMessages],
   );
 
   // Voice helpers
   const handleMicClick = async () => {
-    setShowAttachmentMenu(false);
-    setShowEmojiPicker(false);
-    setShowGifPicker(false);
-    setShowStickerPicker(false);
     if (voice.isRecording) {
       voice.stop();
       return;
@@ -1200,26 +1182,10 @@ export function ChatConversation({
 
   const handleCancelVoice = () => {
     voice.cancel();
-    setIsPlayingPreview(false);
-    if (previewAudioRef.current) {
-      previewAudioRef.current.pause();
-      previewAudioRef.current = null;
-    }
   };
 
   const handleDiscardVoice = () => {
     voice.clear();
-    setIsPlayingPreview(false);
-  };
-
-  const togglePreviewPlayback = () => {
-    const el = previewAudioRef.current;
-    if (!el || !voice.previewUrl) return;
-    if (isPlayingPreview) {
-      el.pause();
-    } else {
-      el.play().catch(() => toast.error("Could not play preview"));
-    }
   };
 
   const handleSendVoice = async () => {
@@ -1330,7 +1296,6 @@ export function ChatConversation({
         );
         if (signed?.signedUrl) URL.revokeObjectURL(optimisticPreviewUrl);
         voice.clear();
-        setIsPlayingPreview(false);
       }
     } catch {
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
@@ -1347,22 +1312,22 @@ export function ChatConversation({
     }
   };
 
-  const handleSend = async () => {
-    const hasText = input.trim().length > 0;
+  const handleSend = async (content: string) => {
+    const hasText = content.trim().length > 0;
     const hasFiles = imageQueue.length > 0 || fileQueue.length > 0;
-    if ((!hasText && !hasFiles) || isSendingRef.current) return;
-
-    // Close pickers on send
-    setShowAttachmentMenu(false);
-    setShowEmojiPicker(false);
-    setShowGifPicker(false);
-    setShowStickerPicker(false);
+    if (isSendingRef.current) {
+      // Race: the leaf cleared the draft before the ref's state flushed.
+      composerRef.current?.restoreDraft(content);
+      return;
+    }
+    if (!hasText && !hasFiles) return;
 
     // Validate queued files still valid (size check again)
     const allQueued = [...imageQueue, ...fileQueue];
     for (const q of allQueued) {
       if (q.status === "error") {
         toast.error("Please remove or retry failed files before sending");
+        composerRef.current?.restoreDraft(content);
         return;
       }
     }
@@ -1378,8 +1343,6 @@ export function ChatConversation({
         toast.error("Sending took too long — please retry.");
       }
     }, 60_000);
-    const content = input.trim();
-    setInput("");
 
     const supabase = createClient();
     const profile: Message["sender"] = ownProfileRef.current ?? {
@@ -1530,11 +1493,21 @@ export function ChatConversation({
       }
 
       if (result && "error" in result && result.error) {
-        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-        // Restore the text the user typed so a failed send never eats it.
-        setInput(content);
-        // Restore queue for retry if it was attachments
-        if (toUpload.length > 0) {
+        if (toUpload.length === 0) {
+          // Pure-text failure → retry queue: keep the message marked failed
+          // with Retry/Dismiss in the bubble (Discord model).
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === optimistic.id
+                ? { ...m, sendState: "failed" as const, sendError: result.error as string }
+                : m,
+            ),
+          );
+        } else {
+          // Blob send failure → drop the optimistic message and restore the
+          // queues: the attachment queue already offers per-file Retry.
+          setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+          composerRef.current?.restoreDraft(content);
           setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
           setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
         }
@@ -1580,11 +1553,21 @@ export function ChatConversation({
         }
       }
     } catch {
-      setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-      // Restore the text the user typed so a thrown send never eats it.
-      setInput(content);
-      setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
-      setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
+      if (toUpload.length === 0) {
+        // Pure-text failure → retry queue.
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === optimistic.id
+              ? { ...m, sendState: "failed" as const, sendError: "Message could not be sent. Please try again." }
+              : m,
+          ),
+        );
+      } else {
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        composerRef.current?.restoreDraft(content);
+        setImageQueue(toUpload.filter((q) => q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
+        setFileQueue(toUpload.filter((q) => !q.file.type.startsWith("image/")).map((q) => ({ ...q, status: "queued" as const })));
+      }
       // Don't orphan uploaded objects when the send throws after upload.
       if (!committed && attachmentInputs.length > 0) {
         await supabase.storage
@@ -1605,7 +1588,112 @@ export function ChatConversation({
   const participantInitial = (participant?.full_name?.[0] ?? participant?.username?.[0] ?? "?").toUpperCase();
   const mobileConversations = useMobileConversations();
 
-  const canSend = input.trim().length > 0 || imageQueue.length > 0 || fileQueue.length > 0;
+  // ---- Retry queue (pillar 2) ----------------------------------------
+  // A failed pure-text/GIF/sticker send stays in the list marked "failed"
+  // instead of vanishing. Retry re-submits the same payload; Dismiss drops it.
+  const retryFailedMessage = useCallback(
+    async (msg: Message) => {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === msg.id ? { ...m, sendState: "pending" as const, sendError: undefined } : m)),
+      );
+      try {
+        // Blob-backed attachments (files/voice) never take this path — they
+        // restore the composer queue instead — but guard anyway.
+        let result;
+        if (msg.attachments.length > 0) {
+          const hasBlob = msg.attachments.some((a) => a.storage_path);
+          if (hasBlob) {
+            toast.error("This message needs resending — please retype it.");
+            setMessages((prev) =>
+              prev.map((m) => (m.id === msg.id ? { ...m, sendState: "failed" as const, sendError: "Blob attachments need resending." } : m)),
+            );
+            return;
+          }
+          result = await sendMessageWithAttachments(
+            msg.conversation_id,
+            msg.content,
+            msg.attachments.map((a) => ({
+              type: a.type as import("@/actions/chat.actions").SendMessageAttachmentInput["type"],
+              storage_path: a.storage_path ?? null,
+              filename: a.filename ?? null,
+              mime_type: a.mime_type ?? null,
+              file_size: a.file_size ?? null,
+              duration_seconds: a.duration_seconds ?? null,
+              provider: a.provider ?? null,
+              external_id: a.external_id ?? null,
+              metadata: (a.metadata as Record<string, unknown> | null) ?? null,
+            })),
+          );
+        } else {
+          result = await sendMessage(msg.conversation_id, msg.content);
+        }
+
+        if (result && "error" in result && result.error) {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === msg.id ? { ...m, sendState: "failed" as const, sendError: result.error as string } : m)),
+          );
+          toast.error(result.error);
+          return;
+        }
+        if (!result || !("success" in result) || !result.id) {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === msg.id ? { ...m, sendState: "failed" as const, sendError: "Retry failed." } : m)),
+          );
+          toast.error("Retry failed.");
+          return;
+        }
+        // Reconciled: swap the temp id for the server id and drop the flag.
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msg.id
+              ? {
+                  ...m,
+                  id: result.id as string,
+                  created_at: (result.created_at as string) ?? m.created_at,
+                  sendState: undefined,
+                  sendError: undefined,
+                }
+              : m,
+          ),
+        );
+      } catch {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === msg.id ? { ...m, sendState: "failed" as const, sendError: "Retry failed — try again." } : m)),
+        );
+        toast.error("Retry failed.");
+      }
+    },
+    [],
+  );
+
+  const handleRetryFailed = useCallback(
+    (id: string) => {
+      const msg = messagesRef.current.find((m) => m.id === id);
+      if (msg) void retryFailedMessage(msg);
+    },
+    [retryFailedMessage],
+  );
+
+  const handleDismissFailed = useCallback((id: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== id));
+  }, []);
+
+  // ---- Optimistic edit (pillar 2) ------------------------------------
+  // The bubble applies the edit locally before the server round-trip; this
+  // updates the list, and a failed call reverts content + edited_at.
+  const handleEdited = useCallback((id: string, content: string, restoreEditedAt: string | null) => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === id
+          ? {
+              ...m,
+              content,
+              edited_at: restoreEditedAt !== null ? restoreEditedAt : new Date().toISOString(),
+            }
+          : m,
+      ),
+    );
+  }, []);
 
   // Handle an inbound ?call=audio|video query param (from the conversation menu
   // or any deep link) by starting a call once the peer is known.
@@ -1680,12 +1768,14 @@ export function ChatConversation({
             isOwn={msg.sender_id === currentUserId}
             isGrouped={isGrouped}
             showAvatar={showAvatar}
-            status={status}
+            status={msg.sendState ? null : status}
             statusAvatarUrl={participant?.avatar_url ?? null}
             statusAvatarName={participantName}
             active={msg.id === activeMessageId}
             showActions={actionsMessageId === msg.id}
             attachments={msg.attachments}
+            sendState={msg.sendState}
+            sendError={msg.sendError}
             onSelect={(id) => {
               setActiveMessageId(id);
               setActionsMessageId(null);
@@ -1695,6 +1785,10 @@ export function ChatConversation({
               setActiveMessageId(id);
             }}
             onDeleted={removeMessageById}
+            onRestore={restoreMessage}
+            onEdited={handleEdited}
+            onRetryFailed={handleRetryFailed}
+            onDismissFailed={handleDismissFailed}
           />
         </div>
       </>
@@ -1862,237 +1956,34 @@ export function ChatConversation({
         </div>
       )}
 
-      <div className="relative z-10 shrink-0 border-0 bg-[linear-gradient(180deg,rgb(var(--surface)/0.3),rgb(var(--surface)/0.88))] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2.5 sm:px-4 sm:pb-4 sm:pt-3 md:backdrop-blur-xl">
-        {amBlocked ? (
-          <div
-            role="status"
-            className="flex items-center justify-center gap-2.5 rounded-2xl bg-surface/70 px-4 py-3.5 text-center"
-          >
-            <Ban size={16} className="shrink-0 text-ink-500" />
-            <p className="text-sm text-ink-400">
-              You can&apos;t send messages to @{participant?.username ?? participantName} because they blocked you.
-            </p>
-          </div>
-        ) : voice.isRecording ? (
-          <div className="flex items-center gap-3">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" aria-hidden />
-            <RecordingTimer startedAt={voice.startedAt} />
-            <span className="text-xs text-ink-500">Recording…</span>
-            <Button type="button" variant="secondary" aria-label="Cancel recording" onClick={handleCancelVoice} className="h-10 w-10 shrink-0 rounded-full p-0">
-              <Trash2 size={16} />
-            </Button>
-            <Button type="button" aria-label="Stop recording" onClick={() => voice.stop()} className="h-10 w-10 shrink-0 rounded-full p-0">
-              <Square size={14} />
-            </Button>
-          </div>
-        ) : voice.blob && voice.previewUrl ? (
-          <div className="flex flex-col gap-2">
-            {voice.error && <p className="text-xs text-red-400">{voice.error}</p>}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label={isPlayingPreview ? "Pause preview" : "Play preview"}
-                onClick={togglePreviewPlayback}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white"
-              >
-                {isPlayingPreview ? <Pause size={16} /> : <Play size={16} className="translate-x-0.5" />}
-              </button>
-              <div className="min-w-0 flex-1 rounded-full bg-surface px-3 py-2 text-sm text-ink-50">
-                Voice message • {Math.floor(voice.duration / 60)}:{String(voice.duration % 60).padStart(2, "0")} • {Math.round(voice.blob.size / 1024)} KB
-              </div>
-              <audio
-                ref={(el) => {
-                  previewAudioRef.current = el;
-                  if (el) {
-                    el.onplay = () => setIsPlayingPreview(true);
-                    el.onpause = () => setIsPlayingPreview(false);
-                    el.onended = () => setIsPlayingPreview(false);
-                  }
-                }}
-                src={voice.previewUrl}
-                preload="metadata"
-                className="hidden"
-              />
-              <Button type="button" variant="secondary" aria-label="Discard voice message" onClick={handleDiscardVoice} className="h-10 w-10 shrink-0 rounded-full p-0">
-                <Trash2 size={16} />
-              </Button>
-              <Button type="button" aria-label="Send voice message" onClick={handleSendVoice} disabled={isSending} className="h-10 w-10 shrink-0 rounded-full p-0">
-                <Send size={16} />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div ref={emojiContainerRef} className="relative">
-            {(imageQueue.length > 0 || fileQueue.length > 0) && (
-              <div className="mb-3">
-                <AttachmentPreviewBar
-                  imageQueue={imageQueue}
-                  fileQueue={fileQueue}
-                  activeAttachmentId={activeAttachmentId}
-                  maxAttachments={10}
-                  onRemoveImage={removeQueued}
-                  onRemoveFile={removeQueued}
-                  onClearAll={clearAllAttachments}
-                  onSetActive={setActiveAttachmentId}
-                  onToggleSpoiler={toggleSpoiler}
-                  onAddTag={addTagToAttachment}
-                  onRemoveTag={removeTagFromAttachment}
-                  onRetry={retryQueued}
-                />
-              </div>
-            )}
-            {voice.error && <p className="mb-2 text-xs text-red-400">{voice.error}</p>}
-            {showEmojiPicker && (
-              <div className="absolute bottom-full left-0 z-30 mb-2">
-                <EmojiPicker
-                  onSelect={(emoji) => {
-                    insertEmoji(emoji);
-                  }}
-                  onClose={() => setShowEmojiPicker(false)}
-                />
-              </div>
-            )}
-            {showGifPicker && (
-              <div className="absolute bottom-full left-0 z-30 mb-2 max-w-[calc(100vw-3rem)] sm:left-16">
-                <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
-              </div>
-            )}
-            {showStickerPicker && (
-              <div className="absolute bottom-full left-0 z-30 mb-2 max-w-[calc(100vw-3rem)] sm:left-32">
-                <StickerPicker onSelect={handleStickerSelect} onClose={() => setShowStickerPicker(false)} />
-              </div>
-            )}
-            <form
-              className={cn(
-                "flex items-center",
-                showAttachmentMenu ? "gap-0.5 sm:gap-2" : "gap-1.5 sm:gap-2",
-              )}
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSend();
-              }}
-            >
-              <input
-                ref={imageInputRef}
-                type="file"
-                multiple
-                accept={CHAT_IMAGE_MIMES.join(",")}
-                className="hidden"
-                onChange={handleFileInputChange}
-              />
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept={CHAT_FILE_MIMES.join(",")}
-                className="hidden"
-                onChange={handleFileInputChange}
-              />
-              {/* + menu - Messenger compact */}
-              <div className="flex items-center">
-                <div
-                  className={cn(
-                    "flex items-center gap-1 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
-                    showAttachmentMenu ? "max-w-[220px] opacity-100 sm:max-w-[260px]" : "max-w-0 opacity-0",
-                  )}
-                  aria-hidden={!showAttachmentMenu}
-                >
-                  <AttachmentMenu
-                    onSelectImages={() => imageInputRef.current?.click()}
-                    onSelectFiles={() => fileInputRef.current?.click()}
-                    onClose={() => setShowAttachmentMenu(false)}
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="default"
-                  aria-label={showAttachmentMenu ? "Close attachment menu" : "Open attachment menu"}
-                  aria-expanded={showAttachmentMenu}
-                  aria-haspopup="menu"
-                  onClick={() => {
-                    const next = !showAttachmentMenu;
-                    setShowAttachmentMenu(next);
-                    if (next) {
-                      setShowEmojiPicker(false);
-                      setShowGifPicker(false);
-                      setShowStickerPicker(false);
-                    }
-                  }}
-                  disabled={!!voice.blob || voice.isRecording}
-                  className={cn(
-                    "h-11 w-11 shrink-0 rounded-full p-0 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
-                    showAttachmentMenu
-                      ? "bg-accent text-white shadow-md rotate-45"
-                      : "bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border",
-                  )}
-                >
-                  <Plus size={18} className={cn("transition-transform duration-300", showAttachmentMenu && "rotate-90")} />
-                </Button>
-              </div>
-              <Button
-                type="button"
-                variant="secondary"
-                size="default"
-                aria-label="Open emoji picker"
-                onClick={() => {
-                  const next = !showEmojiPicker;
-                  setShowEmojiPicker(next);
-                  if (next) {
-                    setShowAttachmentMenu(false);
-                    setShowGifPicker(false);
-                    setShowStickerPicker(false);
-                  }
-                }}
-                disabled={!!voice.blob || voice.isRecording}
-                className="h-11 w-11 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border disabled:opacity-50"
-              >
-                <Smile size={17} />
-              </Button>
-              <textarea
-                ref={inputRef}
-                aria-label="Type a message"
-                placeholder="Type a message..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onPaste={handlePaste}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                disabled={!!voice.blob || voice.isRecording}
-                rows={1}
-                enterKeyHint="send"
-                className="min-w-0 flex-1 resize-none rounded-full bg-surface px-4 py-2.5 text-base leading-5 text-ink-50 placeholder:text-ink-500 border-0 shadow-sm ring-1 ring-border focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent-400/40 disabled:opacity-50 max-h-24 overflow-y-auto sm:text-sm"
-              />
-              {canSend ? (
-                <Button
-                  type="submit"
-                  aria-label="Send message"
-                  disabled={isSending}
-                  className="h-11 w-11 shrink-0 rounded-full p-0"
-                >
-                  <Send size={16} />
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  aria-label="Record voice message"
-                  onClick={handleMicClick}
-                  disabled={!voice.isSupported || isSending}
-                  className="h-11 w-11 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover shadow-sm ring-1 ring-border disabled:opacity-50"
-                  title={!voice.isSupported ? "Voice not supported in this browser" : "Record voice message"}
-                >
-                  <Mic size={17} />
-                </Button>
-              )}
-            </form>
-          </div>
-        )}
-      </div>
+      <ChatComposer
+        key={conversationId}
+        ref={composerRef}
+        participantName={participantName}
+        participantUsername={participant?.username ?? null}
+        amBlocked={amBlocked}
+        voice={voice}
+        isSending={isSending}
+        imageQueue={imageQueue}
+        fileQueue={fileQueue}
+        activeAttachmentId={activeAttachmentId}
+        onSendText={handleSend}
+        onSendVoice={handleSendVoice}
+        onMicClick={handleMicClick}
+        onCancelVoice={handleCancelVoice}
+        onDiscardVoice={handleDiscardVoice}
+        onGifSelect={handleGifSelect}
+        onStickerSelect={handleStickerSelect}
+        onAddFiles={addFiles}
+        onPaste={handlePaste}
+        onRemoveQueued={removeQueued}
+        onClearAll={clearAllAttachments}
+        onSetActive={setActiveAttachmentId}
+        onToggleSpoiler={toggleSpoiler}
+        onAddTag={addTagToAttachment}
+        onRemoveTag={removeTagFromAttachment}
+        onRetryQueued={retryQueued}
+      />
     </div>
   );
 }
