@@ -138,7 +138,7 @@ const ImageThumbnail = memo(function ImageThumbnail({
                 e.stopPropagation();
                 onRetry(file.id);
               }}
-              className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-accent-glow"
+              className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-accent-500"
             >
               Retry
             </button>
@@ -219,7 +219,7 @@ const FileChip = memo(function FileChip({
             onRetry(file.id);
           }}
           title={error ?? "Upload failed"}
-          className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-accent-glow"
+          className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white hover:bg-accent-500"
         >
           Retry
         </button>
@@ -345,7 +345,7 @@ function TagComposer({
             type="button"
             onClick={handleSubmit}
             disabled={!inputValue.trim()}
-            className="flex h-7 items-center justify-center rounded-full bg-accent px-2.5 text-white text-sm font-medium hover:bg-accent-glow disabled:opacity-40"
+            className="flex h-7 items-center justify-center rounded-full bg-accent px-2.5 text-white text-sm font-medium hover:bg-accent-500 disabled:opacity-40"
           >
             Add
           </button>

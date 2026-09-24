@@ -96,9 +96,11 @@ export default function RootLayout({
     <html lang="en" dir="ltr" suppressHydrationWarning className={`${inter.variable} ${tajawal.variable} ${notoNaskhArabic.variable} ${spaceGrotesk.variable} ${plexMono.variable}`}>
       <head>
         <InlineScript
+          id="azenion-theme-init"
           html={`try{var t=(function(){try{return localStorage.getItem("azenion-theme")}catch(e){return null}})();if(!t){var c=document.cookie.match(/(?:^|; )azenion-theme=([^;]*)/);t=c?c[1]:null}if(!t)t="system";var e=(t==="system")?(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"):t;var d=document.documentElement;d.dataset.theme=e;d.dataset.themePreference=t;d.style.colorScheme=e;}catch(err){document.documentElement.dataset.theme="dark";}`}
         />
         <InlineScript
+          id="azenion-language-init"
           html={`try{var l=null;try{l=localStorage.getItem("azenion-lang")}catch(e){}if(!l){var m=document.cookie.match(/(?:^|; )azenion-lang=([^;]*)/);l=m?decodeURIComponent(m[1]):null}if(l){document.documentElement.lang=l;var rtl=new Set(["ar","he","fa","ur"]);document.documentElement.dir=rtl.has(l)?"rtl":"ltr";}}catch(e){}`}
         />
       </head>

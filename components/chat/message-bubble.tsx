@@ -156,7 +156,7 @@ export const MessageBubble = memo(function MessageBubble({
               className="h-10 w-10 shrink-0 rounded-full object-cover"
             />
           ) : (
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-xs font-semibold text-white">
               {sender_name?.[0]?.toUpperCase() ?? "U"}
             </span>
           )
@@ -199,7 +199,7 @@ export const MessageBubble = memo(function MessageBubble({
               <button
                 type="button"
                 onClick={handleEdit}
-                className="rounded-lg bg-accent px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-accent-glow"
+                className="rounded-lg bg-accent px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-accent-500"
               >
                 Save
               </button>
@@ -275,7 +275,7 @@ export const MessageBubble = memo(function MessageBubble({
                     <button
                       type="button"
                       onClick={() => onRetryFailed?.(id)}
-                      className="flex shrink-0 items-center gap-1 font-semibold text-accent transition-colors hover:text-accent-glow focus-visible:outline-none"
+                      className="flex shrink-0 items-center gap-1 font-semibold text-accent transition-colors hover:text-accent-300 focus-visible:outline-none"
                     >
                       <RefreshCw className="h-3 w-3" /> Retry
                     </button>
@@ -313,7 +313,7 @@ export const MessageBubble = memo(function MessageBubble({
               setEditText(content);
               setIsEditing(true);
             }}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-400 transition-colors duration-200 ease-premium hover:bg-surface-hover hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>

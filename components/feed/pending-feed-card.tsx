@@ -42,7 +42,7 @@ export function PendingFeedCard({ post, uploadStatus, onRetry, onDismiss }: Pend
                 className="h-10 w-10 rounded-full object-cover"
               />
             ) : (
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-400 text-sm font-semibold text-white">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white">
                 {item.author_name?.[0]?.toUpperCase() ?? <User size={16} />}
               </span>
             )}
@@ -150,7 +150,7 @@ export function PendingFeedCard({ post, uploadStatus, onRetry, onDismiss }: Pend
           <button
             type="button"
             onClick={() => onRetry(post.tmpId)}
-            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-accent px-4 py-1.5 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow"
+            className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full bg-accent px-4 py-1.5 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-500"
           >
             <RefreshCw size={13} />
             Retry

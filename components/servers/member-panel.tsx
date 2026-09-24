@@ -77,7 +77,7 @@ export function MemberPanel({ serverName, members, memberCount }: MemberPanelPro
                         <span
                           className={cn(
                             "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white",
-                            "bg-gradient-to-br from-accent to-accent-glow",
+                            "bg-accent",
                           )}
                         >
                           {initial}

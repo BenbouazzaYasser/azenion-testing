@@ -66,7 +66,7 @@ export default async function ServersPage() {
                         className="h-11 w-11 shrink-0 rounded-xl object-cover"
                       />
                     ) : (
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-glow text-base font-semibold text-white">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-base font-semibold text-white">
                         {(server.name[0] ?? "?").toUpperCase()}
                       </span>
                     )}

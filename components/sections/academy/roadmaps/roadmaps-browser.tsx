@@ -90,18 +90,13 @@ export function RoadmapsBrowser({ roadmaps }: RoadmapsBrowserProps) {
               ))}
             </div>
           ) : (
-            <div className="relative mt-14 overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl">
+            <div className="relative mt-14 overflow-hidden rounded-lg card-surface-soft">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(244,245,248,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(244,245,248,0.04)_1px,transparent_1px)] bg-[size:32px_32px]"
               />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]"
-              />
-
               <div className="relative flex flex-col items-center px-8 py-20 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-surface text-accent-300">
                   <Route size={32} aria-hidden />
                 </div>
                 <h3

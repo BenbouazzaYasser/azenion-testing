@@ -179,7 +179,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col bg-glass/60 backdrop-blur-xl",
+        "flex h-full min-h-0 flex-col bg-void-950",
         className,
       )}
     >
@@ -188,7 +188,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
           href="/"
           aria-label="Home"
           title="Home"
-          className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-full text-ink-400 transition-colors duration-200 hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+          className="flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg text-ink-400 transition-colors duration-200 hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
         >
           <Home size={18} />
         </Link>
@@ -209,12 +209,12 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
-              className="w-full rounded-full bg-surface px-4 py-3 pl-11 text-base text-ink-50 placeholder:text-ink-600 shadow-card outline-none backdrop-blur-xl transition-[border-color,box-shadow] duration-200 focus:border-accent-400/60 focus:ring-2 focus:ring-accent-400/30 sm:text-sm"
+              className="w-full rounded-lg border border-border-strong bg-surface px-4 py-3 pl-11 text-base text-ink-50 placeholder:text-ink-600 outline-none transition-colors duration-200 focus:border-accent-400/60 focus:ring-2 focus:ring-accent-400/30 sm:text-sm"
             />
           </div>
 
           {showSearch && (
-            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-xl bg-glass-strong shadow-dropdown backdrop-blur-2xl">
+            <div className="absolute left-0 right-0 top-full z-20 mt-2 animate-dropdown-in overflow-hidden rounded-lg border border-border bg-glass-strong">
               {searchResults.length === 0 ? (
                 <p className="px-4 py-3 text-sm text-ink-600">No users found.</p>
               ) : (
@@ -228,12 +228,12 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                     setSearchResults([]);
                     onNavigate?.();
                   }}
-                  className="flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ease-premium hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
+                  className="flex items-center gap-3 px-4 py-3 text-sm transition-colors duration-200 ease-out hover:bg-surface-hover focus-visible:bg-surface focus-visible:outline-none"
                 >
                   {user.avatar_url ? (
                     <Image src={user.avatar_url} alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-full object-cover" />
                   ) : (
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-xs font-semibold text-white">
                       {user.full_name?.[0] ?? user.username[0]?.toUpperCase() ?? "U"}
                     </span>
                   )}
@@ -288,7 +288,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                     onClick={handleOpenArchived}
                     aria-label="View archived conversations"
                     className={cn(
-                      "flex min-h-[44px] items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-medium transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+                      "flex min-h-[44px] items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
                       "border-border-strong text-ink-400 hover:border-accent-400/50 hover:bg-surface-hover hover:text-ink-100",
                     )}
                   >
@@ -310,7 +310,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
               </div>
             ) : archivedConvs.length === 0 ? (
               <div className="flex flex-col items-center px-5 py-12 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-surface card-surface-soft text-accent-300">
                   <Archive size={24} />
                 </div>
                 <p className="mt-4 text-[15px] font-semibold text-ink-50">No archived conversations</p>
@@ -340,7 +340,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
             )
           ) : convList.length === 0 ? (
             <div className="flex flex-col items-center px-5 py-12 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface card-surface-soft text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-surface card-surface-soft text-accent-300">
                 <MessageSquare size={24} />
               </div>
               <p className="mt-4 text-[15px] font-semibold text-ink-50">No conversations yet</p>
@@ -451,16 +451,16 @@ function ConversationRowImpl({
         onMouseEnter={() => router.prefetch(prefetchHref)}
         onFocus={() => router.prefetch(prefetchHref)}
         className={cn(
-          "flex items-center gap-3 overflow-hidden rounded-xl py-3 pl-3 pr-11 transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
+          "flex items-center gap-3 overflow-hidden rounded-lg py-3 pl-3 pr-11 transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
           isActive
-            ? "border border-accent-400/30 bg-[linear-gradient(135deg,rgba(40,40,255,0.13),rgba(40,40,255,0.04))] shadow-glow-sm"
-            : "border border-transparent hover:bg-surface/60 hover:shadow-card",
+            ? "border border-border-strong bg-surface"
+            : "border border-transparent hover:bg-surface",
         )}
       >
         {isActive && (
           <span
             aria-hidden
-            className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-accent-400 to-accent-glow"
+            className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-accent-400"
           />
         )}
 
@@ -471,15 +471,15 @@ function ConversationRowImpl({
             width={40}
             height={40}
             className={cn(
-              "h-10 w-10 shrink-0 rounded-full object-cover transition-all duration-300",
-              isActive && "border-accent-400/50 shadow-glow-sm",
+              "h-10 w-10 shrink-0 rounded-lg object-cover transition-colors duration-200",
+              isActive && "border-accent-400/50",
             )}
           />
         ) : (
           <span
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white transition-all duration-300",
-              isActive && "border-accent-400/60 shadow-glow-sm",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-sm font-semibold text-white transition-colors duration-200",
+              isActive && "border-accent-400/60",
             )}
           >
             {initial}
@@ -498,7 +498,7 @@ function ConversationRowImpl({
                 unread && (
                   <span
                     aria-hidden
-                    className="h-2 w-2 rounded-full bg-accent-400 shadow-glow-sm animate-pulse-glow"
+                    className="h-2 w-2 rounded-full bg-accent-400"
                   />
                 )
               )}

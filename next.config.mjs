@@ -10,6 +10,10 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 365,
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    localPatterns: [
+      { pathname: "/logo.svg" },
+      { pathname: "/api/academy/courses/*/file", search: "?view=thumbnail" },
+    ],
     remotePatterns: [
       { protocol: "https", hostname: "cytwlxpomhzdezgwlbhv.supabase.co" },
       { protocol: "https", hostname: "*.supabase.co" },
@@ -56,6 +60,12 @@ const nextConfig = {
               "default-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' blob: https://*.supabase.co https://lh3.googleusercontent.com https://media.giphy.com https://media.tenor.com; media-src 'self' https://*.supabase.co https://media.giphy.com https://media.tenor.com; script-src 'self' 'unsafe-eval'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
           },
         ],
+      },
+      {
+        // Course previews are rendered in a same-origin iframe. Keep the
+        // global clickjacking protection everywhere else.
+        source: "/api/academy/courses/:path*/file",
+        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
       },
     ];
   },

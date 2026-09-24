@@ -14,8 +14,10 @@ import {
   Clock,
   Building2,
   User,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDialogFocus, useDialogOpen } from "@/lib/use-dialog-focus";
 import { FilterBubbles } from "@/components/ui/filter-bubbles";
 import { useTranslation } from "@/components/translation/translation-provider";
 import { CourseCreateDialog } from "./course-create-dialog";
@@ -83,6 +85,7 @@ export function CoursesBrowser({
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
+  const [previewCourse, setPreviewCourse] = useState<CourseRow | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -138,22 +141,18 @@ export function CoursesBrowser({
                   course={course}
                   canManage={canManage}
                   coursePublisherTeams={coursePublisherTeams}
+                  onOpen={() => setPreviewCourse(course)}
                 />
               ))}
             </div>
           ) : (
-            <div className="relative mt-14 overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl">
+            <div className="relative mt-14 overflow-hidden rounded-lg card-surface-soft">
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(244,245,248,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(244,245,248,0.04)_1px,transparent_1px)] bg-[size:32px_32px]"
               />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-[120px]"
-              />
-
               <div className="relative flex flex-col items-center px-8 py-20 text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-surface text-accent-300">
                   <GraduationCap size={32} />
                 </div>
                 <h3
@@ -178,6 +177,12 @@ export function CoursesBrowser({
             </div>
           )}
         
+        {previewCourse ? (
+          <CoursePreviewDialog
+            course={previewCourse}
+            onClose={() => setPreviewCourse(null)}
+          />
+        ) : null}
       </div>
     </section>
   );
@@ -191,14 +196,74 @@ function canPublishCourseTeam(
     && coursePublisherTeams.some((team) => team.team_id === course.publisher_team_id);
 }
 
+function CoursePreviewDialog({
+  course,
+  onClose,
+}: {
+  course: CourseRow;
+  onClose: () => void;
+}) {
+  const dialogRef = useDialogFocus<HTMLDivElement>(true);
+  useDialogOpen(true, onClose);
+  const isHtml = course.content_type === "html_css";
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-void-950/80 p-3 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="course-preview-title"
+    >
+      <button
+        type="button"
+        aria-label="Close course preview"
+        className="absolute inset-0 cursor-default"
+        onClick={onClose}
+      />
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="relative z-10 flex h-[min(90vh,900px)] w-[min(1180px,100%)] flex-col overflow-hidden rounded-xl border border-border-strong bg-void-950 shadow-dialog focus:outline-none"
+      >
+        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-border px-4 py-3 sm:px-5">
+          <div className="min-w-0">
+            <h2 id="course-preview-title" className="truncate text-sm font-semibold text-ink-50">
+              {course.title}
+            </h2>
+            <p className="mt-0.5 text-xs text-ink-500">
+              {isHtml ? "HTML / CSS / JavaScript preview" : "Course document preview"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close course preview"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors duration-200 hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+          >
+            <X size={18} />
+          </button>
+        </header>
+        <iframe
+          title={`${course.title} preview`}
+          src={`/api/academy/courses/${course.id}/file?view=preview`}
+          sandbox={isHtml ? "allow-scripts" : undefined}
+          className="min-h-0 flex-1 border-0 bg-white"
+        />
+      </div>
+    </div>
+  );
+}
+
 function CourseCard({
   course,
   canManage,
   coursePublisherTeams,
+  onOpen,
 }: {
   course: CourseRow;
   canManage: boolean;
   coursePublisherTeams: CoursePublisherTeam[];
+  onOpen: () => void;
 }) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -258,19 +323,13 @@ function CourseCard({
   }
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-accent/10 blur-[100px] transition-opacity duration-300 group-hover:opacity-100"
-      />
-
+    <div className="group relative flex flex-col overflow-hidden rounded-lg card-surface-soft transition-colors duration-200 ease-out hover:border-accent-400/40">
       <div className="relative flex flex-1 flex-col p-6">
         {course.thumbnail ? (
-          <a
-            href={`/api/academy/courses/${course.id}/file`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="relative -mx-6 -mt-6 mb-5 overflow-hidden border-b border-border hover:opacity-100 transition-opacity duration-300"
+          <button
+            type="button"
+            onClick={onOpen}
+            className="relative -mx-6 -mt-6 mb-5 block overflow-hidden border-b border-border text-left transition-opacity duration-200 hover:opacity-90"
           >
             <Image
               src={`/api/academy/courses/${course.id}/file?view=thumbnail`}
@@ -280,7 +339,7 @@ function CourseCard({
               sizes="(max-width: 768px) 100vw, 640px"
               className="h-40 w-full object-cover"
             />
-          </a>
+          </button>
         ) : null}
 
         <div className="flex items-start justify-between gap-4">
@@ -432,15 +491,14 @@ function CourseCard({
                 <Trash2 size={13} />
               </button>
             ) : null}
-            <a
-              href={`/api/academy/courses/${course.id}/file`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"
+            <button
+              type="button"
+              onClick={onOpen}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-accent px-3 text-xs font-medium text-white transition-colors duration-200 ease-out hover:bg-accent-500"
             >
               {t("academy.open")}
               <ArrowUpRight size={13} />
-            </a>
+            </button>
           </div>
         </div>
       </div>

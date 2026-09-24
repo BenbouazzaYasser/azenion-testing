@@ -238,7 +238,7 @@ export function OnboardingModal({ data, onClosed }: OnboardingModalProps) {
 function WelcomeStep({ onNext }: { onNext: () => void }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-400 shadow-glow-sm">
+      <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-accent">
         <Sparkles size={28} className="text-white" />
       </div>
       <h2 className="mt-5 text-2xl font-semibold tracking-tight text-ink-50">
@@ -703,7 +703,7 @@ function DoneStep({
 }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-accent shadow-glow-sm">
+      <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-emerald-500">
         <PartyPopper size={28} className="text-void-950" />
       </div>
       <h2 className="mt-5 text-2xl font-semibold tracking-tight text-ink-50">

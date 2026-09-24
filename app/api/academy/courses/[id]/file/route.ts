@@ -28,14 +28,23 @@ import { checkRateLimit } from "@/lib/rate-limit";
  *   - The object path is read from the `courses` row for the requested id
  *     and validated against a strict pattern. Client-supplied file paths
  *     are never trusted.
- *   - Only PDFs and images are served inline (sandboxed). All other
- *     content — including uploaded .html/.css/.js/.mjs/.zip — is forced to
- *     download with an opaque Content-Type so attacker-supplied HTML/JS is
- *     never rendered/executed on the Azenion origin.
+ *   - PDFs, images, and HTML documents are served inline in a new tab. HTML
+ *     is sandboxed with scripts/forms/embedding disabled and an opaque origin;
+ *     other uploaded assets (CSS/JS/ZIP/etc.) still download with an opaque
+ *     Content-Type.
  */
 
 const PDF_CONTENT_TYPE = "application/pdf";
+const HTML_CONTENT_TYPE = "text/html; charset=utf-8";
 const DOWNLOAD_CONTENT_TYPE = "application/octet-stream";
+const HTML_CSP =
+  "sandbox; default-src 'none'; img-src data: https:; media-src data: https:; " +
+  "style-src 'unsafe-inline' https:; font-src data: https:; script-src 'none'; " +
+  "object-src 'none'; form-action 'none'; base-uri 'none'";
+const HTML_PREVIEW_CSP =
+  "sandbox allow-scripts; default-src 'none'; img-src data: https:; media-src data: https:; " +
+  "style-src 'unsafe-inline' https:; font-src data: https:; script-src 'unsafe-inline' https:; " +
+  "connect-src https:; object-src 'none'; form-action 'none'; base-uri 'none'";
 
 const THUMBNAIL_CONTENT_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -93,8 +102,9 @@ export async function GET(
     return NextResponse.json({ error: "Invalid course id" }, { status: 400 });
   }
 
-  const wantsThumbnail =
-    request.nextUrl.searchParams.get("view") === "thumbnail";
+  const view = request.nextUrl.searchParams.get("view");
+  const wantsThumbnail = view === "thumbnail";
+  const wantsPreview = view === "preview";
 
   // Resolve the request's auth principal. Web callers authenticate via
   // cookies; native callers present `Authorization: Bearer <access_token>`.
@@ -219,6 +229,8 @@ export async function GET(
 
   const headers: Record<string, string> = {
     "Content-Security-Policy": "sandbox",
+    // The preview is an iframe on the same origin; override the app-wide DENY.
+    "X-Frame-Options": "SAMEORIGIN",
     "X-Content-Type-Options": "nosniff",
     "Cache-Control": "public, max-age=3600",
   };
@@ -231,9 +243,14 @@ export async function GET(
   }
 
   const isPdf = row.content_type === "pdf" && ext === "pdf";
+  const isHtml = ext === "html" || ext === "htm";
   if (isPdf) {
     headers["Content-Type"] = PDF_CONTENT_TYPE;
     headers["Content-Disposition"] = `inline; filename="course-${id}.pdf"`;
+  } else if (isHtml) {
+    headers["Content-Type"] = HTML_CONTENT_TYPE;
+    headers["Content-Disposition"] = `inline; filename="course-${id}.${ext}"`;
+    headers["Content-Security-Policy"] = wantsPreview ? HTML_PREVIEW_CSP : HTML_CSP;
   } else {
     headers["Content-Type"] = DOWNLOAD_CONTENT_TYPE;
     headers["Content-Disposition"] = `attachment; filename="course-${id}.${ext}"`;

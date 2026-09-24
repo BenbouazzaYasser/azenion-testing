@@ -66,7 +66,7 @@ export function GifPicker({ onSelect, onClose }: GifPickerProps) {
     <div
       role="dialog"
       aria-label="GIF picker"
-      className="flex max-h-[380px] w-[320px] max-w-[90vw] flex-col overflow-hidden rounded-2xl border border-border bg-glass-strong shadow-dropdown backdrop-blur-2xl sm:w-[360px]"
+      className="flex max-h-[380px] w-[320px] max-w-[90vw] flex-col overflow-hidden rounded-lg border border-border bg-glass-strong sm:w-[360px]"
     >
       <div className="shrink-0 border-b border-border/50 p-2">
         <div className="relative">

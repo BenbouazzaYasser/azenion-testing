@@ -17,7 +17,6 @@ import {
   sendMessageWithAttachments,
   markConversationRead,
   markMessagesReceived,
-  getConversationRecipientReadAt,
   loadOlderMessages,
 } from "@/actions/chat.actions";
 import { setActiveConversation } from "@/lib/chat-unread";
@@ -293,7 +292,7 @@ export function ChatConversation({
     loadingOlderRef.current = true;
     setLoadingOlder(true);
     try {
-      const page = await loadOlderMessages(conversationId, oldest.created_at);
+      const page = await loadOlderMessages(conversationId, oldest.created_at, oldest.id);
       setHasMoreOlder(page.hasMore);
       if (page.messages.length > 0) {
         const el = scrollContainerRef.current;
@@ -408,12 +407,15 @@ export function ChatConversation({
   }, [conversationId]);
 
   useEffect(() => {
-    void markConversationRead(conversationId);
-    void markMessagesReceived(conversationId);
+    // One round trip: read receipt + received receipts + peer read-at.
+    void markConversationRead(conversationId).then((result) => {
+      if ("otherLastReadAt" in result && result.otherLastReadAt) {
+        setOtherLastReadAt(result.otherLastReadAt);
+      }
+    });
     setActiveConversation(conversationId);
     stickToBottomRef.current = true;
     setOtherLastReadAt(null);
-    void getConversationRecipientReadAt(conversationId).then(setOtherLastReadAt);
     return () => setActiveConversation(null);
   }, [conversationId]);
 
@@ -1810,25 +1812,13 @@ export function ChatConversation({
       onDrop={handleDrop}
       className="relative flex h-full min-h-0 flex-col overflow-hidden"
     >
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 22% 0%, rgba(40,40,255,0.10), transparent 42%), radial-gradient(circle at 88% 92%, rgba(109,109,255,0.08), transparent 40%)",
-          }}
-        />
-        <div className="absolute -left-24 top-12 hidden h-72 w-72 rounded-full bg-accent/[0.06] blur-[120px] sm:block" />
-        <div className="absolute -right-20 bottom-20 hidden h-80 w-80 rounded-full bg-accent-glow/[0.05] blur-[130px] sm:block" />
-      </div>
-
-      <header className="relative z-10 flex shrink-0 items-center gap-3 border-0 bg-void-900/90 px-4 py-3 sm:bg-void-900/50 sm:px-6 md:backdrop-blur-xl">
+      <header className="relative z-10 flex shrink-0 items-center gap-3 border-b border-border bg-void-950 px-4 py-3 sm:px-6">
         {mobileConversations ? (
           <button
             type="button"
             onClick={mobileConversations.open}
             aria-label="Open conversations"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-ink-400 transition-colors duration-200 ease-out hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 md:hidden"
           >
             <Menu size={18} />
           </button>
@@ -1840,10 +1830,10 @@ export function ChatConversation({
             alt=""
             width={40}
             height={40}
-            className="h-10 w-10 shrink-0 rounded-full object-cover shadow-[0_0_20px_-8px_rgba(109,109,255,0.5)]"
+            className="h-10 w-10 shrink-0 rounded-lg object-cover"
           />
         ) : (
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-accent-400/25 bg-gradient-to-br from-accent to-accent-glow text-sm font-semibold text-white">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-accent-400/25 bg-accent text-sm font-semibold text-white">
             {participant ? participantInitial : <Users size={16} className="text-accent-300" />}
           </span>
         )}
@@ -1865,7 +1855,7 @@ export function ChatConversation({
               onClick={() => requestCall(conversationId, "audio", peer)}
               aria-label={`Start a voice call with ${participantName}`}
               title={`Start a voice call with ${participantName}`}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-border-strong text-ink-300 transition-colors duration-200 ease-out hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
             >
               <Phone size={16} />
             </button>
@@ -1875,13 +1865,13 @@ export function ChatConversation({
               onClick={() => requestCall(conversationId, "video", peer)}
               aria-label={`Start a video call with ${participantName}`}
               title={`Start a video call with ${participantName}`}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-border-strong text-ink-300 transition-all duration-300 ease-premium hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-border-strong text-ink-300 transition-colors duration-200 ease-out hover:border-accent-400/50 hover:bg-accent/[0.08] hover:text-accent-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:pointer-events-none disabled:opacity-40"
             >
               <Video size={16} />
             </button>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1">
-            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent shadow-glow-sm" />
+          <div className="hidden sm:flex items-center gap-1.5 rounded-sm border border-accent-400/20 bg-accent/[0.06] px-2.5 py-1">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent" />
             <span className="text-[10px] font-medium uppercase tracking-normal text-accent-300">Private</span>
           </div>
         </div>
@@ -1890,15 +1880,11 @@ export function ChatConversation({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className={cn("relative z-10 flex-1 min-h-0 overflow-y-auto px-2 pb-4 pt-2 sm:px-3", SCROLLBAR_CLASSES)}
+        className={cn("relative z-10 flex-1 min-h-0 overflow-x-scroll overflow-y-auto px-2 pb-4 pt-2 sm:px-3", SCROLLBAR_CLASSES)}
       >
         {messages.length === 0 && imageQueue.length === 0 && fileQueue.length === 0 && (
           <div className="relative flex h-full min-h-0 flex-col items-center justify-center px-6 text-center">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.08] blur-[120px]"
-            />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-input">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-lg bg-surface text-accent-300">
               <MessageSquare size={26} />
             </div>
             <h2 className="mt-5 text-lg font-semibold text-ink-50">No messages yet</h2>

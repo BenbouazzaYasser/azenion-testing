@@ -73,11 +73,75 @@ export interface ConversationWithMeta {
 /** Stable default so React.cache() dedupes same-request calls (fresh `{}` literals would miss). */
 const DEFAULT_CONVERSATION_OPTIONS: { archived?: boolean } = {};
 
+interface InboxRow {
+  conversation_id: string;
+  updated_at: string | null;
+  peer_id: string | null;
+  peer_full_name: string | null;
+  peer_username: string | null;
+  peer_avatar_url: string | null;
+  peer_last_read_at: string | null;
+  last_message_id: string | null;
+  last_message_content: string | null;
+  last_message_at: string | null;
+  last_message_sender_id: string | null;
+  last_message_received_at: string | null;
+  last_message_has_attachments: boolean;
+  unread_count: number;
+  blocked_me: boolean;
+  i_blocked: boolean;
+}
+
+function mapInboxRows(rows: InboxRow[]): ConversationWithMeta[] {
+  return rows.map((r) => ({
+    id: r.conversation_id,
+    other_user: r.peer_id
+      ? {
+          id: r.peer_id,
+          full_name: r.peer_full_name,
+          username: r.peer_username ?? "",
+          avatar_url: r.peer_avatar_url,
+        }
+      : null,
+    last_message: r.last_message_id
+      ? {
+          content: r.last_message_content ?? "",
+          created_at: r.last_message_at,
+          sender_id: r.last_message_sender_id ?? "",
+          received_at: r.last_message_received_at,
+          has_attachments: r.last_message_has_attachments,
+        }
+      : null,
+    other_last_read_at: r.peer_last_read_at,
+    updated_at: r.updated_at,
+    unread_count: Number(r.unread_count ?? 0),
+    blocked_me: r.blocked_me,
+    i_blocked: r.i_blocked,
+  }));
+}
+
 export const getConversations = cache(
   async (
     userId: string,
     options: { archived?: boolean } = DEFAULT_CONVERSATION_OPTIONS,
   ): Promise<ConversationWithMeta[]> => {
+    const supabase = await createClient();
+
+    // Fast path (00148): the whole sidebar in one round trip.
+    const { data: inbox, error: inboxError } = await supabase.rpc("get_inbox", {
+      p_archived: options.archived ?? false,
+    });
+    if (!inboxError && inbox) return mapInboxRows(inbox as InboxRow[]);
+
+    // ponytail: pre-00148 fallback — delete once the migration is applied.
+    return getConversationsLegacy(userId, options);
+  },
+);
+
+async function getConversationsLegacy(
+  userId: string,
+  options: { archived?: boolean } = DEFAULT_CONVERSATION_OPTIONS,
+): Promise<ConversationWithMeta[]> {
   const supabase = await createClient();
 
   const membershipQuery = supabase
@@ -213,7 +277,7 @@ export const getConversations = cache(
       i_blocked: otherMember ? iBlockedIds.has(otherMember.user_id) : false,
     };
   });
-});
+}
 
 /** Messages per page for keyset pagination of a conversation. */
 export const MESSAGES_PAGE_SIZE = 50;
@@ -224,23 +288,35 @@ export interface MessagesPage {
   hasMore: boolean;
 }
 
+// ponytail: per-instance signed-URL cache — storage signing is a network hop,
+// so reuse URLs until near expiry instead of re-minting on every page load.
+const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
+const SIGNED_URL_SKEW_MS = 60_000;
+
 export async function getMessages(
   conversationId: string,
-  opts: { before?: string | null } = {},
+  opts: { before?: string | null; beforeId?: string | null } = {},
 ): Promise<MessagesPage> {
   const supabase = await createClient();
 
   // Keyset pagination: fetch newest-first with limit+1 to probe for older
-  // pages, then reverse for the UI's ascending order. `before` is the
-  // created_at of the oldest already-loaded message (timestamptz has
-  // microsecond precision — boundary ties are not a practical concern).
-  let query = supabase
+  // pages, then reverse for the UI's ascending order. Cursor is
+  // (created_at, id) — equal timestamps across messages are common enough
+  // (batch inserts share a transaction clock) that id breaks the tie.
+  const query = supabase
     .from("messages")
     .select("id, conversation_id, sender_id, content, image_url, created_at, edited_at, received_at")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .limit(MESSAGES_PAGE_SIZE + 1);
-  if (opts.before) query = query.lt("created_at", opts.before);
+  if (opts.before) {
+    query.or(
+      opts.beforeId
+        ? `created_at.lt.${opts.before},and(created_at.eq.${opts.before},id.lt.${opts.beforeId})`
+        : `created_at.lt.${opts.before}`,
+    );
+  }
   const { data } = await query;
 
   if (!data || data.length === 0) return { messages: [], hasMore: false };
@@ -280,19 +356,28 @@ export async function getMessages(
         isChatMediaMarker(`${CHAT_MEDIA_PREFIX}${att.storage_path}`) &&
         att.storage_path.startsWith(`chat/${conversationId}/`),
     );
+    const now = Date.now();
     const paths = [...new Set(signable.map((att) => att.storage_path!))];
-    // Batch: one storage call for all attachments (was one call per attachment).
-    const { data: signed } =
-      paths.length > 0
-        ? await admin.storage
-            .from(CHAT_MEDIA_BUCKET)
-            .createSignedUrls(paths, CHAT_MEDIA_SIGNED_URL_TTL)
-        : { data: [] };
-    const signedByPath = new Map(
-      ((signed ?? []) as { path: string; signedUrl: string; error: string | null }[])
-        .filter((s) => !s.error && s.signedUrl)
-        .map((s) => [s.path, s.signedUrl]),
-    );
+    const signedByPath = new Map<string, string>();
+    const missing: string[] = [];
+    for (const path of paths) {
+      const cached = signedUrlCache.get(path);
+      if (cached && cached.expiresAt > now) signedByPath.set(path, cached.url);
+      else missing.push(path);
+    }
+    // Batch: one storage call for all uncached attachments (was one call per attachment).
+    if (missing.length > 0) {
+      const { data: signed } = await admin.storage
+        .from(CHAT_MEDIA_BUCKET)
+        .createSignedUrls(missing, CHAT_MEDIA_SIGNED_URL_TTL);
+      const expiresAt = now + CHAT_MEDIA_SIGNED_URL_TTL * 1000 - SIGNED_URL_SKEW_MS;
+      for (const s of (signed ?? []) as { path: string; signedUrl: string; error: string | null }[]) {
+        if (!s.error && s.signedUrl) {
+          signedByPath.set(s.path, s.signedUrl);
+          signedUrlCache.set(s.path, { url: s.signedUrl, expiresAt });
+        }
+      }
+    }
     for (const att of attachments as ChatAttachmentForMessage[]) {
       const signedUrl =
         att.storage_path && signedByPath.has(att.storage_path)

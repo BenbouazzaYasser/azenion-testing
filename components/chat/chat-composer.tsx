@@ -275,7 +275,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
               variant="secondary"
               aria-label="Cancel recording"
               onClick={handleCancelVoice}
-              className="h-10 w-10 shrink-0 rounded-full p-0"
+              className="h-10 w-10 shrink-0 rounded-lg p-0"
             >
               <Trash2 size={16} />
             </Button>
@@ -283,7 +283,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
               type="button"
               aria-label="Stop recording"
               onClick={() => voice.stop()}
-              className="h-10 w-10 shrink-0 rounded-full p-0"
+              className="h-10 w-10 shrink-0 rounded-lg p-0"
             >
               <Square size={14} />
             </Button>
@@ -298,7 +298,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                 aria-busy={!previewReady}
                 disabled={!previewReady}
                 onClick={togglePreviewPlayback}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white disabled:pointer-events-none disabled:opacity-50"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent text-white disabled:pointer-events-none disabled:opacity-50"
               >
                 {previewReady ? (
                   isPlayingPreview ? <Pause size={16} /> : <Play size={16} className="translate-x-0.5" />
@@ -306,7 +306,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                   <Loader2 size={16} className="animate-spin" />
                 )}
               </button>
-              <div className="min-w-0 flex-1 rounded-full bg-surface px-3 py-2 text-sm text-ink-50">
+              <div className="min-w-0 flex-1 rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm text-ink-50">
                 Voice message • {Math.floor(voice.duration / 60)}:{String(voice.duration % 60).padStart(2, "0")}{" "}
                 • {Math.round(voice.blob.size / 1024)} KB
               </div>
@@ -330,7 +330,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                 variant="secondary"
                 aria-label="Discard voice message"
                 onClick={handleDiscardVoice}
-                className="h-10 w-10 shrink-0 rounded-full p-0"
+                className="h-10 w-10 shrink-0 rounded-lg p-0"
               >
                 <Trash2 size={16} />
               </Button>
@@ -339,7 +339,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                 aria-label="Send voice message"
                 onClick={onSendVoice}
                 disabled={isSending}
-                className="h-10 w-10 shrink-0 rounded-full p-0"
+                className="h-10 w-10 shrink-0 rounded-lg p-0"
               >
                 <Send size={16} />
               </Button>
@@ -443,10 +443,10 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                   }}
                   disabled={!!voice.blob || voice.isRecording}
                   className={cn(
-                    "h-11 w-11 shrink-0 rounded-full p-0 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+                    "h-11 w-11 shrink-0 rounded-lg border border-border-strong p-0 transition-colors duration-200 ease-out",
                     showAttachmentMenu
-                      ? "bg-accent text-white shadow-md rotate-45"
-                      : "bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border",
+                      ? "bg-accent text-white rotate-45"
+                      : "bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50",
                   )}
                 >
                   <Plus size={18} className={cn("transition-transform duration-300", showAttachmentMenu && "rotate-90")} />
@@ -468,7 +468,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                   }
                 }}
                 disabled={!!voice.blob || voice.isRecording}
-                className="h-11 w-11 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border disabled:opacity-50"
+                className="h-11 w-11 shrink-0 rounded-lg border border-border-strong p-0 bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 disabled:opacity-50"
               >
                 <Smile size={17} />
               </Button>
@@ -488,10 +488,10 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                 disabled={!!voice.blob || voice.isRecording}
                 rows={1}
                 enterKeyHint="send"
-                className="min-w-0 flex-1 resize-none rounded-full bg-surface px-4 py-2.5 text-base leading-5 text-ink-50 placeholder:text-ink-500 border-0 shadow-sm ring-1 ring-border focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent-400/40 disabled:opacity-50 max-h-24 overflow-y-auto sm:text-sm"
+                className="min-w-0 flex-1 resize-none rounded-lg border border-border-strong bg-surface px-4 py-2.5 text-base leading-5 text-ink-50 placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-accent-400/40 disabled:opacity-50 max-h-24 overflow-y-auto sm:text-sm"
               />
               {canSend ? (
-                <Button type="submit" aria-label="Send message" disabled={isSending} className="h-11 w-11 shrink-0 rounded-full p-0">
+                <Button type="submit" aria-label="Send message" disabled={isSending} className="h-11 w-11 shrink-0 rounded-lg p-0">
                   <Send size={16} />
                 </Button>
               ) : (
@@ -501,7 +501,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                   aria-label="Record voice message"
                   onClick={handleMicButton}
                   disabled={!voice.isSupported || isSending}
-                  className="h-11 w-11 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover shadow-sm ring-1 ring-border disabled:opacity-50"
+                  className="h-11 w-11 shrink-0 rounded-lg border border-border-strong p-0 bg-surface text-ink-600 hover:bg-surface-hover disabled:opacity-50"
                   title={!voice.isSupported ? "Voice not supported in this browser" : "Record voice message"}
                 >
                   <Mic size={17} />

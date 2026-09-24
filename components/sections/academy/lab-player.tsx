@@ -178,7 +178,7 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
 
         
           <div className="mt-6 flex justify-center">
-            <span className={cn("flex h-16 w-16 items-center justify-center rounded-2xl border shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]", meta.iconClass)}>
+            <span className={cn("flex h-16 w-16 items-center justify-center rounded-lg border", meta.iconClass)}>
               <Icon size={28} />
             </span>
           </div>
@@ -331,7 +331,7 @@ export function LabPlayer({ lab, version, initialSubmission, isAuthenticated }: 
                           type="button"
                           onClick={handleSubmit}
                           disabled={isPending}
-                          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-accent text-sm font-medium text-white shadow-glow-sm transition-all duration-300 ease-premium hover:bg-accent-glow disabled:pointer-events-none disabled:opacity-50"
+                          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-accent text-sm font-medium text-white shadow-glow-sm transition-all duration-300 ease-premium hover:bg-accent-500 disabled:pointer-events-none disabled:opacity-50"
                         >
                           {isPending ? (
                             <>

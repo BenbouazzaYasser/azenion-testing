@@ -67,8 +67,7 @@ export function BranchPageHero({
         
           <div className="mb-9 flex justify-center sm:mb-10">
             <div className="relative">
-              <div className="absolute -inset-3 rounded-2xl bg-accent/10 blur-2xl" />
-              <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border branch-hero-frame shadow-[0_0_0_1px_rgba(255,255,255,0.06)_inset,0_20px_60px_-20px_rgba(40,40,255,0.35)] backdrop-blur-xl sm:h-28 sm:w-28 sm:rounded-2xl lg:h-32 lg:w-32">
+              <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border branch-hero-frame sm:h-28 sm:w-28 lg:h-32 lg:w-32">
                 {branch.logo_url ? (
                   <OptimizedImage
                     src={branch.logo_url}

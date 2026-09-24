@@ -112,6 +112,37 @@ describe("GET /api/academy/courses/[id]/file", () => {
     expect(authenticateBearer).not.toHaveBeenCalled();
   });
 
+  it("serves HTML inline in an isolated tab", async () => {
+    setup({
+      cookieCourse: {
+        ...courseRow("published"),
+        content_type: "html_css",
+        file_path: `courses/${OWNER_ID}/323e4567-e89b-12d3-a456-426614174000.html`,
+      },
+    });
+    const res = await GET(req(COURSE_ID, "", null), params(COURSE_ID));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("text/html; charset=utf-8");
+    expect(res.headers.get("content-disposition")).toContain("inline");
+    expect(res.headers.get("content-security-policy")).toContain("sandbox");
+    expect(res.headers.get("content-security-policy")).toContain("script-src 'none'");
+  });
+
+  it("allows scripts only in the isolated preview response", async () => {
+    setup({
+      cookieCourse: {
+        ...courseRow("published"),
+        content_type: "html_css",
+        file_path: `courses/${OWNER_ID}/323e4567-e89b-12d3-a456-426614174000.html`,
+      },
+    });
+    const res = await GET(req(COURSE_ID, "?view=preview", null), params(COURSE_ID));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-disposition")).toContain("inline");
+    expect(res.headers.get("content-security-policy")).toContain("sandbox allow-scripts");
+    expect(res.headers.get("content-security-policy")).toContain("script-src 'unsafe-inline' https:");
+  });
+
   it("still 404s drafts for anonymous callers", async () => {
     setup({ cookieCourse: courseRow("draft") });
     const res = await GET(req(COURSE_ID, "", null), params(COURSE_ID));

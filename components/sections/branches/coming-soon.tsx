@@ -15,12 +15,7 @@ export async function ComingSoonTeaser() {
     >
       <div className="mx-auto max-w-5xl">
         
-          <div className="relative overflow-hidden rounded-2xl border border-dashed border-border-strong bg-surface p-10 text-center sm:p-16">
-            <div
-              aria-hidden="true"
-              className="animate-pulse-glow pointer-events-none absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgb(40,40,255)]/15 blur-[110px]"
-            />
-
+          <div className="relative overflow-hidden rounded-lg border border-dashed border-border-strong bg-surface p-10 text-center sm:p-16">
             <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center">
               <Badge className="mb-6 inline-flex items-center gap-1.5">
                 <Rocket className="h-3.5 w-3.5" aria-hidden="true" />

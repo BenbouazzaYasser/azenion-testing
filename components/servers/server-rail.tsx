@@ -34,7 +34,7 @@ export function ServerRail({ servers, activeSlug }: ServerRailProps) {
         className={cn(
           "group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 ease-premium",
           isHome
-            ? "bg-gradient-to-br from-accent to-accent-glow text-white shadow-glow"
+            ? "bg-accent text-white shadow-glow"
             : "bg-surface text-ink-300 hover:scale-105 hover:text-ink-50",
         )}
       >
@@ -59,7 +59,7 @@ export function ServerRail({ servers, activeSlug }: ServerRailProps) {
             "group relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden transition-all duration-300 ease-premium",
             "rounded-2xl text-sm font-semibold",
             server.slug === activeSlug
-              ? "rounded-xl bg-gradient-to-br from-accent to-accent-glow text-white shadow-glow"
+              ? "rounded-xl bg-accent text-white shadow-glow"
               : server.icon_url
                 ? "bg-surface text-ink-200 hover:scale-105"
                 : "bg-surface text-ink-200 hover:scale-105 hover:text-ink-50",

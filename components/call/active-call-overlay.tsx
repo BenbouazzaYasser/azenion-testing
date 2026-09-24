@@ -335,7 +335,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
               />
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-void-950/40">
-                <span className="flex h-24 w-24 items-center justify-center rounded-full border border-accent-400/30 bg-gradient-to-br from-accent to-accent-glow shadow-glow">
+                <span className="flex h-24 w-24 items-center justify-center rounded-full border border-accent-400/30 bg-accent shadow-glow">
                   <User className="h-11 w-11 text-white/90" />
                 </span>
                 <div className="text-sm text-ink-500">
@@ -399,7 +399,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
               </div>
             ) : (
               <div className="flex h-full flex-col items-center justify-center text-center">
-                <span className="flex h-28 w-28 items-center justify-center rounded-full border border-accent-400/30 bg-gradient-to-br from-accent to-accent-glow shadow-glow">
+                <span className="flex h-28 w-28 items-center justify-center rounded-full border border-accent-400/30 bg-accent shadow-glow">
                   <User className="h-14 w-14 text-white/90" />
                 </span>
                 <div className="mt-5 text-xl font-semibold text-ink-50">

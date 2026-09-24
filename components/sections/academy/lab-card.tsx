@@ -57,15 +57,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
   }
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl card-surface-soft shadow-card backdrop-blur-xl transition-all duration-300 ease-premium hover:border-accent-400/40">
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-gradient-to-b blur-[100px] transition-opacity duration-300 group-hover:opacity-100",
-          meta.ringClass,
-        )}
-      />
-
+    <div className="group relative flex flex-col overflow-hidden rounded-lg card-surface-soft transition-colors duration-200 ease-out hover:border-accent-400/40">
       <div className="relative flex flex-1 flex-col p-6">
         {lab.thumbnail_url ? (
           <div className="relative -mx-6 -mt-6 mb-5 h-40 overflow-hidden border-b border-border">
@@ -154,7 +146,7 @@ export function LabCard({ lab, canManage, availableCourses = [] }: LabCardProps)
             ) : null}
             <Link
               href={`/academy/labs/${lab.id}`}
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow hover:shadow-glow"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-500 hover:shadow-glow"
             >
               {t("academy.open")}
               <ArrowUpRight size={13} />

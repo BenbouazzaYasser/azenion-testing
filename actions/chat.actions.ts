@@ -30,17 +30,6 @@ export async function sendMessage(conversationId: string, content: string) {
     return { error: "You're sending messages too fast — please wait a moment." };
   }
 
-  const { data: members } = await supabase
-    .from("conversation_members")
-    .select("user_id")
-    .eq("conversation_id", conversationId);
-
-  // Verify caller is member (defense in depth — RLS also checks)
-  const isMember = (members ?? []).some((m) => m.user_id === user.id);
-  if (!isMember) {
-    return { error: "You are not a member of this conversation." };
-  }
-
   if (!content.trim()) {
     return { error: "Message cannot be empty" };
   }
@@ -48,38 +37,20 @@ export async function sendMessage(conversationId: string, content: string) {
     return { error: "Message is too long (max 4000 characters)." };
   }
 
-  // Block guard: if a peer in this conversation has blocked the sender, the
-  // message must not be sent. This mirrors the RLS INSERT policy (which is
-  // what actually stops direct client inserts), but also gives the UI a clean
-  // error message before the DB rejects the write.
-  const otherMember = (members ?? []).find((m) => m.user_id !== user.id);
+  // One round trip: membership + block guard + insert all run inside the
+  // send_chat_message RPC (00142); it raises with a UI-ready message.
+  const { data, error: rpcError } = await supabase.rpc("send_chat_message", {
+    p_conversation_id: conversationId,
+    p_content: content.trim(),
+    p_attachments: [],
+  });
 
-  if (otherMember) {
-    const { data: blocked } = await supabase.rpc("is_user_blocked", {
-      p_blocker_id: otherMember.user_id,
-      p_blocked_id: user.id,
-    });
-    if (blocked) {
-      return { error: "You can't send messages to this user because they blocked you." };
-    }
-  }
-
-  const { data, error } = await supabase
-    .from("messages")
-    .insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      content: content.trim(),
-    })
-    .select("id, created_at")
-    .single();
-
-  if (error) {
-    return { error: error.message };
+  if (rpcError || !data || data.length === 0) {
+    return { error: rpcError?.message ?? "Failed to send message." };
   }
 
   revalidatePath(`/chat/${conversationId}`);
-  return { success: true, id: data.id, created_at: data.created_at };
+  return { success: true, id: data[0].id, created_at: data[0].created_at };
 }
 
 export interface SendMessageAttachmentInput {
@@ -382,25 +353,44 @@ export async function markConversationRead(conversationId: string) {
     return { error: "Not authenticated" };
   }
 
-  const { error } = await supabase
-    .from("conversation_members")
-    .update({ last_read_at: new Date().toISOString() })
-    .eq("conversation_id", conversationId)
-    .eq("user_id", user.id);
+  // One round trip (00148): read receipt + unread reset + received receipts,
+  // and the peer's read-at comes back with it (no separate lookup).
+  // ponytail: pre-00148 fallback — delete once the migration is applied.
+  const { data, error } = await supabase.rpc("mark_thread_read", {
+    p_conversation_id: conversationId,
+  });
 
   if (error) {
-    return { error: error.message };
+    const { error: legacyError } = await supabase
+      .from("conversation_members")
+      .update({ last_read_at: new Date().toISOString() })
+      .eq("conversation_id", conversationId)
+      .eq("user_id", user.id);
+
+    if (legacyError) {
+      return { error: legacyError.message };
+    }
+
+    revalidatePath(`/chat/${conversationId}`);
+    return { success: true, otherLastReadAt: null as string | null };
   }
 
   revalidatePath(`/chat/${conversationId}`);
-  return { success: true };
+  return {
+    success: true,
+    otherLastReadAt: (data?.[0]?.other_last_read_at as string | null) ?? null,
+  };
 }
 
-/** One older page of messages for infinite scroll (keyset on created_at). */
-export async function loadOlderMessages(conversationId: string, before: string) {
+/** One older page of messages for infinite scroll (keyset on created_at + id). */
+export async function loadOlderMessages(
+  conversationId: string,
+  before: string,
+  beforeId?: string,
+) {
   // RLS on `messages` scopes the page to conversations the caller belongs to;
   // profiles/signed URLs are only derived from rows that survive that scope.
-  return getMessages(conversationId, { before });
+  return getMessages(conversationId, { before, beforeId });
 }
 
 export async function getConversationRecipientReadAt(

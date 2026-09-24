@@ -82,7 +82,7 @@ function NotificationAvatar({
   if (actor?.full_name || actor?.username) {
     const initial = actor.full_name?.[0] ?? actor.username?.[0]?.toUpperCase() ?? "?";
     return (
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-glow text-xs font-semibold text-white">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-white">
         {initial}
       </span>
     );
@@ -122,7 +122,7 @@ function NotificationItemImpl({
       {unread && (
         <span
           aria-hidden
-          className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-accent-400 to-accent-glow"
+          className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-accent-400"
         />
       )}
 
@@ -292,7 +292,7 @@ export function NotificationCenter() {
             : "Notifications"
         }
         onClick={handleOpen}
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+        className="relative flex h-11 w-11 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -366,7 +366,7 @@ export function NotificationCenter() {
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center px-6 py-12 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+                <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-surface text-accent-300">
                   <BellOff size={24} />
                 </div>
                 <p className="mt-4 text-sm font-medium text-ink-200">

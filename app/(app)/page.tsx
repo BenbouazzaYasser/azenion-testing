@@ -27,6 +27,7 @@ import type {
   LiveSessionRow,
   LiveSessionWithManage,
 } from "@/lib/validations/live-session.schema";
+import { serverT } from "@/lib/translation/server";
 
 async function fetchHomePageData() {
   const admin = createAdminClient();
@@ -264,8 +265,9 @@ async function HomeDynamicSections() {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
   const url = siteUrl();
+  const loadingLabel = await serverT("common.loading");
 
   return (
     <>
@@ -296,7 +298,21 @@ export default function HomePage() {
         <Ecosystem />
         <HowItWorks />
         {/* Streaming: heavy DB sections render after TTFB */}
-        <Suspense fallback={<div className="py-16 flex justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-400 border-t-transparent" /></div>}>
+        <Suspense
+          fallback={
+            <div
+              role="status"
+              aria-live="polite"
+              className="flex justify-center py-16"
+            >
+              <span className="sr-only">{loadingLabel}</span>
+              <span
+                aria-hidden="true"
+                className="h-8 w-8 animate-spin rounded-full border-2 border-accent-400 border-t-transparent motion-reduce:animate-none"
+              />
+            </div>
+          }
+        >
           <HomeDynamicSections />
         </Suspense>
         <Features />

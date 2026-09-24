@@ -27,13 +27,8 @@ export function LabsBlueprint() {
                 className={`pointer-events-none absolute h-5 w-5 ${c} border-accent-400/30`}
               />
             ))}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/10 blur-[120px]"
-            />
-
             <div className="relative flex flex-col items-center px-8 py-24 text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-accent-400/25 bg-accent/[0.08] text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+              <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-border-strong bg-surface text-accent-300">
                 <FlaskConical size={32} />
               </div>
               <h2

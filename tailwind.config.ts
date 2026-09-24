@@ -91,20 +91,18 @@ const config: Config = {
       backgroundImage: {
         "radial-fade":
           "radial-gradient(circle at 50% 0%, rgba(40,40,255,0.10), transparent 60%)",
-        "grain": "url('/noise.svg')",
+        grain: "url('/noise.svg')",
       },
       boxShadow: {
-        glow: "0 0 60px -15px rgba(40,40,255,0.55)",
-        "glow-sm": "0 0 24px -8px rgba(40,40,255,0.45)",
+        // No glow anywhere: these aliases resolve to flat architectural depth
+        // so every legacy shadow-glow* class degrades to a neutral shadow.
+        glow: "0 18px 50px -30px rgba(0,0,0,0.7)",
+        "glow-sm": "0 8px 24px -18px rgba(0,0,0,0.7)",
         card: "0 1px 0 0 rgba(244,245,248,0.06) inset",
-        "card-hover":
-          "0 0 0 1px rgba(109,109,255,0.12) inset, 0 10px 30px -12px rgba(0,0,0,0.4)",
-        "card-active":
-          "0 0 0 1px rgba(109,109,255,0.18) inset, 0 2px 10px -4px rgba(0,0,0,0.45)",
-        dialog:
-          "0 0 0 1px rgba(255,255,255,0.04) inset, 0 30px 80px -20px rgba(40,40,255,0.15)",
-        dropdown:
-          "0 24px 70px -20px rgba(0,0,0,0.65), 0 0 50px -18px rgba(40,40,255,0.5)",
+        "card-hover": "0 0 0 1px rgba(109,109,255,0.12) inset, 0 10px 30px -12px rgba(0,0,0,0.4)",
+        "card-active": "0 0 0 1px rgba(109,109,255,0.18) inset, 0 2px 10px -4px rgba(0,0,0,0.45)",
+        dialog: "0 0 0 1px rgba(255,255,255,0.04) inset, 0 30px 80px -20px rgba(40,40,255,0.15)",
+        dropdown: "0 24px 70px -20px rgba(0,0,0,0.65), 0 0 50px -18px rgba(40,40,255,0.5)",
         input: "0 0 0 1px rgba(109,109,255,0.15)",
         "input-error": "0 0 0 1px rgba(239,68,68,0.3)",
       },

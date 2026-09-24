@@ -18,14 +18,15 @@
   :root {
     color-scheme: dark;
 
-    /* Night palette — darks anchored in the brand's cobalt hue (blue-black,
-       not neutral #111), so #2828FF reads as signal on its own soil. */
-    --void-950: 7 10 20;
-    --void-900: 11 15 28;
-    --void-800: 16 22 40;
+    /* Discord-like charcoal canvas — neutral slate with a breath of blue, so
+       the page reads as a workspace rather than a black void. #2828FF stays
+       the signal color on top of it. */
+    --void-950: 30 31 34;
+    --void-900: 43 45 49;
+    --void-800: 53 55 62;
 
-    --surface: 20 26 48;
-    --surface-hover: 26 33 62;
+    --surface: 63 66 74;
+    --surface-hover: 74 77 86;
 
     --ink-50: 242 244 250;
     --ink-100: 224 228 240;
@@ -42,18 +43,18 @@
     --border: 244 245 248;
     --border-strong: 244 245 248;
 
-    --glass: 10 13 24;
-    --glass-strong: 10 13 24;
-    --glass-panel: 11 15 28;
-    --glass-nav: 8 11 22;
+    --glass: 35 36 41;
+    --glass-strong: 30 31 34;
+    --glass-panel: 43 45 49;
+    --glass-nav: 30 31 34;
 
-    --panel-a: 20 24 42;
-    --panel-b: 9 12 22;
-    --composer-a: 7 10 20;
-    --composer-b: 7 10 20;
+    --panel-a: 53 55 62;
+    --panel-b: 35 36 41;
+    --composer-a: 43 45 49;
+    --composer-b: 35 36 41;
 
-    --scrim: 4 6 12;
-    --cosmic: 7 10 20;
+    --scrim: 17 18 20;
+    --cosmic: 30 31 34;
   }
 
   * {
@@ -123,7 +124,7 @@
 
   /* GPU-accelerated transitions for smooth animations */
   .transition-transform-gpu {
-    @apply transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)];
+    @apply transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)];
     will-change: transform;
   }
 
@@ -181,7 +182,30 @@
     }
   }
 
-  /* Incoming-call visual pulse (independent of any audio) */
+  /* Infinity ignition — the one authored entrance. Signal line draws once
+     (pathLength-normalized dash), construction trace settles in behind it.
+     Transform/opacity only; reduced-motion path below collapses it to final state. */
+  @keyframes infinity-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes infinity-settle {
+    to {
+      opacity: 0.28;
+    }
+  }
+  .infinity-signal {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: infinity-draw 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  }
+  .infinity-construction {
+    opacity: 0;
+    animation: infinity-settle 1.2s ease-out 0.5s forwards;
+  }
+
+  /* The mark is static and intentional; interaction is handled at the control. */
   @keyframes ring {
     0%,
     100% {
@@ -215,28 +239,24 @@
      Glass & Surface Effects
      ───────────────────────────────────────────────────────────────────────── */
 
+  /* Solid, architectural surfaces. The former glass names stay as aliases so
+     existing components keep their structure without a translucent treatment. */
   .glass {
-    background: rgb(var(--glass) / 0.55);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    background: rgb(var(--glass));
   }
 
   .glass-nav {
-    background: rgb(var(--glass-nav) / 0.78);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgb(var(--glass-nav));
   }
 
-  /* Enhanced glass effect with subtle border */
   .glass-effect {
-    background: rgb(var(--glass) / 0.4);
-    backdrop-filter: blur(12px) saturate(110%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgb(var(--glass));
+    border: 1px solid rgb(var(--border-strong) / 0.14);
   }
 
   .glass-effect:hover {
-    background: rgb(var(--glass) / 0.5);
-    border-color: rgba(40, 40, 255, 0.2);
+    background: rgb(var(--surface-hover));
+    border-color: rgb(var(--accent-300) / 0.32);
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
@@ -289,19 +309,11 @@
   }
 
   .panel-gradient {
-    background-image: linear-gradient(
-      135deg,
-      rgb(var(--panel-a) / 0.98),
-      rgb(var(--panel-b) / 0.98)
-    );
+    background-color: rgb(var(--panel-a));
   }
 
   .gradient-composer {
-    background-image: linear-gradient(
-      135deg,
-      rgb(var(--composer-a)),
-      rgb(var(--composer-b))
-    );
+    background-color: rgb(var(--composer-a));
   }
 
   /* Flat surface tint — hierarchy comes from tone steps against the page,
@@ -343,21 +355,18 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Appearance (theme) support.
-   The brand is a dark, layered-gloss aesthetic. The base `:root` is dark.
-   The `data-theme` attribute (set by components/theme/theme-provider.tsx,
+   Appearance (theme) support. The base `:root` is a cobalt-anchored night; the
+   `data-theme` attribute (set by components/theme/theme-provider.tsx,
    "system" | "light" | "dark") drives `color-scheme` and the page canvas.
-   Signature dark-glass panels are intentionally theme-independent so the
-   brand look stays coherent in both light and dark modes.
 --------------------------------------------------------------------------- */
 [data-theme="light"] {
   color-scheme: light;
 
-  --void-950: 240 242 248;
-  --void-900: 232 235 244;
-  --void-800: 226 230 240;
-  --surface: 255 255 255;
-  --surface-hover: 246 247 251;
+  --void-950: 232 229 221;
+  --void-900: 238 235 228;
+  --void-800: 243 240 233;
+  --surface: 247 245 239;
+  --surface-hover: 240 237 230;
 
   --ink-50: 12 14 24;
   --ink-100: 31 33 44;
@@ -374,15 +383,15 @@
   --border: 11 12 16;
   --border-strong: 11 12 16;
 
-  --glass: 255 255 255;
-  --glass-strong: 255 255 255;
-  --glass-panel: 255 255 255;
-  --glass-nav: 255 255 255;
+  --glass: 245 243 236;
+  --glass-strong: 240 237 230;
+  --glass-panel: 245 243 236;
+  --glass-nav: 238 235 228;
 
-  --panel-a: 255 255 255;
-  --panel-b: 242 243 248;
-  --composer-a: 242 243 248;
-  --composer-b: 240 241 246;
+  --panel-a: 247 245 239;
+  --panel-b: 238 235 228;
+  --composer-a: 240 237 230;
+  --composer-b: 238 235 228;
 }
 
 [data-theme="dark"] {
@@ -390,16 +399,16 @@
 }
 
 [data-theme="light"] .card-surface {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgb(247 245 239 / 0.9);
 }
 [data-theme="light"] .card-surface:hover {
-  background-color: rgb(255 255 255);
+  background-color: rgb(247 245 239);
 }
 [data-theme="light"] .card-surface-soft {
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgb(243 240 233 / 0.7);
 }
 [data-theme="light"] .card-surface-soft:hover {
-  background-color: rgba(255, 255, 255, 0.92);
+  background-color: rgb(243 240 233 / 0.92);
 }
 
 [data-theme="light"] .section-cosmic {

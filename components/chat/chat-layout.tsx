@@ -30,7 +30,7 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
   return (
     <MobileConversationsContext.Provider value={{ open: () => setOpen(true) }}>
       <div className="flex h-full min-h-0 w-full">
-        <aside className="hidden w-[360px] shrink-0 overflow-hidden border-r border-border bg-void-950/60 md:block">
+        <aside className="hidden w-[360px] shrink-0 overflow-hidden border-r border-border bg-void-950 md:block">
           <ChatSidebar conversations={conversations} currentUserId={currentUserId} />
         </aside>
 
@@ -49,14 +49,14 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
           <button
             type="button"
             aria-label="Close conversations"
-            className="absolute inset-0 bg-void-950/80 backdrop-blur-sm transition-opacity duration-300"
+            className="absolute inset-0 bg-void-950/80 transition-opacity duration-200"
             style={{ opacity: mounted ? 1 : 0 }}
             onClick={close}
           />
           <div
             ref={dialogFocusRef}
             tabIndex={-1}
-            className="absolute inset-y-0 left-0 flex w-[85%] max-w-[330px] flex-col overflow-hidden bg-glass shadow-dropdown backdrop-blur-2xl transition-all duration-300 ease-premium focus:outline-none"
+            className="absolute inset-y-0 left-0 flex w-[85%] max-w-[330px] flex-col overflow-hidden border-r border-border bg-glass transition-[opacity,transform] duration-200 ease-out focus:outline-none"
             style={{
               opacity: mounted ? 1 : 0,
               transform: mounted ? "translateX(0)" : "translateX(-100%)",
@@ -69,7 +69,7 @@ export function ChatLayout({ conversations, currentUserId, children }: ChatLayou
                 onClick={close}
                 aria-label="Close conversations"
                 className={cn(
-                  "-mr-1.5 -mt-1.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-ink-400 transition-all duration-300 ease-premium",
+                  "-mr-1.5 -mt-1.5 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg p-2 text-ink-400 transition-colors duration-200 ease-out",
                   "hover:bg-surface-hover hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                 )}
               >

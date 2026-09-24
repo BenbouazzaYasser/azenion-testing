@@ -104,7 +104,7 @@ export function IncomingCallOverlay({ info, onAccept, onDecline }: IncomingCallO
     >
       <div className="w-full max-w-sm animate-fade-in-up">
         <div className="rounded-3xl border border-border-strong bg-glass-strong p-8 text-center shadow-dialog backdrop-blur-2xl">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-accent-400/30 bg-gradient-to-br from-accent to-accent-glow shadow-glow">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-accent-400/30 bg-accent shadow-glow">
             {callerAvatar ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={callerAvatar} alt="" className="h-full w-full object-cover" />

@@ -88,7 +88,7 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
         title={!ready && !error ? "Loading audio…" : undefined}
         className={cn(
           "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:pointer-events-none disabled:opacity-40",
-          isOwn ? "bg-white text-accent hover:bg-white/90" : "bg-accent text-white hover:bg-accent-glow",
+          isOwn ? "bg-white text-accent hover:bg-white/90" : "bg-accent text-white hover:bg-accent-500",
         )}
       >
         {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 translate-x-0.5" />}

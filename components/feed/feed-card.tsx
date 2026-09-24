@@ -163,7 +163,7 @@ function FeedCardUnmemoized({ item, currentUserId, headerAction }: FeedCardProps
                   className="h-10 w-10 rounded-full object-cover"
                 />
               ) : (
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-400 text-sm font-semibold text-white">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white">
                   {isBranch ? <GitBranch size={16} /> : initialFor(entityName)}
                 </span>
               )}

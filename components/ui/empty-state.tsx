@@ -41,16 +41,9 @@ export function EmptyState({
       className="relative flex min-h-[60vh] w-full items-center justify-center overflow-hidden px-6 pb-16 pt-[120px] sm:pt-[136px] lg:pt-[152px]"
       aria-labelledby="empty-state-heading"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 flex items-center justify-center"
-      >
-        <div className="h-72 w-72 rounded-full bg-accent/10 blur-[140px]" />
-      </div>
-
       <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center text-center">
-        
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+
+          <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-surface text-accent-300">
             {icon}
           </div>
         

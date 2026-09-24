@@ -45,17 +45,11 @@ export function BranchSpotlight({
         {order}
       </span>
 
-      {/* Hover glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-24 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-[rgb(40,40,255)]/0 blur-[100px] transition-all duration-700 ease-premium group-hover:bg-[rgb(40,40,255)]/20"
-      />
-
       <div className="relative z-10 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
         {/* Identity column */}
         <div className={`flex flex-col ${reversed ? "lg:order-2" : "lg:order-1"}`}>
           <div className="mb-6 flex items-center gap-4">
-            <div className="animate-pulse-glow flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[rgba(40,40,255,0.35)] bg-[rgb(40,40,255)]/10">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border-strong bg-surface">
               {branch.logo_url ? (
                 <OptimizedImage
                   src={branch.logo_url}
@@ -126,7 +120,7 @@ export function BranchSpotlight({
               </div>
             ) : (
               <div>
-                <span className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-white opacity-50 shadow-glow-sm">
+                <span className="inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-medium text-white opacity-50">
                   {t("branches.joinCta")}
                 </span>
                 {branch.joinCta.helperText && (

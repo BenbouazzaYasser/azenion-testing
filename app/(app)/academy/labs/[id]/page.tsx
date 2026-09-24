@@ -123,7 +123,7 @@ function LabNotFound() {
         <PageAtmosphere />
         <PageHero variant="academy" slug="academy" atmosphere={false}>
           <div className="flex flex-col items-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-surface text-accent-300 shadow-[0_0_40px_-12px_rgba(40,40,255,0.5)]">
+            <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-surface text-accent-300">
               <FlaskConical size={32} />
             </div>
             <h1 className="mt-8 text-2xl font-semibold text-ink-50 sm:text-3xl">Lab not found</h1>
@@ -132,7 +132,7 @@ function LabNotFound() {
             </p>
             <Link
               href="/academy/labs"
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-glow"
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 ease-premium hover:bg-accent-500"
             >
               <ArrowLeft size={14} />
               Back to Labs

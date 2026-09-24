@@ -404,7 +404,7 @@ export function CommentSection({
                 type="button"
                 onClick={handlePost}
                 disabled={!input.trim() || isPending}
-                className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
+                className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-500 disabled:opacity-50"
               >
                 {t("feed.commentPost")}
               </button>
@@ -571,7 +571,7 @@ function CommentItemImpl({
                 type="button"
                 onClick={saveEdit}
                 disabled={!draft.trim() || isSaving}
-                className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
+                className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-500 disabled:opacity-50"
               >
                 {t("common.save")}
               </button>
@@ -645,7 +645,7 @@ function CommentItemImpl({
               type="button"
               onClick={postReply}
               disabled={!replyDraft.trim() || isPending}
-              className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-glow disabled:opacity-50"
+              className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-accent-500 disabled:opacity-50"
             >
               {t("feed.reply")}
             </button>

@@ -219,7 +219,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
           type="button"
           onClick={openPalette}
           aria-label="Search Azenion (Ctrl+K)"
-          className="group relative flex h-11 w-11 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:scale-105 hover:border-accent-400/40 hover:text-ink-50 hover:shadow-[0_0_20px_-5px_rgba(109,109,255,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+          className="group relative flex h-11 w-11 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
           <Search size={18} aria-hidden />
           <span
@@ -275,11 +275,6 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                   aria-hidden
                   className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent-300/80 to-transparent"
                 />
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute -top-20 right-8 h-40 w-40 rounded-full bg-accent/30 blur-[80px]"
-                />
-
                 <div className="relative flex items-center gap-3 px-4 py-3.5">
                   <div className="text-ink-400">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-5 w-5">
