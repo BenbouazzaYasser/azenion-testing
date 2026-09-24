@@ -4,7 +4,7 @@ import { useState, useTransition, useRef, useEffect, useCallback, memo } from "r
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, MessageSquare, Plus, Archive, ChevronLeft, Home } from "lucide-react";
+import { Search, MessageSquare, Plus, Archive, ChevronLeft, Home, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { formatDistanceToNow } from "@/lib/date";
@@ -133,6 +133,11 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
   const handleRowNavigate = useCallback(
     (id: string) => {
       setOpenMenuId(null);
+      // One conversation at a time: while the clicked thread is still
+      // loading, ignore other rows (pendingId clears when the route
+      // changes). Re-clicking the pending row retries — the escape hatch
+      // for a navigation that failed silently.
+      if (pendingId !== null && pendingId !== id) return;
       setPendingId(id);
       onNavigate?.();
       // Transition-scoped push: keeps the UI interactive while the new thread
@@ -140,7 +145,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
       // state update as low-priority).
       startTransition(() => router.push(`/chat/${id}`));
     },
-    [onNavigate, router],
+    [onNavigate, pendingId, router],
   );
 
   useEffect(() => {
@@ -322,6 +327,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                     currentUserId={currentUserId}
                     isActive={pathname === `/chat/${conv.id}` || pendingId === conv.id}
                     unread={false}
+                    pending={pendingId === conv.id}
                     mode="archived"
                     menuOpen={openMenuId === conv.id}
                     onMenuOpenChange={handleRowMenuOpenChange}
@@ -354,6 +360,7 @@ export function ChatSidebar({ conversations, currentUserId, onNavigate, classNam
                   currentUserId={currentUserId}
                   isActive={pathname === `/chat/${conv.id}` || pendingId === conv.id}
                   unread={(unreadByConv[conv.id] ?? 0) > 0}
+                  pending={pendingId === conv.id}
                   mode="inbox"
                   menuOpen={openMenuId === conv.id}
                   onMenuOpenChange={handleRowMenuOpenChange}
@@ -374,6 +381,8 @@ interface ConversationRowProps {
   currentUserId: string;
   isActive: boolean;
   unread: boolean;
+  /** This row's thread is currently loading — clicks are locked. */
+  pending?: boolean;
   mode: "inbox" | "archived";
   menuOpen: boolean;
   /** (conversationId, open) — hoisted in the parent so rows stay memoizable. */
@@ -397,6 +406,7 @@ function ConversationRowImpl({
   currentUserId,
   isActive,
   unread,
+  pending = false,
   mode,
   menuOpen,
   onMenuOpenChange,
@@ -429,6 +439,7 @@ function ConversationRowImpl({
       <Link
         href={prefetchHref}
         aria-current={isActive ? "page" : undefined}
+        aria-busy={pending}
         onClick={(e) => {
           // Let modifier/middle-clicks behave natively; plain clicks navigate
           // through onNavigate (transition-scoped router.push) so the sidebar
@@ -481,11 +492,15 @@ function ConversationRowImpl({
               {name}
             </p>
             <span className="flex shrink-0 items-center gap-1.5">
-              {unread && (
-                <span
-                  aria-hidden
-                  className="h-2 w-2 rounded-full bg-accent-400 shadow-glow-sm animate-pulse-glow"
-                />
+              {pending ? (
+                <Loader2 size={12} className="animate-spin text-accent-300" aria-label="Loading conversation" />
+              ) : (
+                unread && (
+                  <span
+                    aria-hidden
+                    className="h-2 w-2 rounded-full bg-accent-400 shadow-glow-sm animate-pulse-glow"
+                  />
+                )
               )}
               {conv.last_message?.created_at && (
                 <span className="shrink-0 text-[10px] font-medium tracking-wide text-ink-600 transition-colors duration-200 group-hover:text-ink-500">

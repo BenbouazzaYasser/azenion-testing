@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { Send, Mic, Square, Trash2, Play, Pause, Plus, Smile, Ban } from "lucide-react";
+import { Send, Mic, Square, Trash2, Play, Pause, Plus, Smile, Ban, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { AttachmentPreviewBar } from "@/components/chat/attachment-preview-bar";
@@ -123,12 +123,16 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
     const [showStickerPicker, setShowStickerPicker] = useState(false);
     const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
     const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+    const [previewReady, setPreviewReady] = useState(false);
 
     // When the recorder's blob is consumed/cleared (send, discard, cancel),
     // the preview it referenced is gone — reset playback state so a stale
     // "playing" indicator never leaks into the next recording.
     useEffect(() => {
-      if (!voice.blob) setIsPlayingPreview(false);
+      if (!voice.blob) {
+        setIsPlayingPreview(false);
+        setPreviewReady(false);
+      }
     }, [voice.blob]);
 
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -211,7 +215,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
 
     const togglePreviewPlayback = () => {
       const el = previewAudioRef.current;
-      if (!el || !voice.previewUrl) return;
+      if (!el || !voice.previewUrl || !previewReady) return;
       if (isPlayingPreview) {
         el.pause();
       } else {
@@ -291,10 +295,16 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
               <button
                 type="button"
                 aria-label={isPlayingPreview ? "Pause preview" : "Play preview"}
+                aria-busy={!previewReady}
+                disabled={!previewReady}
                 onClick={togglePreviewPlayback}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white disabled:pointer-events-none disabled:opacity-50"
               >
-                {isPlayingPreview ? <Pause size={16} /> : <Play size={16} className="translate-x-0.5" />}
+                {previewReady ? (
+                  isPlayingPreview ? <Pause size={16} /> : <Play size={16} className="translate-x-0.5" />
+                ) : (
+                  <Loader2 size={16} className="animate-spin" />
+                )}
               </button>
               <div className="min-w-0 flex-1 rounded-full bg-surface px-3 py-2 text-sm text-ink-50">
                 Voice message • {Math.floor(voice.duration / 60)}:{String(voice.duration % 60).padStart(2, "0")}{" "}
@@ -310,7 +320,9 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                   }
                 }}
                 src={voice.previewUrl}
-                preload="metadata"
+                preload="auto"
+                onCanPlay={() => setPreviewReady(true)}
+                onError={() => setPreviewReady(false)}
                 className="hidden"
               />
               <Button

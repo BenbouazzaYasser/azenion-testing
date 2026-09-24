@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import Image from "next/image";
 import { Pencil, Trash2, AlertCircle, RefreshCw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import { formatTime } from "@/lib/date";
 import { editMessage, deleteMessage } from "@/actions/chat.actions";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
-import { ChatAttachment } from "@/components/chat/chat-attachment";
+import { ChatAttachment, chatAttachmentImageUrl } from "@/components/chat/chat-attachment";
+import { ImageLightbox, type LightboxImage } from "@/components/chat/image-lightbox";
 import type { ChatAttachmentForMessage } from "@/data/chat";
 
 interface MessageBubbleProps {
@@ -87,6 +88,18 @@ export const MessageBubble = memo(function MessageBubble({
 }: MessageBubbleProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(content);
+  // Full-size image viewer (Discord-style): opened by clicking an image, and
+  // navigable when the message carries several.
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const lightboxImages = useMemo<LightboxImage[]>(() => {
+    const out: LightboxImage[] = [];
+    for (const att of attachments) {
+      const src = chatAttachmentImageUrl(att);
+      if (src) out.push({ src, alt: att.filename ?? "Image" });
+    }
+    return out;
+  }, [attachments]);
+  const lightboxIndex = lightboxSrc ? lightboxImages.findIndex((i) => i.src === lightboxSrc) : -1;
 
   const handleEdit = async () => {
     if (!editText.trim() || editText === content) {
@@ -212,7 +225,12 @@ export const MessageBubble = memo(function MessageBubble({
                 {attachments.length > 0 && (
                   <div className="mb-1 flex flex-col gap-2">
                     {attachments.map((att) => (
-                      <ChatAttachment key={att.id} attachment={att} isOwn={isOwn} />
+                      <ChatAttachment
+                        key={att.id}
+                        attachment={att}
+                        isOwn={isOwn}
+                        onOpenImage={setLightboxSrc}
+                      />
                     ))}
                   </div>
                 )}
@@ -309,6 +327,14 @@ export const MessageBubble = memo(function MessageBubble({
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
+      )}
+
+      {lightboxIndex >= 0 && (
+        <ImageLightbox
+          images={lightboxImages}
+          index={lightboxIndex}
+          onClose={() => setLightboxSrc(null)}
+        />
       )}
     </div>
   );
