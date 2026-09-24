@@ -421,7 +421,13 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                   onClick={() => {
                     const next = !showAttachmentMenu;
                     setShowAttachmentMenu(next);
-                    if (next) closeAllPickers();
+                    // Close only the OTHER pickers — closing this one in the
+                    // same batch would cancel the open (last update wins).
+                    if (next) {
+                      setShowEmojiPicker(false);
+                      setShowGifPicker(false);
+                      setShowStickerPicker(false);
+                    }
                   }}
                   disabled={!!voice.blob || voice.isRecording}
                   className={cn(
@@ -442,7 +448,12 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                 onClick={() => {
                   const next = !showEmojiPicker;
                   setShowEmojiPicker(next);
-                  if (next) closeAllPickers();
+                  // Same batching rule as the + button above.
+                  if (next) {
+                    setShowAttachmentMenu(false);
+                    setShowGifPicker(false);
+                    setShowStickerPicker(false);
+                  }
                 }}
                 disabled={!!voice.blob || voice.isRecording}
                 className="h-11 w-11 shrink-0 rounded-full p-0 bg-surface text-ink-600 hover:bg-surface-hover hover:text-ink-50 shadow-sm ring-1 ring-border disabled:opacity-50"
