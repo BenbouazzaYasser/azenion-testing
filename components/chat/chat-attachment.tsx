@@ -115,8 +115,6 @@ function AudioPlayer({ attachment, isOwn }: { attachment: ChatAttachmentForMessa
 export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
   const [imgError, setImgError] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
-  const [imgRatio, setImgRatio] = useState<string | null>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   const isSticker = attachment.type === "sticker";
   const isAudio = attachment.type === "audio";
@@ -181,7 +179,7 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
           <img
             src={url}
             alt={meta.title ?? "GIF"}
-            className={cn("absolute inset-0 h-full w-full object-cover transition-opacity", imgLoading ? "opacity-0" : "opacity-100")}
+            className={cn("absolute inset-0 h-full w-full object-cover transition-opacity duration-300", imgLoading ? "opacity-0" : "opacity-100")}
             onLoad={() => setImgLoading(false)}
             onError={() => setImgLoading(false)}
             loading="lazy"
@@ -216,22 +214,19 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
       const isSpoiler = meta?.spoiler === true;
       return (
         <div className="max-w-[260px] overflow-hidden rounded-xl">
-          <div className="relative block w-full" style={{ aspectRatio: imgRatio ?? "4 / 3", maxHeight: 256 }}>
+          {/* The box is frozen at 4:3 from first paint and never changes —
+              the skeleton and the loaded image share the exact same frame, so
+              only opacity crossfades on load (no reflow, no CLS). */}
+          <div className="relative block w-full" style={{ aspectRatio: "4 / 3", maxHeight: 256 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={attachment.signedUrl}
               alt={attachment.filename ?? "Image"}
               loading="eager"
               decoding="async"
-              className={cn("absolute inset-0 h-full w-full object-cover transition-opacity", imgLoading ? "opacity-0" : "opacity-100")}
+              className={cn("absolute inset-0 h-full w-full object-cover transition-opacity duration-300", imgLoading ? "opacity-0" : "opacity-100")}
               style={isSpoiler ? { filter: "blur(8px)" } : undefined}
-              onLoad={(e) => {
-                const el = e.currentTarget;
-                if (el.naturalWidth > 0 && el.naturalHeight > 0) {
-                  setImgRatio(`${el.naturalWidth} / ${el.naturalHeight}`);
-                }
-                setImgLoading(false);
-              }}
+              onLoad={() => setImgLoading(false)}
               onError={() => {
                 setImgError(true);
                 setImgLoading(false);
@@ -257,31 +252,24 @@ export function ChatAttachment({ attachment, isOwn }: ChatAttachmentProps) {
     }
     return (
       <div className="max-w-[260px] overflow-hidden rounded-xl">
+        {/* Same frozen 4:3 frame as the direct-fetch path: skeleton and image
+            share one box, so the only change on load is an opacity fade. */}
         <div className="relative w-full">
-          {/* Always render the image container; never hide it. Use loading="eager"
-              to ensure the image starts loading even if initially off-screen. */}
           <a
             href={attachment.signedUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="relative block w-full"
-            style={{ aspectRatio: imgRatio ?? "4 / 3", maxHeight: 256 }}
+            style={{ aspectRatio: "4 / 3", maxHeight: 256 }}
           >
             <Image
-              ref={imgRef as unknown as React.Ref<HTMLImageElement>}
               src={attachment.signedUrl}
               alt={attachment.filename ?? "Image"}
               fill
               sizes="260px"
               loading="eager"
-              className={cn("object-cover transition-opacity", imgLoading ? "opacity-0" : "opacity-100 hover:opacity-90")}
-              onLoad={() => {
-                const el = imgRef.current;
-                if (el && el.naturalWidth > 0 && el.naturalHeight > 0) {
-                  setImgRatio(`${el.naturalWidth} / ${el.naturalHeight}`);
-                }
-                setImgLoading(false);
-              }}
+              className={cn("object-cover transition-opacity duration-300", imgLoading ? "opacity-0" : "opacity-100 hover:opacity-90")}
+              onLoad={() => setImgLoading(false)}
               onError={() => {
                 setImgError(true);
                 setImgLoading(false);
