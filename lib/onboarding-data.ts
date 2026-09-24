@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getTrendingTeamIds, getFeaturedProjectIds } from "@/actions/ranking.actions";
-import { isTeamHidden, getProjectLifecycleStatus, MS_PER_DAY } from "@/lib/lifecycle";
+import { isTeamHidden, getProjectLifecycleStatus, LIFECYCLE, MS_PER_DAY } from "@/lib/lifecycle";
 
 export type OnboardingStep =
   | "welcome"
@@ -106,27 +106,57 @@ export async function loadOnboardingData(userId: string): Promise<OnboardingData
   }
 
   // ── Recommendations: fetch all independent data in parallel ──────────────
+  // Member counts come from the grouped RPC (1 small result set); when the
+  // migration is not applied yet, fall back to the full membership scan.
+  // Lifecycle filters are pushed into SQL (mirrors getProjectLifecycleStatus /
+  // isTeamHidden: a null activity date counts as active/visible) and the JS
+  // filter below stays as the authoritative safety net.
+  const projectArchiveCutoffIso = new Date(
+    Date.now() - LIFECYCLE.projectArchiveDays * 24 * 60 * 60 * 1000,
+  ).toISOString();
+  const teamHiddenCutoffIso = new Date(
+    Date.now() - LIFECYCLE.teamHiddenDays * 24 * 60 * 60 * 1000,
+  ).toISOString();
   const [membershipRes, branchesRes, branchCountsRes, featuredProjectIds, trendingTeamIds, projectRowsRes, teamRowsRes] =
     await Promise.all([
       admin.from("branch_members").select("branch_id, branch:branches(id, slug, name)").eq("user_id", userId).maybeSingle(),
       admin.from("branches").select("id, slug, name, full_name, logo_url").order("name"),
-      admin.from("branch_members").select("branch_id"),
+      admin.rpc("get_branch_member_counts"),
       getFeaturedProjectIds(8),
       getTrendingTeamIds(10),
-      admin.from("projects").select("id, slug, name, description, logo_url, last_activity_at").eq("visibility", "public").order("created_at", { ascending: false }).limit(30),
-      admin.from("teams").select("id, slug, name, description, logo_url, last_activity_at, created_at").eq("visibility", "public").order("created_at", { ascending: false }).limit(40),
+      admin
+        .from("projects")
+        .select("id, slug, name, description, logo_url, last_activity_at")
+        .eq("visibility", "public")
+        .or(`last_activity_at.is.null,last_activity_at.gt.${projectArchiveCutoffIso}`)
+        .order("created_at", { ascending: false })
+        .limit(30),
+      admin
+        .from("teams")
+        .select("id, slug, name, description, logo_url, last_activity_at, created_at")
+        .eq("visibility", "public")
+        .or(`last_activity_at.is.null,last_activity_at.gt.${teamHiddenCutoffIso}`)
+        .order("created_at", { ascending: false })
+        .limit(40),
     ]);
 
   const membership = membershipRes.data as unknown as { branch: { id: string; slug: string; name: string } | null } | null;
   const currentBranch = (membership?.branch as unknown as { id: string; slug: string; name: string } | null) ?? null;
   const branches = branchesRes;
-  const branchCounts = branchCountsRes;
   const projectRows = projectRowsRes.data;
   const teamRows = teamRowsRes.data;
 
   const countMap = new Map<string, number>();
-  for (const r of branchCounts?.data ?? []) {
-    countMap.set(r.branch_id, (countMap.get(r.branch_id) ?? 0) + 1);
+  if (!branchCountsRes.error) {
+    for (const r of (branchCountsRes.data ?? []) as { branch_id: string; member_count: number | string }[]) {
+      countMap.set(r.branch_id, Number(r.member_count ?? 0));
+    }
+  } else {
+    // Fallback (pre-00150): full membership scan counted in JS.
+    const { data: allMemberships } = await admin.from("branch_members").select("branch_id");
+    for (const r of (allMemberships ?? []) as { branch_id: string }[]) {
+      countMap.set(r.branch_id, (countMap.get(r.branch_id) ?? 0) + 1);
+    }
   }
 
   const branchRows = (branches?.data ?? []).map((b) => ({

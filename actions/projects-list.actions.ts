@@ -228,21 +228,34 @@ async function fetchPublicProjectsPage(
  */
 async function fetchProjectsFilterMeta(): Promise<ProjectsFilterMeta> {
   const adminClient = createAdminClient();
-  const [{ data: techRows }, { data: allCategories }] = await Promise.all([
-    adminClient.from("projects").select("technologies").eq("visibility", "open").limit(1000),
+  // Aggregated in SQL (00151) — no 1000-row JS scan and no silent truncation
+  // once the catalog passes 1000 projects. Falls back to the old capped scan
+  // when the migration is not applied yet.
+  const [{ data: facetTechs, error: facetError }, { data: allCategories }] = await Promise.all([
+    adminClient.rpc("get_project_technology_facets"),
     adminClient.from("project_categories").select("id, name, slug").order("name"),
   ]);
 
-  const allTechs = new Set<string>();
-  for (const row of techRows ?? []) {
-    const techs = (row as { technologies?: unknown }).technologies;
-    if (Array.isArray(techs)) {
-      for (const t of techs) {
-        if (typeof t === "string" && t) allTechs.add(t);
+  let technologyOptions: string[];
+  if (!facetError && Array.isArray(facetTechs)) {
+    technologyOptions = (facetTechs as string[]).filter(Boolean).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  } else {
+    const { data: techRows } = await adminClient
+      .from("projects")
+      .select("technologies")
+      .eq("visibility", "open")
+      .limit(1000);
+    const allTechs = new Set<string>();
+    for (const row of techRows ?? []) {
+      const techs = (row as { technologies?: unknown }).technologies;
+      if (Array.isArray(techs)) {
+        for (const t of techs) {
+          if (typeof t === "string" && t) allTechs.add(t);
+        }
       }
     }
+    technologyOptions = [...allTechs].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   }
-  const technologyOptions = [...allTechs].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   return { technologyOptions, allCategories: (allCategories as ProjectsFilterMeta["allCategories"]) ?? [] };
 }
 

@@ -794,6 +794,32 @@ export async function getBranchFeedItems(
   // H4: explicit null = anonymous (prerender-safe); otherwise session-derived.
   const userId = _userId === null ? null : await getSessionUserId();
 
+  // Preferred path (00151): the RPCs derive the branch's source ids in SQL.
+  const [pageByBranch, totalByBranch, pinsByBranch] = await Promise.all([
+    supabase.rpc("get_branch_feed_posts_by_branch", {
+      p_branch_id: branchId,
+      p_page: page,
+      p_page_size: pageSize,
+      p_viewer: userId,
+    }),
+    supabase.rpc("count_branch_feed_posts_by_branch", {
+      p_branch_id: branchId,
+      p_viewer: userId,
+    }),
+    supabase
+      .from("feed_pins")
+      .select("post_id")
+      .eq("scope", "branch")
+      .eq("branch_id", branchId),
+  ]);
+
+  if (!pageByBranch.error && !totalByBranch.error) {
+    const pinnedIds = new Set((pinsByBranch.data ?? []).map((r) => r.post_id));
+    const items = await enrichPosts(supabase, (pageByBranch.data ?? []) as PostRow[], userId, pinnedIds);
+    return { items, total: Number(totalByBranch.data ?? 0) };
+  }
+
+  // Fallback (pre-00151): collect every source id in app code.
   const { data: branchTeams } = await supabase
     .from("teams")
     .select("id")

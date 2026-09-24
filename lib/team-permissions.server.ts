@@ -26,6 +26,24 @@ export async function getTeamPermissions(
   teamId: string,
   permissions: readonly TeamPermission[]
 ): Promise<Record<TeamPermission, boolean>> {
+  const supabase = await createClient();
+  // Batched: 1 RPC instead of N. Falls back to per-permission calls when the
+  // migration providing has_team_permissions is not applied yet.
+  const { data, error } = await supabase.rpc("has_team_permissions", {
+    p_team_id: teamId,
+    p_permissions: [...permissions],
+  });
+  if (!error && Array.isArray(data)) {
+    const byPerm = new Map(
+      (data as { permission: string; has_permission: boolean }[]).map((r) => [r.permission, r.has_permission]),
+    );
+    if (permissions.every((p) => byPerm.has(p))) {
+      return Object.fromEntries(permissions.map((p) => [p, byPerm.get(p) === true])) as Record<
+        TeamPermission,
+        boolean
+      >;
+    }
+  }
   const entries = await Promise.all(
     permissions.map(async (p) => [p, await hasTeamPermission(teamId, p)] as const)
   );

@@ -51,7 +51,7 @@ export function AnnouncementsFeed({ announcements, canManage }: AnnouncementsFee
             announcements.map((announcement, i) => (
               
                 <article key={announcement.id} className="group relative overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
-                  <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                   {canManage ? (
                     <div className="absolute right-4 top-4 z-10 flex items-center gap-2">

@@ -16,11 +16,7 @@ export function LazyToaster() {
       className="!z-[9999]"
       toastOptions={{
         style: {
-          background: "rgba(14,16,22,0.92)",
-          border: "1px solid rgba(244,245,248,0.14)",
-          color: "#F4F5F8",
-          backdropFilter: "blur(20px)",
-          marginBottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+          marginBottom: "calc(env(safe-area-inset-bottom, 0px) + var(--space-4))",
         },
         duration: 4000,
       }}

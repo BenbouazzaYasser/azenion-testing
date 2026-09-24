@@ -184,21 +184,41 @@ async function getConversationsLegacy(
     ),
   ];
 
-  const { data: profiles } = await createAdminClient()
+  const profilePromise = createAdminClient()
     // SECURITY: conversation list already scoped to caller's RLS-visible memberships above; admin used only for public profile lookup.
     .from("profiles")
     .select("id, full_name, avatar_url, username")
     .in("id", allUserIds);
 
+  // Independent reads — fire together (last-attachment lookup below still
+  // waits on lastRows, which it derives its IDs from).
+  // One RPC for all conversations' last message (was one query per conversation).
+  // SECURITY INVOKER: RLS limits rows to conversations the caller belongs to.
+  const lastRowsPromise = supabase.rpc("get_last_messages", {
+    p_conversation_ids: conversationIds,
+  });
+
+  const unreadPromise = supabase.rpc("get_unread_counts", {
+    p_user_id: userId,
+  });
+
+  // Block state: users I have blocked (readable via RLS) and users who have
+  // blocked me (exposed through the self-scoped helper RPC).
+  const ownBlocksPromise = supabase
+    .from("user_blocks")
+    .select("blocked_id")
+    .eq("blocker_id", userId);
+
+  const blockersPromise = supabase.rpc("get_users_that_blocked_me", {
+    p_user_id: userId,
+  });
+
+  const [{ data: profiles }, { data: lastRows }, { data: unreadRows }, { data: ownBlockRows }, { data: blockersOfMe }] =
+    await Promise.all([profilePromise, lastRowsPromise, unreadPromise, ownBlocksPromise, blockersPromise]);
+
   const profileMap = new Map(
     (profiles ?? []).map((p) => [p.id, p]),
   );
-
-  // One RPC for all conversations' last message (was one query per conversation).
-  // SECURITY INVOKER: RLS limits rows to conversations the caller belongs to.
-  const { data: lastRows } = await supabase.rpc("get_last_messages", {
-    p_conversation_ids: conversationIds,
-  });
   const lastMessageRows = (lastRows ?? []) as {
     conversation_id: string;
     message_id: string;
@@ -223,26 +243,15 @@ async function getConversationsLegacy(
     lastMessageRows.map((r) => [r.conversation_id, r]),
   ) as Record<string, (typeof lastMessageRows)[number] | undefined>;
 
-  const { data: unreadRows } = await supabase.rpc("get_unread_counts", {
-    p_user_id: userId,
-  });
   const unreadByConv = Object.fromEntries(
     ((unreadRows ?? []) as { conversation_id: string; unread_count: number }[]).map(
       (r) => [r.conversation_id, Number(r.unread_count)],
     ),
   ) as Record<string, number>;
 
-  // Block state: users I have blocked (readable via RLS) and users who have
-  // blocked me (exposed through the self-scoped helper RPC).
-  const { data: ownBlockRows } = await supabase
-    .from("user_blocks")
-    .select("blocked_id")
-    .eq("blocker_id", userId);
+  // Block state already fetched above in the same batch.
   const iBlockedIds = new Set((ownBlockRows ?? []).map((r) => r.blocked_id));
 
-  const { data: blockersOfMe } = await supabase.rpc("get_users_that_blocked_me", {
-    p_user_id: userId,
-  });
   const blockedMeIds = new Set((blockersOfMe ?? []) as string[]);
 
   return (conversations ?? []).map((conv) => {
@@ -426,16 +435,17 @@ export async function getConversationBlockState(conversationId: string): Promise
     return { am_blocked: false, i_blocked: false };
   }
 
-  const { data: ownBlockRows } = await supabase
-    .from("user_blocks")
-    .select("blocked_id")
-    .eq("blocker_id", user.id);
+  const [{ data: ownBlockRows }, { data: am_blocked }] = await Promise.all([
+    supabase
+      .from("user_blocks")
+      .select("blocked_id")
+      .eq("blocker_id", user.id),
+    supabase.rpc("is_user_blocked", {
+      p_blocker_id: otherId,
+      p_blocked_id: user.id,
+    }),
+  ]);
   const i_blocked = (ownBlockRows ?? []).some((b) => b.blocked_id === otherId);
-
-  const { data: am_blocked } = await supabase.rpc("is_user_blocked", {
-    p_blocker_id: otherId,
-    p_blocked_id: user.id,
-  });
 
   return { am_blocked: !!am_blocked, i_blocked };
 }

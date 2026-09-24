@@ -138,7 +138,7 @@ export function PublishCourseDialog({
                           className={cn(
                             "flex w-full items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 ease-premium cursor-pointer",
                             selection === "me"
-                              ? "border-accent-400/60 bg-accent/[0.08] shadow-[0_0_0_1px_rgba(109,109,255,0.2)]"
+                              ? "border-accent-400/60 bg-accent/[0.08] shadow-input"
                               : "border-border-strong bg-surface text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
                           )}
                         >
@@ -165,7 +165,7 @@ export function PublishCourseDialog({
                           className={cn(
                             "flex w-full items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 ease-premium cursor-pointer",
                             selection === team.team_id
-                              ? "border-accent-400/60 bg-accent/[0.08] shadow-[0_0_0_1px_rgba(109,109,255,0.2)]"
+                              ? "border-accent-400/60 bg-accent/[0.08] shadow-input"
                               : "border-border-strong bg-surface text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
                           )}
                         >

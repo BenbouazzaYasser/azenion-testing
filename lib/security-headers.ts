@@ -19,13 +19,13 @@ export const SECURITY_HEADERS: Record<string, string> = {
   // console). Enforcing script-src requires nonce-based middleware.
   // connect-src must cover Supabase (REST/wss realtime) or those console
   // warnings turn into real breakage the day this policy becomes enforcing.
-  // img-src/media-src cover chat media signed URLs + avatars (Supabase CDN)
-  // and GIF providers; without them <img>/<audio>/<video> from those hosts
-  // gets flagged (and would be blocked once this policy is enforced).
+  // img-src/media-src cover chat media signed URLs + avatars (Supabase CDN);
+  // without them <img>/<audio>/<video> from those hosts gets flagged (and
+  // would be blocked once this policy is enforced).
   // blob: for optimistic image previews; 'unsafe-eval' for Next.js dev
   // (hydration/inlining) — report-only so no breakage, just visibility.
   "Content-Security-Policy-Report-Only":
-    "default-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' blob: https://*.supabase.co https://lh3.googleusercontent.com https://media.giphy.com https://media.tenor.com; media-src 'self' https://*.supabase.co https://media.giphy.com https://media.tenor.com; script-src 'self' 'unsafe-eval'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+    "default-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' blob: https://*.supabase.co https://lh3.googleusercontent.com; media-src 'self' https://*.supabase.co; script-src 'self' 'unsafe-eval'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
 };
 
 /** JSON API responses: private, uncacheable, unsniffable, no referrer. */

@@ -54,16 +54,16 @@ export function SettingToggle({
         onClick={() => onChange(!checked)}
         onKeyDown={handleKeyDown}
         className={cn(
-          "relative h-6 w-11 shrink-0 rounded-full border transition-colors duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:cursor-not-allowed disabled:opacity-50 before:absolute before:-inset-2 before:rounded-full before:content-['']",
+          "relative h-6 w-11 shrink-0 rounded-full border transition-[background-color,border-color,box-shadow] duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:cursor-not-allowed disabled:opacity-50 before:absolute before:-inset-2 before:rounded-full before:content-['']",
           checked
-            ? "border-accent-400/60 bg-accent shadow-[0_0_16px_-4px_rgba(40,40,255,0.6)]"
-            : "border-border-strong/[0.08] bg-surface",
+            ? "border-accent-400/60 bg-accent shadow-control"
+            : "border-border-strong bg-surface",
         )}
       >
         <span
           aria-hidden
           className={cn(
-            "absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full transition-all duration-300 ease-premium",
+            "absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full transition-[background-color,transform] duration-200 ease-premium",
             checked ? "left-[22px] bg-white" : "left-[3px] bg-ink-400",
           )}
         />

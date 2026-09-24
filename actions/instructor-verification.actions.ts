@@ -175,7 +175,7 @@ export async function adminGetVerificationRequests(input: {
   const limit = Math.min(input.limit ?? 50, 100);
   const offset = input.offset ?? 0;
 
-  const { data, error, count } = await supabase.rpc("admin_get_verification_requests", {
+  const { data, error } = await supabase.rpc("admin_get_verification_requests", {
     p_status: input.status || null,
     p_limit: limit,
     p_offset: offset,
@@ -185,13 +185,22 @@ export async function adminGetVerificationRequests(input: {
     return { error: error.message };
   }
 
-  const totalResult = await supabase.rpc("admin_get_verification_requests", {
+  // Real COUNT (00151) instead of fetching the whole table to read .length.
+  // Falls back to the old full fetch when the migration is not applied yet.
+  const countResult = await supabase.rpc("admin_count_verification_requests", {
     p_status: input.status || null,
-    p_limit: 999999,
-    p_offset: 0,
   });
-
-  const total = totalResult.data?.length ?? 0;
+  let total = 0;
+  if (!countResult.error) {
+    total = Number(countResult.data ?? 0);
+  } else {
+    const totalResult = await supabase.rpc("admin_get_verification_requests", {
+      p_status: input.status || null,
+      p_limit: 999999,
+      p_offset: 0,
+    });
+    total = totalResult.data?.length ?? 0;
+  }
 
   return {
     requests: (data ?? []).map((row: Record<string, unknown>) => ({

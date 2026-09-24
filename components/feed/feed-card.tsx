@@ -148,7 +148,7 @@ function FeedCardUnmemoized({ item, currentUserId, headerAction }: FeedCardProps
 
   return (
     <div className="group relative overflow-hidden rounded-2xl card-surface-soft p-5 shadow-card transition-all duration-500 ease-premium hover:border-accent-400/30 sm:p-6">
-      <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative">
         <div className="flex items-start justify-between gap-3">

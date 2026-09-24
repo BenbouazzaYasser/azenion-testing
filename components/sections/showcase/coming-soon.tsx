@@ -5,7 +5,7 @@ export function ComingSoon() {
       <div className="mx-auto max-w-[720px] px-5 sm:px-8 lg:px-12">
         
           <div className="group mx-auto max-w-[600px] overflow-hidden rounded-2xl card-surface p-10 text-center shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:p-14">
-            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative">
               <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-lg border border-border-strong bg-surface">
@@ -13,7 +13,7 @@ export function ComingSoon() {
                   <path
                     d="M96 256C96 170 192 170 256 256C320 342 416 342 416 256C416 170 320 170 256 256C192 342 96 342 96 256Z"
                     fill="none"
-                    stroke="#6D6DFF"
+                    stroke="rgb(var(--accent-primary))"
                     strokeWidth="32"
                     strokeLinecap="round"
                     strokeLinejoin="round"

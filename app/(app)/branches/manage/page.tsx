@@ -52,44 +52,41 @@ export default async function ManageBranchesPage() {
 
   const admin = createAdminClient();
 
-  const [{ data: branches }, { data: memberRows }, { data: leaderRows }] = await Promise.all([
-    admin
-      .from("branches")
-      .select("*")
-      .order("name", { ascending: true }),
-    admin
-      .from("branch_members")
-      .select("branch_id, user_id"),
+  const { data: branches } = await admin
+    .from("branches")
+    .select("id, slug, name, full_name, description, city, logo_url, sort_order")
+    .order("name", { ascending: true });
+
+  const branchIds = (branches ?? []).map((b) => b.id);
+  const scopedBranchIds = branchIds.length > 0 ? branchIds : [""];
+
+  // Leaders and counts are scoped to the branches on this page; the
+  // leader-assignment typeahead now searches server-side
+  // (searchBranchLeaderCandidates), so member rows never reach the client.
+  const [{ data: leaderRows }, memberCountsRes] = await Promise.all([
     admin
       .from("branch_leaders")
       .select(`
         branch_id,
         user_id,
         user:user_id ( id, username, full_name, avatar_url )
-      `),
+      `)
+      .in("branch_id", scopedBranchIds),
+    admin.rpc("get_branch_member_counts"),
   ]);
 
   const memberCountMap = new Map<string, number>();
-  for (const row of memberRows ?? []) {
-    memberCountMap.set(row.branch_id, (memberCountMap.get(row.branch_id) ?? 0) + 1);
+  if (!memberCountsRes.error) {
+    for (const r of (memberCountsRes.data ?? []) as { branch_id: string; member_count: number | string }[]) {
+      memberCountMap.set(r.branch_id, Number(r.member_count ?? 0));
+    }
+  } else {
+    // Fallback (pre-00150): grouped client-side from the counts RPC's absence.
+    const { data: allMemberRows } = await admin.from("branch_members").select("branch_id");
+    for (const row of (allMemberRows ?? []) as { branch_id: string }[]) {
+      memberCountMap.set(row.branch_id, (memberCountMap.get(row.branch_id) ?? 0) + 1);
+    }
   }
-
-  // P3: only ship the profiles this page can act on (branch members + leaders)
-  // instead of every profile row in the database.
-  const memberIds = [
-    ...new Set([
-      ...(memberRows ?? []).map((r) => r.user_id),
-      ...(leaderRows ?? []).map((r) => r.user_id),
-    ]),
-  ];
-
-  const { data: profiles } = memberIds.length > 0
-    ? await admin
-        .from("profiles")
-        .select("id, username, full_name, avatar_url")
-        .in("id", memberIds)
-        .order("username", { ascending: true })
-    : { data: null };
 
   const branchesWithMembers: BranchWithMembers[] = (branches ?? []).map((b) => ({
     id: b.id,
@@ -111,18 +108,11 @@ export default async function ManageBranchesPage() {
       }),
   }));
 
-  const profileOptions: ProfileOption[] = (profiles ?? []).map((p) => ({
-    id: p.id,
-    username: p.username,
-    full_name: p.full_name,
-    avatar_url: p.avatar_url,
-  }));
-
   return (
     <>
       <main id="main" className="relative overflow-hidden">
         <PageAtmosphere />
-        <BranchManageClient branches={branchesWithMembers} profiles={profileOptions} />
+        <BranchManageClient branches={branchesWithMembers} />
         <PageBridge />
       </main>
       <Footer />

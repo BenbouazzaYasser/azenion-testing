@@ -8,7 +8,7 @@ export const CHAT_MEDIA_SIGNED_URL_TTL = 7200;
 
 // ── Attachment types ────────────────────────────────────────────────────────
 
-export type ChatAttachmentType = "image" | "file" | "audio" | "gif" | "sticker";
+export type ChatAttachmentType = "image" | "file" | "audio" | "sticker";
 
 // ── Size limits (centralized, reused by Phase 2/3) ─────────────────────────
 
@@ -72,7 +72,6 @@ export function getAllowedMimesForType(type: ChatAttachmentType): readonly strin
       return CHAT_FILE_MIMES;
     case "audio":
       return CHAT_AUDIO_MIMES;
-    case "gif":
     case "sticker":
       return [];
     default:
@@ -88,7 +87,6 @@ export function getMaxSizeForType(type: ChatAttachmentType): number {
       return CHAT_MAX_FILE_SIZE;
     case "audio":
       return CHAT_MAX_AUDIO_SIZE;
-    case "gif":
     case "sticker":
       return 0;
     default:
@@ -180,7 +178,7 @@ export interface ChatAttachmentValidationResult {
 export function validateChatAttachmentInput(input: ChatAttachmentValidationInput): ChatAttachmentValidationResult {
   const { type, filename, mimeType, fileSize, durationSeconds, storagePath, provider, externalId, metadata } = input;
 
-  if (!["image", "file", "audio", "gif", "sticker"].includes(type)) {
+  if (!["image", "file", "audio", "sticker"].includes(type)) {
     return { valid: false, error: "Invalid attachment type." };
   }
 
@@ -253,13 +251,12 @@ export function validateChatAttachmentInput(input: ChatAttachmentValidationInput
     return { valid: true, sanitizedFilename: sanitized };
   }
 
-  // Provider-backed types (gif/sticker)
-  if (type === "gif" || type === "sticker") {
+  // Provider-backed type (sticker)
+  if (type === "sticker") {
     if (!provider || typeof provider !== "string" || provider.trim().length === 0) {
       return { valid: false, error: "Provider is required for this type." };
     }
-    const allowedProviders = type === "gif" ? ["giphy", "tenor"] : ["local"];
-    if (!allowedProviders.includes(provider)) {
+    if (provider !== "local") {
       return { valid: false, error: `Provider ${provider} not allowed for ${type}.` };
     }
     if (!externalId || typeof externalId !== "string" || externalId.trim().length === 0) {
@@ -270,27 +267,6 @@ export function validateChatAttachmentInput(input: ChatAttachmentValidationInput
     }
     if (metadata != null && typeof metadata !== "object") {
       return { valid: false, error: "Invalid metadata." };
-    }
-    // For gif, validate that metadata.url (if present) is from approved provider domain
-    if (type === "gif" && metadata && typeof metadata === "object") {
-      const m = metadata as Record<string, unknown>;
-      const url = m.url as string | undefined;
-      const previewUrl = m.previewUrl as string | undefined;
-      const checkUrl = (u: string | undefined) => {
-        if (!u) return true;
-        try {
-          const host = new URL(u).hostname.toLowerCase();
-          const allowedHosts =
-            provider === "giphy"
-              ? ["giphy.com", "media.giphy.com", "media0.giphy.com", "media1.giphy.com", "media2.giphy.com", "media3.giphy.com", "media4.giphy.com", "i.giphy.com"]
-              : ["tenor.com", "media.tenor.com"];
-          return allowedHosts.some((h) => host === h || host.endsWith(`.${h}`));
-        } catch {
-          return false;
-        }
-      };
-      if (url && !checkUrl(url)) return { valid: false, error: "GIF URL domain not allowed." };
-      if (previewUrl && !checkUrl(previewUrl)) return { valid: false, error: "GIF preview URL domain not allowed." };
     }
     return { valid: true };
   }

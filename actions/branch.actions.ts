@@ -31,6 +31,11 @@ function firstZodError(parsed: { error: { flatten: () => { fieldErrors: Record<s
   return (firstError as string) ?? "Invalid input";
 }
 
+/** Escape `%`, `_`, `\` and PostgREST `.or()` delimiters in typeahead input. */
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_,().]/g, (c) => `\\${c}`);
+}
+
 function validateLogoUpload(file: File) {
   if (!file || file.size === 0) return "No file provided";
   if (file.size > MAX_BRANCH_ASSET_SIZE) return "File too large. Maximum size is 2MB";
@@ -452,6 +457,73 @@ export async function deleteBranch(formData: FormData) {
 
 // ── Branch Leaders (Platform Admin appoints/removes) ────────────────────
 
+export interface LeaderCandidate {
+  id: string;
+  username: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
+/**
+ * Typeahead for the branch-leader picker. Same candidate universe the page
+ * used to ship whole (branch members + existing leaders) and the same
+ * username/full-name matching, but filtered and capped in SQL so the page
+ * stops transferring every member row to the client.
+ */
+export async function searchBranchLeaderCandidates(
+  query: string,
+  excludeUserIds: string[] = [],
+): Promise<{ candidates: LeaderCandidate[] } | { error: string }> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Not authenticated" };
+  }
+
+  const { data: isAdmin } = await supabase.rpc("is_platform_admin");
+  if (!isAdmin) {
+    return { error: "Not authorized - platform admin only" };
+  }
+
+  const q = (query ?? "").trim().slice(0, 100);
+  const excluded = (excludeUserIds ?? []).filter(Boolean);
+
+  let profilesQuery = supabase
+    .from("profiles")
+    .select("id, username, full_name, avatar_url")
+    .or(
+      q
+        ? `username.ilike.%${escapeLike(q)}%,full_name.ilike.%${escapeLike(q)}%`
+        : "username.not.is.null",
+    )
+    .order("username", { ascending: true })
+    .limit(9);
+
+  if (excluded.length > 0) profilesQuery = profilesQuery.not("id", "in", `(${excluded.join(",")})`);
+
+  const { data: profiles } = await profilesQuery;
+  const rows = (profiles ?? []) as LeaderCandidate[];
+  if (rows.length === 0) return { candidates: [] };
+
+  // Keep the original candidate set: only branch members / existing leaders.
+  const ids = rows.map((p) => p.id);
+  const [{ data: memberRows }, { data: leaderRows }] = await Promise.all([
+    supabase.from("branch_members").select("user_id").in("user_id", ids),
+    supabase.from("branch_leaders").select("user_id").in("user_id", ids),
+  ]);
+
+  const allowed = new Set([
+    ...(memberRows ?? []).map((r) => r.user_id as string),
+    ...(leaderRows ?? []).map((r) => r.user_id as string),
+  ]);
+
+  return { candidates: rows.filter((p) => allowed.has(p.id)).slice(0, 8) };
+}
+
 export async function assignBranchLeader(formData: FormData) {
   const supabase = await createClient();
 
@@ -578,20 +650,19 @@ export async function uploadBranchAnnouncementImage(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
-  const [{ data: isPlatformAdmin }, { data: isBranchLeader }] = await Promise.all([
+  const [{ data: isPlatformAdmin }, { data: isBranchLeader }, { data: announcementOwner }] = await Promise.all([
     supabase.rpc("is_platform_admin"),
     supabase.rpc("is_branch_leader", { p_branch_id: branchId }),
+    supabase
+      .from("branch_announcements")
+      .select("branch_id")
+      .eq("id", announcementId)
+      .maybeSingle(),
   ]);
 
   if (!isPlatformAdmin && !isBranchLeader) {
     return { error: "Only platform admins or the leader of this branch can manage its announcements" };
   }
-
-  const { data: announcementOwner } = await supabase
-    .from("branch_announcements")
-    .select("branch_id")
-    .eq("id", announcementId)
-    .maybeSingle();
 
   if (!announcementOwner) {
     return { error: "Announcement not found" };
@@ -888,20 +959,19 @@ export async function uploadBranchEventCover(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
-  const [{ data: isPlatformAdmin }, { data: isBranchLeader }] = await Promise.all([
+  const [{ data: isPlatformAdmin }, { data: isBranchLeader }, { data: eventOwner }] = await Promise.all([
     supabase.rpc("is_platform_admin"),
     supabase.rpc("is_branch_leader", { p_branch_id: branchId }),
+    supabase
+      .from("branch_events")
+      .select("branch_id")
+      .eq("id", eventId)
+      .maybeSingle(),
   ]);
 
   if (!isPlatformAdmin && !isBranchLeader) {
     return { error: "Only platform admins or the leader of this branch can manage its events" };
   }
-
-  const { data: eventOwner } = await supabase
-    .from("branch_events")
-    .select("branch_id")
-    .eq("id", eventId)
-    .maybeSingle();
 
   if (!eventOwner) {
     return { error: "Event not found" };
@@ -1085,20 +1155,19 @@ export async function uploadBranchHighlightImage(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
-  const [{ data: isPlatformAdmin }, { data: isBranchLeader }] = await Promise.all([
+  const [{ data: isPlatformAdmin }, { data: isBranchLeader }, { data: highlightOwner }] = await Promise.all([
     supabase.rpc("is_platform_admin"),
     supabase.rpc("is_branch_leader", { p_branch_id: branchId }),
+    supabase
+      .from("branch_highlights")
+      .select("branch_id")
+      .eq("id", highlightId)
+      .maybeSingle(),
   ]);
 
   if (!isPlatformAdmin && !isBranchLeader) {
     return { error: "Only platform admins or the leader of this branch can manage its highlights" };
   }
-
-  const { data: highlightOwner } = await supabase
-    .from("branch_highlights")
-    .select("branch_id")
-    .eq("id", highlightId)
-    .maybeSingle();
 
   if (!highlightOwner) {
     return { error: "Highlight not found" };

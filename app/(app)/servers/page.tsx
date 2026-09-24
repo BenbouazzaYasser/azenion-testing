@@ -232,7 +232,7 @@ export default async function ServersPage() {
                   aria-hidden
                   className="absolute inset-y-10 left-1/2 w-px bg-accent-400/20"
                 />
-                <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent text-white shadow-[0_18px_50px_-24px_rgba(40,40,255,0.9)]">
+                <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent text-white shadow-dialog">
                   <Server size={25} aria-hidden />
                 </span>
               </div>

@@ -50,12 +50,12 @@ export function LoginCard({ next, error: initialError }: { next?: string; error?
       <div className="relative mx-auto w-full max-w-[520px] px-5 sm:px-8">
         
           <div className="group overflow-hidden rounded-2xl card-surface px-6 py-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:px-12 sm:py-9">
-            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
             <div className="relative text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-accent-400/30 bg-accent/[0.08]">
                 <svg viewBox="0 0 512 512" className="h-7 w-7" aria-hidden="true">
-                  <path d="M96 256C96 170 192 170 256 256C320 342 416 342 416 256C416 170 320 170 256 256C192 342 96 342 96 256Z" fill="none" stroke="#6D6DFF" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M96 256C96 170 192 170 256 256C320 342 416 342 416 256C416 170 320 170 256 256C192 342 96 342 96 256Z" fill="none" stroke="rgb(var(--accent-primary))" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
 

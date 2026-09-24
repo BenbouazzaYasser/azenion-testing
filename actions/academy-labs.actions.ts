@@ -40,6 +40,12 @@ function fileExtension(fileName: string): string {
 // have it from supabase.auth.getUser()) rather than deriving it from
 // auth.uid() inside an RPC -- that path was found to be unreliable in the
 // server/RSC context. See lib/labs/authorization.ts for the full reasoning.
+//
+// Single-check convenience wrapper around getLabsAuthContext(). Call sites
+// that need BOTH this and isPlatformAdmin() for the same user in the same
+// request should call getLabsAuthContext() directly once instead of using
+// both wrappers -- see updateLab/deleteLab/uploadLabVersionFile/
+// createLabVersion for why (each used to fetch this context twice).
 async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<boolean> {
   const ctx = await getLabsAuthContext(supabase, userId);
   return ctx.canCreateLab;
@@ -49,7 +55,7 @@ async function isLabCreator(supabase: Awaited<ReturnType<typeof createClient>>, 
 // -- core_team_member/instructor/creator intentionally do NOT get this,
 // only isLabCreator's narrower "can create/manage own labs" access. Kept
 // separate from isLabCreator so the ownership-override checks below stay a
-// single, explicit condition.
+// single, explicit condition. Same single-check-only caveat as above.
 async function isPlatformAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<boolean> {
   const ctx = await getLabsAuthContext(supabase, userId);
   return ctx.isPlatformAdmin;
@@ -74,18 +80,25 @@ async function recordLabCompletionActivity(
   userId: string,
   labId: string,
 ): Promise<void> {
-  const { data: existing } = await admin
-    .from("activities")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("type", "completed_lab")
-    .contains("metadata", { lab_id: labId })
-    .limit(1)
-    .maybeSingle();
+  // These two reads are independent (neither depends on the other's
+  // result), so they're fetched concurrently. On the common "first pass"
+  // path both are needed anyway; on a later resubmit-after-passing path
+  // `existing` alone was enough and the lab-title read turns out unused --
+  // a small amount of wasted work traded for lower latency on the common
+  // path.
+  const [{ data: existing }, { data: lab }] = await Promise.all([
+    admin
+      .from("activities")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("type", "completed_lab")
+      .contains("metadata", { lab_id: labId })
+      .limit(1)
+      .maybeSingle(),
+    admin.from("labs").select("title").eq("id", labId).maybeSingle(),
+  ]);
 
   if (existing) return;
-
-  const { data: lab } = await admin.from("labs").select("title").eq("id", labId).maybeSingle();
 
   await admin.from("activities").insert({
     user_id: userId,
@@ -101,6 +114,65 @@ function parseTags(raw: string | null): string[] | undefined {
     .map((t) => t.trim())
     .filter(Boolean)
     .slice(0, 10);
+}
+
+/**
+ * Uploads a lab thumbnail (upsert) and stamps a cache-busting query param
+ * onto the stored URL, then persists that URL onto the lab row. Shared by
+ * createLab/updateLab, which previously duplicated this upload + cache-bust
+ * + update sequence verbatim.
+ *
+ * Deliberately does NOT include the extension check: createLab/updateLab
+ * abort the whole action on an invalid extension (`return { error }`) but
+ * only produce a soft warning if the upload or the URL save fails (the lab
+ * itself still saves successfully). Folding the extension check in here
+ * would have blurred that distinction, so callers validate the extension
+ * themselves and only reach this helper once it's known good. `stage`
+ * tells the caller which half failed, since createLab/updateLab each
+ * phrase their warning text around that ("could not be uploaded" vs
+ * "could not be saved").
+ */
+async function uploadLabThumbnail(
+  admin: ReturnType<typeof createAdminClient>,
+  labId: string,
+  thumbnail: File,
+  thumbExt: string,
+): Promise<{ url: string } | { error: string; stage: "upload" | "save" }> {
+  const thumbnailPath = `labs/${labId}/thumbnail.${thumbExt}`;
+  const { error: thumbError } = await admin.storage
+    .from("course-files")
+    .upload(thumbnailPath, thumbnail, {
+      contentType: CONTENT_TYPES[thumbExt] ?? thumbnail.type,
+      upsert: true,
+    });
+
+  if (thumbError) {
+    return { error: thumbError.message, stage: "upload" };
+  }
+
+  const {
+    data: { publicUrl: thumbUrl },
+  } = admin.storage.from("course-files").getPublicUrl(thumbnailPath);
+
+  // Cache-bust: this path is stable and gets overwritten (upsert) on every
+  // future edit, so without a varying query param, browsers and any CDN in
+  // front of Supabase Storage would keep serving whatever they cached for
+  // this exact URL -- including a cached "missing" response from before the
+  // file existed, or a stale older image after a later re-upload. The
+  // stored URL, not just the storage path, must change whenever the
+  // underlying file changes.
+  const cacheBustedUrl = `${thumbUrl}?v=${Date.now()}`;
+
+  const { error: urlUpdateError } = await admin
+    .from("labs")
+    .update({ thumbnail_url: cacheBustedUrl })
+    .eq("id", labId);
+
+  if (urlUpdateError) {
+    return { error: urlUpdateError.message, stage: "save" };
+  }
+
+  return { url: cacheBustedUrl };
 }
 
 export async function createLab(formData: FormData) {
@@ -172,34 +244,10 @@ export async function createLab(formData: FormData) {
     if (!THUMBNAIL_EXTENSIONS.has(thumbExt)) {
       return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
     }
-    const thumbnailPath = `labs/${lab.id}/thumbnail.${thumbExt}`;
-    const { error: thumbError } = await admin.storage
-      .from("course-files")
-      .upload(thumbnailPath, thumbnail, {
-        contentType: CONTENT_TYPES[thumbExt] ?? thumbnail.type,
-        upsert: true,
-      });
-
-    if (thumbError) {
-      thumbnailWarning = `Lab created, but the thumbnail could not be uploaded: ${thumbError.message}`;
-    } else {
-      const {
-        data: { publicUrl: thumbUrl },
-      } = admin.storage.from("course-files").getPublicUrl(thumbnailPath);
-      // Cache-bust: this path is stable and gets overwritten (upsert) on
-      // every future edit, so without a varying query param, browsers and
-      // any CDN in front of Supabase Storage would keep serving whatever
-      // they cached for this exact URL -- including a cached "missing"
-      // response from before the file existed, or a stale older image
-      // after a later re-upload. The stored URL, not just the storage
-      // path, must change whenever the underlying file changes.
-      const { error: urlUpdateError } = await admin
-        .from("labs")
-        .update({ thumbnail_url: `${thumbUrl}?v=${Date.now()}` })
-        .eq("id", lab.id);
-      if (urlUpdateError) {
-        thumbnailWarning = `Lab created, but the thumbnail could not be saved: ${urlUpdateError.message}`;
-      }
+    const result = await uploadLabThumbnail(admin, lab.id, thumbnail, thumbExt);
+    if ("error" in result) {
+      const verb = result.stage === "upload" ? "uploaded" : "saved";
+      thumbnailWarning = `Lab created, but the thumbnail could not be ${verb}: ${result.error}`;
     }
   }
 
@@ -218,7 +266,12 @@ export async function updateLab(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isLabCreator(supabase, user.id))) {
+  // Fetched once and reused below for the ownership-override check, instead
+  // of isLabCreator() then isPlatformAdmin() as two separate calls -- both
+  // resolve through the same getLabsAuthContext() lookup, so calling it
+  // twice for one request was a redundant round trip.
+  const authCtx = await getLabsAuthContext(supabase, user.id);
+  if (!authCtx.canCreateLab) {
     return { error: "Not authorized - instructor, creator, core team, or admin role required" };
   }
 
@@ -228,23 +281,11 @@ export async function updateLab(formData: FormData) {
     return { error: "Missing lab id" };
   }
 
-  // Check that user is the creator, or a platform admin managing on behalf
-  // of another creator
-  const admin = createAdminClient();
-  const { data: existingLab } = await admin
-    .from("labs")
-    .select("created_by")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (!existingLab) {
-    return { error: "Lab not found" };
-  }
-
-  if (existingLab.created_by !== user.id && !(await isPlatformAdmin(supabase, user.id))) {
-    return { error: "Not authorized - you can only edit your own labs" };
-  }
-
+  // Validated before the update below, since ownership is now enforced
+  // directly in that update's WHERE clause rather than via a separate
+  // lookup first -- see the comment there for why this also means
+  // "Invalid input" can now surface before an ownership problem would,
+  // where previously ownership was always checked first.
   const raw = {
     title: (formData.get("title") as string) ?? "",
     description: (formData.get("description") as string) ?? "",
@@ -264,7 +305,16 @@ export async function updateLab(formData: FormData) {
     return { error: firstError ?? "Invalid input" };
   }
 
-  const { error: updateError } = await admin
+  const admin = createAdminClient();
+
+  // Ownership is enforced directly in this update's WHERE clause instead of
+  // a separate SELECT beforehand: non-admins can only match a row they
+  // created, platform admins can match by id alone. This trades away
+  // telling "Lab not found" apart from "not your lab" -- both now come back
+  // as no matched row, reported as one combined message below -- in
+  // exchange for skipping the extra read every previous version of this
+  // function did first.
+  let updateQuery = admin
     .from("labs")
     .update({
       title: parsed.data.title,
@@ -280,8 +330,18 @@ export async function updateLab(formData: FormData) {
     })
     .eq("id", id);
 
+  if (!authCtx.isPlatformAdmin) {
+    updateQuery = updateQuery.eq("created_by", user.id);
+  }
+
+  const { data: updatedRows, error: updateError } = await updateQuery.select("id");
+
   if (updateError) {
     return { error: updateError.message };
+  }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    return { error: "Lab not found, or you don't have permission to edit it" };
   }
 
   // Handle thumbnail update if provided
@@ -295,31 +355,10 @@ export async function updateLab(formData: FormData) {
     if (!THUMBNAIL_EXTENSIONS.has(thumbExt)) {
       return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
     }
-    const thumbnailPath = `labs/${id}/thumbnail.${thumbExt}`;
-    const { error: thumbError } = await admin.storage
-      .from("course-files")
-      .upload(thumbnailPath, thumbnail, {
-        contentType: CONTENT_TYPES[thumbExt] ?? thumbnail.type,
-        upsert: true,
-      });
-
-    if (thumbError) {
-      thumbnailWarning = `Lab updated, but the thumbnail could not be uploaded: ${thumbError.message}`;
-    } else {
-      const {
-        data: { publicUrl: thumbUrl },
-      } = admin.storage.from("course-files").getPublicUrl(thumbnailPath);
-      // Cache-bust: same reasoning as createLab -- this path is stable and
-      // just got overwritten (upsert), so the stored URL must change too
-      // or a browser/CDN that already cached the old file at this exact
-      // URL will keep serving it after the replacement.
-      const { error: urlUpdateError } = await admin
-        .from("labs")
-        .update({ thumbnail_url: `${thumbUrl}?v=${Date.now()}` })
-        .eq("id", id);
-      if (urlUpdateError) {
-        thumbnailWarning = `Lab updated, but the thumbnail could not be saved: ${urlUpdateError.message}`;
-      }
+    const result = await uploadLabThumbnail(admin, id, thumbnail, thumbExt);
+    if ("error" in result) {
+      const verb = result.stage === "upload" ? "uploaded" : "saved";
+      thumbnailWarning = `Lab updated, but the thumbnail could not be ${verb}: ${result.error}`;
     }
   }
 
@@ -338,7 +377,10 @@ export async function deleteLab(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isLabCreator(supabase, user.id))) {
+  // See updateLab: fetched once and reused below instead of calling
+  // isLabCreator() then isPlatformAdmin() separately.
+  const authCtx = await getLabsAuthContext(supabase, user.id);
+  if (!authCtx.canCreateLab) {
     return { error: "Not authorized - instructor, creator, core team, or admin role required" };
   }
 
@@ -350,24 +392,32 @@ export async function deleteLab(formData: FormData) {
 
   const admin = createAdminClient();
 
-  // Check that user is the creator, or a platform admin managing on behalf
-  // of another creator
-  const { data: existingLab } = await admin
-    .from("labs")
-    .select("created_by, thumbnail_url")
-    .eq("id", id)
-    .maybeSingle();
+  // Ownership is enforced directly in this SELECT's WHERE clause, same
+  // trade as updateLab: non-admins only match a row they created, so a lab
+  // that exists but isn't theirs comes back indistinguishable from one that
+  // doesn't exist at all, and both report the one combined message below.
+  // (Unlike updateLab this doesn't save a round trip -- thumbnail_url is
+  // needed either way for the storage cleanup further down -- it's purely
+  // about not having a separate ownership branch to keep in sync with the
+  // query.)
+  let existingQuery = admin.from("labs").select("created_by, thumbnail_url").eq("id", id);
+  if (!authCtx.isPlatformAdmin) {
+    existingQuery = existingQuery.eq("created_by", user.id);
+  }
+  const { data: existingLab } = await existingQuery.maybeSingle();
 
   if (!existingLab) {
-    return { error: "Lab not found" };
-  }
-
-  if (existingLab.created_by !== user.id && !(await isPlatformAdmin(supabase, user.id))) {
-    return { error: "Not authorized - you can only delete your own labs" };
+    return { error: "Lab not found, or you don't have permission to delete it" };
   }
 
   // Collect version file URLs before deleting the lab row -- they hold the
   // storage object paths for instructions/starter code/tests/solution/resources.
+  //
+  // Intentionally sequential, NOT run concurrently with the delete below:
+  // if lab_versions has an ON DELETE CASCADE FK to labs, a delete running
+  // in parallel with this read could remove the version rows before this
+  // SELECT captures their file URLs, orphaning the underlying storage
+  // objects. The read must fully complete first.
   const { data: versions } = await admin
     .from("lab_versions")
     .select(
@@ -430,7 +480,10 @@ export async function uploadLabVersionFile(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isLabCreator(supabase, user.id))) {
+  // See updateLab: fetched once and reused below instead of calling
+  // isLabCreator() then isPlatformAdmin() separately.
+  const authCtx = await getLabsAuthContext(supabase, user.id);
+  if (!authCtx.canCreateLab) {
     return { error: "Not authorized" };
   }
 
@@ -473,7 +526,7 @@ export async function uploadLabVersionFile(formData: FormData) {
     return { error: "Lab not found" };
   }
 
-  if (lab.created_by !== user.id && !(await isPlatformAdmin(supabase, user.id))) {
+  if (lab.created_by !== user.id && !authCtx.isPlatformAdmin) {
     return { error: "Not authorized - you can only edit your own labs" };
   }
 
@@ -512,7 +565,10 @@ export async function createLabVersion(formData: FormData) {
     return { error: "Not authenticated" };
   }
 
-  if (!(await isLabCreator(supabase, user.id))) {
+  // See updateLab: fetched once and reused below instead of calling
+  // isLabCreator() then isPlatformAdmin() separately.
+  const authCtx = await getLabsAuthContext(supabase, user.id);
+  if (!authCtx.canCreateLab) {
     return { error: "Not authorized" };
   }
 
@@ -544,7 +600,7 @@ export async function createLabVersion(formData: FormData) {
     return { error: "Lab not found" };
   }
 
-  if (lab.created_by !== user.id && !(await isPlatformAdmin(supabase, user.id))) {
+  if (lab.created_by !== user.id && !authCtx.isPlatformAdmin) {
     return { error: "Not authorized" };
   }
 
@@ -636,6 +692,16 @@ export async function createLabVersion(formData: FormData) {
     answerKey = answerKeyValidation.data;
   }
 
+  // NOTE: this stays sequential, after the content/answer-key processing
+  // above. It's tempting to kick this query off earlier so it overlaps
+  // with that processing (which can involve several awaited hashFlag calls),
+  // but supabase-js's query builders are lazy thenables -- the request only
+  // fires once something actually calls `.then()`/awaits it, so simply
+  // assigning the builder to a variable now and awaiting it later would NOT
+  // achieve any real concurrency. Doing this properly needs an explicit
+  // Promise.resolve(...) wrap to force eager execution, which felt like
+  // more cleverness than this file should carry silently -- flagging it as
+  // a possible follow-up rather than shipping it unverified.
   const { data: latestVersion } = await admin
     .from("lab_versions")
     .select("version_number")
@@ -693,25 +759,25 @@ export async function submitLabSolution(formData: FormData) {
 
   const admin = createAdminClient();
 
-  // Check that the lab is published
-  const { data: lab } = await admin
-    .from("labs")
-    .select("id, is_published")
-    .eq("id", labId)
-    .maybeSingle();
+  // The publish check and the latest-version lookup are independent reads
+  // (neither depends on the other's result) -- fetched concurrently rather
+  // than one after the other. If the lab turns out unpublished, the fetched
+  // version data is simply discarded below; nothing is returned to the
+  // caller either way.
+  const [{ data: lab }, { data: latestVersion }] = await Promise.all([
+    admin.from("labs").select("id, is_published").eq("id", labId).maybeSingle(),
+    admin
+      .from("lab_versions")
+      .select("id")
+      .eq("lab_id", labId)
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   if (!lab || !lab.is_published) {
     return { error: "Lab not found or not published" };
   }
-
-  // Get the latest lab version
-  const { data: latestVersion } = await admin
-    .from("lab_versions")
-    .select("id")
-    .eq("lab_id", labId)
-    .order("version_number", { ascending: false })
-    .limit(1)
-    .maybeSingle();
 
   if (!latestVersion) {
     return { error: "Lab has no versions" };
@@ -766,13 +832,29 @@ export async function getLabWithContent(labId: string) {
 
   const admin = createAdminClient();
 
-  const { data: lab } = await admin
-    .from("labs")
-    .select(
-      "id, title, description, category, difficulty, type, estimated_duration_minutes, tags, thumbnail_url, is_published, published_at, created_by, created_at, updated_at",
-    )
-    .eq("id", labId)
-    .maybeSingle();
+  // Fetched concurrently: the version row carries no access decision by
+  // itself -- it's simply left out of the response below if the lab turns
+  // out to be inaccessible -- so there's no reason to wait for the lab read
+  // to finish before starting this one.
+  const [{ data: lab }, { data: version }] = await Promise.all([
+    admin
+      .from("labs")
+      .select(
+        "id, title, description, category, difficulty, type, estimated_duration_minutes, tags, thumbnail_url, is_published, published_at, created_by, created_at, updated_at",
+      )
+      .eq("id", labId)
+      .maybeSingle(),
+    // Explicit column list -- answer_key is deliberately never selected here.
+    admin
+      .from("lab_versions")
+      .select(
+        "id, lab_id, version_number, instructions_url, starter_code_url, test_file_url, solution_url, resources_url, content, created_by, created_at",
+      )
+      .eq("lab_id", labId)
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   if (!lab) {
     return { error: "Lab not found" };
@@ -787,17 +869,6 @@ export async function getLabWithContent(labId: string) {
       return { error: "Lab not found" };
     }
   }
-
-  // Explicit column list -- answer_key is deliberately never selected here.
-  const { data: version } = await admin
-    .from("lab_versions")
-    .select(
-      "id, lab_id, version_number, instructions_url, starter_code_url, test_file_url, solution_url, resources_url, content, created_by, created_at",
-    )
-    .eq("lab_id", labId)
-    .order("version_number", { ascending: false })
-    .limit(1)
-    .maybeSingle();
 
   // Defensive re-validation: if stored content is somehow malformed (e.g.
   // edited outside the app), fail closed to null rather than return a
@@ -853,24 +924,25 @@ export async function submitLabAnswers(labId: string, answers: unknown) {
 
   const admin = createAdminClient();
 
-  // Verify the lab is available to the user (published labs only -- same
-  // rule as the existing submitLabSolution).
-  const { data: lab } = await admin.from("labs").select("id, is_published").eq("id", labId).maybeSingle();
+  // Same reasoning as getLabWithContent: the version row (including
+  // answer_key -- the only place in this file that selects it, and it
+  // never leaves this function) is only used after the publish check
+  // passes below, but fetching it concurrently rather than after costs
+  // nothing extra on the common path and saves a round trip.
+  const [{ data: lab }, { data: version }] = await Promise.all([
+    admin.from("labs").select("id, is_published").eq("id", labId).maybeSingle(),
+    admin
+      .from("lab_versions")
+      .select("id, content, answer_key")
+      .eq("lab_id", labId)
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   if (!lab || !lab.is_published) {
     return { error: "Lab not found or not published" };
   }
-
-  // Retrieve the current version INCLUDING answer_key -- this is the only
-  // place in the file that selects answer_key, and it never leaves this
-  // function.
-  const { data: version } = await admin
-    .from("lab_versions")
-    .select("id, content, answer_key")
-    .eq("lab_id", labId)
-    .order("version_number", { ascending: false })
-    .limit(1)
-    .maybeSingle();
 
   if (!version) {
     return { error: "Lab has no versions" };

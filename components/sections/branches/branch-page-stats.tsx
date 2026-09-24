@@ -42,7 +42,7 @@ export async function BranchPageStats({ memberCount, teamsCount, projectsCount, 
           {stats.map((stat, i) => (
             
               <div key={stat.label} className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
-                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                 <div className="relative flex flex-1 p-6">
                   <div className="flex items-center gap-3">

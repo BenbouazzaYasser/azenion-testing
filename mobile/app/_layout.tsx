@@ -7,6 +7,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <StatusBar style="light" />
+      {/* Dark-only mobile theme (see lib/theme.ts): background and bar stay warm charcoal. */}
       <Stack
         screenOptions={{
           headerShown: false,

@@ -119,15 +119,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       .order("joined_at", { ascending: true }),
     adminClient
       .from("activities")
-      .select("*, creator:user_id ( username, full_name )")
+      .select("id, type, metadata, created_at, creator:user_id ( username, full_name )")
       .filter("metadata->>project_id", "eq", project.id)
       .order("created_at", { ascending: false })
       .limit(20),
     adminClient
       .from("project_updates")
-      .select("*, author:author_id ( id, username, full_name, avatar_url )")
+      .select("id, title, body, image_url, created_at, updated_at, author:author_id ( id, username, full_name, avatar_url )")
       .eq("project_id", project.id)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(50),
     adminClient
       .from("project_category_members")
       .select("category_id")
@@ -177,6 +178,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   }
 
   const isMember = !!currentMember;
+
+  // Warm the signed-URL memo once for all update images (was one storage
+  // round trip per update).
+  await resolveMediaValue(
+    (rawUpdates ?? []).map((u: Record<string, unknown>) => u.image_url as string | null).filter((v): v is string => typeof v === "string"),
+    undefined,
+    adminClient,
+  );
 
   const updates = await Promise.all(
     (rawUpdates ?? []).map(async (u: Record<string, unknown>) => ({
@@ -335,14 +344,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         ) : null}
         {activities && activities.length > 0 ? (
           <ProjectPageActivity
-            activities={activities.map((a) => ({
+            activities={(activities as unknown as { type: string; metadata: unknown; created_at: string | null; creator: { full_name: string | null; username: string | null } | { full_name: string | null; username: string | null }[] | null }[]).map((a) => ({
               type: a.type,
               metadata: a.metadata as Record<string, unknown>,
               created_at: a.created_at ?? "",
               creator_name:
                 (Array.isArray(a.creator)
                   ? a.creator[0]?.full_name ?? a.creator[0]?.username
-                  : a.creator?.full_name ?? a.creator?.username) ?? null,
+                  : a.creator?.full_name ?? a.creator?.username) ?? undefined,
             }))}
           />
         ) : null}

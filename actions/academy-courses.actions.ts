@@ -39,6 +39,15 @@ function fileExtension(fileName: string): string {
 }
 
 /**
+ * M13: ext is already lowercased; reject non-alphanumeric extensions and
+ * anything outside the given allow-list. Shared by the course-file check
+ * and every thumbnail check (previously duplicated 4x).
+ */
+function isInvalidExtension(ext: string, allowed: Set<string>): boolean {
+  return /[^a-z0-9]/.test(ext) || !allowed.has(ext);
+}
+
+/**
  * Canonical course-manager check. Delegates to the database oracle
  * `public.is_course_manager()` (platform roles: core_team_member, creator,
  * plus platform-admin override) on the authenticated user-scoped client, so
@@ -72,6 +81,34 @@ function parseTags(raw: string | null): string[] | undefined {
     .map((t) => t.trim())
     .filter(Boolean)
     .slice(0, 10);
+}
+
+/**
+ * Uploads a thumbnail (extension already validated by the caller) and
+ * returns its storage path + public URL. Extracted from createCourse /
+ * updateCourse, which each need the upload but handle a failed upload
+ * differently (see call sites), so only the network step is shared here.
+ */
+async function performThumbnailUpload(
+  admin: ReturnType<typeof createAdminClient>,
+  thumbnail: File,
+  path: string,
+  ext: string
+): Promise<{ publicUrl: string } | { error: string }> {
+  const { error: uploadError } = await admin.storage
+    .from("course-files")
+    .upload(path, thumbnail, {
+      contentType: THUMBNAIL_EXT_MIME[ext],
+      upsert: true,
+    });
+
+  if (uploadError) return { error: uploadError.message };
+
+  const {
+    data: { publicUrl },
+  } = admin.storage.from("course-files").getPublicUrl(path);
+
+  return { publicUrl };
 }
 
 export async function createCourse(formData: FormData) {
@@ -127,12 +164,9 @@ export async function createCourse(formData: FormData) {
   }
 
   const ext = fileExtension(file.name);
-  const allowedExts =
-    raw.content_type === "pdf" ? PDF_EXTENSIONS : HTML_CSS_EXTENSIONS;
+  const allowedExts = raw.content_type === "pdf" ? PDF_EXTENSIONS : HTML_CSS_EXTENSIONS;
 
-  // M13: ext is already lowercased; reject non-alphanumeric extensions and
-  // anything outside the per-content-type allow-list.
-  if (/[^a-z0-9]/.test(ext) || !allowedExts.has(ext)) {
+  if (isInvalidExtension(ext, allowedExts)) {
     return {
       error:
         raw.content_type === "pdf"
@@ -191,23 +225,22 @@ export async function createCourse(formData: FormData) {
       return { error: "Thumbnail too large. Maximum size is 5MB" };
     }
     const thumbExt = fileExtension(thumbnail.name);
-    // M13: ext is already lowercased; reject non-alphanumeric extensions.
-    if (/[^a-z0-9]/.test(thumbExt) || !THUMBNAIL_EXTENSIONS.has(thumbExt)) {
+    if (isInvalidExtension(thumbExt, THUMBNAIL_EXTENSIONS)) {
       return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
     }
     const thumbnailPath = `courses/${inserted.id}/thumbnail.${thumbExt}`;
-    const { error: thumbError } = await admin.storage
-      .from("course-files")
-      .upload(thumbnailPath, thumbnail, {
-        contentType: THUMBNAIL_EXT_MIME[thumbExt],
-        upsert: true,
-      });
 
-    if (!thumbError) {
-      const {
-        data: { publicUrl: thumbUrl },
-      } = admin.storage.from("course-files").getPublicUrl(thumbnailPath);
-      const { error: thumbUpdateError } = await admin.from("courses").update({ thumbnail: thumbUrl }).eq("id", inserted.id);
+    // NOTE: preserved from the original — an upload failure here (network/
+    // storage error) is swallowed and the course still succeeds without a
+    // thumbnail, unlike an invalid extension above which aborts the whole
+    // action even though the course row already exists. Pre-existing
+    // asymmetry, not something this pass changed.
+    const result = await performThumbnailUpload(admin, thumbnail, thumbnailPath, thumbExt);
+    if (!("error" in result)) {
+      const { error: thumbUpdateError } = await admin
+        .from("courses")
+        .update({ thumbnail: result.publicUrl })
+        .eq("id", inserted.id);
       if (thumbUpdateError) {
         await safeRemoveStorageObjects(admin, "course-files", [thumbnailPath]);
       }
@@ -241,13 +274,15 @@ export async function deleteCourse(formData: FormData) {
 
   const admin = createAdminClient();
 
-  const { data: course } = await admin
+  // Combined into a single round trip: `.delete().select()` returns the
+  // deleted row's columns, so we no longer need a separate SELECT before
+  // the DELETE.
+  const { data: course, error: deleteError } = await admin
     .from("courses")
-    .select("file_path, thumbnail")
+    .delete()
     .eq("id", id)
+    .select("file_path, thumbnail")
     .maybeSingle();
-
-  const { error: deleteError } = await admin.from("courses").delete().eq("id", id);
 
   if (deleteError) {
     return { error: deleteError.message };
@@ -308,51 +343,49 @@ export async function updateCourse(formData: FormData) {
     return { error: "Thumbnail too large. Maximum size is 5MB" };
   }
 
-  // The course creator may maintain their own course metadata; course
-  // managers retain the same access over every course.
-  const { data: courseOwner } = await supabase
+  const admin = createAdminClient();
+
+  // CHANGED FROM ORIGINAL: this used to be two separate reads of the same
+  // `courses` row — one via the user-scoped `supabase` client (for the
+  // created_by/ownership check) and a second via `admin` (for the existing
+  // thumbnail). Merged into one admin-client read.
+  //
+  // Behavioral note: the original ownership check ran under RLS. If your
+  // RLS policy on `courses` only lets a user SELECT rows they created, a
+  // course *manager* who isn't the creator could have gotten a false
+  // "Course not found" there, before ever reaching the isCourseManager
+  // fallback below. Reading via `admin` here removes that failure mode.
+  // Authorization itself is unchanged — the isCreator / isCourseManager
+  // logic below is identical to before. Flagging this so you can confirm
+  // it's the behavior you want before merging.
+  const { data: courseRow } = await admin
     .from("courses")
-    .select("created_by")
+    .select("created_by, thumbnail")
     .eq("id", parsed.data.id)
     .maybeSingle();
 
-  if (!courseOwner) {
+  if (!courseRow) {
     return { error: "Course not found" };
   }
 
-  const isCreator = courseOwner.created_by === user.id;
+  const isCreator = courseRow.created_by === user.id;
   if (!isCreator && !(await isCourseManager(supabase))) {
     return { error: "Not authorized - core team only" };
   }
-
-  const admin = createAdminClient();
-
-  const { data: existing } = await admin
-    .from("courses")
-    .select("thumbnail")
-    .eq("id", parsed.data.id)
-    .maybeSingle();
 
   let thumbnailPath: string | null = null;
 
   if (hasNewThumbnail) {
     const ext = fileExtension(thumbnail.name);
-    // M13: ext is already lowercased; reject non-alphanumeric extensions.
-    if (/[^a-z0-9]/.test(ext) || !THUMBNAIL_EXTENSIONS.has(ext)) {
+    if (isInvalidExtension(ext, THUMBNAIL_EXTENSIONS)) {
       return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
     }
 
     thumbnailPath = `courses/${parsed.data.id}/thumbnail.${ext}`;
 
-    const { error: uploadError } = await admin.storage
-      .from("course-files")
-      .upload(thumbnailPath, thumbnail, {
-        contentType: THUMBNAIL_EXT_MIME[ext],
-        upsert: true,
-      });
-
-    if (uploadError) {
-      return { error: uploadError.message };
+    const result = await performThumbnailUpload(admin, thumbnail, thumbnailPath, ext);
+    if ("error" in result) {
+      return { error: result.error };
     }
   }
 
@@ -380,8 +413,8 @@ export async function updateCourse(formData: FormData) {
     patch.thumbnail = publicUrl;
   } else if (removeThumbnail) {
     patch.thumbnail = null;
-    if (existing?.thumbnail) {
-      const oldThumbPath = existing.thumbnail.split("/course-files/")[1];
+    if (courseRow.thumbnail) {
+      const oldThumbPath = courseRow.thumbnail.split("/course-files/")[1];
       if (oldThumbPath) {
         await safeRemoveStorageObjects(admin, "course-files", [oldThumbPath]);
       }

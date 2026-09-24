@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text as RNText, TextInput as RNTextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { palette, radius, spacing, type } from "../lib/theme";
+import { lineHeight, palette, radius, spacing, type } from "../lib/theme";
 
 export function Screen({ children, padded = true }: { children: React.ReactNode; padded?: boolean }) {
   return (
@@ -24,7 +24,20 @@ export function Txt({
   numberOfLines?: number;
   onPress?: () => void;
 }) {
-  return <RNText numberOfLines={numberOfLines} onPress={onPress} style={{ fontSize: type[variant], color, fontWeight: weight ?? "400" }}>{children}</RNText>;
+  return (
+    <RNText
+      numberOfLines={numberOfLines}
+      onPress={onPress}
+      style={{
+        fontSize: type[variant],
+        lineHeight: lineHeight[variant],
+        color,
+        fontWeight: weight ?? "400",
+      }}
+    >
+      {children}
+    </RNText>
+  );
 }
 
 export function Button({
@@ -48,7 +61,8 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         variant === "secondary" && styles.buttonSecondary,
-        (disabled || pressed) && styles.buttonDim,
+        pressed && !disabled && styles.buttonPressed,
+        disabled && styles.buttonDim,
       ]}
     >
       <RNText style={[styles.buttonText, variant === "secondary" && styles.buttonTextSecondary]}>
@@ -89,7 +103,15 @@ export function Press({
       accessibilityLabel={label}
       accessibilityState={{ disabled: Boolean(disabled) }}
       style={({ pressed }) => [
-        { flexDirection: direction, gap, alignItems: align, opacity: pressed || disabled ? 0.55 : 1, minHeight: 44, justifyContent: "center" },
+        {
+          flexDirection: direction,
+          gap,
+          alignItems: align,
+          opacity: disabled ? 0.5 : pressed ? 0.78 : 1,
+          transform: [{ scale: pressed && !disabled ? 0.98 : 1 }],
+          minHeight: 44,
+          justifyContent: "center",
+        },
       ]}
     >
       {children}
@@ -245,14 +267,32 @@ const styles = StyleSheet.create({
   padded: { padding: spacing.md },
   button: {
     backgroundColor: palette.accent,
+    borderWidth: 1,
+    borderColor: palette.accent,
     borderRadius: radius.md,
-    paddingVertical: 13,
+    paddingVertical: 12,
     paddingHorizontal: spacing.lg,
     alignItems: "center",
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  buttonSecondary: { backgroundColor: palette.surfaceHover, borderWidth: 1, borderColor: palette.borderStrong },
-  buttonDim: { opacity: 0.6 },
-  buttonText: { color: "#FFFFFF", fontWeight: "600", fontSize: type.body },
+  buttonSecondary: {
+    backgroundColor: palette.surfaceHover,
+    borderColor: palette.borderStrong,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  buttonPressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
+  buttonDim: { opacity: 0.5 },
+  buttonText: {
+    color: palette.onAccent,
+    fontWeight: "600",
+    fontSize: type.body,
+    lineHeight: lineHeight.body,
+  },
   buttonTextSecondary: { color: palette.ink100 },
   input: {
     backgroundColor: palette.surface,
@@ -263,17 +303,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     color: palette.ink50,
     fontSize: type.body,
+    lineHeight: lineHeight.body,
     marginBottom: spacing.sm,
   },
   card: {
-    backgroundColor: palette.surface,
+    backgroundColor: palette.card,
     borderWidth: 1,
     borderColor: palette.border,
     borderRadius: radius.lg,
     padding: spacing.md,
     marginBottom: spacing.sm,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+    elevation: 2,
   },
-  avatarFallback: { backgroundColor: palette.accent500, alignItems: "center", justifyContent: "center" },
+  avatarFallback: {
+    backgroundColor: palette.accent500,
+    borderWidth: 1,
+    borderColor: palette.borderStrong,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   divider: { height: 1, backgroundColor: palette.border, marginVertical: spacing.sm },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.lg, gap: spacing.xs },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: spacing.md },

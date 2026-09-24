@@ -8,7 +8,6 @@ import { AttachmentPreviewBar } from "@/components/chat/attachment-preview-bar";
 import { RecordingTimer } from "@/components/chat/recording-timer";
 import { CHAT_IMAGE_MIMES, CHAT_FILE_MIMES } from "@/lib/chat-media";
 import type { UseVoiceRecorderReturn } from "@/hooks/useVoiceRecorder";
-import type { GifResult } from "@/lib/gif/provider";
 import type { Sticker as StickerType } from "@/lib/stickers/catalog";
 import { toast } from "sonner";
 import nextDynamic from "next/dynamic";
@@ -17,10 +16,6 @@ import nextDynamic from "next/dynamic";
 // conversation bundle until first use.
 const EmojiPicker = nextDynamic(
   () => import("@/components/chat/emoji-picker").then((m) => m.EmojiPicker),
-  { ssr: false },
-);
-const GifPicker = nextDynamic(
-  () => import("@/components/chat/gif-picker").then((m) => m.GifPicker),
   { ssr: false },
 );
 const StickerPicker = nextDynamic(
@@ -68,7 +63,6 @@ interface ChatComposerProps {
   onMicClick: () => void;
   onCancelVoice: () => void;
   onDiscardVoice: () => void;
-  onGifSelect: (gif: GifResult, content: string) => void;
   onStickerSelect: (sticker: StickerType, content: string) => void;
   onAddFiles: (files: FileList | File[]) => void;
   onPaste: (e: React.ClipboardEvent) => void;
@@ -103,7 +97,6 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
       onMicClick,
       onCancelVoice,
       onDiscardVoice,
-      onGifSelect,
       onStickerSelect,
       onAddFiles,
       onPaste,
@@ -119,7 +112,6 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
     // High-frequency state lives here, isolated from the conversation tree.
     const [draft, setDraft] = useState("");
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const [showGifPicker, setShowGifPicker] = useState(false);
     const [showStickerPicker, setShowStickerPicker] = useState(false);
     const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
     const [isPlayingPreview, setIsPlayingPreview] = useState(false);
@@ -148,14 +140,13 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
 
     const closeAllPickers = useCallback(() => {
       setShowEmojiPicker(false);
-      setShowGifPicker(false);
       setShowStickerPicker(false);
       setShowAttachmentMenu(false);
     }, []);
 
     // Close any open picker on outside click or Escape.
     useEffect(() => {
-      if (!showEmojiPicker && !showGifPicker && !showStickerPicker && !showAttachmentMenu) return;
+      if (!showEmojiPicker && !showStickerPicker && !showAttachmentMenu) return;
       function handleOutside(e: MouseEvent) {
         if (emojiContainerRef.current && !emojiContainerRef.current.contains(e.target as Node)) {
           closeAllPickers();
@@ -170,7 +161,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
         document.removeEventListener("mousedown", handleOutside);
         document.removeEventListener("keydown", handleEsc);
       };
-    }, [showEmojiPicker, showGifPicker, showStickerPicker, showAttachmentMenu, closeAllPickers]);
+    }, [showEmojiPicker, showStickerPicker, showAttachmentMenu, closeAllPickers]);
 
     // Caret-aware emoji insert at the textarea's selection point.
     const insertEmoji = useCallback(
@@ -240,11 +231,6 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
     const handleMicButton = () => {
       closeAllPickers();
       onMicClick();
-    };
-
-    const handleGif = (gif: GifResult) => {
-      closeAllPickers();
-      onGifSelect(gif, draft);
     };
 
     const handleSticker = (sticker: StickerType) => {
@@ -371,11 +357,6 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                 <EmojiPicker onSelect={insertEmoji} onClose={() => setShowEmojiPicker(false)} />
               </div>
             )}
-            {showGifPicker && (
-              <div className="absolute bottom-full left-0 z-30 mb-2 max-w-[calc(100vw-3rem)] sm:left-16">
-                <GifPicker onSelect={handleGif} onClose={() => setShowGifPicker(false)} />
-              </div>
-            )}
             {showStickerPicker && (
               <div className="absolute bottom-full left-0 z-30 mb-2 max-w-[calc(100vw-3rem)] sm:left-32">
                 <StickerPicker onSelect={handleSticker} onClose={() => setShowStickerPicker(false)} />
@@ -437,8 +418,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                     // same batch would cancel the open (last update wins).
                     if (next) {
                       setShowEmojiPicker(false);
-                      setShowGifPicker(false);
-                      setShowStickerPicker(false);
+                                      setShowStickerPicker(false);
                     }
                   }}
                   disabled={!!voice.blob || voice.isRecording}
@@ -463,8 +443,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                   // Same batching rule as the + button above.
                   if (next) {
                     setShowAttachmentMenu(false);
-                    setShowGifPicker(false);
-                    setShowStickerPicker(false);
+                                  setShowStickerPicker(false);
                   }
                 }}
                 disabled={!!voice.blob || voice.isRecording}

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Tajawal, Noto_Naskh_Arabic, Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import { InlineScript } from "@/components/ui/inline-script";
 import { LazyToaster } from "@/components/ui/lazy-toaster";
 import "./globals.css";
@@ -10,58 +9,16 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TranslationProvider } from "@/components/translation/translation-provider";
 import { CallProvider } from "@/components/call/call-provider";
 
-const inter = Inter({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const tajawal = Tajawal({
-  weight: ["400", "500", "700"],
-  subsets: ["latin", "arabic"],
-  variable: "--font-tajawal",
-  display: "swap",
-  // On-demand: next/font preloads every file by default, which would force
-  // EN visitors to download the Arabic stacks. They only apply under
-  // html[lang=ar] (see globals.css), so load them lazily instead.
-  preload: false,
-});
-
-const notoNaskhArabic = Noto_Naskh_Arabic({
-  weight: ["400", "500", "600"],
-  subsets: ["latin", "arabic"],
-  variable: "--font-noto-naskh",
-  display: "swap",
-  // Same as Tajawal above: Arabic-only, load on demand.
-  preload: false,
-});
-
-// Display face: owns h1–h3 (see globals.css). Its slightly technical,
-// blueprint-like letterforms match what the product actually hosts —
-// labs, specs, versioned project artifacts. Inter stays the reading face.
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-// Mono with a job: handles, lab version tags, code — not decorative labels.
-const plexMono = IBM_Plex_Mono({
-  weight: ["400", "500"],
-  subsets: ["latin"],
-  variable: "--font-plex-mono",
-  display: "swap",
-  preload: false,
-});
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   // Required for env(safe-area-inset-*) to report real insets on notched
   // iPhones. Never add maximumScale/user-scalable=no (accessibility).
   viewportFit: "cover",
-  themeColor: "#070A14",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F7F5F2" },
+    { media: "(prefers-color-scheme: dark)", color: "#211F1C" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -93,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning className={`${inter.variable} ${tajawal.variable} ${notoNaskhArabic.variable} ${spaceGrotesk.variable} ${plexMono.variable}`}>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
         <InlineScript
           id="azenion-theme-init"

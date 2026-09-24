@@ -68,20 +68,23 @@ async function recipientEnabled(userId: string, type: string): Promise<boolean> 
 export async function insertNotification(input: NotificationInput) {
   const supabase = createAdminClient();
 
-  if (!(await recipientEnabled(input.userId, input.type))) {
+  const [enabled, { data: existing }] = await Promise.all([
+    recipientEnabled(input.userId, input.type),
+    supabase
+      .from("notifications")
+      .select("id")
+      .eq("user_id", input.userId)
+      .eq("type", input.type)
+      .eq("actor_id", input.actorId)
+      .eq("target_type", input.targetType ?? null)
+      .eq("target_id", input.targetId ?? null)
+      .eq("read", false)
+      .limit(1),
+  ]);
+
+  if (!enabled) {
     return { skipped: true };
   }
-
-  const { data: existing } = await supabase
-    .from("notifications")
-    .select("id")
-    .eq("user_id", input.userId)
-    .eq("type", input.type)
-    .eq("actor_id", input.actorId)
-    .eq("target_type", input.targetType ?? null)
-    .eq("target_id", input.targetId ?? null)
-    .eq("read", false)
-    .limit(1);
 
   if (existing && existing.length > 0) {
     return { skipped: true };

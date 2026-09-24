@@ -61,7 +61,7 @@ export async function AcademyFeatures() {
             
               <article key={feature.titleKey} className="group flex h-full flex-col rounded-2xl card-surface p-8 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40">
                 <div className="flex items-center justify-between">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-accent-400/25 bg-accent/[0.08] text-accent-300 shadow-[0_0_24px_-6px_rgba(109,109,255,0.5)]">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-accent-400/25 bg-accent/[0.08] text-accent-300 shadow-card">
                     <feature.icon size={22} />
                   </span>
                 </div>

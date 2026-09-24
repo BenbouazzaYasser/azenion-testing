@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Plus, Pencil, Trash2, Users, MapPin, Building2, X, AlertTriangle, ShieldCheck, UserPlus, UserX, Check, ImagePlus, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { BackgroundInfinity } from "@/components/graphics/background-infinity";
-import { createBranch, updateBranch, deleteBranch, assignBranchLeader, removeBranchLeader, uploadBranchLogoAsset } from "@/actions/branch.actions";
+import { createBranch, updateBranch, deleteBranch, assignBranchLeader, removeBranchLeader, uploadBranchLogoAsset, searchBranchLeaderCandidates } from "@/actions/branch.actions";
 
 interface BranchLeader {
   id: string;
@@ -36,7 +36,6 @@ interface BranchItem {
 
 interface BranchManageClientProps {
   branches: BranchItem[];
-  profiles: ProfileOption[];
 }
 
 const inputClass =
@@ -44,7 +43,7 @@ const inputClass =
 
 const labelClass = "mb-1.5 block text-sm font-medium text-ink-200";
 
-export function BranchManageClient({ branches, profiles }: BranchManageClientProps) {
+export function BranchManageClient({ branches }: BranchManageClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +68,39 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
   const [assignFor, setAssignFor] = useState<string | null>(null);
   const [assignQuery, setAssignQuery] = useState("");
   const [assignConfirm, setAssignConfirm] = useState<string | null>(null);
+  const [candidates, setCandidates] = useState<ProfileOption[]>([]);
+  const [candidatesLoading, setCandidatesLoading] = useState(false);
+
+  // Server-side typeahead (same member/leader candidate set as before, capped
+  // at 8) so the page never ships every member profile to the browser.
+  useEffect(() => {
+    if (!assignFor) {
+      setCandidates([]);
+      return;
+    }
+    const branch = branches.find((b) => b.id === assignFor);
+    const excludeUserIds = (branch?.leaders ?? []).map((l) => l.id);
+    let cancelled = false;
+    setCandidatesLoading(true);
+    const handle = setTimeout(() => {
+      searchBranchLeaderCandidates(assignQuery, excludeUserIds)
+        .then((res) => {
+          if (cancelled) return;
+          if ("candidates" in res) setCandidates(res.candidates);
+          else {
+            setCandidates([]);
+            setError(res.error);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setCandidatesLoading(false);
+        });
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [assignFor, assignQuery, branches]);
 
   function resetForm() {
     setFormName("");
@@ -229,20 +261,7 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
     });
   }
 
-  function matchingProfiles(branch: BranchItem) {
-    const leaderIds = new Set(branch.leaders.map((m) => m.id));
-    const q = assignQuery.trim().toLowerCase();
-    return profiles
-      .filter((p) => !leaderIds.has(p.id))
-      .filter((p) => {
-        if (!q) return true;
-        return (
-          p.username.toLowerCase().includes(q) ||
-          (p.full_name ?? "").toLowerCase().includes(q)
-        );
-      })
-      .slice(0, 8);
-  }
+  const matchingProfiles = candidates;
 
   return (
     <section className="relative overflow-hidden pt-[88px] sm:pt-[104px] lg:pt-[120px]">
@@ -610,14 +629,16 @@ export function BranchManageClient({ branches, profiles }: BranchManageClientPro
                             <UserPlus size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-600" />
                           </div>
                           <div className="mt-2 max-h-52 space-y-1 overflow-y-auto rounded-xl bg-surface p-1.5">
-                            {matchingProfiles(branch).length === 0 ? (
+                            {matchingProfiles.length === 0 ? (
                               <p className="px-3 py-2 text-xs text-ink-600">
-                                {profiles.length === 0
-                                  ? "No users available to assign."
-                                  : "No matching users."}
+                                {candidatesLoading
+                                  ? "Searching..."
+                                  : assignQuery.trim()
+                                    ? "No matching users."
+                                    : "No users available to assign."}
                               </p>
                             ) : (
-                              matchingProfiles(branch).map((p) => (
+                              matchingProfiles.map((p) => (
                                 <button
                                   key={p.id}
                                   type="button"

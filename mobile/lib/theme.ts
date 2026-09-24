@@ -1,27 +1,38 @@
+// Mobile is currently dark-only by design (single warm-charcoal theme).
+// The web app supports light/dark via CSS tokens; mobile keeps navigation
+// and layout unchanged and reuses this one palette. Do not add a second
+// mobile theme without a matching design decision.
 export const palette = {
-  bg: "#0E1016",
-  surface: "#12141C",
-  surfaceHover: "#171A24",
-  border: "rgba(255,255,255,0.08)",
-  borderStrong: "rgba(255,255,255,0.14)",
-  ink50: "#F4F5F8",
-  ink100: "#DEE0E9",
-  ink200: "#C7C9D6",
-  ink300: "#A9ACBA",
-  ink400: "#8B8D9A",
-  ink500: "#6E7180",
-  ink600: "#5B5D6B",
-  accent: "#2828FF",
-  accent400: "#6D6DFF",
-  accent500: "#2020E8",
-  danger: "#F0445E",
-  success: "#32C48D",
+  bg: "#211F1C",
+  surface: "#2B2824",
+  surfaceHover: "#37332E",
+  card: "#2E2B27",
+  border: "rgba(247,245,242,0.08)",
+  borderStrong: "rgba(247,245,242,0.16)",
+  ink50: "#F7F5F2",
+  ink100: "#EEE9E3",
+  ink200: "#D8D0C8",
+  ink300: "#B8AEA4",
+  ink400: "#AAA198",
+  ink500: "#9C948B",
+  ink600: "#81786F",
+  accent: "#5865F2",
+  accent400: "#848DF8",
+  accent500: "#4F46E5",
+  secondary: "#C96F4A",
+  secondarySoft: "rgba(201,111,74,0.14)",
+  onAccent: "#FFFFFF",
+  onAccentMuted: "rgba(255,255,255,0.9)",
+  scrim: "rgba(20,19,17,0.72)",
+  shadow: "#0C0B0A",
+  danger: "#E15B65",
+  success: "#50B58A",
 } as const;
 
 export const radius = {
   sm: 8,
-  md: 12,
-  lg: 16,
+  md: 10,
+  lg: 12,
   full: 999,
 } as const;
 
@@ -39,4 +50,18 @@ export const type = {
   body: 15,
   caption: 13,
   tiny: 11,
+} as const;
+
+export const lineHeight = {
+  title: 28,
+  subtitle: 23,
+  body: 23,
+  caption: 18,
+  tiny: 15,
+} as const;
+
+export const motion = {
+  fast: 150,
+  base: 180,
+  slow: 200,
 } as const;

@@ -22,7 +22,6 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Base surfaces — several near-black shades, never flat pure #000
         void: {
           950: "rgb(var(--void-950) / <alpha-value>)",
           900: "rgb(var(--void-900) / <alpha-value>)",
@@ -32,16 +31,19 @@ const config: Config = {
           DEFAULT: "rgb(var(--surface) / <alpha-value>)",
           hover: "rgb(var(--surface-hover) / <alpha-value>)",
         },
-        // Brand accent — rgb(40,40,255), used sparingly. Core shades are
-        // theme-independent; the tint shades adapt to the current theme.
         accent: {
-          DEFAULT: "#2828FF",
+          DEFAULT: "rgb(var(--accent-primary) / <alpha-value>)",
           200: "rgb(var(--accent-200) / <alpha-value>)",
           300: "rgb(var(--accent-300) / <alpha-value>)",
-          400: "#6D6DFF",
-          500: "#2020E8",
-          600: "#1818C0",
-          glow: "#4747FF",
+          400: "rgb(var(--accent-400) / <alpha-value>)",
+          500: "rgb(var(--accent-500) / <alpha-value>)",
+          600: "rgb(var(--accent-600) / <alpha-value>)",
+          glow: "rgb(var(--accent-400) / <alpha-value>)",
+        },
+        secondary: {
+          300: "rgb(var(--secondary-300) / <alpha-value>)",
+          400: "rgb(var(--secondary-400) / <alpha-value>)",
+          500: "rgb(var(--secondary-500) / <alpha-value>)",
         },
         ink: {
           50: "rgb(var(--ink-50) / <alpha-value>)",
@@ -54,57 +56,74 @@ const config: Config = {
           700: "rgb(var(--ink-700) / <alpha-value>)",
         },
         border: {
-          DEFAULT: "rgba(var(--border) / 0.08)",
-          strong: "rgba(var(--border-strong) / 0.14)",
+          DEFAULT: "rgb(var(--border) / 0.1)",
+          strong: "rgb(var(--border-strong) / 0.18)",
         },
-        // Glass overlays — dropdowns, drawers, panels, navbar pill
         glass: {
-          DEFAULT: "rgba(var(--glass) / 0.82)",
-          strong: "rgba(var(--glass-strong) / 0.94)",
-          panel: "rgba(var(--glass-panel) / 0.72)",
-          nav: "rgba(var(--glass-nav) / 0.78)",
+          DEFAULT: "rgb(var(--glass) / 0.96)",
+          strong: "rgb(var(--glass-strong) / 0.98)",
+          panel: "rgb(var(--glass-panel) / 0.96)",
+          nav: "rgb(var(--glass-nav) / 0.96)",
         },
-        // Modal backdrop — always dark, matches the brand's night scrim
         scrim: "rgb(var(--scrim) / <alpha-value>)",
-        // Signature cosmic surfaces — always dark, theme-independent
         cosmic: "rgb(var(--cosmic))",
-        dust: "#FFD9B3",
+      },
+      spacing: {
+        0: "var(--space-0)",
+        px: "var(--space-0-5)",
+        0.5: "var(--space-0-5)",
+        1: "var(--space-1)",
+        1.5: "var(--space-1-5)",
+        2: "var(--space-2)",
+        2.5: "var(--space-2-5)",
+        3: "var(--space-3)",
+        3.5: "var(--space-3-5)",
+        4: "var(--space-4)",
+        5: "var(--space-5)",
+        6: "var(--space-6)",
+        7: "var(--space-7)",
+        8: "var(--space-8)",
+        10: "var(--space-10)",
+        11: "var(--space-11)",
+        12: "var(--space-12)",
+        14: "var(--space-14)",
+        16: "var(--space-16)",
+        20: "var(--space-20)",
+        24: "var(--space-24)",
+      },
+      borderRadius: {
+        sm: "var(--radius-sm)",
+        DEFAULT: "var(--radius-md)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+        "2xl": "var(--radius-2xl)",
+        "3xl": "var(--radius-3xl)",
+        "4xl": "var(--radius-3xl)",
+        full: "var(--radius-full)",
       },
       fontFamily: {
-        display: [
-          "Proxima Nova",
-          "var(--font-display)",
-          "var(--font-inter)",
-          "ui-sans-serif",
-          "system-ui",
-          "sans-serif",
-        ],
-        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: [
-          "var(--font-plex-mono)",
-          "ui-monospace",
-          "SFMono-Regular",
-          "Menlo",
-          "monospace",
-        ],
+        display: ["var(--font-display)"],
+        sans: ["var(--font-ui)"],
+        body: ["var(--font-body)"],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       backgroundImage: {
         "radial-fade":
-          "radial-gradient(circle at 50% 0%, rgba(40,40,255,0.10), transparent 60%)",
+          "radial-gradient(circle at 50% 0%, rgb(var(--accent-primary) / 0.07), transparent 62%)",
         grain: "url('/noise.svg')",
       },
       boxShadow: {
-        // No glow anywhere: these aliases resolve to flat architectural depth
-        // so every legacy shadow-glow* class degrades to a neutral shadow.
-        glow: "0 18px 50px -30px rgba(0,0,0,0.7)",
-        "glow-sm": "0 8px 24px -18px rgba(0,0,0,0.7)",
-        card: "0 1px 0 0 rgba(244,245,248,0.06) inset",
-        "card-hover": "0 0 0 1px rgba(109,109,255,0.12) inset, 0 10px 30px -12px rgba(0,0,0,0.4)",
-        "card-active": "0 0 0 1px rgba(109,109,255,0.18) inset, 0 2px 10px -4px rgba(0,0,0,0.45)",
-        dialog: "0 0 0 1px rgba(255,255,255,0.04) inset, 0 30px 80px -20px rgba(40,40,255,0.15)",
-        dropdown: "0 24px 70px -20px rgba(0,0,0,0.65), 0 0 50px -18px rgba(40,40,255,0.5)",
-        input: "0 0 0 1px rgba(109,109,255,0.15)",
-        "input-error": "0 0 0 1px rgba(239,68,68,0.3)",
+        control: "var(--shadow-control)",
+        glow: "var(--shadow-control)",
+        "glow-sm": "var(--shadow-control)",
+        card: "var(--shadow-card)",
+        "card-hover": "var(--shadow-card-hover)",
+        "card-active": "var(--shadow-card-active)",
+        dialog: "var(--shadow-dialog)",
+        dropdown: "var(--shadow-dropdown)",
+        input: "0 0 0 1px rgb(var(--border) / 0.1)",
+        "input-error": "0 0 0 1px rgb(239 68 68 / 0.3)",
       },
       keyframes: {
         "fade-in-up": {
@@ -213,8 +232,11 @@ const config: Config = {
         },
       },
       animation: {
-        "fade-in-up": "fade-in-up 0.7s cubic-bezier(0.16,1,0.3,1) forwards",
-        "dropdown-in": "dropdown-in 0.28s cubic-bezier(0.16,1,0.3,1)",
+        // Interaction/entrance motion stays within the 150–200ms budget.
+        // Ambient infinity/background loops below are a deliberate exception:
+        // slow, opacity-only decoration with reduced-motion fallback in globals.css.
+        "fade-in-up": "fade-in-up var(--duration-slow) var(--ease-standard) forwards",
+        "dropdown-in": "dropdown-in var(--duration-base) var(--ease-standard)",
         "drift-slow": "drift-slow 240s linear infinite",
         "pulse-glow": "pulse-glow 7s ease-in-out infinite",
         twinkle: "twinkle 5s ease-in-out infinite",
@@ -238,8 +260,15 @@ const config: Config = {
         "bg-infinity-scale": "bg-infinity-scale 120s ease-in-out infinite",
         "bg-infinity-pulse": "bg-infinity-pulse 60s ease-in-out infinite",
       },
+      transitionDuration: {
+        150: "var(--duration-fast)",
+        200: "var(--duration-base)",
+        300: "var(--duration-base)",
+        500: "var(--duration-slow)",
+        700: "var(--duration-slow)",
+      },
       transitionTimingFunction: {
-        premium: "cubic-bezier(0.16, 1, 0.3, 1)",
+        premium: "var(--ease-standard)",
       },
     },
   },

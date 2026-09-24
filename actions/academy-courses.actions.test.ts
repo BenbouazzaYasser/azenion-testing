@@ -22,7 +22,6 @@ function userClientDouble(opts: {
   oracleData?: unknown;
   oracleError?: { message: string } | null;
   rpcError?: { message: string } | null;
-  fromSelectData?: unknown;
 }) {
   const rpc = vi.fn(async (name: string, _args?: unknown) => {
     if (name === "is_course_manager" || name === "can_create_course") {
@@ -30,19 +29,8 @@ function userClientDouble(opts: {
     }
     return { data: null, error: opts.rpcError ?? null };
   });
-  const from = vi.fn((_table: string) => ({
-    select: vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        maybeSingle: async () => ({
-          data: opts.fromSelectData ?? null,
-          error: null,
-        }),
-      }),
-    }),
-  }));
   return {
     rpc,
-    from,
     auth: {
       getUser: async () => ({
         data: { user: opts.user === undefined ? { id: "user-1" } : opts.user },
@@ -52,29 +40,46 @@ function userClientDouble(opts: {
   };
 }
 
-function adminDouble() {
-  const tableStub = () => ({
-    select: (..._a: unknown[]) => ({
-      eq: (..._b: unknown[]) => ({
-        maybeSingle: async () => ({
-          data: { file_path: "courses/owner-1/abc.pdf", thumbnail: null },
-          error: null,
-        }),
-      }),
-    }),
-    delete: (..._a: unknown[]) => ({
-      eq: (..._b: unknown[]) => ({ error: null }),
-    }),
-    update: (..._a: unknown[]) => ({
-      eq: (..._b: unknown[]) => ({ error: null }),
-    }),
-  });
+/**
+ * A minimal stand-in for supabase-js's PostgrestFilterBuilder: every method
+ * returns the same chainable node, and the node is thenable so `await` works
+ * whether it's called after `.eq()`, `.maybeSingle()`, `.single()`, or any
+ * other point in the chain — matching how the real client behaves. This
+ * keeps the double resilient to query-shape changes (e.g. `.select()` then
+ * `.delete()` vs `.delete()` then `.select()`) instead of hard-coding one
+ * exact chain per table method.
+ */
+function makeQueryResult(result: { data: unknown; error: unknown }) {
+  const node: any = {
+    eq: () => node,
+    select: () => node,
+    delete: () => node,
+    update: () => node,
+    insert: () => node,
+    upsert: () => node,
+    maybeSingle: async () => result,
+    single: async () => result,
+    then: (resolve: (v: typeof result) => unknown, reject?: (e: unknown) => unknown) =>
+      Promise.resolve(result).then(resolve, reject),
+  };
+  return node;
+}
+
+function adminDouble(opts?: {
+  courseRow?: { file_path?: string | null; thumbnail?: string | null } | null;
+}) {
+  const courseResult = {
+    data: opts?.courseRow ?? { file_path: "courses/owner-1/abc.pdf", thumbnail: null },
+    error: null,
+  };
   return {
     rpc: vi.fn(),
-    from: vi.fn((_table: string) => tableStub()),
+    from: vi.fn((_table: string) => makeQueryResult(courseResult)),
     storage: {
       from: vi.fn((_bucket: string) => ({
         remove: vi.fn(async (_paths: string[]) => ({ data: [], error: null })),
+        upload: vi.fn(async () => ({ data: { path: "x" }, error: null })),
+        getPublicUrl: vi.fn(() => ({ data: { publicUrl: "https://example.com/x" } })),
       })),
     },
   };
@@ -111,7 +116,7 @@ describe("course-manager gate delegates to the canonical DB oracle", () => {
     { role: "creator", oracle: true, allowed: true },
     { role: "instructor without course-manager privilege", oracle: false, allowed: false },
     { role: "ordinary user", oracle: false, allowed: false },
-  ])("$role (oracle=$oracle) is ${allowed ? 'allowed' : 'denied'}", async ({ oracle, allowed }) => {
+  ])("$role (oracle=$oracle) is $allowed", async ({ oracle, allowed }) => {
     const userClient: any = userClientDouble({ oracleData: oracle });
     const admin: any = adminDouble();
     (createClient as any).mockResolvedValue(userClient);
@@ -178,10 +183,6 @@ describe("course creation is gated through can_create_course", () => {
 });
 
 describe("publishCourse", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("unauthenticated callers are rejected before any RPC", async () => {
     const userClient: any = userClientDouble({ user: null });
     (createClient as any).mockResolvedValue(userClient);
@@ -245,10 +246,6 @@ describe("publishCourse", () => {
 });
 
 describe("unpublishCourse", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("unauthenticated callers are rejected before any RPC", async () => {
     const userClient: any = userClientDouble({ user: null });
     (createClient as any).mockResolvedValue(userClient);
@@ -273,10 +270,6 @@ describe("unpublishCourse", () => {
 });
 
 describe("updateCourseStatus keeps published transitions out of direct status flips", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("rejects 'published' so publish decisions go through publishCourse", async () => {
     const userClient: any = userClientDouble({ oracleData: true });
     const admin: any = adminDouble();

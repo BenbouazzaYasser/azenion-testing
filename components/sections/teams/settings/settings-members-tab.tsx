@@ -137,14 +137,14 @@ export function SettingsMembersTab({
                           key={roleId}
                           className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium"
                           style={{
-                            borderColor: `${role.color ?? "#6d6dff"}40`,
-                            color: role.color ?? "#a5a5ff",
-                            backgroundColor: `${role.color ?? "#6d6dff"}14`,
+                            borderColor: `${role.color ?? "#5865F2"}40`,
+                            color: role.color ?? "#5865F2",
+                            backgroundColor: `${role.color ?? "#5865F2"}14`,
                           }}
                         >
                           <span
                             className="h-1.5 w-1.5 rounded-full"
-                            style={{ backgroundColor: role.color ?? "#a5a5ff" }}
+                            style={{ backgroundColor: role.color ?? "#5865F2" }}
                           />
                           {role.name}
                         </span>

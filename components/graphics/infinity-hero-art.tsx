@@ -39,7 +39,7 @@ export function InfinityHeroArt({ className, idPrefix = "hero", variant = "hero"
     >
       <path
         d={INFINITY_PATH}
-        stroke="#EAF0FF"
+        stroke="rgb(var(--ink-50))"
         strokeWidth="1"
         strokeLinecap="square"
         strokeLinejoin="miter"
@@ -49,7 +49,7 @@ export function InfinityHeroArt({ className, idPrefix = "hero", variant = "hero"
       />
       <path
         d={INFINITY_PATH}
-        stroke="#2828FF"
+        stroke="rgb(var(--accent-primary))"
         strokeWidth="3"
         strokeLinecap="square"
         strokeLinejoin="miter"

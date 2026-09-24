@@ -35,7 +35,7 @@ export async function NetworkStats({ branchCount, memberCount, upcomingEvents }:
               key={stat.label}
               className="flex flex-col items-center gap-2 px-8 py-8 text-center"
             >
-              <stat.icon className="h-5 w-5 text-[rgb(40,40,255)]" aria-hidden="true" />
+              <stat.icon className="h-5 w-5 text-accent" aria-hidden="true" />
               <span className="text-3xl font-semibold text-ink-50">{stat.value}</span>
               <span className="text-xs uppercase tracking-normal text-ink-500">
                 {stat.label}

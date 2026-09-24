@@ -141,7 +141,7 @@ export function PostCard({ item, onChanged }: { item: FeedItem; onChanged: (next
         </Press>
       </View>
       <Modal visible={menu} transparent animationType="fade" onRequestClose={() => setMenu(false)}>
-        <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }} onPress={() => setMenu(false)}>
+        <Pressable style={{ flex: 1, backgroundColor: palette.scrim, justifyContent: "flex-end" }} onPress={() => setMenu(false)}>
           <View style={{ backgroundColor: palette.surface, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, padding: spacing.lg }}>
             <Button title={item.saved_by_user ? "Unsave post" : "Save post"} variant="secondary" onPress={() => void toggleSave()} />
             <View style={{ height: spacing.sm }} />

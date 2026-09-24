@@ -36,7 +36,7 @@ export function BranchSpotlight({
   const order = String(index + 1).padStart(2, "0");
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl card-surface p-6 backdrop-blur-xl transition-all duration-700 ease-premium hover:border-[rgba(40,40,255,0.4)] sm:p-10 lg:p-12">
+    <article className="group relative overflow-hidden rounded-2xl card-surface p-6 backdrop-blur-xl transition-all duration-700 ease-premium hover:border-accent-400/40 sm:p-10 lg:p-12">
       {/* Background index numeral */}
       <span
         aria-hidden="true"
@@ -63,8 +63,8 @@ export function BranchSpotlight({
                   <svg viewBox="0 0 512 512" className="h-full w-full" aria-hidden="true">
                     <defs>
                       <linearGradient id={"infinity-grad-".concat(branch.slug)} x1="106.74" y1="349.27" x2="405.26" y2="162.73" gradientUnits="userSpaceOnUse">
-                        <stop offset="0.5" stopColor="#0033ff" stopOpacity="1" />
-                        <stop offset="1" stopColor="#00ff00" stopOpacity="1" />
+                        <stop offset="0.5" stopColor="rgb(var(--accent-primary))" stopOpacity="1" />
+                        <stop offset="1" stopColor="rgb(var(--accent-secondary))" stopOpacity="1" />
                       </linearGradient>
                     </defs>
                     <path d="M96 256C96 170 192 170 256 256C320 342 416 342 416 256C416 170 320 170 256 256C192 342 96 342 96 256Z" fill="none" stroke={"url(#infinity-grad-".concat(branch.slug, ")")} strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
@@ -91,12 +91,12 @@ export function BranchSpotlight({
 
           <div className="mt-6 flex items-center gap-6 pt-6">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-[rgb(40,40,255)]" aria-hidden="true" />
+              <Users className="h-4 w-4 text-accent" aria-hidden="true" />
               <span className="text-sm text-ink-300">{branch.memberCount} {branch.memberCount !== 1 ? t("teams.memberMany") : t("teams.memberOne")}</span>
             </div>
             {branch.founded ? (
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-[rgb(40,40,255)]" aria-hidden="true" />
+                <Calendar className="h-4 w-4 text-accent" aria-hidden="true" />
                 <span className="text-sm text-ink-600">{t("branches.since")} {branch.founded}</span>
               </div>
             ) : null}
@@ -153,7 +153,7 @@ export function BranchSpotlight({
         <div className={`flex flex-col gap-6 ${reversed ? "lg:order-1" : "lg:order-2"}`}>
           <div className="rounded-2xl bg-surface p-6">
             <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-normal text-ink-500">
-              <Calendar className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
+              <Calendar className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
               {t("branches.upcomingEvents")}
             </div>
             <ul className="flex flex-col gap-3">
@@ -167,7 +167,7 @@ export function BranchSpotlight({
 
           <div className="rounded-2xl bg-surface p-6">
             <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-normal text-ink-500">
-              <Sparkles className="h-3.5 w-3.5 text-[rgb(40,40,255)]" aria-hidden="true" />
+              <Sparkles className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
               {t("branches.branchHighlights")}
             </div>
             <ul className="flex flex-col gap-3">

@@ -32,7 +32,7 @@ export const ROADMAP_STATUS_META: Record<
     icon: Play,
     chipClass: "border-accent-400/40 bg-accent/[0.12] text-accent-300",
     dotClass:
-      "border-accent-400/40 bg-accent/[0.12] text-accent-300 shadow-[0_0_16px_-4px_rgba(109,109,255,0.7)]",
+      "border-accent-400/40 bg-accent/[0.12] text-accent-300 shadow-control",
   },
   upcoming: {
     label: "Upcoming",

@@ -27,7 +27,7 @@ export function MobileChannelStrip({ serverSlug, channels }: MobileChannelStripP
             className={cn(
               "flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 ease-premium",
               active
-                ? "bg-surface-hover text-ink-50 shadow-[0_0_14px_-6px_rgba(90,120,255,0.6)]"
+                ? "bg-surface-hover text-ink-50 shadow-control"
                 : "bg-surface text-ink-300 hover:text-ink-100",
             )}
           >

@@ -62,7 +62,7 @@ export function TeamCard({ team, index }: TeamCardProps) {
     
       <Link href={`/teams/${team.slug}`} className="group block h-full focus-visible:outline-none">
         <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 group-focus-visible:ring-2 group-focus-visible:ring-accent-400/60">
-          <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
           <div className="relative flex flex-1 flex-col p-6 sm:p-8">
             {/* Top: Logo, Name, Owner, Category */}

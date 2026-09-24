@@ -4,19 +4,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-[color,background-color,border-color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex touch-manipulation select-none items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         primary:
-          "bg-accent text-white hover:bg-accent-500 active:scale-[0.98]",
+          "bg-accent text-white shadow-control hover:-translate-y-px hover:bg-accent-500 hover:shadow-card active:translate-y-0 active:scale-[0.98]",
         secondary:
-          "border border-border-strong text-ink-50 hover:border-accent-400/60 hover:bg-surface-hover active:scale-[0.98]",
-        ghost: "text-ink-200 hover:text-ink-50 hover:bg-surface-hover",
+          "border border-border-strong bg-surface/80 text-ink-50 shadow-control hover:-translate-y-px hover:border-accent-400/40 hover:bg-surface-hover active:translate-y-0 active:scale-[0.98]",
+        ghost:
+          "text-ink-200 hover:bg-surface-hover hover:text-ink-50 active:scale-[0.98]",
       },
       size: {
         default: "h-11 px-6",
-        sm: "min-h-[44px] h-11 px-5 text-[13px]",
+        sm: "h-11 min-h-[44px] px-5 text-[13px]",
         lg: "h-12 px-7 text-[15px]",
       },
     },

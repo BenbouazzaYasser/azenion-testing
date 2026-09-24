@@ -5,7 +5,7 @@ export async function PageBridge() {
     <div className="relative h-40 overflow-hidden sm:h-48 lg:h-56" aria-hidden>
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent/[0.04] to-transparent" />
 
-      <div className="absolute left-1/2 top-1/2 h-52 w-[800px] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(40,40,255,0.08),transparent_70%)]" />
+      <div className="absolute left-1/2 top-1/2 h-52 w-[800px] -translate-x-1/2 -translate-y-1/2" />
 
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-[15%] top-[25%] h-[2px] w-[2px] rounded-full bg-accent-400/40" />

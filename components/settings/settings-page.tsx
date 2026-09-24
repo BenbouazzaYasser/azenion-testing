@@ -188,7 +188,7 @@ export function SettingsPage({ account, profile, branch, settings }: SettingsPag
                     className={cn(
                       "flex items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-medium whitespace-nowrap transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 lg:w-full",
                       isActive
-                        ? "border-accent-400/30 bg-surface text-ink-50 shadow-[0_0_18px_-8px_rgba(90,120,255,0.5)]"
+                        ? "border-accent-400/30 bg-surface text-ink-50 shadow-card"
                         : "border-transparent text-ink-400 hover:bg-surface-hover hover:text-ink-200",
                     )}
                   >

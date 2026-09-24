@@ -602,14 +602,6 @@ export async function createProjectUpdate(formData: FormData) {
       },
     });
 
-    // Verify persistence by immediately fetching the newest update
-    const { data: verify } = await supabase
-      .from("project_updates")
-      .select("id, title, created_at")
-      .eq("project_id", parsed.data.project_id)
-      .order("created_at", { ascending: false })
-      .limit(1);
-
     revalidatePath(`/projects/${formData.get("slug")}`);
     return { success: true, id: update.id };
   } catch (err) {

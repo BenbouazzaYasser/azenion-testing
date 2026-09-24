@@ -46,10 +46,10 @@ export function ContactSection() {
                       rel={channel.href.startsWith("http") ? "noreferrer noopener" : undefined}
                       className="group relative flex items-center gap-4 overflow-hidden rounded-2xl card-surface p-5 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:p-6"
                     >
-                      <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                      <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                       <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface text-accent-400 transition-all duration-500 ease-premium group-hover:scale-[1.05] group-hover:border-accent-400/40 group-hover:bg-accent/[0.08] sm:h-14 sm:w-14">
-                        <div className="absolute inset-0 rounded-xl bg-[radial-gradient(circle_at_center,rgba(40,40,255,0.15),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                        <div className="absolute inset-0 rounded-xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                         <Icon size={18} strokeWidth={1.75} className="relative sm:size-[20]" />
                       </div>
 
@@ -74,7 +74,7 @@ export function ContactSection() {
           <div className="flex flex-col justify-center">
             
               <div className="group relative overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium sm:p-8 lg:p-10">
-                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                 <div className="relative">
                   <h3 className="text-[1.3rem] font-semibold text-ink-50">

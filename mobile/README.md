@@ -13,8 +13,8 @@ ever enter this directory.
 4. Sign up with an email + password, or sign in with an existing account.
 
 The app talks to Supabase Auth directly and to the Next.js Phase 0C
-boundaries (`/api/feed`, `/api/auth/hydrate`, `/api/chat/media/sign`,
-`/api/chat/gif/search`) via `EXPO_PUBLIC_API_BASE_URL`.
+boundaries (`/api/feed`, `/api/auth/hydrate`, `/api/chat/media/sign`)
+via `EXPO_PUBLIC_API_BASE_URL`.
 
 ## Scripts
 

@@ -103,13 +103,16 @@ export async function globalSearch(rawQuery: string): Promise<GlobalSearchRespon
 
   const [usersData, teamsData, projectsData, branchesData, postsData, sessionsData, announcementsData] =
     await Promise.all([
-      supabase.rpc("search_users", { p_query: q, p_limit: 80 }),
-      supabase.from("teams").select("id, slug, name, description, logo_url, visibility, created_at").eq("visibility", "public").ilike("name", `%${escapeIlike(q)}%`).limit(40),
-      supabase.from("projects").select("id, slug, name, description, logo_url, visibility, created_at").eq("visibility", "public").ilike("name", `%${escapeIlike(q)}%`).limit(40),
-      supabase.from("branches").select("id, slug, name, full_name, description, logo_url, city, created_at").or(`name.ilike.%${escapeOrFilter(q)}%,full_name.ilike.%${escapeOrFilter(q)}%`).limit(80),
-      supabase.from("posts").select("id, title, body, author_id, created_at, profiles(full_name, username, avatar_url)").or(`title.ilike.%${escapeOrFilter(q)}%,body.ilike.%${escapeOrFilter(q)}%`).limit(60),
-      supabase.from("live_sessions").select("id, title, instructor, starts_at, format, location, created_at").ilike("title", `%${escapeIlike(q)}%`).limit(60),
-      supabase.from("platform_announcements").select("id, emoji, title, category, description, published_at").ilike("title", `%${escapeIlike(q)}%`).limit(60),
+      // Over-fetch only where ranking needs it: the RPC's own ranking runs
+      // server-side. Everything else fetches a small, ordered candidate window
+      // and the same JS ranking/limits run on it as before.
+      supabase.rpc("search_users", { p_query: q, p_limit: Math.max(LIMITS.Users * 4, LIMITS.Users) }),
+      supabase.from("teams").select("id, slug, name, description, logo_url, visibility, created_at").eq("visibility", "public").ilike("name", `%${escapeIlike(q)}%`).order("created_at", { ascending: false }).limit(Math.max(LIMITS.Teams * 4, LIMITS.Teams)),
+      supabase.from("projects").select("id, slug, name, description, logo_url, visibility, created_at").eq("visibility", "public").ilike("name", `%${escapeIlike(q)}%`).order("created_at", { ascending: false }).limit(Math.max(LIMITS.Projects * 4, LIMITS.Projects)),
+      supabase.from("branches").select("id, slug, name, full_name, description, logo_url, city, created_at").or(`name.ilike.%${escapeOrFilter(q)}%,full_name.ilike.%${escapeOrFilter(q)}%`).order("created_at", { ascending: false }).limit(Math.max(LIMITS.Branches * 4, LIMITS.Branches)),
+      supabase.from("posts").select("id, title, body, author_id, created_at, profiles(full_name, username, avatar_url)").or(`title.ilike.%${escapeOrFilter(q)}%,body.ilike.%${escapeOrFilter(q)}%`).order("created_at", { ascending: false }).limit(Math.max(LIMITS["Feed posts"] * 4, LIMITS["Feed posts"])),
+      supabase.from("live_sessions").select("id, title, instructor, starts_at, format, location, created_at").ilike("title", `%${escapeIlike(q)}%`).order("created_at", { ascending: false }).limit(Math.max(LIMITS["Academy sessions"] * 4, LIMITS["Academy sessions"])),
+      supabase.from("platform_announcements").select("id, emoji, title, category, description, published_at").ilike("title", `%${escapeIlike(q)}%`).order("published_at", { ascending: false }).limit(Math.max(LIMITS.Announcements * 4, LIMITS.Announcements)),
     ]);
 
   const results: SearchResultItem[] = [];

@@ -33,7 +33,7 @@ export async function ComingSoonTeaser() {
                 {(await Promise.all(ghostSlots.map(async (slot) => (
                   <div
                     key={slot}
-                    className="flex h-28 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border-strong text-ink-600 transition-colors duration-700 ease-premium hover:border-[rgba(40,40,255,0.35)] hover:text-ink-400"
+                    className="flex h-28 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border-strong text-ink-600 transition-colors duration-700 ease-premium hover:border-accent-400/40 hover:text-ink-400"
                   >
                     <span className="text-2xl font-light" aria-hidden="true">
                       ∞

@@ -44,9 +44,9 @@ function MenuLink({ href, icon, title, description, onNavigate }: MenuLinkProps)
     <Link
       href={href}
       onClick={onNavigate}
-      className="group flex items-center gap-3 rounded-sm px-3 py-2.5 transition-colors duration-150 ease-out hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 ease-out hover:bg-accent/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
     >
-      <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-sm border border-border bg-surface text-ink-400 transition-colors duration-150 ease-out group-hover:border-accent-400/30 group-hover:bg-accent/[0.08] group-hover:text-accent-300">
+      <span className="flex h-9 w-9 shrink-0 translate-x-0 items-center justify-center rounded-lg border border-border bg-surface text-ink-400 transition-colors duration-150 ease-out group-hover:border-accent-400/30 group-hover:bg-accent/[0.08] group-hover:text-accent-300">
         {icon}
       </span>
       <span className="min-w-0">
@@ -229,11 +229,11 @@ export function Navbar() {
                 {NAV_LINKS.map((link) => {
                   const active = isActive(link.href);
                   const navLinkClass = cn(
-                    "relative inline-flex items-center rounded-sm px-4 py-2 text-[13.5px] font-medium leading-none transition-colors duration-150 whitespace-nowrap",
-                    "hover:bg-surface-hover hover:text-ink-50",
+                    "relative inline-flex items-center rounded-lg px-4 py-2 text-[13.5px] font-semibold leading-none transition-colors duration-150 whitespace-nowrap",
+                    "hover:bg-accent/[0.08] hover:text-ink-50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                     active
-                      ? "bg-surface-hover text-ink-50"
+                      ? "bg-accent/10 text-ink-50 shadow-[inset_0_0_0_1px_rgb(var(--accent-primary)/0.18)]"
                       : "text-ink-400"
                   );
 
@@ -270,7 +270,7 @@ export function Navbar() {
                               className="absolute left-1/2 top-full mt-3 w-64 -translate-x-1/2"
                             >
                               <div aria-hidden className="absolute -top-3 left-0 right-0 h-3" />
-                              <div className="relative overflow-hidden rounded-sm border border-border bg-void-900 shadow-dropdown animate-dropdown-in">
+                              <div className="relative overflow-hidden rounded-xl border border-border bg-void-900 shadow-dropdown animate-dropdown-in">
                                 <div
                                   aria-hidden
                                   className="border-b border-border"

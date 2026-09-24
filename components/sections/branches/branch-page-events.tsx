@@ -201,7 +201,7 @@ export function BranchPageEvents({ events, branchId, branchSlug, branchName, bra
               <img src={event.cover_url} alt="" className="h-full w-full object-cover" />
             </div>
           ) : (
-            <div className="flex h-40 w-full shrink-0 items-center justify-center bg-[radial-gradient(circle_at_50%_50%,rgba(40,40,255,0.12),transparent_70%)] sm:h-auto sm:w-44">
+            <div className="flex h-40 w-full shrink-0 items-center justify-center sm:h-auto sm:w-44">
               <Calendar className="h-8 w-8 text-accent-400/60" />
             </div>
           )}

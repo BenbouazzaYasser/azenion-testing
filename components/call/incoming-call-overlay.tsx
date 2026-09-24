@@ -137,7 +137,7 @@ export function IncomingCallOverlay({ info, onAccept, onDecline }: IncomingCallO
               type="button"
               onClick={onDecline}
               aria-label="Decline call"
-              className="flex h-14 w-14 items-center justify-center rounded-full border border-red-400/30 bg-red-500/15 text-red-300 shadow-glow-sm transition-all duration-300 ease-premium hover:scale-105 hover:bg-red-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60"
+              className="flex h-14 w-14 items-center justify-center rounded-full border border-red-400/30 bg-red-500/15 text-red-300 shadow-control transition-colors duration-200 ease-premium hover:bg-red-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60"
             >
               <PhoneOff className="h-6 w-6" />
             </button>
@@ -145,7 +145,7 @@ export function IncomingCallOverlay({ info, onAccept, onDecline }: IncomingCallO
               type="button"
               onClick={onAccept}
               aria-label="Accept call"
-              className="flex h-16 w-16 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/20 text-emerald-200 shadow-glow transition-all duration-300 ease-premium hover:scale-105 hover:bg-emerald-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+              className="flex h-16 w-16 items-center justify-center rounded-full border border-emerald-300/40 bg-emerald-500/20 text-emerald-200 shadow-control transition-colors duration-200 ease-premium hover:bg-emerald-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
             >
               {isVideo ? <Video className="h-7 w-7" /> : <Phone className="h-7 w-7" />}
             </button>

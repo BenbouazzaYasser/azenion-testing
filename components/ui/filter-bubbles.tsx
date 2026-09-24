@@ -22,10 +22,10 @@ export function FilterBubbles({ options, selected, onSelect }: FilterBubblesProp
     <div className="flex flex-wrap gap-2.5">
       <button
         onClick={() => onSelect(isMulti ? "__clear" : "")}
-        className={`min-h-[44px] rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 ${
+        className={`min-h-[44px] rounded-full border px-4 py-2.5 text-sm font-semibold transition-[color,background-color,border-color,box-shadow] duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 ${
           !hasSelection
-            ? "bg-accent text-white"
-            : " text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
+            ? "border-accent bg-accent text-white shadow-control"
+            : "border-border bg-surface/70 text-ink-400 hover:border-accent-400/40 hover:bg-surface-hover hover:text-ink-200"
         }`}
       >
         All
@@ -34,10 +34,10 @@ export function FilterBubbles({ options, selected, onSelect }: FilterBubblesProp
         <button
           key={opt.id}
           onClick={() => onSelect(opt.id)}
-          className={`min-h-[44px] rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-300 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 ${
+          className={`min-h-[44px] rounded-full border px-4 py-2.5 text-sm font-semibold transition-[color,background-color,border-color,box-shadow] duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950 ${
             isActive(opt.id)
-              ? "bg-accent text-white"
-              : " text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
+              ? "border-accent bg-accent text-white shadow-control"
+              : "border-border bg-surface/70 text-ink-400 hover:border-accent-400/40 hover:bg-surface-hover hover:text-ink-200"
           }`}
         >
           {opt.label}

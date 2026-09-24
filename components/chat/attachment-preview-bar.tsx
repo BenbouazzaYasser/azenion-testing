@@ -91,14 +91,14 @@ const ImageThumbnail = memo(function ImageThumbnail({
       className={cn(
         "relative flex-shrink-0 flex-col items-center rounded-xl border-2 overflow-hidden transition-all",
         isActive 
-          ? "border-accent-400 shadow-[0_0_0_2px_rgba(109,109,255,0.3)]" 
+          ? "border-accent-400 ring-2 ring-accent/20"
           : "border-border hover:border-accent-400/30",
         isSpoiler ? "opacity-60" : ""
       )}
       onClick={() => onActivate(file.id)}
       title={file.file.name}
     >
-      <div className="relative h-20 w-28 overflow-hidden bg-void-900/30">
+      <div className="relative h-20 w-28 overflow-hidden bg-scrim/30">
         {file.previewUrl ? (
           <img 
             src={file.previewUrl} 
@@ -112,12 +112,12 @@ const ImageThumbnail = memo(function ImageThumbnail({
           </div>
         )}
         {isSpoiler && (
-          <div className="absolute inset-0 flex items-center justify-center bg-void-900/50">
+          <div className="absolute inset-0 flex items-center justify-center bg-scrim/50">
             <EyeOff className="h-5 w-5 text-white/70" />
           </div>
         )}
         {file.status === "uploading" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-void-900/60 p-2">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-scrim/60 p-2">
             <div className="h-1.5 w-full max-w-[80px] overflow-hidden rounded-full bg-white/20">
               <div
                 className="h-full rounded-full bg-accent transition-all duration-150"
@@ -128,7 +128,7 @@ const ImageThumbnail = memo(function ImageThumbnail({
           </div>
         )}
         {file.status === "error" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-void-900/70 p-1">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-scrim/70 p-1">
             <span className="max-w-full truncate px-1 text-[10px] text-red-400" title={error ?? "Upload failed"}>
               {error ?? "Failed"}
             </span>
@@ -163,7 +163,7 @@ const ImageThumbnail = memo(function ImageThumbnail({
       <button
         type="button"
         onClick={(e) => onRemove(e, file.id)}
-        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500 transition-colors"
+        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-scrim/80 text-white backdrop-blur hover:bg-red-500 transition-colors"
         aria-label="Remove attachment"
       >
         <X className="h-3 w-3" />
@@ -194,7 +194,7 @@ const FileChip = memo(function FileChip({
       className={cn(
         "flex items-center gap-2 rounded-xl border px-3 py-1.5 transition-all",
         isActive 
-          ? "border-accent-400 bg-accent/5 shadow-[0_0_0_2px_rgba(109,109,255,0.2)]" 
+          ? "border-accent-400 bg-accent/5 ring-2 ring-accent/20"
           : "border-border bg-surface hover:border-accent-400/30"
       )}
       onClick={() => onActivate(file.id)}

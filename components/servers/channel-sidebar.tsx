@@ -180,7 +180,7 @@ export function ChannelSidebar({
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
                     ch.project_id ? "pl-6" : "",
                     active
-                      ? "bg-surface-hover font-medium text-ink-50"
+                      ? "bg-accent/10 font-semibold text-ink-50 shadow-[inset_0_0_0_1px_rgb(var(--accent-primary)/0.2)]"
                       : "text-ink-400 hover:bg-surface/60 hover:text-ink-200",
                   )}
                   title={ch.project_id ? t("servers.projectChannelTitle") : undefined}

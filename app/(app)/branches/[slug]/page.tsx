@@ -58,7 +58,7 @@ export default async function BranchPage({ params }: BranchPageProps) {
 
   const { data: branch } = await adminClient
     .from("branches")
-    .select("*")
+    .select("id, slug, name, full_name, description, city, logo_url, cover_url, sort_order, created_at")
     .eq("slug", slug)
     .maybeSingle();
 
@@ -117,9 +117,10 @@ export default async function BranchPage({ params }: BranchPageProps) {
       .eq("branch_id", branch.id),
     adminClient
       .from("branch_events")
-      .select("*")
+      .select("id, branch_id, title, description, location, starts_at, ends_at, cover_url, registration_url, visibility, schedule, created_at, updated_at")
       .eq("branch_id", branch.id)
-      .order("starts_at", { ascending: true }),
+      .order("starts_at", { ascending: true })
+      .limit(50),
     adminClient
       .from("teams")
       .select(`

@@ -44,14 +44,14 @@ export function BackgroundInfinity({ variant, className }: BackgroundInfinityPro
       )}
     >
       <div
-        className={cn("h-[900px] w-[900px] opacity-[0.05] sm:h-[1600px] sm:w-[1600px]", anim)}
+        className={cn("h-[900px] w-[900px] text-ink-50 opacity-[0.05] sm:h-[1600px] sm:w-[1600px]", anim)}
         style={{ transformOrigin: "50% 50%" }}
       >
         <svg viewBox="0 0 800 520" className="h-full w-full" aria-hidden="true">
           <path
             d={INFINITY_PATH}
             fill="none"
-            stroke="white"
+            stroke="currentColor"
             strokeWidth="3"
           />
         </svg>

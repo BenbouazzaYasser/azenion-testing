@@ -14,13 +14,13 @@ import {
 } from "@/actions/team-roles.actions";
 import type { TeamSettingsClientProps, SettingsRole } from "./team-settings-client";
 
-const COLOR_PRESETS = ["#6d6dff", "#16a34a", "#f59e0b", "#ef4444", "#06b6d4", "#ec4899", "#8b5cf6", "#64748b"];
+const COLOR_PRESETS = ["#5865F2", "#16a34a", "#f59e0b", "#ef4444", "#06b6d4", "#ec4899", "#8b5cf6", "#64748b"];
 
 function ColorDot({ color, className }: { color: string | null; className?: string }) {
   return (
     <span
       className={`inline-block h-3.5 w-3.5 shrink-0 rounded-full ${className ?? ""}`}
-      style={{ backgroundColor: color ?? "#6d6dff" }}
+      style={{ backgroundColor: color ?? "#5865F2" }}
     />
   );
 }

@@ -68,7 +68,6 @@ export default function ChatList() {
       if (last?.content?.trim()) return last.content;
       const t = mediaByConv.get(convId);
       if (t === "image") return "Photo";
-      if (t === "gif") return "GIF";
       if (t === "audio") return "Voice message";
       if (t === "file") return "Attachment";
       return last?.content || null;

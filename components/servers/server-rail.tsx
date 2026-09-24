@@ -32,16 +32,16 @@ export function ServerRail({ servers, activeSlug }: ServerRailProps) {
         href="/"
         title={t("nav.home")}
         className={cn(
-          "group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 ease-premium",
+          "group relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-[color,background-color,box-shadow] duration-200 ease-premium",
           isHome
-            ? "bg-accent text-white shadow-glow"
-            : "bg-surface text-ink-300 hover:scale-105 hover:text-ink-50",
+            ? "bg-accent text-white shadow-control"
+            : "bg-surface text-ink-300 hover:bg-surface-hover hover:text-ink-50",
         )}
       >
         {isHome && (
           <span
             aria-hidden
-            className="absolute -left-3 h-6 w-[3px] rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+            className="absolute -left-3 h-6 w-[3px] rounded-full bg-accent-300 shadow-control"
           />
         )}
         <Home size={20} />
@@ -56,19 +56,19 @@ export function ServerRail({ servers, activeSlug }: ServerRailProps) {
           title={`${server.name} · ${t(KIND_LABEL[server.kind])}`}
           aria-current={server.slug === activeSlug ? "page" : undefined}
           className={cn(
-            "group relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden transition-all duration-300 ease-premium",
-            "rounded-2xl text-sm font-semibold",
+            "group relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden transition-[color,background-color,box-shadow] duration-200 ease-premium",
+            "rounded-xl text-sm font-semibold",
             server.slug === activeSlug
-              ? "rounded-xl bg-accent text-white shadow-glow"
+              ? "bg-accent text-white shadow-control"
               : server.icon_url
-                ? "bg-surface text-ink-200 hover:scale-105"
-                : "bg-surface text-ink-200 hover:scale-105 hover:text-ink-50",
+                ? "bg-surface text-ink-200 hover:bg-surface-hover"
+                : "bg-surface text-ink-200 hover:bg-surface-hover hover:text-ink-50",
           )}
         >
           {server.slug === activeSlug && (
             <span
               aria-hidden
-              className="absolute -left-3 h-6 w-[3px] rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+              className="absolute -left-3 h-6 w-[3px] rounded-full bg-accent-300 shadow-control"
             />
           )}
           {server.icon_url ? (
@@ -83,8 +83,8 @@ export function ServerRail({ servers, activeSlug }: ServerRailProps) {
         href="/servers/create"
         title={t("servers.createTitle")}
         className={cn(
-          "mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-dashed",
-          "text-ink-500 transition-all duration-300 ease-premium hover:border-accent-400/60 hover:bg-accent/[0.08] hover:text-accent-300",
+          "mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-dashed",
+          "text-ink-500 transition-[color,background-color,border-color] duration-200 ease-premium hover:border-accent-400/60 hover:bg-accent/[0.08] hover:text-accent-300",
         )}
       >
         <Plus size={18} />

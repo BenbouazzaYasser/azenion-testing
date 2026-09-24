@@ -238,7 +238,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
           type="button"
           onClick={openPalette}
           aria-label="Search"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-transform duration-300 hover:scale-105 hover:bg-surface-hover hover:border-accent-400/40 hover:shadow-[0_0_18px_-6px_rgba(109,109,255,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-[color,background-color,border-color,box-shadow] duration-200 ease-premium hover:bg-surface-hover hover:border-accent-400/40 hover:shadow-control active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-5 w-5">
             <circle cx="11" cy="11" r="8" />
@@ -361,7 +361,7 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
                             onClick={() => handleSelect(item.href, item.category)}
                             className={cn(
                               "group w-full rounded-xl px-3 py-2.5 text-left transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
-                              active ? "bg-surface ring-1 ring-accent-400/30 shadow-[0_0_18px_-8px_rgba(90,120,255,0.5)]" : "hover:bg-surface-hover",
+                              active ? "bg-surface ring-1 ring-accent-400/30 shadow-card" : "hover:bg-surface-hover",
                             )}
                           >
                             <span className="flex items-center gap-3">

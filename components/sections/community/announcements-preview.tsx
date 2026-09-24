@@ -50,7 +50,7 @@ export function AnnouncementsPreview({ announcements }: AnnouncementsPreviewProp
               <article
                 key={announcement.id}
                 className="group relative overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl transition-all duration-500 ease-premium hover:border-accent-400/40 sm:p-7">
-                  <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
                   <div className="relative flex items-start gap-4">
                     <span

@@ -164,22 +164,20 @@ export async function GET(
   };
 
   const isOwner = user != null && row.created_by != null && row.created_by === user.id;
-  let isStaff = false;
-  if (user && !isOwner) {
-    const { data: manages } = await scoped.rpc("is_course_manager");
-    isStaff = isCourseManagerResult(manages);
-  }
-
-  // Team Course Publishers need draft/file access to stage and publish their
-  // team's courses. Narrow and server-validated: only when the course is
-  // published (or being managed) on behalf of a team and the caller still
-  // holds publish authority for that team (capability + owner/PUBLISH_COURSES).
+  // Independent auth checks — run together (second gated only on
+  // publisher_team_id, not on the first result).
+  const [managesRes, canPublishRes] = await Promise.all([
+    user && !isOwner ? scoped.rpc("is_course_manager") : Promise.resolve({ data: null }),
+    user && row.publisher_team_id
+      ? scoped.rpc("can_publish_course_for_team", {
+          p_team_id: row.publisher_team_id,
+        })
+      : Promise.resolve({ data: null }),
+  ]);
+  const isStaff = isCourseManagerResult(managesRes.data);
   let isTeamPublisher = false;
   if (user && row.publisher_team_id) {
-    const { data: canPublish } = await scoped.rpc("can_publish_course_for_team", {
-      p_team_id: row.publisher_team_id,
-    });
-    isTeamPublisher = canPublish === true;
+    isTeamPublisher = canPublishRes.data === true;
   }
   const isPrivileged = isOwner || isStaff || isTeamPublisher;
   if (!isPrivileged && row.status !== "published") {

@@ -35,7 +35,7 @@ function TeamPreviewCard({
 }) {
   return (
     <div className="group overflow-hidden rounded-2xl card-surface shadow-card backdrop-blur-xl transition-all duration-500 ease-premium">
-      <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
       <div className="relative p-6 sm:p-8">
         <div className="flex items-center gap-4">
@@ -80,7 +80,7 @@ export function CreateTeamForm() {
     const supabase = createClient();
     supabase
       .from("team_categories")
-      .select("*")
+      .select("id, name, slug")
       .order("name", { ascending: true })
       .then(({ data }) => {
         if (data) setCategories(data);
@@ -143,7 +143,7 @@ export function CreateTeamForm() {
                 onSubmit={handleSubmit}
                 className="overflow-hidden rounded-2xl card-surface p-6 shadow-card backdrop-blur-xl sm:p-8"
               >
-                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl bg-[radial-gradient(circle_at_50%_0%,rgba(40,40,255,0.06),transparent_60%)]" />
+                <div className="pointer-events-none absolute -inset-x-4 -inset-y-4 rounded-2xl" />
 
                 <div className="relative space-y-7">
                   <div>

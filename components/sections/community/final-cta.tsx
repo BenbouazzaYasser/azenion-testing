@@ -11,7 +11,7 @@ export function CommunityCta() {
           <div className="relative overflow-hidden rounded-2xl card-surface px-8 py-16 text-center shadow-card backdrop-blur-xl sm:px-16 sm:py-24">
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(71,71,255,0.18),transparent_60%)]"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(88,101,242,0.18),transparent_60%)]"
             />
             <div className="relative mx-auto max-w-3xl">
               <span className="inline-flex items-center justify-center gap-2 rounded-full border border-accent/25 bg-accent/[0.08] px-3 py-1.5 text-[12px] font-medium uppercase tracking-normal text-accent-300">

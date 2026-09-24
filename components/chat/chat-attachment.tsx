@@ -15,20 +15,9 @@ interface ChatAttachmentProps {
   onOpenImage?: (src: string) => void;
 }
 
-/** Viewable image URL for an attachment (uploaded image or allow-listed GIF). */
+/** Viewable image URL for an attachment (signed upload URL). */
 export function chatAttachmentImageUrl(attachment: ChatAttachmentForMessage): string | null {
-  if (attachment.type === "image") return attachment.signedUrl;
-  if (attachment.type !== "gif") return null;
-  const meta = (attachment.metadata ?? {}) as { url?: string; previewUrl?: string };
-  const rawUrl = meta.url ?? meta.previewUrl;
-  if (!rawUrl) return null;
-  try {
-    const host = new URL(rawUrl).hostname.toLowerCase();
-    const allowed = ["giphy.com", "tenor.com"];
-    return allowed.some((h) => host === h || host.endsWith(`.${h}`)) ? rawUrl : null;
-  } catch {
-    return null;
-  }
+  return attachment.type === "image" ? attachment.signedUrl : null;
 }
 
 function formatDuration(seconds: number): string {
@@ -147,7 +136,6 @@ export function ChatAttachment({ attachment, isOwn, onOpenImage }: ChatAttachmen
 
   const isSticker = attachment.type === "sticker";
   const isAudio = attachment.type === "audio";
-  const isGif = attachment.type === "gif";
   const isImage = attachment.type === "image" && attachment.mime_type?.startsWith("image/");
 
   if (isSticker) {
@@ -173,52 +161,6 @@ export function ChatAttachment({ attachment, isOwn, onOpenImage }: ChatAttachmen
           className="h-28 w-28 object-contain drop-shadow-sm sm:h-32 sm:w-32"
           loading="lazy"
         />
-      </div>
-    );
-  }
-
-  if (isGif) {
-    const meta = (attachment.metadata ?? {}) as { url?: string; previewUrl?: string; title?: string; width?: number; height?: number };
-    const url = chatAttachmentImageUrl(attachment);
-    if (!url) {
-      return (
-        <div className="flex items-center gap-2 rounded-xl bg-surface/60 px-3 py-2 text-sm text-ink-400">
-          <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
-          <span>Invalid GIF</span>
-        </div>
-      );
-    }
-    // The picker embeds width/height in metadata — reserve the exact box from
-    // first paint (no CLS); fall back to 4:3 when unknown.
-    const ratio = meta.width && meta.height ? `${meta.width} / ${meta.height}` : "4 / 3";
-    const frame = (
-      <div className="relative w-full" style={{ aspectRatio: ratio, maxHeight: 256 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={url}
-          alt={meta.title ?? "GIF"}
-          className={cn("absolute inset-0 h-full w-full object-cover transition-opacity duration-300", imgLoading ? "opacity-0" : "opacity-100")}
-          onLoad={() => setImgLoading(false)}
-          onError={() => setImgLoading(false)}
-          loading="lazy"
-          decoding="async"
-        />
-        {imgLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-surface/50">
-            <Loader2 className="h-5 w-5 animate-spin text-ink-400" />
-          </div>
-        )}
-      </div>
-    );
-    return (
-      <div className="max-w-[260px] overflow-hidden rounded-xl">
-        {onOpenImage ? (
-          <button type="button" onClick={() => onOpenImage(url)} aria-label="Open image" className="block w-full cursor-zoom-in">
-            {frame}
-          </button>
-        ) : (
-          frame
-        )}
       </div>
     );
   }
@@ -407,7 +349,7 @@ export function QueuedAttachmentCard({
   const isImage = file.type.startsWith("image/");
   return (
     <div className="relative flex w-36 flex-shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
-      <div className="relative h-24 w-full overflow-hidden bg-void-900/30">
+      <div className="relative h-24 w-full overflow-hidden bg-scrim/30">
         {isImage && previewUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={previewUrl} alt={file.name} className="h-full w-full object-cover" />
@@ -417,7 +359,7 @@ export function QueuedAttachmentCard({
           </div>
         )}
         {status === "uploading" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-void-900/60 p-2 backdrop-blur-[2px]">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-scrim/60 p-2 backdrop-blur-[2px]">
             <Loader2 className="h-5 w-5 animate-spin text-white mb-1.5" />
             <div className="h-1.5 w-full max-w-[80px] overflow-hidden rounded-full bg-white/20">
               <div
@@ -431,7 +373,7 @@ export function QueuedAttachmentCard({
         <button
           type="button"
           onClick={onRemove}
-          className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-void-900/80 text-white backdrop-blur hover:bg-red-500 transition-colors"
+          className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-scrim/80 text-white backdrop-blur hover:bg-red-500 transition-colors"
           aria-label="Remove attachment"
         >
           <span aria-hidden className="text-sm leading-none">&times;</span>

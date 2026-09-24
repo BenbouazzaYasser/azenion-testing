@@ -83,7 +83,7 @@ export function BranchShowcase({
                 className={cn(
                   "w-full rounded-full bg-surface px-11 py-3 text-sm text-ink-50",
                   "placeholder:text-ink-600 outline-none backdrop-blur-xl transition-colors",
-                  "focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-[0_0_0_1px_rgba(40,40,255,0.25)]",
+                  "focus:border-accent-400/60 focus:bg-surface-hover focus:shadow-input",
                 )}
               />
             </div>

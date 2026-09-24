@@ -108,7 +108,7 @@ export default async function TeamSettingsPage({ params }: TeamSettingsPageProps
       .order("joined_at", { ascending: true }),
     adminClient
       .from("team_categories")
-      .select("*")
+      .select("id, name, slug")
       .order("name", { ascending: true }),
     adminClient
       .from("team_category_members")

@@ -6,8 +6,7 @@ import { Button, Empty, ErrorState, Input, Loading, Press, Screen, Txt } from ".
 import { ActionIcon } from "../../components/icons";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/auth";
-import { apiJson } from "../../lib/api";
-import { getAttachments, sendGif, sendImage, signAttachment, type ChatAttachment } from "../../lib/chat-media";
+import { getAttachments, sendImage, signAttachment, type ChatAttachment } from "../../lib/chat-media";
 import { tap } from "../../lib/haptics";
 import { palette, radius, spacing } from "../../lib/theme";
 
@@ -16,19 +15,6 @@ interface Message {
   sender_id: string;
   content: string;
   created_at: string | null;
-}
-
-interface GifResult {
-  id: string;
-  title: string;
-  url: string;
-  previewUrl: string;
-}
-
-function gifUrlOf(att: ChatAttachment): string | null {
-  const meta = att.metadata ?? {};
-  const url = meta.url;
-  return typeof url === "string" ? url : null;
 }
 
 export default function Conversation() {
@@ -41,10 +27,6 @@ export default function Conversation() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [composerMenu, setComposerMenu] = useState(false);
-  const [gifOpen, setGifOpen] = useState(false);
-  const [gifQuery, setGifQuery] = useState("");
-  const [gifResults, setGifResults] = useState<GifResult[]>([]);
-  const [gifBusy, setGifBusy] = useState(false);
   const seen = useRef(new Set<string>());
   const listRef = useRef<FlatList<Message>>(null);
   const stickRef = useRef(true);
@@ -58,7 +40,7 @@ export default function Conversation() {
     const urlById = new Map(signable.map((a, i) => [a.id, urls[i] ?? null]));
     for (const a of rows) {
       const list = withUrls.get(a.message_id) ?? [];
-      list.push({ ...a, signedUrl: urlById.get(a.id) ?? (a.type === "gif" ? gifUrlOf(a) : null) });
+      list.push({ ...a, signedUrl: urlById.get(a.id) ?? null });
       withUrls.set(a.message_id, list);
     }
     setAttachments(withUrls);
@@ -177,35 +159,6 @@ export default function Conversation() {
     }
   }
 
-  async function searchGifs(q: string) {
-    setGifQuery(q);
-    if (!q.trim()) {
-      setGifResults([]);
-      return;
-    }
-    setGifBusy(true);
-    try {
-      const body = await apiJson<{ results: GifResult[] }>(`/api/chat/gif/search?q=${encodeURIComponent(q.trim())}&limit=12`);
-      setGifResults(body.results);
-    } catch {
-      setGifResults([]);
-    } finally {
-      setGifBusy(false);
-    }
-  }
-
-  async function sendGifRow(g: GifResult) {
-    setGifOpen(false);
-    setComposerMenu(false);
-    try {
-      const messageId = await sendGif({ conversationId: id, externalId: g.id, url: g.url, previewUrl: g.previewUrl });
-      seen.current.add(messageId);
-      await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to send GIF.");
-    }
-  }
-
   async function openFile(att: ChatAttachment) {
     const url = att.signedUrl ?? (await signAttachment(att.id).catch(() => null));
     if (!url) {
@@ -222,19 +175,14 @@ export default function Conversation() {
   function renderAttachment(att: ChatAttachment) {
     if (failedImages.has(att.id)) return null;
     const fail = () => setFailedImages((prev) => new Set(prev).add(att.id));
-    if (att.type === "gif") {
-      const url = gifUrlOf(att);
-      if (!url) return null;
-      return <Image key={att.id} source={{ uri: url }} style={{ width: 180, height: 140, borderRadius: 10, marginTop: 6 }} resizeMode="cover" onError={fail} />;
-    }
     if (att.type === "image" && att.signedUrl) {
       return <Image key={att.id} source={{ uri: att.signedUrl }} style={{ width: 200, height: 160, borderRadius: 10, marginTop: 6 }} resizeMode="cover" onError={fail} />;
     }
     if (att.type === "file") {
       return (
-        <Pressable key={att.id} onPress={() => void openFile(att)} style={{ marginTop: 6, backgroundColor: "rgba(0,0,0,0.25)", borderRadius: 8, padding: 8, flexDirection: "row", gap: 6, alignItems: "center" }}>
-          <ActionIcon name="document-text-outline" size={16} color="#FFFFFF" />
-          <Txt variant="caption" color="#FFFFFF">
+        <Pressable key={att.id} onPress={() => void openFile(att)} style={{ marginTop: 6, backgroundColor: palette.surfaceHover, borderRadius: radius.sm, padding: 8, flexDirection: "row", gap: 6, alignItems: "center" }}>
+          <ActionIcon name="document-text-outline" size={16} color={palette.onAccent} />
+          <Txt variant="caption" color={palette.onAccent}>
             {att.filename ?? "file"}
           </Txt>
         </Pressable>
@@ -268,7 +216,7 @@ export default function Conversation() {
           data={messages}
           keyExtractor={(m) => m.id}
           contentContainerStyle={{ paddingVertical: spacing.sm, flexGrow: messages.length === 0 ? 1 : undefined }}
-          ListEmptyComponent={<Empty title="No messages yet" hint="Say hello or send a GIF." />}
+          ListEmptyComponent={<Empty title="No messages yet" hint="Say hello." />}
           onContentSizeChange={() => {
             if (stickRef.current) listRef.current?.scrollToEnd({ animated: false });
           }}
@@ -286,13 +234,13 @@ export default function Conversation() {
                 <View
                   style={{
                     backgroundColor: mine ? palette.accent : palette.surfaceHover,
-                    borderRadius: 14,
+                    borderRadius: radius.lg,
                     paddingVertical: spacing.xs,
                     paddingHorizontal: spacing.sm,
                     maxWidth: "80%",
                   }}
                 >
-                  {item.content ? <Txt color={mine ? "#FFFFFF" : palette.ink50}>{item.content}</Txt> : null}
+                  {item.content ? <Txt color={mine ? palette.onAccent : palette.ink50}>{item.content}</Txt> : null}
                   {atts.map(renderAttachment)}
                 </View>
               </View>
@@ -306,7 +254,7 @@ export default function Conversation() {
         </Txt>
       ) : null}
       <View style={{ flexDirection: "row", gap: spacing.sm, padding: spacing.md, alignItems: "center" }}>
-        <Press label="Attach photo or GIF" onPress={() => setComposerMenu(true)}>
+        <Press label="Attach photo" onPress={() => setComposerMenu(true)}>
           <ActionIcon name="add" color={palette.accent400} size={24} />
         </Press>
         <View style={{ flex: 1 }}>
@@ -316,37 +264,13 @@ export default function Conversation() {
       </View>
       </KeyboardAvoidingView>
       <Modal visible={composerMenu} transparent animationType="fade" onRequestClose={() => setComposerMenu(false)}>
-        <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" }} onPress={() => setComposerMenu(false)}>
-          <View style={{ backgroundColor: palette.surface, borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: spacing.lg }}>
+        <Pressable style={{ flex: 1, backgroundColor: palette.scrim, justifyContent: "flex-end" }} onPress={() => setComposerMenu(false)}>
+          <View style={{ backgroundColor: palette.surface, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, padding: spacing.lg }}>
             <Button title="Send photo" variant="secondary" onPress={() => void pickImage()} />
-            <View style={{ height: spacing.sm }} />
-            <Button title="Send GIF…" variant="secondary" onPress={() => { setComposerMenu(false); setGifOpen(true); }} />
             <View style={{ height: spacing.sm }} />
             <Button title="Cancel" variant="secondary" onPress={() => setComposerMenu(false)} />
           </View>
         </Pressable>
-      </Modal>
-      <Modal visible={gifOpen} transparent animationType="slide" onRequestClose={() => setGifOpen(false)}>
-        <View style={{ flex: 1, backgroundColor: palette.bg, paddingTop: 60, paddingHorizontal: spacing.md }}>
-          <Input value={gifQuery} onChangeText={(q) => void searchGifs(q)} placeholder="Search GIFs…" />
-          {gifBusy ? <Loading /> : null}
-          <FlatList
-            data={gifResults}
-            keyExtractor={(g) => g.id}
-            numColumns={2}
-            contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xl }}
-            columnWrapperStyle={{ gap: spacing.sm }}
-            ListEmptyComponent={!gifBusy ? <Empty title="No GIFs" hint="Type to search." /> : null}
-            renderItem={({ item: g }) => (
-              <Pressable onPress={() => void sendGifRow(g)} style={{ flex: 1 }}>
-                <Image source={{ uri: g.previewUrl }} style={{ width: "100%", height: 120, borderRadius: 10, backgroundColor: palette.surfaceHover }} resizeMode="cover" />
-              </Pressable>
-            )}
-          />
-          <View style={{ paddingBottom: spacing.xl }}>
-            <Button title="Close" variant="secondary" onPress={() => setGifOpen(false)} />
-          </View>
-        </View>
       </Modal>
     </Screen>
   );

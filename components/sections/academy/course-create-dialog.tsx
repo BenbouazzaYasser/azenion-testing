@@ -301,7 +301,7 @@ export function CourseCreateDialog() {
                               className={cn(
                                 "flex items-center gap-2.5 rounded-xl border px-3.5 py-3 text-left transition-all duration-200 ease-premium cursor-pointer",
                                 selected
-                                  ? "border-accent-400/60 bg-accent/[0.08] shadow-[0_0_0_1px_rgba(109,109,255,0.2)]"
+                                  ? "border-accent-400/60 bg-accent/[0.08] shadow-input"
                                   : "border-border-strong text-ink-400 hover:border-accent-400/40 hover:text-ink-200"
                               )}
                             >

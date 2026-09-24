@@ -43,7 +43,7 @@ export function RoadmapProgress({ value, label, className }: RoadmapProgressProp
             "h-full rounded-full transition-[width] duration-500 ease-premium",
             percent === null
               ? "w-0"
-              : "bg-gradient-to-r from-accent-500 to-accent-400 shadow-[0_0_12px_-2px_rgba(109,109,255,0.7)]",
+              : "bg-gradient-to-r from-accent-500 to-accent-400 shadow-control",
           )}
           style={{ width: percent === null ? "0%" : `${percent}%` }}
         />

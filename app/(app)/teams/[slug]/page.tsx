@@ -111,14 +111,15 @@ export default async function TeamPage({ params }: TeamPageProps) {
       .order("joined_at", { ascending: true }),
     adminClient
       .from("team_open_roles")
-      .select("*")
+      .select("id, team_id, title, description, quantity, created_at")
       .eq("team_id", team.id)
       .order("created_at", { ascending: true }),
     adminClient
       .from("team_updates")
-      .select("*, author:author_id ( id, username, full_name, avatar_url )")
+      .select("id, title, body, image_url, created_at, updated_at, author:author_id ( id, username, full_name, avatar_url )")
       .eq("team_id", team.id)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(50),
     adminClient
       .from("feed_pins")
       .select("post_id")
@@ -126,7 +127,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
       .eq("team_id", team.id),
     adminClient
       .from("team_categories")
-      .select("*")
+      .select("id, name, slug")
       .order("name", { ascending: true }),
     // Pivot fetched separately (PostgREST FK cache issues with embedded selects).
     adminClient

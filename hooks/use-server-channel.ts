@@ -93,6 +93,9 @@ export function useServerChannel({
           serverGateway.markFailed(channelId, temporaryId, result.error);
           return { temporaryId, error: result.error };
         }
+        // Ensure the current user's profile is cached so the
+        // reconciled message carries the real sender instead of null.
+        await serverGateway.loadProfile(currentUserId);
         const serverMessage: GatewayMessage = {
           id: result.id,
           channel_id: channelId,

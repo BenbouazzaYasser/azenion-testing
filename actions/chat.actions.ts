@@ -87,7 +87,7 @@ export async function sendMessage(conversationId: string, content: string) {
 }
 
 export interface SendMessageAttachmentInput {
-  type: "image" | "file" | "audio" | "gif" | "sticker";
+  type: "image" | "file" | "audio" | "sticker";
   storage_path?: string | null;
   filename?: string | null;
   mime_type?: string | null;
@@ -181,10 +181,6 @@ export async function sendMessageWithAttachments(
       if (!att.storage_path || !att.storage_path.startsWith(`chat/${conversationId}/`)) {
         return { error: "Attachment path does not match conversation." };
       }
-    }
-    // For gif, ensure provider is allowed (already validated) and external_id present
-    if (att.type === "gif" && att.provider !== "giphy" && att.provider !== "tenor") {
-      return { error: "Invalid GIF provider." };
     }
     if (att.type === "sticker") {
       if (!att.external_id || !isValidStickerId(att.external_id)) {

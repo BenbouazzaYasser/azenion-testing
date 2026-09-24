@@ -201,6 +201,9 @@ class ServerGateway {
     hasMore: boolean,
     cursor: ChannelCursor | null,
   ): Promise<void> => {
+    // Seed immediately so the channel renders without waiting for IndexedDB.
+    this.seedChannel(channelId, initialMessages, hasMore, cursor);
+    // Background merge: if IndexedDB has a deeper/stale cache, replace it.
     const persisted = await readPersisted(this.cacheKey(channelId));
     if (persisted && persisted.messages.length > 0) {
       this.updateChannel(channelId, (current) => {
@@ -216,9 +219,7 @@ class ServerGateway {
           loaded: true,
         };
       });
-      return;
     }
-    this.seedChannel(channelId, initialMessages, hasMore, cursor);
   };
 
   private getClient(): ReturnType<typeof createClient> {
@@ -349,7 +350,7 @@ class ServerGateway {
     if (!this.store.profiles.has(senderId)) void this.loadProfile(senderId);
   }
 
-  private async loadProfile(userId: string): Promise<void> {
+  async loadProfile(userId: string): Promise<void> {
     if (this.store.profileRequests.has(userId)) return this.store.profileRequests.get(userId);
     const request = (async () => {
       try {

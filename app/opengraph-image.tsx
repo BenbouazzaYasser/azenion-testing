@@ -17,8 +17,8 @@ export default function OpengraphImage() {
           height: "100%",
           padding: "96px",
           background:
-            "radial-gradient(1200px 800px at 15% -10%, rgba(40,40,255,0.28), transparent 60%), radial-gradient(1000px 700px at 95% 110%, rgba(109,109,255,0.22), transparent 55%), linear-gradient(160deg, #050507 0%, #0a0b10 55%, #0e1016 100%)",
-          color: "#F4F5F8",
+            "radial-gradient(1200px 800px at 15% -10%, rgba(79,70,229,0.18), transparent 60%), radial-gradient(1000px 700px at 95% 110%, rgba(201,111,74,0.1), transparent 55%), linear-gradient(160deg, #211F1C 0%, #2B2824 55%, #37332E 100%)",
+          color: "#F7F5F2",
         }}
       >
         <div
@@ -37,7 +37,7 @@ export default function OpengraphImage() {
             display: "flex",
             fontSize: "38px",
             fontWeight: 500,
-            color: "#DEE0E9",
+            color: "#EEE9E3",
             lineHeight: 1.25,
           }}
         >
@@ -49,7 +49,7 @@ export default function OpengraphImage() {
             marginTop: "44px",
             fontSize: "24px",
             fontWeight: 400,
-            color: "#a9acba",
+            color: "#B8AEA4",
           }}
         >
           The global network connecting ambitious students, builders and innovators

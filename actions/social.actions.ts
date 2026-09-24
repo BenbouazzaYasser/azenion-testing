@@ -291,6 +291,15 @@ export async function getPublicProfile(username: string): Promise<
     .order("created_at", { ascending: false })
     .limit(20);
 
+  // Warm the per-request signed-URL memo with every private marker on this
+  // page in one batch. The per-post resolveMediaValue calls below then hit
+  // the memo (no extra storage round trips) instead of each firing its own.
+  await resolveMediaValue(
+    (postRows ?? []).flatMap((p) => [...((p.images ?? []) as string[]), ...((p.videos ?? []) as string[])]),
+    undefined,
+    supabase,
+  );
+
   posts = await Promise.all(
     (postRows ?? []).map(async (p) => ({
       id: p.id,

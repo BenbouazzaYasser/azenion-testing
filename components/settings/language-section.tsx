@@ -95,7 +95,7 @@ export function LanguageSection() {
                   className={cn(
                     "group relative flex items-center gap-3 rounded-xl border p-3 text-left transition-all duration-200 ease-premium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
                     active
-                      ? "border-accent-400/50 bg-accent/[0.08] shadow-[0_0_24px_-10px_rgba(90,120,255,0.5)]"
+                      ? "border-accent-400/50 bg-accent/[0.08] shadow-card"
                       : "border-border bg-surface hover:border-accent-400/20 hover:bg-surface-hover",
                   )}
                 >

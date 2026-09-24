@@ -172,8 +172,8 @@ function CallButton({
       aria-label={label}
       title={label}
       className={cn(
-        "flex h-12 w-12 items-center justify-center rounded-full border transition-all duration-300 ease-premium",
-        "hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
+        "flex h-12 w-12 items-center justify-center rounded-full border transition-[color,background-color,border-color,box-shadow] duration-200 ease-premium",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60",
         active
           ? "border-accent-400/50 bg-accent text-white shadow-glow"
           : danger
@@ -476,7 +476,7 @@ export function ActiveCallOverlay({ call, manager }: ActiveCallOverlayProps) {
             onClick={manager.endCall}
             aria-label="End call"
             title="End call"
-            className="ml-1 flex h-14 w-14 items-center justify-center rounded-full border border-red-400/40 bg-red-500 text-white shadow-glow-sm transition-all duration-300 ease-premium hover:scale-105 hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/70"
+            className="ml-1 flex h-14 w-14 items-center justify-center rounded-full border border-red-400/40 bg-red-500 text-white shadow-control transition-colors duration-200 ease-premium hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/70"
           >
             <PhoneCall className="h-5 w-5 rotate-[135deg]" />
           </button>

@@ -136,16 +136,16 @@ export default function Profile() {
                 </Press>
               }
             />
-            <View style={{ backgroundColor: palette.accent500, borderRadius: 16, padding: spacing.lg, marginBottom: spacing.md }}>
+            <View style={{ backgroundColor: palette.accent, borderWidth: 1, borderColor: palette.secondary, borderRadius: radius.lg, padding: spacing.lg, marginBottom: spacing.md }}>
               <View style={{ flexDirection: "row", gap: spacing.md, alignItems: "center" }}>
                 <Avatar uri={profile.avatar_url} name={profile.full_name ?? profile.username} size={72} />
                 <View style={{ flex: 1 }}>
-                  <Txt variant="subtitle" weight="700" color="#FFFFFF">
+                  <Txt variant="subtitle" weight="700" color={palette.onAccent}>
                     {profile.full_name ?? profile.username}
                   </Txt>
-                  <Txt color="rgba(255,255,255,0.75)">@{profile.username}</Txt>
+                  <Txt color={palette.onAccentMuted}>@{profile.username}</Txt>
                   {profile.institution ? (
-                    <Txt variant="caption" color="rgba(255,255,255,0.65)">
+                    <Txt variant="caption" color={palette.onAccentMuted}>
                       {profile.institution}
                     </Txt>
                   ) : null}
@@ -153,7 +153,7 @@ export default function Profile() {
               </View>
               {profile.bio ? (
                 <View style={{ marginTop: spacing.sm }}>
-                  <Txt color="rgba(255,255,255,0.9)">{profile.bio}</Txt>
+                  <Txt color={palette.onAccent}>{profile.bio}</Txt>
                 </View>
               ) : null}
             </View>
@@ -172,7 +172,7 @@ export default function Profile() {
                     borderColor: segment === s ? palette.accent : palette.borderStrong,
                   }}
                 >
-                  <Txt weight="600" color={segment === s ? "#FFFFFF" : palette.ink300}>
+                  <Txt weight="600" color={segment === s ? palette.onAccent : palette.ink300}>
                     {s === "posts" ? `Posts · ${cache.mine.length}` : `Saved · ${cache.saved.length}`}
                   </Txt>
                 </Pressable>

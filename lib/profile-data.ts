@@ -103,6 +103,13 @@ export async function getUserTeams(userId: string): Promise<UserTeam[]> {
     team_logo_url: string | null;
   }[];
 
+  // Warm the signed-URL memo once; per-team resolves below then hit cache.
+  await resolveMediaValue(
+    rows.map((t) => t.team_logo_url).filter((v): v is string => typeof v === "string"),
+    undefined,
+    supabase,
+  );
+
   return await Promise.all(
     rows.map(async (t) => ({
       id: t.team_id,
@@ -157,6 +164,13 @@ export async function getUserProjects(userId: string): Promise<UserProject[]> {
   for (const row of countRows ?? []) {
     countMap.set(row.project_id, (countMap.get(row.project_id) ?? 0) + 1);
   }
+
+  // Warm the signed-URL memo once; per-project resolves below then hit cache.
+  await resolveMediaValue(
+    raw.map((p) => p.logo_url).filter((v): v is string => typeof v === "string"),
+    undefined,
+    supabase,
+  );
 
   return await Promise.all(
     raw.map(async (p) => ({

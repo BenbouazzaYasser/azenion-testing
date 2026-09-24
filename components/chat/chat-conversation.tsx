@@ -38,7 +38,6 @@ import {
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { getCurrentUserProfile } from "@/lib/current-user-profile";
 import Image from "next/image";
-import type { GifResult } from "@/lib/gif/provider";
 import type { Sticker as StickerType } from "@/lib/stickers/catalog";
 
 // Above this many loaded messages the list switches to virtualization.
@@ -358,47 +357,53 @@ export function ChatConversation({
   const refetchMessages = useCallback(async () => {
     try {
       const supabase = createClient();
-      const { data: msgs } = await supabase
+      // Newest 200 (mirrors the server's keyset page), reversed back to the
+      // ascending order the list renders in.
+      const { data: rawMsgs } = await supabase
         .from("messages")
         .select("id, conversation_id, sender_id, content, image_url, created_at, edited_at, received_at")
         .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .limit(200);
+      const msgs = rawMsgs ? [...rawMsgs].reverse() : null;
       if (msgs) {
         const senderIds = [...new Set(msgs.map((m) => m.sender_id))];
+        const messageIds = msgs.map((m) => m.id);
         const [{ data: profiles }, { data: attachments }] = await Promise.all([
           supabase.from("profiles").select("id, full_name, avatar_url, username").in("id", senderIds),
           supabase
             .from("chat_message_attachments")
             .select("id, message_id, conversation_id, uploader_id, type, storage_path, filename, mime_type, file_size, duration_seconds, provider, external_id, metadata, created_at")
-            .eq("conversation_id", conversationId)
+            .in("message_id", messageIds)
             .order("created_at", { ascending: true }),
         ]);
         const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
         const attachmentsByMessage = new Map<string, ChatAttachmentForMessage[]>();
         if (attachments && attachments.length > 0) {
-          const admin = createClient();
-          const withUrls = await Promise.all(
-            (attachments as ChatAttachmentForMessage[]).map(async (att) => {
-              let signedUrl: string | null = null;
-              if (att.storage_path) {
-                const { data } = await admin.storage.from("chat-media").createSignedUrl(att.storage_path, CHAT_MEDIA_SIGNED_URL_TTL);
-                signedUrl = data?.signedUrl ?? null;
-              }
-              return { ...att, signedUrl };
-            }),
-          );
+          const paths = [...new Set((attachments as ChatAttachmentForMessage[]).map((a) => a.storage_path).filter((p): p is string => !!p))];
+          const signedByPath = new Map<string, string>();
+          if (paths.length > 0) {
+            const { data: signed } = await supabase.storage.from("chat-media").createSignedUrls(paths, CHAT_MEDIA_SIGNED_URL_TTL);
+            for (const s of (signed ?? []) as { path: string; signedUrl: string; error: string | null }[]) {
+              if (!s.error && s.signedUrl) signedByPath.set(s.path, s.signedUrl);
+            }
+          }
+          const withUrls = (attachments as ChatAttachmentForMessage[]).map((att) => ({
+            ...att,
+            signedUrl: att.storage_path ? (signedByPath.get(att.storage_path) ?? null) : null,
+          }));
           for (const att of withUrls) {
             const arr = attachmentsByMessage.get(att.message_id) ?? [];
             arr.push(att);
             attachmentsByMessage.set(att.message_id, arr);
           }
         }
-        setMessages((msgs) =>
-          msgs.map((m) => ({
+        setMessages((prev) =>
+          mergeMessages(prev, msgs.map((m) => ({
             ...m,
             sender: profileMap.get(m.sender_id) ?? null,
             attachments: attachmentsByMessage.get(m.id) ?? [],
-          })),
+          }))),
         );
       }
     } catch {
@@ -566,13 +571,19 @@ export function ChatConversation({
               .select("id, message_id, conversation_id, uploader_id, type, storage_path, filename, mime_type, file_size, duration_seconds, provider, external_id, metadata, created_at")
               .eq("message_id", newMsg.id);
             if (rows && rows.length > 0) {
-              const attachments = await Promise.all(
-                (rows as ChatAttachmentForMessage[]).map(async (att) => {
-                  if (!att.storage_path) return { ...att, signedUrl: null };
-                  const { data } = await supabase.storage.from("chat-media").createSignedUrl(att.storage_path, CHAT_MEDIA_SIGNED_URL_TTL);
-                  return { ...att, signedUrl: data?.signedUrl ?? null };
-                }),
-              );
+              const atts = rows as ChatAttachmentForMessage[];
+              const paths = [...new Set(atts.map((a) => a.storage_path).filter((p): p is string => !!p))];
+              const signedByPath = new Map<string, string>();
+              if (paths.length > 0) {
+                const { data: signed } = await supabase.storage.from("chat-media").createSignedUrls(paths, CHAT_MEDIA_SIGNED_URL_TTL);
+                for (const s of (signed ?? []) as { path: string; signedUrl: string; error: string | null }[]) {
+                  if (!s.error && s.signedUrl) signedByPath.set(s.path, s.signedUrl);
+                }
+              }
+              const attachments = atts.map((att) => ({
+                ...att,
+                signedUrl: att.storage_path ? (signedByPath.get(att.storage_path) ?? null) : null,
+              }));
               setMessages((prev) => prev.map((m) => (m.id === newMsg.id ? { ...m, attachments } : m)));
             }
           } catch {
@@ -894,152 +905,6 @@ export function ChatConversation({
       }
     },
     [imageQueue, fileQueue, conversationId],
-  );
-
-  const handleGifSelect = useCallback(
-    async (gif: GifResult, content: string) => {
-      if (isSendingRef.current) return;
-      if (imageQueue.length > 0 || fileQueue.length > 0) {
-        toast.error("Please send or remove attached files before sending a GIF");
-        return;
-      }
-      if (voice.isRecording || voice.blob) {
-        toast.error("Finish or cancel voice recording before sending GIF");
-        return;
-      }
-      // Client-side domain check (server re-validates)
-      try {
-        const host = new URL(gif.url).hostname.toLowerCase();
-        const allowed = [
-          "giphy.com",
-          "media.giphy.com",
-          "media0.giphy.com",
-          "media1.giphy.com",
-          "media2.giphy.com",
-          "media3.giphy.com",
-          "media4.giphy.com",
-          "i.giphy.com",
-          "tenor.com",
-          "media.tenor.com",
-        ];
-        const ok = allowed.some((h) => host === h || host.endsWith(`.${h}`));
-        if (!ok) {
-          toast.error("Invalid GIF provider");
-          return;
-        }
-      } catch {
-        toast.error("Invalid GIF");
-        return;
-      }
-
-      isSendingRef.current = true;
-      setIsSending(true);
-
-      const profile: Message["sender"] = ownProfileRef.current ?? {
-        id: currentUserId,
-        full_name: null,
-        avatar_url: null,
-        username: "",
-      };
-
-      const gifAtt: ChatAttachmentForMessage = {
-        id: crypto.randomUUID(),
-        message_id: "optimistic",
-        conversation_id: conversationId,
-        uploader_id: currentUserId,
-        type: "gif",
-        storage_path: null,
-        filename: null,
-        mime_type: null,
-        file_size: null,
-        duration_seconds: null,
-        provider: gif.provider,
-        external_id: gif.id,
-        metadata: {
-          url: gif.url,
-          previewUrl: gif.previewUrl,
-          title: gif.title,
-          width: gif.width,
-          height: gif.height,
-        } as Record<string, unknown>,
-        created_at: new Date().toISOString(),
-        signedUrl: null,
-      };
-
-      const optimistic: Message = {
-        id: crypto.randomUUID(),
-        conversation_id: conversationId,
-        sender_id: currentUserId,
-        content,
-        image_url: null,
-        created_at: new Date().toISOString(),
-        edited_at: null,
-        received_at: null,
-        sender: profile,
-        attachments: [gifAtt],
-      };
-      setMessages((prev) => [...prev, optimistic]);
-
-      try {
-        const result = await sendMessageWithAttachments(conversationId, content, [
-          {
-            type: "gif",
-            provider: gif.provider,
-            external_id: gif.id,
-            metadata: {
-              url: gif.url,
-              previewUrl: gif.previewUrl,
-              title: gif.title,
-              width: gif.width,
-              height: gif.height,
-            },
-          } as unknown as import("@/actions/chat.actions").SendMessageAttachmentInput,
-        ]);
-
-        if (result && "error" in result && result.error) {
-          // Retry queue: keep the optimistic message marked failed so the
-          // user can retry in place instead of re-picking the GIF.
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === optimistic.id
-                ? { ...m, sendState: "failed" as const, sendError: result.error as string }
-                : m,
-            ),
-          );
-          // Reconcile with the server in case the insert actually landed.
-          setTimeout(() => void refetchMessages(), 500);
-          toast.error(result.error);
-        } else if (result && "success" in result && result.id) {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === optimistic.id
-                ? {
-                    ...m,
-                    id: result.id as string,
-                    created_at: (result.created_at as string) ?? m.created_at,
-                    attachments: [{ ...gifAtt, message_id: result.id as string }],
-                  }
-                : m,
-            ),
-          );
-        }
-      } catch {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === optimistic.id
-              ? { ...m, sendState: "failed" as const, sendError: "GIF could not be sent." }
-              : m,
-          ),
-        );
-        setTimeout(() => void refetchMessages(), 500);
-        toast.error("GIF could not be sent.");
-      } finally {
-        isSendingRef.current = false;
-        setIsSending(false);
-        void markConversationRead(conversationId);
-      }
-    },
-    [imageQueue.length, fileQueue.length, voice, conversationId, currentUserId, refetchMessages],
   );
 
   const handleStickerSelect = useCallback(
@@ -1591,7 +1456,7 @@ export function ChatConversation({
   const mobileConversations = useMobileConversations();
 
   // ---- Retry queue (pillar 2) ----------------------------------------
-  // A failed pure-text/GIF/sticker send stays in the list marked "failed"
+  // A failed pure-text/sticker send stays in the list marked "failed"
   // instead of vanishing. Retry re-submits the same payload; Dismiss drops it.
   const retryFailedMessage = useCallback(
     async (msg: Message) => {
@@ -1958,7 +1823,6 @@ export function ChatConversation({
         onMicClick={handleMicClick}
         onCancelVoice={handleCancelVoice}
         onDiscardVoice={handleDiscardVoice}
-        onGifSelect={handleGifSelect}
         onStickerSelect={handleStickerSelect}
         onAddFiles={addFiles}
         onPaste={handlePaste}
