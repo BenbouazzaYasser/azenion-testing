@@ -12,7 +12,7 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     localPatterns: [
       { pathname: "/logo.svg" },
-      { pathname: "/api/academy/courses/*/file", search: "?view=thumbnail" },
+      { pathname: "/api/academy/courses/*/file" },
     ],
     remotePatterns: [
       { protocol: "https", hostname: "cytwlxpomhzdezgwlbhv.supabase.co" },

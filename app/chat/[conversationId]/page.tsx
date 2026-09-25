@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import nextDynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/supabase/user";
-import { getConversations, getMessages, getConversationBlockState } from "@/data/chat";
+import { getConversations, getConversationBlockState } from "@/data/chat";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 // Code-split: the ~1500-line interactive conversation (pickers, realtime,
@@ -28,11 +28,12 @@ export default async function ConversationPage({ params }: Props) {
     redirect(`/login?next=${encodeURIComponent(`/chat/${conversationId}`)}`);
   }
 
-  // getConversations is React-cached: the chat layout already fetched it
-  // this request, so this call reuses that result (peer lookup only).
-  const [conversations, messagePage, blockState] = await Promise.all([
+  // ponytail: no server message fetch on entry — the pane (header/composer)
+  // paints now and the newest page syncs client-side, WhatsApp-style.
+  // Ceiling: messages are not in the SSR HTML; upgrade path is a streamed
+  // async server component passing the same page into ChatConversation.
+  const [conversations, blockState] = await Promise.all([
     getConversations(user.id),
-    getMessages(conversationId),
     getConversationBlockState(conversationId),
   ]);
 
@@ -62,8 +63,8 @@ export default async function ConversationPage({ params }: Props) {
       >
         <ChatConversation
           conversationId={conversationId}
-          initialMessages={messagePage.messages}
-          initialHasMore={messagePage.hasMore}
+          initialMessages={[]}
+          initialHasMore={false}
           currentUserId={user.id}
           amBlocked={blockState.am_blocked}
           peer={peer}

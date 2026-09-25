@@ -8,7 +8,7 @@ import { MessageSquare, Users, Menu, Phone, Video } from "lucide-react";import {
 import { createClient } from "@/lib/supabase/client";
 import { MessageBubble } from "@/components/chat/message-bubble";
 import { ChatComposer, type ChatComposerHandle } from "@/components/chat/chat-composer";
-import { createMemoryCache, mergeMessages, getCachedProfile, setCachedProfile, type ConversationSnapshot } from "@/lib/chat-cache";
+import { mergeMessages, getCachedProfile, setCachedProfile, conversationCache, type ConversationSnapshot } from "@/lib/chat-cache";
 import { uploadChatMediaBlob, uploadBatch, setUploadProgress, clearUploadProgress, type UploadFileInput, type UploadTaskResult, type UploadResult, type UploadError } from "@/components/chat/chat-upload";
 import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
@@ -17,7 +17,7 @@ import {
   sendMessageWithAttachments,
   markConversationRead,
   markMessagesReceived,
-  loadOlderMessages,
+  loadMessagePage,
 } from "@/actions/chat.actions";
 import { setActiveConversation } from "@/lib/chat-unread";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
@@ -164,11 +164,6 @@ function classifyFile(file: File): { type: "image" | "file"; valid: boolean; err
 }
 
 // Client-side per-conversation message cache (pillar 1), kept at module scope
-// so it survives component remounts across SPA navigations. Switching back to
-// a conversation in the same session renders its cached messages instantly and
-// merges the fresh server page into the SAME render — no blank, no stale
-// flash, no server-latency gate on revisits. (Store lives in lib/chat-cache.)
-const conversationCache = createMemoryCache<string, ConversationSnapshot<Message>>();
 
 export function ChatConversation({
   conversationId,
@@ -180,6 +175,9 @@ export function ChatConversation({
 }: ChatConversationProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [hasMoreOlder, setHasMoreOlder] = useState(initialHasMore);
+  // True until the newest page lands for a conversation with no cached
+  // history — the list shows a sync spinner instead of the empty state.
+  const [syncing, setSyncing] = useState(initialMessages.length === 0);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const loadingOlderRef = useRef(false);
   /** Scroll metrics captured before a prepend (for pre-paint scroll anchoring). */
@@ -255,8 +253,9 @@ export function ChatConversation({
     }
     setSeenConvId(conversationId);
     const cached = conversationCache.get(conversationId);
-    setMessages(cached ? mergeMessages(cached.messages, initialMessages) : initialMessages);
-    setHasMoreOlder(initialHasMore);
+    setMessages(cached ? mergeMessages(cached.messages as Message[], initialMessages) : initialMessages);
+    setHasMoreOlder(cached ? cached.hasMore : initialHasMore);
+    setSyncing((cached?.messages.length ?? 0) === 0 && initialMessages.length === 0);
     setImageQueue([]);
     setFileQueue([]);
     setActiveAttachmentId(null);
@@ -291,7 +290,7 @@ export function ChatConversation({
     loadingOlderRef.current = true;
     setLoadingOlder(true);
     try {
-      const page = await loadOlderMessages(conversationId, oldest.created_at, oldest.id);
+      const page = await loadMessagePage(conversationId, oldest.created_at, oldest.id);
       setHasMoreOlder(page.hasMore);
       if (page.messages.length > 0) {
         const el = scrollContainerRef.current;
@@ -321,6 +320,33 @@ export function ChatConversation({
     if (!el) return;
     el.scrollTop = anchor.scrollTop + (el.scrollHeight - anchor.scrollHeight);
   }, [messages]);
+
+  // WhatsApp-style entry sync: the shell paints first, then the newest page
+  // arrives as one round trip; the stick-to-bottom effect below jumps to the
+  // end when it lands, and older pages load from scroll-up only.
+  // ponytail: client fetch instead of streamed server props — ceiling is one
+  // extra hop before messages paint (spinner shows meanwhile) and no SSR
+  // message HTML; upgrade path is an async server component + use().
+  useEffect(() => {
+    if (messagesRef.current.length > 0) return; // cached history or server page
+    let cancelled = false;
+    void loadMessagePage(conversationId)
+      .then((page) => {
+        if (cancelled) return;
+        setHasMoreOlder(page.hasMore);
+        setMessages((prev) => mergeMessages(prev, page.messages));
+      })
+      .catch(() => {
+        // Silent — same as refetchMessages; an empty state shows and a
+        // conversation switch retries.
+      })
+      .finally(() => {
+        if (!cancelled) setSyncing(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [conversationId]);
 
   // Stable identity so MessageBubble's memo isn't defeated.
   const removeMessageById = useCallback(
@@ -668,8 +694,10 @@ export function ChatConversation({
 
   const participant = useMemo(() => {
     const other = initialMessages.find((m) => m.sender_id !== currentUserId);
-    return other?.sender ?? null;
-  }, [initialMessages, currentUserId]);
+    // With entry sync the header can't wait for history — the peer prop
+    // carries the same shape, so the header is right on first paint.
+    return other?.sender ?? peer;
+  }, [initialMessages, currentUserId, peer]);
 
   const otherReadTs = otherLastReadAt ? new Date(otherLastReadAt).getTime() : null;
 
@@ -1748,13 +1776,23 @@ export function ChatConversation({
         className={cn("relative z-10 flex-1 min-h-0 overflow-x-scroll overflow-y-auto px-2 pb-4 pt-2 sm:px-3", SCROLLBAR_CLASSES)}
       >
         {messages.length === 0 && imageQueue.length === 0 && fileQueue.length === 0 && (
-          <div className="relative flex h-full min-h-0 flex-col items-center justify-center px-6 text-center">
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-lg bg-surface text-accent-300">
-              <MessageSquare size={26} />
+          syncing ? (
+            <div
+              role="status"
+              className="flex h-full items-center justify-center gap-2.5 text-sm text-ink-400"
+            >
+              <span aria-hidden className="h-4 w-4 animate-spin rounded-full border-2 border-ink-600 border-t-accent-300" />
+              Loading messages…
             </div>
-            <h2 className="mt-5 text-lg font-semibold text-ink-50">No messages yet</h2>
-            <p className="mt-1.5 max-w-xs text-sm text-ink-400">Send a message to start the conversation.</p>
-          </div>
+          ) : (
+            <div className="relative flex h-full min-h-0 flex-col items-center justify-center px-6 text-center">
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-lg bg-surface text-accent-300">
+                <MessageSquare size={26} />
+              </div>
+              <h2 className="mt-5 text-lg font-semibold text-ink-50">No messages yet</h2>
+              <p className="mt-1.5 max-w-xs text-sm text-ink-400">Send a message to start the conversation.</p>
+            </div>
+          )
         )}
 
         <div className="flex flex-col">

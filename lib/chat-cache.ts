@@ -5,30 +5,14 @@
  * Memory-backed by design — the spec allows a memory cache, and IndexedDB
  * would add a dependency for zero in-session benefit: the cache's job is
  * instant 0ms re-renders on conversation switch, not surviving full reloads.
- * Swap the factory body for an IndexedDB adapter only if cross-reload
- * persistence is ever wanted.
+ * Swap the Map for an IndexedDB adapter only if cross-reload persistence is
+ * ever wanted.
  */
 
 /** Snapshot of one conversation's loaded history + paging state. */
 export interface ConversationSnapshot<T> {
   messages: T[];
   hasMore: boolean;
-}
-
-export interface MemoryCache<K, V> {
-  get(key: K): V | undefined;
-  set(key: K, value: V): void;
-}
-
-/** Minimal Map-backed cache keyed by conversation id. */
-export function createMemoryCache<K, V>(): MemoryCache<K, V> {
-  const map = new Map<K, V>();
-  return {
-    get: (key) => map.get(key),
-    set: (key, value) => {
-      map.set(key, value);
-    },
-  };
 }
 
 /**
@@ -55,8 +39,12 @@ export interface CachedSenderProfile {
   avatar_url: string | null;
   username: string;
 }
-const profileCache = createMemoryCache<string, CachedSenderProfile>();
+const profileCache = new Map<string, CachedSenderProfile>();
 export const getCachedProfile = (id: string): CachedSenderProfile | undefined => profileCache.get(id);
 export const setCachedProfile = (profile: CachedSenderProfile): void => {
   profileCache.set(profile.id, profile);
 };
+
+/** Per-conversation message history + paging state, shared so sidebar
+ *  prefetches land in the same store the pane reads on switch. */
+export const conversationCache = new Map<string, ConversationSnapshot<unknown>>();

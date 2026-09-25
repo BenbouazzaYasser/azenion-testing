@@ -411,10 +411,11 @@ export async function markConversationRead(conversationId: string) {
   };
 }
 
-/** One older page of messages for infinite scroll (keyset on created_at + id). */
-export async function loadOlderMessages(
+/** One page of messages (keyset on created_at + id). Omit `before` for the
+ *  newest page — used for the WhatsApp-style entry sync. */
+export async function loadMessagePage(
   conversationId: string,
-  before: string,
+  before?: string,
   beforeId?: string,
 ) {
   // RLS on `messages` scopes the page to conversations the caller belongs to;

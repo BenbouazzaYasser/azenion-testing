@@ -214,12 +214,13 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
   return (
     <>
       {variant === "desktop" ? (
-        <button
+        <Button
           ref={triggerRef}
-          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-10 w-10 px-0"
           onClick={openPalette}
           aria-label="Search Azenion (Ctrl+K)"
-          className="group relative flex h-11 w-11 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
           <Search size={18} aria-hidden />
           <span
@@ -231,20 +232,21 @@ export function GlobalSearch({ variant = "desktop" }: GlobalSearchProps) {
               Ctrl K
             </span>
           </span>
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
           ref={triggerRef}
-          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-10 w-10 px-0"
           onClick={openPalette}
           aria-label="Search"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-ink-50 transition-[color,background-color,border-color,box-shadow] duration-200 ease-premium hover:bg-surface-hover hover:border-accent-400/40 hover:shadow-control active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-5 w-5">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
-        </button>
+        </Button>
       )}
 
       {open

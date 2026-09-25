@@ -233,7 +233,7 @@ export function FeedList({
 
         {items.map((item) => (
           <div
-            key={`${item.source_type}-${item.source_id}`}
+            key={`${item.id}-${item.source_type}-${item.source_id}`}
             style={{ contentVisibility: "auto", containIntrinsicSize: "auto 320px" }}
           >
             <FeedCard

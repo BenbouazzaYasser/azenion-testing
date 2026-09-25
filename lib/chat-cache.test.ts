@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createMemoryCache, mergeMessages } from "./chat-cache";
+import { mergeMessages } from "./chat-cache";
 
 interface Msg {
   id: string;
@@ -32,23 +32,5 @@ describe("mergeMessages", () => {
     const a: Msg[] = [{ id: "x", content: "", created_at: null }];
     const b: Msg[] = [m("y", "2026-01-01T00:00:00Z")];
     expect(mergeMessages(a, b).length).toBe(2);
-  });
-});
-
-describe("createMemoryCache", () => {
-  it("get/set round-trips and keeps distinct keys", () => {
-    const cache = createMemoryCache<string, number>();
-    cache.set("a", 1);
-    cache.set("b", 2);
-    expect(cache.get("a")).toBe(1);
-    expect(cache.get("b")).toBe(2);
-    expect(cache.get("missing")).toBeUndefined();
-  });
-
-  it("overwrites on re-set", () => {
-    const cache = createMemoryCache<string, string>();
-    cache.set("a", "old");
-    cache.set("a", "new");
-    expect(cache.get("a")).toBe("new");
   });
 });

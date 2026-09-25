@@ -5,16 +5,10 @@ import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/
 
 type Listener = () => void;
 
-interface RegisteredListener {
-  userId: string;
-  listener: Listener;
-}
-
 let supabase: ReturnType<typeof createClient> | null = null;
 let channel: RealtimeChannel | null = null;
 let activeUserId: string | null = null;
-let nextListenerId = 0;
-const listeners = new Map<number, RegisteredListener>();
+const listeners = new Set<Listener>();
 
 function getSupabase() {
   if (!supabase) supabase = createClient();
@@ -24,9 +18,7 @@ function getSupabase() {
 function handleInsert(payload: RealtimePostgresChangesPayload<Record<string, unknown>>) {
   const row = payload.new as { user_id?: string | null } | null;
   if (!row?.user_id || row.user_id !== activeUserId) return;
-  for (const { userId, listener } of listeners.values()) {
-    if (userId === activeUserId) listener();
-  }
+  for (const listener of listeners) listener();
 }
 
 function teardown() {
@@ -61,19 +53,17 @@ function ensureChannel() {
  * last caller unsubscribes.
  */
 export function subscribeToNotifications(userId: string, listener: Listener): () => void {
-  const id = ++nextListenerId;
-  listeners.set(id, { userId, listener });
-
   if (activeUserId && activeUserId !== userId) {
     teardown();
     activeUserId = userId;
   } else if (!activeUserId) {
     activeUserId = userId;
   }
+  listeners.add(listener);
   ensureChannel();
 
   return () => {
-    listeners.delete(id);
+    listeners.delete(listener);
     if (listeners.size === 0) {
       teardown();
       activeUserId = null;

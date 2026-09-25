@@ -338,6 +338,7 @@ function CourseCard({
               height={160}
               sizes="(max-width: 768px) 100vw, 640px"
               className="h-40 w-full object-cover"
+              unoptimized
             />
           </button>
         ) : null}

@@ -212,7 +212,13 @@ export function Navbar() {
     >
       <div
         className={cn(
-          "hidden xl:block w-full xl:w-fit rounded-none border-x border-b navbar-border transition-colors duration-150 ease-out",
+          // ponytail: floating pill — rounds all corners and lifts off the
+          // viewport edge so scrolling content never bleeds into the corners.
+          // Ceiling: the theme's --shadow-color resolves to 0 0 0, so theme
+          // shadows are invisible; a literal shadow is used here instead.
+          // Upgrade path: wire a real shadow token once --shadow-color is
+          // given a nonzero value.
+          "hidden xl:block w-full xl:w-fit rounded-xl border-x border-b navbar-border shadow-[0_10px_30px_-10px_rgb(0_0_0_0.4)] transition-colors duration-150 ease-out",
           isScrolled || isMenuOpen
             ? "bg-void-900"
             : "bg-void-950"

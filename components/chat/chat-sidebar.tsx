@@ -9,10 +9,11 @@ import { cn } from "@/lib/utils";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { formatDistanceToNow } from "@/lib/date";
 import { toast } from "sonner";
-import { searchUsers, getArchivedConversations } from "@/actions/chat.actions";
+import { searchUsers, getArchivedConversations, loadMessagePage } from "@/actions/chat.actions";
 import { useChatUnread, clearConversationUnread } from "@/lib/chat-unread";
 import { ConversationMenu } from "@/components/chat/conversation-menu";
 import { MessageStatus, type MessageStatusKind } from "@/components/chat/message-status";
+import { conversationCache } from "@/lib/chat-cache";
 
 interface Conversation {
   id: string;
@@ -416,6 +417,17 @@ function ConversationRowImpl({
 }: ConversationRowProps) {
   const router = useRouter();
   const prefetchHref = `/chat/${conv.id}`;
+  const prefetchingRef = useRef(new Set<string>());
+  const prefetchConv = useCallback((id: string) => {
+    if (conversationCache.has(id) || prefetchingRef.current.has(id)) return;
+    prefetchingRef.current.add(id);
+    void loadMessagePage(id)
+      .then((page) => {
+        conversationCache.set(id, { messages: page.messages, hasMore: page.hasMore });
+      })
+      .catch(() => {})
+      .finally(() => { prefetchingRef.current.delete(id); });
+  }, []);
   const isOwnLast = conv.last_message?.sender_id === currentUserId;
   const lastTs = conv.last_message?.created_at
     ? new Date(conv.last_message.created_at).getTime()
@@ -448,8 +460,8 @@ function ConversationRowImpl({
           e.preventDefault();
           onNavigate(conv.id);
         }}
-        onMouseEnter={() => router.prefetch(prefetchHref)}
-        onFocus={() => router.prefetch(prefetchHref)}
+        onMouseEnter={() => { router.prefetch(prefetchHref); void prefetchConv(conv.id); }}
+        onFocus={() => { router.prefetch(prefetchHref); void prefetchConv(conv.id); }}
         className={cn(
           "flex items-center gap-3 overflow-hidden rounded-lg py-3 pl-3 pr-11 transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950",
           isActive

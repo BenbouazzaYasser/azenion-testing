@@ -15,6 +15,7 @@ import {
   Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { SCROLLBAR_CLASSES } from "@/components/ui/scrollbar";
 import { formatDistanceToNow } from "@/lib/date";
 import { useUser } from "@/hooks/use-user";
@@ -282,8 +283,11 @@ export function NotificationCenter() {
 
   return (
     <div ref={wrapRef} className="relative">
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-10 w-10 px-0"
+        onClick={handleOpen}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={
@@ -291,8 +295,6 @@ export function NotificationCenter() {
             ? `Notifications (${unreadCount} unread)`
             : "Notifications"
         }
-        onClick={handleOpen}
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border navbar-element-border text-ink-400 transition-all duration-300 ease-premium hover:border-accent-400/40 hover:text-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-void-950"
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -300,7 +302,7 @@ export function NotificationCenter() {
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
-      </button>
+      </Button>
 
       {open ? (
         <div

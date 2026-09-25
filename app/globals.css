@@ -9,51 +9,55 @@
   :root {
     color-scheme: dark;
 
-    /* Warm Claude-like depth with Discord's compact, energetic interaction
-       language. Channels stay separated so Tailwind can preserve opacity. */
-    --void-950: 31 30 28;
-    --void-900: 38 36 33;
-    --void-800: 46 43 39;
-    --surface: 49 46 42;
-    --surface-hover: 61 57 52;
-    --card: 48 45 41;
-    --card-hover: 58 54 49;
+    /* Discord dark: neutral blue-grey surfaces (#1E1F22 → #313338), Discord
+       text ramp, blurple accent already on --accent-primary. Channels stay
+       separated so Tailwind can preserve opacity.
+       ponytail: dark palette only, hardcoded into :root — ceiling is no
+       Discord-light variant and no per-theme switch. Upgrade path: copy this
+       block into [data-theme="light"] / a [data-theme="discord"] selector. */
+    --void-950: 30 31 34;      /* #1E1F22 */
+    --void-900: 43 45 49;      /* #2B2D31 */
+    --void-800: 46 48 53;      /* #2E3035 */
+    --surface: 49 51 56;       /* #313338 */
+    --surface-hover: 56 58 64; /* #383A40 */
+    --card: 43 45 49;
+    --card-hover: 53 55 60;
 
-    --ink-50: 247 245 242;
-    --ink-100: 232 228 222;
-    --ink-200: 211 205 198;
-    --ink-300: 181 173 164;
-    --ink-400: 170 162 154;
-    --ink-500: 160 152 143;
-    --ink-600: 156 148 139;
-    --ink-700: 110 103 96;
+    --ink-50: 242 243 245;     /* #F2F3F5 */
+    --ink-100: 219 222 225;    /* #DBDEE1 */
+    --ink-200: 181 186 193;    /* #B5BAC1 */
+    --ink-300: 148 155 164;    /* #949BA4 */
+    --ink-400: 128 132 142;    /* #80848E */
+    --ink-500: 109 111 120;
+    --ink-600: 92 94 102;
+    --ink-700: 78 80 88;       /* #4E5058 */
 
-    --accent-primary: 88 101 242;
+    --accent-primary: 88 101 242;   /* #5865F2 blurple */
     --accent-secondary: 201 111 74;
     --accent-200: 211 215 255;
     --accent-300: 171 178 252;
     --accent-400: 132 141 248;
-    --accent-500: 79 70 229;
-    --accent-600: 67 56 190;
+    --accent-500: 71 82 196;        /* #4752C4 */
+    --accent-600: 60 66 160;        /* #3C42A0 */
     --secondary-300: 235 171 139;
     --secondary-400: 220 139 102;
     --secondary-500: 201 111 74;
 
-    --border: 247 245 242;
-    --border-strong: 247 245 242;
+    --border: 242 243 245;
+    --border-strong: 242 243 245;
 
-    --glass: 39 37 34;
-    --glass-strong: 31 30 28;
-    --glass-panel: 46 43 39;
-    --glass-nav: 31 30 28;
+    --glass: 43 45 49;
+    --glass-strong: 30 31 34;
+    --glass-panel: 49 51 56;
+    --glass-nav: 30 31 34;
 
-    --panel-a: 49 46 42;
-    --panel-b: 38 36 33;
-    --composer-a: 46 43 39;
-    --composer-b: 38 36 33;
+    --panel-a: 49 51 56;
+    --panel-b: 43 45 49;
+    --composer-a: 56 58 64;
+    --composer-b: 49 51 56;
 
-    --scrim: 20 19 17;
-    --cosmic: 31 30 28;
+    --scrim: 17 18 20;
+    --cosmic: 30 31 34;
     --shadow-color: 0 0 0;
 
     --font-ui: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -447,7 +451,7 @@
   }
 }
 
-/* Appearance support. The base `:root` is a warm charcoal night; the
+/* Appearance support. The base `:root` is Discord dark; the
    `data-theme` attribute (set by components/theme/theme-provider.tsx,
    "system" | "light" | "dark") drives the resolved canvas and text roles. */
 [data-theme="light"] {
