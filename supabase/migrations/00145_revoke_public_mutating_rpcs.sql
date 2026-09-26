@@ -4,7 +4,7 @@
 -- to PUBLIC on every function by default, so revoking only `from anon` left
 -- anonymous PostgREST callers able to invoke these through PUBLIC. Revoke
 -- PUBLIC (and anon, belt-and-suspenders) and re-assert the legitimate callers.
--- Covers the audit's mutating-RPC list plus 00143's three chat functions,
+-- Covers the audit's mutating-RPC list plus 00143's two chat functions,
 -- whose anon-only revoke was ineffective for the same PUBLIC reason.
 --
 -- authenticated/service_role already hold explicit grants on all of these
@@ -28,7 +28,7 @@ begin
         'update_branch_announcement_image', 'delete_branch_announcement',
         'create_branch_event', 'update_branch_event', 'delete_branch_event',
         'create_branch_highlight', 'update_branch_highlight', 'delete_branch_highlight',
-        'send_chat_message', 'get_last_messages', 'is_allowed_gif_host'
+        'send_chat_message', 'get_last_messages'
       )
   loop
     execute format('grant execute on function %s to authenticated, service_role', sig);

@@ -13,7 +13,6 @@ const TIMEOUT_MS = 3000; // low-end devices: fall back to original after 3s
 // Images canvas can't faithfully re-encode, or that decode-fail anyway.
 const UNCOMPRESSIBLE_IMAGE_TYPES = new Set([
   "image/svg+xml", // vector
-  "image/gif", // animated — canvas keeps only the first frame
   "image/heic",
   "image/heif", // no browser canvas decode
 ]);

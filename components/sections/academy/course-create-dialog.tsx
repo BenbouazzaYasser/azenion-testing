@@ -360,7 +360,7 @@ export function CourseCreateDialog() {
                         <input
                           ref={thumbnailInputRef}
                           type="file"
-                          accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                          accept="image/jpeg,image/png,image/webp,image/avif"
                           onChange={(e) => setThumbnailFile(e.target.files?.[0] ?? null)}
                           className="hidden"
                         />

@@ -16,7 +16,7 @@ const MAX_THUMBNAIL_SIZE = 5 * 1024 * 1024; // 5MB
 
 const ZIP_EXTENSIONS = new Set(["zip"]);
 const MARKDOWN_EXTENSIONS = new Set(["md", "markdown", "txt"]);
-const THUMBNAIL_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
+const THUMBNAIL_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "avif"]);
 
 const CONTENT_TYPES: Record<string, string> = {
   zip: "application/zip",
@@ -27,7 +27,6 @@ const CONTENT_TYPES: Record<string, string> = {
   jpeg: "image/jpeg",
   png: "image/png",
   webp: "image/webp",
-  gif: "image/gif",
   avif: "image/avif",
 };
 
@@ -242,7 +241,7 @@ export async function createLab(formData: FormData) {
     }
     const thumbExt = fileExtension(thumbnail.name);
     if (!THUMBNAIL_EXTENSIONS.has(thumbExt)) {
-      return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
+      return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, or AVIF image." };
     }
     const result = await uploadLabThumbnail(admin, lab.id, thumbnail, thumbExt);
     if ("error" in result) {
@@ -353,7 +352,7 @@ export async function updateLab(formData: FormData) {
     }
     const thumbExt = fileExtension(thumbnail.name);
     if (!THUMBNAIL_EXTENSIONS.has(thumbExt)) {
-      return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
+      return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, or AVIF image." };
     }
     const result = await uploadLabThumbnail(admin, id, thumbnail, thumbExt);
     if ("error" in result) {

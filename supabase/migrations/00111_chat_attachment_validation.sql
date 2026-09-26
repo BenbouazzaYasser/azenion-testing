@@ -16,7 +16,7 @@ declare
   v_is_image boolean;
   v_is_file boolean;
 begin
-  -- Only validate storage-backed types; gif/sticker are provider-backed
+  -- Only validate storage-backed types; sticker is provider-backed
   if NEW.type in ('image','file','audio') then
     if NEW.storage_path is null or NEW.storage_path !~ '^chat/[0-9a-fA-F-]{8}-[0-9a-fA-F-]{4}-[0-9a-fA-F-]{4}-[0-9a-fA-F-]{4}-[0-9a-fA-F-]{12}/.+/.+$' then
       raise exception 'Invalid storage_path for attachment';
@@ -32,7 +32,7 @@ begin
     v_mime := split_part(v_mime, ';', 1);
     v_mime := btrim(v_mime);
 
-    v_is_image := v_mime in ('image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif');
+    v_is_image := v_mime in ('image/jpeg','image/png','image/webp','image/heic','image/heif');
     v_is_file := v_mime in ('application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/zip');
 
     -- Type-specific MIME check
@@ -69,7 +69,7 @@ begin
     if NEW.provider is not null or NEW.external_id is not null then
       raise exception 'Provider fields must be null for storage-backed attachments';
     end if;
-  elsif NEW.type in ('gif','sticker') then
+  elsif NEW.type = 'sticker' then
     if NEW.provider is null or length(trim(NEW.provider)) = 0 then
       raise exception 'Provider required for %', NEW.type;
     end if;

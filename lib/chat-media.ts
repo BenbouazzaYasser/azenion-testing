@@ -26,7 +26,6 @@ export const CHAT_IMAGE_MIMES = [
   "image/jpeg",
   "image/png",
   "image/webp",
-  "image/gif",
   "image/heic",
   "image/heif",
 ] as const;

@@ -156,20 +156,20 @@ create table if not exists public.chat_message_attachments (
   message_id uuid not null references public.messages(id) on delete cascade,
   conversation_id uuid not null references public.conversations(id) on delete cascade,
   uploader_id uuid not null references public.profiles(id) on delete cascade,
-  type text not null check (type in ('image','file','audio','gif','sticker')),
-  storage_path text, -- null for gif/sticker provider objects
+  type text not null check (type in ('image','file','audio','sticker')),
+  storage_path text, -- null for sticker provider objects
   filename text,
   mime_type text,
   file_size integer check (file_size is null or file_size >= 0),
   duration_seconds integer check (duration_seconds is null or duration_seconds >= 0),
-  provider text, -- e.g. 'tenor' | 'giphy' for gif, null otherwise
-  external_id text, -- provider-side id for gif/sticker
+  provider text, -- 'local' for sticker, null otherwise
+  external_id text, -- catalog id for sticker
   metadata jsonb default '{}' not null,
   created_at timestamptz not null default now(),
   -- storage-backed types must have a path; provider types must not rely on storage
   constraint chat_attachments_storage_check check (
     (type in ('image','file','audio') and storage_path is not null)
-    or (type in ('gif','sticker'))
+    or (type = 'sticker')
   )
 );
 
@@ -187,9 +187,9 @@ create index if not exists idx_chat_attachments_created_at
 comment on table public.chat_message_attachments is
   'Private chat attachments. Each row belongs to a message; conversation_id is denormalized for RLS/indexing. Storage lives in chat-media bucket with path chat/{conversationId}/...';
 comment on column public.chat_message_attachments.storage_path is
-  'Object path inside chat-media bucket (e.g. chat/{conversationId}/{attachmentId}/{filename}), or null for provider-backed gif/sticker.';
+  'Object path inside chat-media bucket (e.g. chat/{conversationId}/{attachmentId}/{filename}), or null for provider-backed sticker.';
 comment on column public.chat_message_attachments.metadata is
-  'Provider-agnostic JSON: image dimensions, gif preview URLs, sticker pack id, etc.';
+  'Provider-agnostic JSON: image dimensions, sticker pack id, etc.';
 
 -- ── 5. Validate that attachment conversation matches its message ─────────────
 

@@ -29,7 +29,7 @@ begin
     v_mime := split_part(v_mime, ';', 1);
     v_mime := btrim(v_mime);
 
-    v_is_image := v_mime in ('image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif');
+    v_is_image := v_mime in ('image/jpeg','image/png','image/webp','image/heic','image/heif');
     v_is_file := v_mime in ('application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/zip');
 
     if NEW.type = 'image' and not v_is_image then
@@ -64,20 +64,17 @@ begin
     if NEW.provider is not null or NEW.external_id is not null then
       raise exception 'Provider fields must be null for storage-backed attachments';
     end if;
-  elsif NEW.type in ('gif','sticker') then
+  elsif NEW.type = 'sticker' then
     if NEW.provider is null or length(trim(NEW.provider)) = 0 then
       raise exception 'Provider required for %', NEW.type;
     end if;
-    if NEW.type = 'gif' and NEW.provider not in ('giphy','tenor') then
-      raise exception 'Provider % not allowed for gif', NEW.provider;
-    end if;
-    if NEW.type = 'sticker' and NEW.provider != 'local' then
+    if NEW.provider != 'local' then
       raise exception 'Provider % not allowed for sticker', NEW.provider;
     end if;
     if NEW.external_id is null or length(trim(NEW.external_id)) = 0 then
       raise exception 'External ID required for %', NEW.type;
     end if;
-    if NEW.type = 'sticker' and NEW.external_id not in (
+    if NEW.external_id not in (
       'classic-01','classic-02','classic-03','classic-04','classic-05','classic-06','classic-07','classic-08',
       'playful-01','playful-02','playful-03','playful-04','playful-05','playful-06','playful-07','playful-08'
     ) then
@@ -86,27 +83,7 @@ begin
     if NEW.storage_path is not null then
       raise exception 'storage_path must be null for provider-backed attachments';
     end if;
-    if NEW.type = 'gif' and NEW.metadata is not null then
-      v_url := (NEW.metadata->>'url');
-      if v_url is not null and length(trim(v_url)) > 0 then
-        if NEW.provider = 'giphy' and v_url not ilike '%giphy.com%' then
-          raise exception 'GIF URL domain not allowed for giphy: %', v_url;
-        end if;
-        if NEW.provider = 'tenor' and v_url not ilike '%tenor.com%' then
-          raise exception 'GIF URL domain not allowed for tenor: %', v_url;
-        end if;
-      end if;
-      v_url := (NEW.metadata->>'previewUrl');
-      if v_url is not null and length(trim(v_url)) > 0 then
-        if NEW.provider = 'giphy' and v_url not ilike '%giphy.com%' then
-          raise exception 'GIF preview URL domain not allowed for giphy: %', v_url;
-        end if;
-        if NEW.provider = 'tenor' and v_url not ilike '%tenor.com%' then
-          raise exception 'GIF preview URL domain not allowed for tenor: %', v_url;
-        end if;
-      end if;
-    end if;
-    if NEW.type = 'sticker' and NEW.metadata is not null then
+    if NEW.metadata is not null then
       v_url := (NEW.metadata->>'url');
       if v_url is not null and length(trim(v_url)) > 0 and v_url not like '/stickers/%' then
         raise exception 'Sticker URL must be local /stickers/ path: %', v_url;

@@ -1,20 +1,58 @@
--- Migration: 00112_chat_gif_domain_validation
+-- Migration: 00148_remove_gif_attachments
 --
--- Enhances gif validation to ensure persisted URLs are from approved provider
--- domains, preventing arbitrary external URL injection via direct client inserts.
--- Mirrors lib/gif/provider.ts allowlist.
+-- Drops the GIF chat feature (picker, /api/chat/gif/search, lib/gif/provider).
+-- Provider-backed attachments are now sticker-only.
+--
+-- Order matters: the row deletes run while the old constraints still accept
+-- 'gif'; the constraints are tightened afterwards.
 
+-- 1. Data cleanup
+-- Media-only messages whose sole attachment was a GIF would render as empty
+-- bubbles once the attachment is gone - drop the message (the FK cascades).
+delete from public.messages m
+where btrim(m.content) = ''
+  and exists (
+    select 1 from public.chat_message_attachments a where a.message_id = m.id
+  )
+  and not exists (
+    select 1 from public.chat_message_attachments a
+    where a.message_id = m.id and a.type <> 'gif'
+  );
+
+delete from public.chat_message_attachments where type = 'gif';
+
+-- 2. Type constraints
+alter table public.chat_message_attachments
+  drop constraint if exists chat_message_attachments_type_check;
+alter table public.chat_message_attachments
+  add constraint chat_message_attachments_type_check
+  check (type in ('image','file','audio','sticker'));
+
+alter table public.chat_message_attachments
+  drop constraint if exists chat_attachments_storage_check;
+alter table public.chat_message_attachments
+  add constraint chat_attachments_storage_check
+  check (
+    (type in ('image','file','audio') and storage_path is not null)
+    or (type = 'sticker')
+  );
+
+comment on column public.chat_message_attachments.storage_path is
+  'Object path inside chat-media bucket (e.g. chat/{conversationId}/{attachmentId}/{filename}), or null for provider-backed stickers.';
+comment on column public.chat_message_attachments.provider is
+  'Provider for provider-backed attachments (''local'' for stickers), null otherwise.';
+
+-- 3. Validation trigger: sticker is the only provider-backed type
 create or replace function public.validate_chat_attachment_fields()
 returns trigger
 language plpgsql
 security definer set search_path = public
-as $$
+as $fn$
 declare
   v_mime text;
   v_size integer;
   v_is_image boolean;
   v_is_file boolean;
-  v_url text;
 begin
   if NEW.type in ('image','file','audio') then
     if NEW.storage_path is null or NEW.storage_path !~ '^chat/[0-9a-fA-F-]{8}-[0-9a-fA-F-]{4}-[0-9a-fA-F-]{4}-[0-9a-fA-F-]{4}-[0-9a-fA-F-]{12}/.+/.+$' then
@@ -65,14 +103,11 @@ begin
     if NEW.provider is not null or NEW.external_id is not null then
       raise exception 'Provider fields must be null for storage-backed attachments';
     end if;
-  elsif NEW.type in ('gif','sticker') then
+  elsif NEW.type = 'sticker' then
     if NEW.provider is null or length(trim(NEW.provider)) = 0 then
       raise exception 'Provider required for %', NEW.type;
     end if;
-    if NEW.type = 'gif' and NEW.provider not in ('giphy','tenor') then
-      raise exception 'Provider % not allowed for gif', NEW.provider;
-    end if;
-    if NEW.type = 'sticker' and NEW.provider != 'local' then
+    if NEW.provider != 'local' then
       raise exception 'Provider % not allowed for sticker', NEW.provider;
     end if;
     if NEW.external_id is null or length(trim(NEW.external_id)) = 0 then
@@ -81,29 +116,10 @@ begin
     if NEW.storage_path is not null then
       raise exception 'storage_path must be null for provider-backed attachments';
     end if;
-    -- Validate GIF URLs are from approved domains if present in metadata (simple ILIKE check, no exception block)
-    if NEW.type = 'gif' and NEW.metadata is not null then
-      v_url := (NEW.metadata->>'url');
-      if v_url is not null and length(trim(v_url)) > 0 then
-        if NEW.provider = 'giphy' and v_url not ilike '%giphy.com%' then
-          raise exception 'GIF URL domain not allowed for giphy: %', v_url;
-        end if;
-        if NEW.provider = 'tenor' and v_url not ilike '%tenor.com%' then
-          raise exception 'GIF URL domain not allowed for tenor: %', v_url;
-        end if;
-      end if;
-      v_url := (NEW.metadata->>'previewUrl');
-      if v_url is not null and length(trim(v_url)) > 0 then
-        if NEW.provider = 'giphy' and v_url not ilike '%giphy.com%' then
-          raise exception 'GIF preview URL domain not allowed for giphy: %', v_url;
-        end if;
-        if NEW.provider = 'tenor' and v_url not ilike '%tenor.com%' then
-          raise exception 'GIF preview URL domain not allowed for tenor: %', v_url;
-        end if;
-      end if;
-    end if;
   end if;
 
   return NEW;
 end;
-$$;
+$fn$;
+
+drop function if exists public.is_allowed_gif_host(text, text);

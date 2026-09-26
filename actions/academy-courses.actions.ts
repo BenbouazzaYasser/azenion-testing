@@ -13,7 +13,7 @@ const MAX_THUMBNAIL_SIZE = 5 * 1024 * 1024; // 5MB
 
 const PDF_EXTENSIONS = new Set(["pdf"]);
 const HTML_CSS_EXTENSIONS = new Set(["zip", "html", "htm", "css", "js", "mjs"]);
-const THUMBNAIL_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
+const THUMBNAIL_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "avif"]);
 
 const CONTENT_TYPES: Record<string, string> = {
   pdf: "application/pdf",
@@ -30,7 +30,6 @@ const THUMBNAIL_EXT_MIME: Record<string, string> = {
   jpeg: "image/jpeg",
   png: "image/png",
   webp: "image/webp",
-  gif: "image/gif",
   avif: "image/avif",
 };
 
@@ -226,7 +225,7 @@ export async function createCourse(formData: FormData) {
     }
     const thumbExt = fileExtension(thumbnail.name);
     if (isInvalidExtension(thumbExt, THUMBNAIL_EXTENSIONS)) {
-      return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
+      return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, or AVIF image." };
     }
     const thumbnailPath = `courses/${inserted.id}/thumbnail.${thumbExt}`;
 
@@ -378,7 +377,7 @@ export async function updateCourse(formData: FormData) {
   if (hasNewThumbnail) {
     const ext = fileExtension(thumbnail.name);
     if (isInvalidExtension(ext, THUMBNAIL_EXTENSIONS)) {
-      return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, GIF, or AVIF image." };
+      return { error: "Invalid thumbnail type. Use a JPG, PNG, WEBP, or AVIF image." };
     }
 
     thumbnailPath = `courses/${parsed.data.id}/thumbnail.${ext}`;

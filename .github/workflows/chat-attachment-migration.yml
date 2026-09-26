@@ -1,0 +1,139 @@
+# Chat attachment schema: no-GIF invariant.
+#
+# GIF support (Giphy/Tenor provider-backed attachments) was removed from the
+# chat attachment domain. What remains is storage-backed types only, plus
+# local SVG stickers:
+#
+#   type       image | file | audio | sticker
+#   provider   'local' for sticker, null otherwise
+#   image MIME jpeg, png, webp, heic, heif  (no image/gif)
+#
+# The removal was made by EDITING migration history (00110/00111/00113/00142,
+# with 00112 deleted outright) rather than appending a new migration, so the
+# chain must still replay cleanly from an empty database. This workflow is the
+# permanent guard for that.
+#
+# 00154 is the one appended migration, and it exists for a different reason:
+# editing history fixes a fresh replay but cannot reach a database that already
+# applied the old 00110, whose two CHECK constraints were never dropped by any
+# later file. 00154 drops and recreates them. It is idempotent, so it is also
+# harmless at the end of a clean replay from empty.
+#
+# 00152 and 00153 are recovered verbatim from the hosted migration ledger, which
+# had recorded them under timestamp versions with no repository file. Keep them
+# byte-for-byte as applied: 00153 is the historical GIF removal and still permits
+# image/gif in validate_chat_attachment_fields, which is precisely why 00154
+# exists. Editing 00153 would delete the reason 00154 is needed.
+#
+# Three failure modes, each needing a different tool:
+#
+#   1. A migration no longer compiles. Caught by `supabase db reset` exiting 0.
+#      This is the main risk: 00142 lost a whole $$ … $$ function body and
+#      00113 lost an if … end if; block.
+#
+#   2. A migration still REFERENCES something that was removed. NOT caught by
+#      db reset — plpgsql resolves function bodies at runtime, so a dangling
+#      `is_allowed_gif_host(...)` call would create fine and only explode on
+#      first use. Caught by the grep below, which is why it exists.
+#
+#   3. A half-deleted allowlist. Caught by the catalog assertions in
+#      supabase/tests/chat-attachment-no-gif.sql, which read what actually
+#      landed in the database rather than what the files claim.
+#
+#   4. A migration that replays cleanly but leaves the wrong catalog behind.
+#      Caught by supabase/tests/realtime-unified-objects.sql, which asserts the
+#      five functions, five triggers, four indexes and two columns that only
+#      00152 creates. `db reset` exiting 0 proves 00152 compiled, not that it
+#      took effect -- the same shape of failure as remove_gif_attachments, which
+#      reported success while its own function body still allowed image/gif.
+#
+# The SQL lives in its own file rather than a heredoc: a YAML block scalar
+# needs every line indented, a bash heredoc needs its terminator at column 0,
+# and those are mutually exclusive. A separate file is also reviewable on its
+# own and runnable by hand.
+#
+# No npm ci and no setup-node: `supabase db reset` is Docker plus a Postgres
+# container, and the assertions run through the psql client. Unlike the
+# pagination workflow, nothing here needs the JS toolchain.
+#
+# Target is an ephemeral LOCAL Supabase on the GitHub runner. Production is
+# never touched.
+name: chat-attachment-migration
+
+on:
+  # pull_request is the merge gate: the replay must pass before a migration
+  # change can land, provided branch protection requires this check. That setting
+  # is server-side and CANNOT be verified from the repository, so confirm the
+  # job "no-gif" is a required status check in the branch rules for the target
+  # branch before trusting it as a gate. workflow_dispatch exists so the replay
+  # can also be run on demand, without opening a PR.
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/tests/chat-attachment-no-gif.sql"
+      - "supabase/tests/realtime-unified-objects.sql"
+      - ".github/workflows/chat-attachment-migration.yml"
+  workflow_dispatch:
+
+jobs:
+  no-gif:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install psql client
+        # ubuntu-latest ships psql today; pin it so a future runner-image
+        # change surfaces here as a missing binary, not a confusing failure.
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: No GIF references anywhere in migration history
+        shell: bash
+        run: |
+          # git grep exits 0 when there IS a match, so invert it.
+          # is_allowed_gif_host is listed explicitly: \bgif\b cannot match it,
+          # because `_` is a word character in POSIX ERE, and a surviving
+          # reference to the dropped function is the exact bug this guards.
+          #
+          # 00153 and 00154 are excluded because they are the two migrations that
+          # must NAME gif in order to remove or repair it: 00153 is the historical
+          # removal (and still permits image/gif, which 00154 then repairs), while
+          # 00154 drops the two CHECK constraints whose definitions still contain
+          # 'gif', and deletes leftover type='gif' rows. A text grep cannot tell
+          # "adds GIF" from "removes GIF", so they are excluded by path here -- and
+          # the catalog assertions in the next step are what actually verify the end
+          # state, including that no CHECK constraint definition mentions gif.
+          if git grep -n -iE 'is_allowed_gif_host|\bgif\b|giphy|tenor' -- \
+            supabase/migrations \
+            ':(exclude)supabase/migrations/00153_remove_gif_attachments.sql' \
+            ':(exclude)supabase/migrations/00154_drop_gif_constraints.sql'; then
+            echo "::error::GIF references found in supabase/migrations (listed above)"
+            exit 1
+          fi
+          echo "No GIF references in supabase/migrations"
+
+      - name: Replay all migrations against real Postgres
+        run: |
+          # supabase start first, matching projects-pagination-it.yml: db reset
+          # needs the local Postgres container already listening on 54322.
+          supabase start
+          supabase db reset
+
+      - name: Assert the live schema is GIF-free
+        env:
+          # Port 54322 is the local DB; config.toml leaves it at the default.
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: >
+          psql -v ON_ERROR_STOP=1 "$DATABASE_URL"
+          -f supabase/tests/chat-attachment-no-gif.sql
+
+      - name: Assert 00152 created its objects
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: >
+          psql -v ON_ERROR_STOP=1 "$DATABASE_URL"
+          -f supabase/tests/realtime-unified-objects.sql

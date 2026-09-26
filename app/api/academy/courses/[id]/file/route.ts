@@ -51,7 +51,6 @@ const THUMBNAIL_CONTENT_TYPES: Record<string, string> = {
   jpeg: "image/jpeg",
   png: "image/png",
   webp: "image/webp",
-  gif: "image/gif",
   avif: "image/avif",
 };
 
@@ -75,7 +74,7 @@ function isSafeThumbnailPath(path: string): boolean {
     typeof path === "string" &&
     path.length > 0 &&
     path.length <= MAX_OBJECT_PATH_LENGTH &&
-    /^courses\/[0-9a-f-]{36}\/thumbnail\.(jpg|jpeg|png|webp|gif|avif)$/i.test(
+    /^courses\/[0-9a-f-]{36}\/thumbnail\.(jpg|jpeg|png|webp|avif)$/i.test(
       path,
     )
   );

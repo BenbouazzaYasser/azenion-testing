@@ -167,4 +167,28 @@ describe("GET /api/academy/courses/[id]/file", () => {
     const res = await GET(req(COURSE_ID, "", "Bearer tok"), params(COURSE_ID));
     expect(res.status).toBe(404);
   });
+
+  it("serves an allowed thumbnail extension", async () => {
+    setup({
+      cookieCourse: {
+        ...courseRow("published"),
+        thumbnail: `https://x.supabase.co/storage/v1/object/public/course-files/courses/${OWNER_ID}/thumbnail.png`,
+      },
+    });
+    const res = await GET(req(COURSE_ID, "?view=thumbnail", null), params(COURSE_ID));
+    expect(res.status).toBe(200);
+  });
+
+  it("rejects a thumbnail extension outside the allowlist", async () => {
+    for (const ext of ["gif", "svg"]) {
+      setup({
+        cookieCourse: {
+          ...courseRow("published"),
+          thumbnail: `https://x.supabase.co/storage/v1/object/public/course-files/courses/${OWNER_ID}/thumbnail.${ext}`,
+        },
+      });
+      const res = await GET(req(COURSE_ID, "?view=thumbnail", null), params(COURSE_ID));
+      expect(res.status).toBe(400);
+    }
+  });
 });

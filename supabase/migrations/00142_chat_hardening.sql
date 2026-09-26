@@ -11,8 +11,6 @@
 --   3. get_last_messages: one query for the sidebar's last message per
 --      conversation (was one query per conversation). SECURITY INVOKER so
 --      RLS applies — callers can only read conversations they belong to.
---   4. GIF domain validation: exact host-suffix check instead of substring
---      ILIKE (which "https://evil.com/?giphy.com" satisfied).
 
 -- ── 1. Revoke anon execution ────────────────────────────────────────────────
 -- SECURITY DEFINER callers (storage policies, other definer functions) check
@@ -130,32 +128,7 @@ grant execute on function public.get_last_messages(uuid[])
 comment on function public.get_last_messages(uuid[]) is
   'Latest message per conversation for the sidebar. SECURITY INVOKER: RLS restricts rows to conversations the caller belongs to.';
 
--- ── 4. GIF host validation: exact suffix, not substring ─────────────────────
--- Host of a URL must be the provider domain itself or a subdomain of it.
--- Fail closed: any URL we cannot parse into a host is rejected.
-create or replace function public.is_allowed_gif_host(p_url text, p_provider text)
-returns boolean
-language plpgsql
-immutable
-as $$
-declare
-  v_host text;
-  v_expected text;
-begin
-  v_expected := case when p_provider = 'giphy' then 'giphy.com' else 'tenor.com' end;
-  -- scheme → host: everything after '://' up to the first '/'
-  v_host := lower(split_part(split_part(p_url, '://', 2), '/', 1));
-  -- drop port (also blanks userinfo-bearing hosts like 'evil.com@giphy.com',
-  -- which the suffix check would reject anyway — fail closed either way)
-  v_host := split_part(v_host, ':', 1);
-  if v_host = '' then
-    return false;
-  end if;
-  return v_host = v_expected
-      or right(v_host, length(v_expected) + 1) = '.' || v_expected;
-end;
-$$;
-
+-- ── 4. Attachment field validation (current definition) ────────────────────
 create or replace function public.validate_chat_attachment_fields()
 returns trigger
 language plpgsql
@@ -166,7 +139,6 @@ declare
   v_size integer;
   v_is_image boolean;
   v_is_file boolean;
-  v_url text;
 begin
   if NEW.type in ('image','file','audio') then
     if NEW.storage_path is null or NEW.storage_path !~ '^chat/[0-9a-fA-F-]{8}-[0-9a-fA-F-]{4}-[0-9a-fA-F-]{4}-[0-9a-fA-F-]{4}-[0-9a-fA-F-]{12}/.+/.+$' then
@@ -182,7 +154,7 @@ begin
     v_mime := split_part(v_mime, ';', 1);
     v_mime := btrim(v_mime);
 
-    v_is_image := v_mime in ('image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif');
+    v_is_image := v_mime in ('image/jpeg','image/png','image/webp','image/heic','image/heif');
     v_is_file := v_mime in ('application/pdf','text/plain','text/csv','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation','application/zip');
 
     if NEW.type = 'image' and not v_is_image then
@@ -217,14 +189,11 @@ begin
     if NEW.provider is not null or NEW.external_id is not null then
       raise exception 'Provider fields must be null for storage-backed attachments';
     end if;
-  elsif NEW.type in ('gif','sticker') then
+  elsif NEW.type = 'sticker' then
     if NEW.provider is null or length(trim(NEW.provider)) = 0 then
       raise exception 'Provider required for %', NEW.type;
     end if;
-    if NEW.type = 'gif' and NEW.provider not in ('giphy','tenor') then
-      raise exception 'Provider % not allowed for gif', NEW.provider;
-    end if;
-    if NEW.type = 'sticker' and NEW.provider != 'local' then
+    if NEW.provider != 'local' then
       raise exception 'Provider % not allowed for sticker', NEW.provider;
     end if;
     if NEW.external_id is null or length(trim(NEW.external_id)) = 0 then
@@ -232,19 +201,6 @@ begin
     end if;
     if NEW.storage_path is not null then
       raise exception 'storage_path must be null for provider-backed attachments';
-    end if;
-
-    if NEW.type = 'gif' and NEW.metadata is not null then
-      v_url := NEW.metadata ->> 'url';
-      if v_url is not null and length(trim(v_url)) > 0
-         and not public.is_allowed_gif_host(v_url, NEW.provider) then
-        raise exception 'GIF URL domain not allowed for %: %', NEW.provider, v_url;
-      end if;
-      v_url := NEW.metadata ->> 'previewUrl';
-      if v_url is not null and length(trim(v_url)) > 0
-         and not public.is_allowed_gif_host(v_url, NEW.provider) then
-        raise exception 'GIF preview URL domain not allowed for %: %', NEW.provider, v_url;
-      end if;
     end if;
   end if;
 
