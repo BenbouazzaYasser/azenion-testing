@@ -1,7 +1,27 @@
--- Migration: 00118_platform_roles (renumbered from 00100; 00100 is taken by servers_channels)
+-- Migration: 00093_platform_roles
 --
 -- Platform-level roles system for cross-product authorization.
 -- Replaces ad-hoc checks with a proper RBAC foundation.
+--
+-- Position: this file has been renumbered twice. It was 00100, which turned
+-- out to be taken by servers_channels, then 00118, and is now 00093.
+--
+-- 00093 is the version its own consumers name: 00095 and 00095's successors
+-- build `language sql` gates over public.roles / public.user_roles, and
+-- `check_function_bodies` defaults to on, so Postgres resolves those bodies at
+-- CREATE time. At 00118 they were forward references and aborted the replay:
+--
+--   ERROR: relation "public.user_roles" does not exist (SQLSTATE 42P01)
+--   Applying migration 00095_academy_courses.sql... At statement: 4
+--
+-- 00101, 00102, 00103, 00104 and 00108 reference has_platform_role and
+-- grant_platform_role the same way. Nothing in 00094..00117 creates or drops
+-- any object defined here, and everything this file depends on
+-- (public.profiles, public.activities, public.platform_admins and the no-arg
+-- public.is_platform_admin) is created by 00028, so moving it earlier is safe.
+--
+-- 00075-00094 are absent from the repository, which is why the original
+-- position was lost along with them.
 
 -- ── Table: roles ──────────────────────────────────────────────────────────────
 -- Canonical list of platform roles. Managed by platform admins only.
@@ -47,7 +67,8 @@ create policy "user roles readable by self and platform admins"
 create index if not exists idx_user_roles_user_id on public.user_roles(user_id);
 create index if not exists idx_user_roles_role_id on public.user_roles(role_id);
 
--- Back-compat: older DBs (00093) created user_roles without assigned_by.
+-- Back-compat: a database that already ran this file under an older version
+-- number may have created user_roles without these columns.
 alter table public.user_roles add column if not exists assigned_by uuid references public.profiles(id) on delete set null;
 alter table public.user_roles add column if not exists assigned_at timestamptz not null default now();
 alter table public.roles add column if not exists is_system boolean not null default false;
