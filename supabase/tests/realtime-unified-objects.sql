@@ -7,9 +7,12 @@
 -- Every expectation below is extracted from 00152, not invented. The function
 -- signatures are its `create or replace function` argument lists; the trigger
 -- names and relations are its five drop/create pairs; the index names and
--- tables are its four `create index` statements; the two column expectations are
--- its `alter table public.conversations add column` clause, which declares
--- plain nullable `text` with no default and nothing else.
+-- tables are its four `create index` statements; the three column expectations
+-- are its two `alter table public.conversations add column` clauses plus its
+-- `alter table public.messages add column` clause, each paired with whatever
+-- 00152 does to that column afterwards. That last part matters: an
+-- `add column` clause is not the end state, and assuming it is produced an
+-- expectation that a real replay contradicted for conversations.type.
 --
 -- Why only five of the thirteen functions: 00152 redefines eight that already
 -- existed (bump_conversation_updated_at, get_inbox, get_unread_counts,
@@ -37,6 +40,7 @@ declare
   v_typ  text;
   v_nul  text;
   v_def  text;
+  r      record;
 begin
   -- 1. The five functions 00152 introduces.
   foreach v_fn in array array[
@@ -99,39 +103,65 @@ begin
     end if;
   end loop;
 
-  -- 4. The two columns 00152 adds. `add column if not exists type text` and
-  --    `add column if not exists name text` declare no NOT NULL and no DEFAULT,
-  --    so both must be nullable text with a null default. The type check is the
-  --    one that bites: a future `add column if not exists` would silently accept
-  --    an already-existing column of the wrong type.
-  foreach v_name in array array['type', 'name'] loop
+  -- 4. The three columns 00152 adds, each with the state 00152 actually leaves
+  --    behind -- which is not always the state its `add column` clause declares.
+  --
+  --    conversations.type   added nullable, then promoted: 00152 runs
+  --                         `alter column type set default 'direct'` and
+  --                         `set not null` after backfilling it, so the end state
+  --                         is NOT NULL with a default.
+  --    conversations.name   added and never altered: nullable, no default. The
+  --                         `conversations_group_name_check` constraint requires
+  --                         it for groups, but the column itself stays nullable
+  --                         because direct conversations legitimately have none.
+  --    messages.channel_id  added nullable uuid, never altered, no default. It
+  --                         is the second half of the exactly-one-of
+  --                         conversation_id/channel_id target, enforced by
+  --                         messages_target_check rather than by NOT NULL.
+  --
+  --    Asserting the add-column clause alone would be wrong for `type`: a first
+  --    run of this file against a real replay reported it nullable-with-no-
+  --    default, which is the state 00152 passes through on its way to NOT NULL.
+  for r in
+    select * from (values
+      ('conversations', 'type',       'text', 'NO',  true),
+      ('conversations', 'name',       'text', 'YES', false),
+      ('messages',     'channel_id',  'uuid', 'YES', false)
+    ) as v(tbl, col, typ, nul, has_def)
+  loop
     select data_type, is_nullable, column_default
       into v_typ, v_nul, v_def
     from information_schema.columns
     where table_schema = 'public'
-      and table_name = 'conversations'
-      and column_name = v_name;
+      and table_name = r.tbl
+      and column_name = r.col;
 
     if v_typ is null then
-      raise exception
-        '00152: public.conversations.% does not exist', v_name;
+      raise exception '00152: public.%.% does not exist', r.tbl, r.col;
     end if;
 
-    if v_typ <> 'text' then
+    if v_typ <> r.typ then
       raise exception
-        '00152: public.conversations.% is %, expected text', v_name, v_typ;
+        '00152: public.%.% is %, expected %', r.tbl, r.col, v_typ, r.typ;
     end if;
 
-    if v_nul <> 'YES' then
+    if v_nul <> r.nul then
       raise exception
-        '00152: public.conversations.% is NOT NULL, 00152 declares it nullable',
-        v_name;
+        '00152: public.%.% is_nullable is %, expected %',
+        r.tbl, r.col, v_nul, r.nul;
     end if;
 
-    if v_def is not null then
+    if r.has_def then
+      -- Match the literal rather than the exact cast suffix, which is a
+      -- rendering detail: `set default 'direct'` on text reports as
+      -- 'direct'::text and that spelling is not worth pinning.
+      if v_def is null or v_def not like '%''direct''%' then
+        raise exception
+          '00152: public.%.% has default %, expected ''direct''', r.tbl, r.col, v_def;
+      end if;
+    elsif v_def is not null then
       raise exception
-        '00152: public.conversations.% has default %, 00152 declares none',
-        v_name, v_def;
+        '00152: public.%.% has default %, 00152 declares none', r.tbl, r.col, v_def;
     end if;
   end loop;
 end
